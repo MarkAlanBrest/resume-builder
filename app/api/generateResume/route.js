@@ -3,13 +3,9 @@ import path from "path";
 import PizZip from "pizzip";
 import Docxtemplater from "docxtemplater";
 
-export default async function handler(req, res) {
-  if (req.method !== "POST") {
-    return res.status(405).send("Method Not Allowed");
-  }
-
+export async function POST(req) {
   try {
-    const body = req.body || {};
+    const body = await req.json();
 
     const safe = (v) => {
       if (v === undefined || v === null) return "";
@@ -26,7 +22,6 @@ export default async function handler(req, res) {
 
     const templateFile = templateMap[body.TEMPLATE] || "Template.docx";
 
-    // IMPORTANT: templates must be in /public/templates/
     const templatePath = path.join(
       process.cwd(),
       "public",
@@ -36,7 +31,7 @@ export default async function handler(req, res) {
 
     if (!fs.existsSync(templatePath)) {
       console.error("Template missing:", templatePath);
-      return res.status(500).send("Template not found");
+      return new Response("Template not found", { status: 500 });
     }
 
     const content = fs.readFileSync(templatePath, "binary");
@@ -70,19 +65,17 @@ export default async function handler(req, res) {
       compression: "DEFLATE"
     });
 
-    res.setHeader(
-      "Content-Type",
-      "application/vnd.openxmlformats-officedocument.wordprocessingml.document"
-    );
-    res.setHeader(
-      "Content-Disposition",
-      "attachment; filename=resume.docx"
-    );
-
-    return res.status(200).send(buffer);
+    return new Response(buffer, {
+      status: 200,
+      headers: {
+        "Content-Type":
+          "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
+        "Content-Disposition": "attachment; filename=resume.docx"
+      }
+    });
 
   } catch (err) {
     console.error("RESUME GENERATION ERROR:", err);
-    return res.status(500).send("Resume generation failed");
+    return new Response("Resume generation failed", { status: 500 });
   }
 }
