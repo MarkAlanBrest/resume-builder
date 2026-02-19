@@ -4,15 +4,14 @@ import PizZip from "pizzip";
 import Docxtemplater from "docxtemplater";
 
 export default async function handler(req, res) {
-  if (req.method !== "POST") {
-    return res.status(405).end();
-  }
+  if (req.method !== "POST") return res.status(405).end();
 
   try {
-    const body = req.body;
+    const body = req.body || {};
 
     const safe = (v) => {
-      if (!v || v === "undefined") return "";
+      if (v === undefined || v === null) return "";
+      if (String(v).trim().toLowerCase() === "undefined") return "";
       return String(v);
     };
 
@@ -25,11 +24,11 @@ export default async function handler(req, res) {
 
     const templateFile = templateMap[body.TEMPLATE] || "Template.docx";
 
-    const templatePath = path.join(
-      process.cwd(),
-      "templates",
-      templateFile
-    );
+    const templatePath = path.join(process.cwd(), "templates", templateFile);
+
+    if (!fs.existsSync(templatePath)) {
+      return res.status(500).send("Template not found");
+    }
 
     const content = fs.readFileSync(templatePath, "binary");
     const zip = new PizZip(content);
@@ -45,6 +44,7 @@ export default async function handler(req, res) {
       PHONE: safe(body.PHONE),
       ADDRESS: safe(body.ADDRESS),
       LOCATION: safe(body.LOCATION),
+
       PROFESSIONAL_SUMMARY: safe(body.PROFESSIONAL_SUMMARY),
       SKILLS: safe(body.SKILLS),
       EXPERIENCE: safe(body.EXPERIENCE),
@@ -56,23 +56,17 @@ export default async function handler(req, res) {
 
     doc.render();
 
-    const buffer = doc.getZip().generate({
-      type: "nodebuffer"
-    });
+    const buffer = doc.getZip().generate({ type: "nodebuffer" });
 
     res.setHeader(
       "Content-Type",
       "application/vnd.openxmlformats-officedocument.wordprocessingml.document"
     );
-    res.setHeader(
-      "Content-Disposition",
-      "attachment; filename=resume.docx"
-    );
+    res.setHeader("Content-Disposition", "attachment; filename=resume.docx");
 
-    res.status(200).send(buffer);
-
+    return res.status(200).send(buffer);
   } catch (err) {
-    console.error(err);
-    res.status(500).send("Resume generation failed");
+    console.error("RESUME ERROR:", err);
+    return res.status(500).send("Resume generation failed");
   }
 }
