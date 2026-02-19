@@ -31,3 +31,4 @@ function buildResumePayload(generalNotes, template) {
   };
 }
 
+window.buildResumePayload = buildResumePayload;
