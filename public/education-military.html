@@ -1,0 +1,162 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Education History</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+<div class="chat">
+
+  <div class="system">
+    List any education completed outside of your New Castle School of Trades program.
+    <br><br>
+    <strong>Important:</strong> You are responsible for ensuring the accuracy of
+    your GPA and attendance information. This information may be updated on your final
+    resume at a later date. For now, enter your most current information.
+  </div>
+
+  <!-- GPA / ATTENDANCE (REQUIRED) -->
+  <div class="system">Current GPA <strong>(required)</strong></div>
+  <input id="gpa" placeholder="Example: 3.5">
+
+  <div class="system">Current Attendance Percentage <strong>(required)</strong></div>
+  <input id="attendance" placeholder="Example: 96%">
+
+  <hr>
+
+  <!-- EDUCATION ENTRY -->
+  <div class="system">Education History (Outside of NCST)</div>
+
+  <div id="eduEntry">
+
+    <div class="system">School or Institution Name</div>
+    <input id="school">
+
+    <div class="system">Credential Earned</div>
+    <input id="credential" placeholder="Diploma, GED, Degree, Certificate">
+
+    <div class="system">Completion Year</div>
+    <input id="year" placeholder="YYYY">
+
+    <button type="button" onclick="addEducation()">Add Another Education</button>
+
+  </div>
+
+  <!-- EDUCATION LIST -->
+  <div id="eduList">
+    <div class="system">Education Entered</div>
+    <ul id="education"></ul>
+  </div>
+
+  <br>
+
+  <button type="button" onclick="goBack()">Back</button>
+  <button type="button" onclick="goNext()">Next</button>
+
+</div>
+
+<script>
+/* ---------- STORAGE ---------- */
+function getData() {
+  return JSON.parse(localStorage.getItem("resumeData")) || {};
+}
+function setData(data) {
+  localStorage.setItem("resumeData", JSON.stringify(data));
+}
+
+/* ---------- LOAD ---------- */
+window.onload = function () {
+  const data = getData();
+  if (!Array.isArray(data.education)) data.education = [];
+
+  document.getElementById("gpa").value = data.gpa || "";
+  document.getElementById("attendance").value = data.attendance || "";
+
+  renderEducation();
+};
+
+/* ---------- EDUCATION HANDLING ---------- */
+function addEducation() {
+  const school = document.getElementById("school").value.trim();
+  const credential = document.getElementById("credential").value.trim();
+  const year = document.getElementById("year").value.trim();
+
+  if (!school || !credential || !year) {
+    alert("Please complete all education fields.");
+    return;
+  }
+
+  const data = getData();
+  if (!Array.isArray(data.education)) data.education = [];
+
+  data.education.push({ school, credential, year });
+  setData(data);
+
+  document.getElementById("school").value = "";
+  document.getElementById("credential").value = "";
+  document.getElementById("year").value = "";
+
+  renderEducation();
+}
+
+function renderEducation() {
+  const data = getData();
+  const list = document.getElementById("education");
+  list.innerHTML = "";
+
+  (data.education || []).forEach((edu, index) => {
+    const li = document.createElement("li");
+    li.innerHTML = `
+      <strong>${edu.credential}</strong> – ${edu.school} (${edu.year})
+      <br>
+      <button type="button" onclick="deleteEducation(${index})">Delete</button>
+    `;
+    list.appendChild(li);
+  });
+}
+
+function deleteEducation(index) {
+  const data = getData();
+  data.education.splice(index, 1);
+  setData(data);
+  renderEducation();
+}
+
+/* ---------- SAVE ---------- */
+function saveOnly() {
+  const data = getData();
+
+  data.gpa = document.getElementById("gpa").value.trim();
+  data.attendance = document.getElementById("attendance").value.trim();
+
+  setData(data);
+}
+
+/* ---------- NAV ---------- */
+function goBack() {
+  window.location.href = "certifications.html";
+}
+
+function goNext() {
+  const gpa = document.getElementById("gpa").value.trim();
+  const attendance = document.getElementById("attendance").value.trim();
+
+  if (!gpa) {
+    alert("GPA is required.");
+    return;
+  }
+
+  if (!attendance) {
+    alert("Attendance percentage is required.");
+    return;
+  }
+
+  saveOnly();
+  window.location.href = "finalize.html";
+}
+</script>
+
+</body>
+</html>

@@ -1,0 +1,219 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Career Objective</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+<div class="chat">
+
+  <div class="system">
+    What type of job are you looking for after graduation?
+    <br><br>
+    <strong>Important:</strong> Provide as much detail as you can.
+    Do not worry about wording, grammar, or sentence structure —
+    this information will be professionally rewritten later.
+    <br><br>
+    <strong>Examples:</strong><br>
+    • Entry-level welding position in a fabrication or industrial setting<br>
+    • Automotive technician role focused on maintenance, diagnostics, and repair
+  </div>
+
+  <textarea
+    id="objective"
+    placeholder="Describe the type of job you want, the environment you prefer, and any areas of interest..."
+  ></textarea>
+
+  <div class="system">
+    Select up to <strong>5</strong> personal qualifications that describe you best.
+    <br>
+    <strong>Tip:</strong> Choose qualities you can show through your actions.
+  </div>
+
+  <div class="qual-list">
+
+    <div class="check-row">
+      <input type="checkbox" class="qual" id="q1" value="Puts in an honest day’s work each day">
+      <label for="q1">Puts in an honest day’s work each day</label>
+    </div>
+
+    <div class="check-row">
+      <input type="checkbox" class="qual" id="q2" value="Arrives on time and ready to work">
+      <label for="q2">Arrives on time and ready to work</label>
+    </div>
+
+    <div class="check-row">
+      <input type="checkbox" class="qual" id="q3" value="Gives full effort during scheduled work hours">
+      <label for="q3">Gives full effort during scheduled work hours</label>
+    </div>
+
+    <div class="check-row">
+      <input type="checkbox" class="qual" id="q4" value="Learns something new at every opportunity">
+      <label for="q4">Learns something new at every opportunity</label>
+    </div>
+
+    <div class="check-row">
+      <input type="checkbox" class="qual" id="q5" value="Accepts feedback and uses it to improve">
+      <label for="q5">Accepts feedback and uses it to improve</label>
+    </div>
+
+    <div class="check-row">
+      <input type="checkbox" class="qual" id="q6" value="Asks questions to better understand tasks">
+      <label for="q6">Asks questions to better understand tasks</label>
+    </div>
+
+    <div class="check-row">
+      <input type="checkbox" class="qual" id="q7" value="Gets along with co-workers, customers, supervisors, and instructors">
+      <label for="q7">Gets along with co-workers, customers, supervisors, and instructors</label>
+    </div>
+
+    <div class="check-row">
+      <input type="checkbox" class="qual" id="q8" value="Communicates respectfully with others">
+      <label for="q8">Communicates respectfully with others</label>
+    </div>
+
+    <div class="check-row">
+      <input type="checkbox" class="qual" id="q9" value="Works well as part of a team">
+      <label for="q9">Works well as part of a team</label>
+    </div>
+
+    <div class="check-row">
+      <input type="checkbox" class="qual" id="q10" value="Leaves personal problems at home">
+      <label for="q10">Leaves personal problems at home</label>
+    </div>
+
+    <div class="check-row">
+      <input type="checkbox" class="qual" id="q11" value="Maintains a professional attitude on the job">
+      <label for="q11">Maintains a professional attitude on the job</label>
+    </div>
+
+    <div class="check-row">
+      <input type="checkbox" class="qual" id="q12" value="Follows supervisory direction and company policies">
+      <label for="q12">Follows supervisory direction and company policies</label>
+    </div>
+
+    <div class="check-row">
+      <input type="checkbox" class="qual" id="q13" value="Follows safety rules and procedures">
+      <label for="q13">Follows safety rules and procedures</label>
+    </div>
+
+    <div class="check-row">
+      <input type="checkbox" class="qual" id="q14" value="Keeps a clean, neat, and safe workplace">
+      <label for="q14">Keeps a clean, neat, and safe workplace</label>
+    </div>
+
+    <div class="check-row">
+      <input type="checkbox" class="qual" id="q15" value="Asks for help only after trying to solve the problem">
+      <label for="q15">Asks for help only after trying to solve the problem</label>
+    </div>
+
+    <div class="check-row">
+      <input type="checkbox" class="qual" id="q16" value="Shows initiative when faced with challenges">
+      <label for="q16">Shows initiative when faced with challenges</label>
+    </div>
+
+    <div class="check-row">
+      <input type="checkbox" class="qual" id="q17" value="Admits mistakes and works to improve weaknesses">
+      <label for="q17">Admits mistakes and works to improve weaknesses</label>
+    </div>
+
+    <div class="check-row">
+      <input type="checkbox" class="qual" id="q18" value="Takes responsibility for actions">
+      <label for="q18">Takes responsibility for actions</label>
+    </div>
+
+    <div class="check-row">
+      <input type="checkbox" class="qual" id="q19" value="Works until the job is done right">
+      <label for="q19">Works until the job is done right</label>
+    </div>
+
+    <div class="check-row">
+      <input type="checkbox" class="qual" id="q20" value="Pays attention to details">
+      <label for="q20">Pays attention to details</label>
+    </div>
+
+    <div class="check-row">
+      <input type="checkbox" class="qual" id="q21" value="Represents the company or school professionally">
+      <label for="q21">Represents the company or school professionally</label>
+    </div>
+
+  </div>
+
+  <!-- OPTIONAL SOFT SKILLS COMMENT BOX -->
+  <div class="system">
+    Optional: Are there any other soft skills or personal qualities you want included?
+    <br>
+    <small>(Examples: reliability, leadership, problem-solving, strong work ethic)</small>
+  </div>
+
+  <textarea
+    id="softSkillsExtra"
+    placeholder="List any additional soft skills or personal strengths you want employers to know about..."
+  ></textarea>
+
+  <br>
+
+  <button type="button" onclick="goBack()">Back</button>
+  <button type="button" onclick="goNext()">Next</button>
+
+</div>
+
+<script>
+/* ---------- LOCAL STORAGE HELPERS ---------- */
+function getData() {
+  return JSON.parse(localStorage.getItem("resumeData")) || {};
+}
+function setData(data) {
+  localStorage.setItem("resumeData", JSON.stringify(data));
+}
+
+/* ---------- LOAD ON PAGE OPEN ---------- */
+window.onload = function () {
+  const data = getData();
+  document.getElementById("objective").value = data.objective || "";
+  document.getElementById("softSkillsExtra").value = data.softSkillsExtra || "";
+
+  if (Array.isArray(data.quals)) {
+    document.querySelectorAll(".qual").forEach(cb => {
+      if (data.quals.includes(cb.value)) cb.checked = true;
+    });
+  }
+};
+
+/* ---------- BUTTON FUNCTIONS ---------- */
+function saveOnly() {
+  const data = getData();
+  data.objective = document.getElementById("objective").value.trim();
+  data.softSkillsExtra = document.getElementById("softSkillsExtra").value.trim();
+  data.quals = Array.from(document.querySelectorAll(".qual:checked"))
+                    .map(cb => cb.value);
+  setData(data);
+}
+
+function goBack() {
+  window.location.href = "student-info.html";
+}
+
+function goNext() {
+  const objective = document.getElementById("objective").value.trim();
+  const checked = document.querySelectorAll(".qual:checked");
+
+  if (objective.length < 25) {
+    alert("Please provide more detail about the type of job you are seeking.");
+    return;
+  }
+
+  if (checked.length === 0 || checked.length > 5) {
+    alert("Select between 1 and 5 personal qualifications.");
+    return;
+  }
+
+  saveOnly();
+  window.location.href = "work.html";
+}
+</script>
+
+</body>
+</html>

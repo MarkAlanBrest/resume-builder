@@ -1,0 +1,67 @@
+/* =========================================================
+   Resume Payload Builder (RESTORED FLAT VERSION)
+   Matches backend route.js exactly
+   ========================================================= */
+
+function buildResumePayload(generalNotes = "") {
+
+  const data = JSON.parse(localStorage.getItem("resumeData")) || {};
+
+  function safe(v) {
+    return (v && v !== "undefined") ? v : "";
+  }
+
+  /* ---------- FLATTEN HELPERS ---------- */
+  const flattenList = (arr) =>
+    Array.isArray(arr) ? arr.map(item => `• ${item}`).join("\n") : "";
+
+  const flattenJobs = (jobs) => {
+    if (!Array.isArray(jobs)) return "";
+    return jobs
+      .map(job => {
+        const title = safe(job.title);
+        const company = safe(job.company);
+        const dates = safe(job.dates);
+        const duties = Array.isArray(job.duties)
+          ? job.duties.map(d => `   - ${d}`).join("\n")
+          : "";
+
+        return `${title} — ${company} (${dates})\n${duties}`;
+      })
+      .join("\n\n");
+  };
+
+  const flattenEducation = (edu) => {
+    if (!Array.isArray(edu)) return "";
+    return edu
+      .map(e => `${safe(e.school)} — ${safe(e.degree)} (${safe(e.year)})`)
+      .join("\n");
+  };
+
+  /* =========================================================
+     RETURN ONLY WHAT THE BACKEND EXPECTS
+     ========================================================= */
+  return {
+    NAME: safe(data.name),
+    EMAIL: safe(data.email),
+    PHONE: safe(data.phone),
+    ADDRESS: safe(data.address),
+    CITY: safe(data.city),
+    STATE: safe(data.state),
+    ZIP: safe(data.zip),
+
+    PROFESSIONAL_SUMMARY: safe(data.objective),
+
+    SKILLS: flattenList(data.quals || []),
+
+    EXPERIENCE: flattenJobs(data.jobs || []),
+
+    EDUCATION: flattenEducation(data.education || []),
+
+    PROGRAM_CERTIFICATIONS: flattenList(data.programCertsSelected || []),
+
+    OUTSIDE_CERTIFICATIONS: safe(data.extraCerts),
+
+    GENERAL_NOTES: safe(generalNotes)
+  };
+}
