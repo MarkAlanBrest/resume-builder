@@ -24,11 +24,12 @@ export default async function handler(req, res) {
       TemplateC: "TemplateC.docx"
     };
 
-    const templateFile =
-      templateMap[body.TEMPLATE] || "Template.docx";
+    const templateFile = templateMap[body.TEMPLATE] || "Template.docx";
 
+    // UPDATED PATH — this is the fix
     const templatePath = path.join(
       process.cwd(),
+      "public",
       "templates",
       templateFile
     );
