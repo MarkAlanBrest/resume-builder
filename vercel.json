@@ -1,7 +1,13 @@
 {
-  "functions": {
-    "api/*.js": {
-      "runtime": "nodejs@18.x"
-    }
+  "name": "resume-builder",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "engines": {
+    "node": "18.x"
+  },
+  "dependencies": {
+    "docxtemplater": "^3.43.0",
+    "pizzip": "^3.1.5"
   }
 }
