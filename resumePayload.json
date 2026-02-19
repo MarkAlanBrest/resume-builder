@@ -1,15 +1,12 @@
 /* =========================================================
-   Resume Payload Builder (RESTORED FLAT VERSION)
+   Resume Payload Builder (FLAT – 4 TEMPLATE SUPPORT)
    Matches backend route.js exactly
    ========================================================= */
 
-function buildResumePayload(generalNotes = "") {
-
+function buildResumePayload(generalNotes = "", template = "Template") {
   const data = JSON.parse(localStorage.getItem("resumeData")) || {};
 
-  function safe(v) {
-    return (v && v !== "undefined") ? v : "";
-  } 
+  const safe = (v) => (v && v !== "undefined") ? v : "";
 
   /* ---------- FLATTEN HELPERS ---------- */
   const flattenList = (arr) =>
@@ -25,7 +22,6 @@ function buildResumePayload(generalNotes = "") {
         const duties = Array.isArray(job.duties)
           ? job.duties.map(d => `   - ${d}`).join("\n")
           : "";
-
         return `${title} — ${company} (${dates})\n${duties}`;
       })
       .join("\n\n");
@@ -38,30 +34,23 @@ function buildResumePayload(generalNotes = "") {
       .join("\n");
   };
 
-  /* =========================================================
-     RETURN ONLY WHAT THE BACKEND EXPECTS
-     ========================================================= */
+  const LOCATION = [data.city, data.state].filter(Boolean).join(", ");
+
   return {
+    TEMPLATE: template, // Template | TemplateA | TemplateB | TemplateC
+
     NAME: safe(data.name),
     EMAIL: safe(data.email),
     PHONE: safe(data.phone),
     ADDRESS: safe(data.address),
-    CITY: safe(data.city),
-    STATE: safe(data.state),
-    ZIP: safe(data.zip),
+    LOCATION,
 
     PROFESSIONAL_SUMMARY: safe(data.objective),
-
     SKILLS: flattenList(data.quals || []),
-
     EXPERIENCE: flattenJobs(data.jobs || []),
-
     EDUCATION: flattenEducation(data.education || []),
-
     PROGRAM_CERTIFICATIONS: flattenList(data.programCertsSelected || []),
-
     OUTSIDE_CERTIFICATIONS: safe(data.extraCerts),
-
     GENERAL_NOTES: safe(generalNotes)
   };
 }
