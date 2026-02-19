@@ -9,7 +9,7 @@ function buildResumePayload(generalNotes = "") {
 
   function safe(v) {
     return (v && v !== "undefined") ? v : "";
-  }
+  } 
 
   /* ---------- FLATTEN HELPERS ---------- */
   const flattenList = (arr) =>
