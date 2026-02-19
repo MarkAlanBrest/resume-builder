@@ -1,21 +1,33 @@
-function buildResumePayload(generalNotes) {
+function buildResumePayload(generalNotes, template) {
+  generalNotes = generalNotes || "";
+  template = template || "Template";
+
+  var data = JSON.parse(localStorage.getItem("resumeData")) || {};
+
+  function safe(v) {
+    return (v && v !== "undefined") ? v : "";
+  }
+
+  var LOCATION = [data.city, data.state]
+    .filter(function (v) { return v; })
+    .join(", ");
+
   return {
-    NAME: localStorage.getItem("NAME") || "",
-    EMAIL: localStorage.getItem("EMAIL") || "",
-    PHONE: localStorage.getItem("PHONE") || "",
-    ADDRESS: localStorage.getItem("ADDRESS") || "",
-    CITY: localStorage.getItem("CITY") || "",
-    STATE: localStorage.getItem("STATE") || "",
-    ZIP: localStorage.getItem("ZIP") || "",
+    TEMPLATE: template,
 
-    PROFESSIONAL_SUMMARY: localStorage.getItem("PROFESSIONAL_SUMMARY") || "",
-    SKILLS: localStorage.getItem("SKILLS") || "",
-    EXPERIENCE: localStorage.getItem("EXPERIENCE") || "",
-    EDUCATION: localStorage.getItem("EDUCATION") || "",
-    PROGRAM_CERTIFICATIONS: localStorage.getItem("PROGRAM_CERTIFICATIONS") || "",
-    OUTSIDE_CERTIFICATIONS: localStorage.getItem("OUTSIDE_CERTIFICATIONS") || "",
+    NAME: safe(data.name),
+    EMAIL: safe(data.email),
+    PHONE: safe(data.phone),
+    ADDRESS: safe(data.address),
+    LOCATION: LOCATION,
 
-    GENERAL_NOTES: generalNotes || ""
+    PROFESSIONAL_SUMMARY: safe(data.objective),
+    SKILLS: safe(data.skills),
+    EXPERIENCE: safe(data.experience),
+    EDUCATION: safe(data.education),
+    PROGRAM_CERTIFICATIONS: safe(data.programCertifications),
+    OUTSIDE_CERTIFICATIONS: safe(data.outsideCertifications),
+    GENERAL_NOTES: safe(generalNotes)
   };
 }
 
