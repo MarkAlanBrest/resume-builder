@@ -13,7 +13,9 @@ export async function POST(req) {
       return String(v);
     }
 
+    // ---- TEMPLATE SELECTION ----
     const TEMPLATE = body.TEMPLATE || "Template";
+
     const templateMap = {
       Template: "Template.docx",
       TemplateA: "TemplateA.docx",
@@ -31,6 +33,7 @@ export async function POST(req) {
       return new Response("Template not found", { status: 500 });
     }
 
+    // ---- LOAD TEMPLATE ----
     const content = fs.readFileSync(templatePath, "binary");
     const zip = new PizZip(content);
 
@@ -39,14 +42,16 @@ export async function POST(req) {
       linebreaks: true
     });
 
+    // ---- LOCATION (single field) ----
+    const LOCATION = safe(body.LOCATION);
+
+    // ---- DATA INJECTION ----
     doc.setData({
       NAME: safe(body.NAME),
       EMAIL: safe(body.EMAIL),
       PHONE: safe(body.PHONE),
       ADDRESS: safe(body.ADDRESS),
-      CITY: safe(body.CITY),
-      STATE: safe(body.STATE),
-      ZIP: safe(body.ZIP),
+      LOCATION, // <-- City, State (or whatever you send)
 
       PROFESSIONAL_SUMMARY: safe(body.PROFESSIONAL_SUMMARY),
       SKILLS: safe(body.SKILLS),
@@ -59,6 +64,7 @@ export async function POST(req) {
 
     doc.render();
 
+    // ---- OUTPUT ----
     const buffer = doc.getZip().generate({
       type: "nodebuffer",
       compression: "DEFLATE"
