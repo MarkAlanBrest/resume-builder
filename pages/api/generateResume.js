@@ -26,7 +26,7 @@ export default async function handler(req, res) {
 
     const templateFile = templateMap[body.TEMPLATE] || "Template.docx";
 
-    // UPDATED PATH — this is the fix
+    // IMPORTANT: templates must be in /public/templates/
     const templatePath = path.join(
       process.cwd(),
       "public",
