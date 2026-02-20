@@ -1,7 +1,6 @@
-export function GET() {
+export async function GET() {
   return new Response("OK", { status: 200 });
 }
-
 "use client";
 
 import { useState } from "react";
