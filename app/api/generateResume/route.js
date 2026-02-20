@@ -1,4 +1,5 @@
 export const runtime = "nodejs";
+
 import path from "path";
 import fs from "fs";
 import PizZip from "pizzip";
@@ -17,54 +18,122 @@ export async function POST(req) {
     function clean(text) {
       if (!text) return "";
       return String(text)
-        .replace(/[\u0000-\u001F\u007F]/g, " ") // control chars only
+        .replace(/[\u0000-\u001F\u007F]/g, " ")
         .replace(/\s+/g, " ")
         .trim();
     }
 
     /* ---------- AI POLISHER ---------- */
     async function polish(text) {
-      if (!text || text.trim() === "") return "";
+      if (!text || typeof text !== "string") return "";
 
       try {
         const response = await client.chat.completions.create({
           model: "gpt-4o-mini",
+          temperature: 0.4,
           messages: [
             {
               role: "system",
               content:
-                "Rewrite the text to be professional, concise, and resume-ready."
+                "Rewrite the text to be professional, concise, and resume-ready. Do not add new information."
             },
             { role: "user", content: text }
-          ],
-          temperature: 0.4
+          ]
         });
 
-        const output = response.choices?.[0]?.message?.content || "";
-        return clean(output);
+        return clean(response.choices?.[0]?.message?.content || "");
       } catch (err) {
         console.error("AI ERROR:", err);
         return "";
       }
     }
 
-    /* ---------- DATA ---------- */
+    /* ============================================================
+       BUILD DATA OBJECT FOR DOCXTEMPLATER (STRUCTURED)
+       ============================================================ */
+
+    const student = body.student || {};
+    const certifications = body.certifications || {};
+
+    /* ---------- WORK EXPERIENCE ---------- */
+    const workExperience = Array.isArray(body.workExperience)
+      ? await Promise.all(
+          body.workExperience.map(async (job) => ({
+            employer: clean(job.employer),
+            title: clean(job.title),
+            start: clean(job.start),
+            end: clean(job.end),
+            tasks: await polish(job.tasks)
+          }))
+        )
+      : [];
+
+    /* ---------- MILITARY SERVICE ---------- */
+    const militaryService = Array.isArray(body.militaryService)
+      ? await Promise.all(
+          body.militaryService.map(async (mil) => ({
+            branch: clean(mil.branch),
+            rank: clean(mil.rank),
+            dates: clean(mil.dates),
+            duties: await polish(mil.duties),
+            achievements: await polish(mil.achievements)
+          }))
+        )
+      : [];
+
+    /* ---------- EDUCATION ---------- */
+    const education = Array.isArray(body.education)
+      ? await Promise.all(
+          body.education.map(async (edu) => ({
+            school: clean(edu.school),
+            program: clean(edu.program),
+            startDate: clean(edu.startDate),
+            endDate: clean(edu.endDate),
+            notes: await polish(edu.notes)
+          }))
+        )
+      : [];
+
+    /* ---------- CERTIFICATIONS + SKILLS ---------- */
+    const programCerts = Array.isArray(certifications.programCertsSelected)
+      ? certifications.programCertsSelected.map(clean)
+      : [];
+
+    const extraCerts = await polish(certifications.extraCerts || "");
+    const extraSkills = await polish(certifications.extraSkills || "");
+
+    /* ---------- FINAL DATA OBJECT ---------- */
     const data = {
-      NAME: clean(body.NAME),
-      EMAIL: clean(body.EMAIL),
-      PHONE: clean(body.PHONE),
-      ADDRESS: clean(body.ADDRESS),
-      LOCATION: clean(body.LOCATION),
-      PROFESSIONAL_SUMMARY: await polish(body.PROFESSIONAL_SUMMARY),
-      SKILLS: await polish(body.SKILLS),
-      EXPERIENCE: await polish(body.EXPERIENCE),
-      EDUCATION: await polish(body.EDUCATION),
-      PROGRAM_CERTIFICATIONS: await polish(body.PROGRAM_CERTIFICATIONS),
-      OUTSIDE_CERTIFICATIONS: await polish(body.OUTSIDE_CERTIFICATIONS),
-      GENERAL_NOTES: await polish(body.GENERAL_NOTES)
+      TEMPLATE: body.TEMPLATE,
+
+      student: {
+        name: clean(student.name),
+        email: clean(student.email),
+        phone: clean(student.phone),
+        address: clean(student.address),
+        city: clean(student.city),
+        state: clean(student.state),
+        zip: clean(student.zip),
+        location: clean(`${student.city || ""}, ${student.state || ""}`),
+        programCampus: clean(student.programCampus),
+        graduationDate: clean(student.graduationDate)
+      },
+
+      workExperience,
+      militaryService,
+      education,
+
+      certifications: {
+        programCerts,
+        extraCerts,
+        extraSkills
+      }
     };
 
-    /* ---------- TEMPLATE ---------- */
+    /* ============================================================
+       TEMPLATE LOAD
+       ============================================================ */
+
     const templateFile = `${body.TEMPLATE}.docx`;
     const templatePath = path.join(
       process.cwd(),
@@ -89,7 +158,7 @@ export async function POST(req) {
       compression: "DEFLATE"
     });
 
-    /* ---------- RETURN DOCX (CRITICAL FIX) ---------- */
+    /* ---------- RETURN DOCX ---------- */
     return new Response(new Uint8Array(buffer), {
       status: 200,
       headers: {
