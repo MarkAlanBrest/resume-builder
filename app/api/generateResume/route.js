@@ -14,16 +14,25 @@ export async function POST(req) {
     const body = await req.json();
 
     // Clean AI output so Word doesn't break
-    function clean(text) {
-      if (!text) return "";
-      return text
-        .replace(/[\u2018\u2019]/g, "'")      // smart single quotes
-        .replace(/[\u201C\u201D]/g, '"')      // smart double quotes
-        .replace(/\u2022/g, "-")              // bullet points
-        .replace(/\u00A0/g, " ")              // non-breaking spaces
-        .replace(/[\u0000-\u001F]/g, " ")     // control chars
-        .trim();
-    }
+function clean(text) {
+  if (!text) return "";
+
+  return text
+    // Remove XML-breaking characters
+    .replace(/[<>&]/g, " ")
+    // Smart quotes
+    .replace(/[\u2018\u2019]/g, "'")
+    .replace(/[\u201C\u201D]/g, '"')
+    // Bullets
+    .replace(/\u2022/g, "-")
+    // Non-breaking spaces
+    .replace(/\u00A0/g, " ")
+    // Control characters
+    .replace(/[\u0000-\u001F]/g, " ")
+    // Trim
+    .trim();
+}
+
 
     // AI helper
     async function polish(text) {
