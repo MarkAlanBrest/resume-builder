@@ -1,34 +1,21 @@
-function buildResumePayload(generalNotes, template) {
-  generalNotes = generalNotes || "";
-  template = template || "Template";
+const payload = {
+  TEMPLATE: selectedTemplate,   // "Template", "TemplateA", etc.
+  NAME: formData.NAME,
+  EMAIL: formData.EMAIL,
+  PHONE: formData.PHONE,
+  ADDRESS: formData.ADDRESS,
+  LOCATION: formData.LOCATION,
+  PROFESSIONAL_SUMMARY: formData.PROFESSIONAL_SUMMARY,
+  SKILLS: formData.SKILLS,
+  EXPERIENCE: formData.EXPERIENCE,
+  EDUCATION: formData.EDUCATION,
+  PROGRAM_CERTIFICATIONS: formData.PROGRAM_CERTIFICATIONS,
+  OUTSIDE_CERTIFICATIONS: formData.OUTSIDE_CERTIFICATIONS,
+  GENERAL_NOTES: formData.GENERAL_NOTES
+};
 
-  var data = JSON.parse(localStorage.getItem("resumeData")) || {};
-
-  function safe(v) {
-    return (v && v !== "undefined") ? v : "";
-  }
-
-  var LOCATION = [data.city, data.state]
-    .filter(function (v) { return v; })
-    .join(", ");
-
-  return {
-    TEMPLATE: template,
-
-    NAME: safe(data.name),
-    EMAIL: safe(data.email),
-    PHONE: safe(data.phone),
-    ADDRESS: safe(data.address),
-    LOCATION: LOCATION,
-
-    PROFESSIONAL_SUMMARY: safe(data.objective),
-    SKILLS: safe(data.skills),
-    EXPERIENCE: safe(data.experience),
-    EDUCATION: safe(data.education),
-    PROGRAM_CERTIFICATIONS: safe(data.programCertifications),
-    OUTSIDE_CERTIFICATIONS: safe(data.outsideCertifications),
-    GENERAL_NOTES: safe(generalNotes)
-  };
-}
-
-window.buildResumePayload = buildResumePayload;
+const res = await fetch("/api/generateResume", {
+  method: "POST",
+  headers: { "Content-Type": "application/json" },
+  body: JSON.stringify(payload)
+});
