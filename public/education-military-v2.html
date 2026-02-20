@@ -9,13 +9,20 @@
     .page-title {
       text-align: center;
       color: #0b3c6d;
-      margin-bottom: 30px;
+      margin-bottom: 20px;
       font-size: 28px;
     }
 
     .system {
       color: #0b3c6d;
       font-weight: 600;
+    }
+
+    .info-box {
+      background: #f1f6fb;
+      border: 1px solid #c9d9ea;
+      padding: 12px;
+      margin-bottom: 25px;
     }
 
     .entry-card {
@@ -44,6 +51,18 @@
 <div class="chat">
 
   <h1 class="page-title">NCST’s Resume Builder</h1>
+
+  <!-- INSTRUCTIONS -->
+  <div class="info-box">
+    <strong>Important:</strong><br>
+    Be sure to list <strong>New Castle School of Trades</strong> as one of your schools.
+    <br><br>
+    Enter <strong>all schools or training programs</strong> you have attended by clicking
+    the <strong>“Add School / Institution”</strong> button below.
+    <br><br>
+    Add each school <strong>one at a time</strong>. You can include high school, trade school,
+    colleges, or other training programs.
+  </div>
 
   <!-- ACTION BUTTON -->
   <div id="actionButtons" class="action-row">
@@ -84,7 +103,6 @@
 </div>
 
 <script>
-/* ===== STORAGE ===== */
 function getData() {
   return JSON.parse(localStorage.getItem("resumeData")) || {};
 }
@@ -92,7 +110,6 @@ function setData(data) {
   localStorage.setItem("resumeData", JSON.stringify(data));
 }
 
-/* ===== INIT ===== */
 window.onload = function () {
   const data = getData();
   data.education ||= [];
@@ -100,7 +117,6 @@ window.onload = function () {
   renderEducation();
 };
 
-/* ===== VIEW CONTROL ===== */
 function showEducationForm() {
   educationForm.style.display = "block";
   actionButtons.style.display = "none";
@@ -111,7 +127,6 @@ function cancelForm() {
   actionButtons.style.display = "flex";
 }
 
-/* ===== SAVE ===== */
 function saveEducation() {
   const entry = {
     school: schoolName.value.trim(),
@@ -137,7 +152,6 @@ function saveEducation() {
   renderEducation();
 }
 
-/* ===== RENDER ===== */
 function renderEducation() {
   const data = getData();
   educationList.innerHTML = "";
@@ -163,7 +177,6 @@ function deleteEducation(i) {
   renderEducation();
 }
 
-/* ===== NAV ===== */
 function goBack() {
   window.location.href = "certifications.html";
 }
