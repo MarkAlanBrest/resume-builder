@@ -33,44 +33,31 @@
 
   <h1 class="page-title">NCST’s Resume Builder</h1>
 
-  <!-- PROGRAM DISPLAY -->
-  <div class="program-box" id="programDisplay"></div>
+  <div id="programDisplay" class="program-box"></div>
 
-  <!-- PROGRAM CERTIFICATIONS -->
   <div class="system">
     The following certifications may be earned during your time at NCST.
-    <br>
-    <small>
-      Select the certifications you expect to achieve by your graduation date.
-    </small>
   </div>
 
   <div id="programCerts"></div>
 
-  <!-- OUTSIDE CERTIFICATIONS -->
-  <div class="system">
-    Certifications earned outside of school (optional)
-  </div>
+  <div class="system">Certifications earned outside of school (optional)</div>
   <textarea id="extraCerts"></textarea>
 
-  <!-- OUTSIDE SKILLS -->
-  <div class="system">
-    Skills learned outside of school or work experience (optional)
-  </div>
+  <div class="system">Skills learned outside of school or work experience (optional)</div>
   <textarea id="extraSkills"></textarea>
 
   <br>
 
-  <button type="button" onclick="goBack()">Back</button>
-  <button type="button" onclick="goNext()">Next</button>
+  <button onclick="goBack()">Back</button>
+  <button onclick="goNext()">Next</button>
 
 </div>
 
 <script>
-/* ===================== PROGRAM DATA ===================== */
+/* ===== PROGRAM CERT DATA ===== */
 const PROGRAM_CERTS = {
   welding: {
-    name: "Combination Welding",
     certifications: [
       "AWS D1.1 Structural Steel",
       "AWS D1.3 Sheet Metal",
@@ -78,10 +65,18 @@ const PROGRAM_CERTS = {
       "OSHA 10",
       "Hot Work Safety"
     ]
+  },
+
+  electrical: {
+    certifications: [
+      "OSHA 10",
+      "NFPA 70E",
+      "Electrical Safety Training"
+    ]
   }
 };
 
-/* ===================== STORAGE ===================== */
+/* ===== STORAGE ===== */
 function getData() {
   return JSON.parse(localStorage.getItem("resumeData")) || {};
 }
@@ -89,56 +84,38 @@ function setData(data) {
   localStorage.setItem("resumeData", JSON.stringify(data));
 }
 
-/* ===================== HELPERS ===================== */
-function inferProgramKey(programText) {
-  const s = programText.toLowerCase();
-  if (s.includes("welding")) return "welding";
-  return "";
-}
-
-/* ===================== LOAD ===================== */
+/* ===== LOAD ===== */
 window.onload = function () {
   const data = getData();
 
   data.certifications ||= {
-    programKey: "",
-    programName: "",
     programCertsSelected: [],
     extraCerts: "",
     extraSkills: ""
   };
 
-  const programText = data.student?.program || data.programCampus || "";
-  let programKey = data.certifications.programKey || inferProgramKey(programText);
+  const programKey = data.student?.programKey;
+  const programName = data.student?.programName;
 
   if (!PROGRAM_CERTS[programKey]) {
-    programKey = "welding"; // safe fallback
+    alert("Program certifications not found.");
+    return;
   }
 
-  const programData = PROGRAM_CERTS[programKey];
-
-  // Save program context
-  data.certifications.programKey = programKey;
-  data.certifications.programName = programText || programData.name;
-  setData(data);
-
-  // Display program
   document.getElementById("programDisplay").textContent =
-    `Program Selected: ${data.certifications.programName}`;
+    `Program Selected: ${programName}`;
 
-  // Restore textareas
   document.getElementById("extraCerts").value =
     data.certifications.extraCerts || "";
 
   document.getElementById("extraSkills").value =
     data.certifications.extraSkills || "";
 
-  // Build cert list
   const selected = data.certifications.programCertsSelected || [];
   const container = document.getElementById("programCerts");
   container.innerHTML = "";
 
-  programData.certifications.forEach((cert, i) => {
+  PROGRAM_CERTS[programKey].certifications.forEach((cert, i) => {
     const row = document.createElement("div");
     row.className = "check-row";
 
@@ -158,7 +135,7 @@ window.onload = function () {
   });
 };
 
-/* ===================== NAV ===================== */
+/* ===== NAV ===== */
 function goBack() {
   window.location.href = "work.html";
 }
