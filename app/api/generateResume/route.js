@@ -18,20 +18,17 @@ function clean(text) {
   if (!text) return "";
 
   return text
-    // Remove XML-breaking characters
-    .replace(/[<>&]/g, " ")
-    // Smart quotes
-    .replace(/[\u2018\u2019]/g, "'")
-    .replace(/[\u201C\u201D]/g, '"')
-    // Bullets
-    .replace(/\u2022/g, "-")
-    // Non-breaking spaces
-    .replace(/\u00A0/g, " ")
-    // Control characters
-    .replace(/[\u0000-\u001F]/g, " ")
-    // Trim
+    // Remove XML-breaking characters entirely
+    .replace(/[<>&'"]/g, " ")
+    // Remove any remaining non-ASCII characters
+    .replace(/[^\x20-\x7E]/g, " ")
+    // Remove control characters
+    .replace(/[\u0000-\u001F\u007F]/g, " ")
+    // Collapse multiple spaces
+    .replace(/\s+/g, " ")
     .trim();
 }
+
 
 
     // AI helper
