@@ -4,25 +4,46 @@
   <meta charset="UTF-8">
   <title>Work Experience</title>
   <link rel="stylesheet" href="style.css">
+
+  <style>
+    .page-title {
+      text-align: center;
+      color: #0b3c6d;
+      margin-bottom: 30px;
+      font-size: 28px;
+    }
+
+    .system {
+      color: #0b3c6d;
+      font-weight: 600;
+    }
+
+    .entry-card {
+      border: 1px solid #ccc;
+      padding: 12px;
+      margin-bottom: 12px;
+      background: #f9f9f9;
+    }
+
+    .action-btn {
+      margin-bottom: 15px;
+    }
+  </style>
 </head>
 <body>
 
 <div class="chat">
 
-  <div class="system">
-    Have you worked before?
-    <br><br>
-    Add each job one at a time. When finished, click <strong>Next</strong> to continue.
+  <h1 class="page-title">NCST’s Resume Builder</h1>
+
+  <!-- ACTION BUTTONS -->
+  <div id="actionButtons">
+    <button class="action-btn" onclick="showJobForm()">Enter Work History</button><br>
+    <button class="action-btn" onclick="showMilitaryForm()">Enter Military History</button>
   </div>
 
-  <select id="worked">
-    <option value="">-- Select --</option>
-    <option value="yes">Yes</option>
-    <option value="no">No</option>
-  </select>
-
-  <!-- JOB ENTRY -->
-  <div id="jobEntry" style="display:none;">
+  <!-- JOB FORM -->
+  <div id="jobForm" style="display:none;">
 
     <div class="system">Employer name</div>
     <input id="employer">
@@ -36,81 +57,48 @@
     <div class="system">End date (MM/YYYY or Present)</div>
     <input id="endDate">
 
-    <div class="system">
-      List tasks you performed
-      <br><br>
-      <strong>Important:</strong> Provide enough detail so this can be turned into
-      <strong>multiple resume bullet points</strong>.
-      <br>
-      Describe:
-      <ul>
-        <li>What you did on a regular basis</li>
-        <li>Tools, equipment, or systems you used</li>
-        <li>Responsibilities you were trusted with</li>
-        <li>Any accomplishments or improvements you contributed to</li>
-      </ul>
-      <strong>Example:</strong> Assisted with vehicle maintenance, used hand and power tools,
-      followed safety procedures, and worked as part of a team to complete daily tasks.
-    </div>
-
+    <div class="system">Tasks performed</div>
     <textarea id="tasks"></textarea>
 
-    <button type="button" onclick="addJob()">Add Another Job / Employment</button>
+    <button onclick="saveJob()">Save Job</button>
+    <button onclick="cancelForms()">Cancel</button>
 
   </div>
 
-  <!-- JOB LIST -->
-  <div id="jobList" style="display:none;">
-    <div class="system">Jobs Entered</div>
-    <ul id="jobs"></ul>
-  </div>
-
-  <!-- MILITARY SERVICE -->
-  <div class="system">
-    Have you served in the military? (optional)
-  </div>
-
-  <select id="military">
-    <option value="">-- Select --</option>
-    <option value="yes">Yes</option>
-    <option value="no">No</option>
-  </select>
-
-  <div id="militarySection" style="display:none;">
+  <!-- MILITARY FORM -->
+  <div id="militaryForm" style="display:none;">
 
     <div class="system">Branch and rank</div>
-    <input id="militaryRank" placeholder="Example: U.S. Army – Specialist (E-4)">
+    <input id="militaryRank">
 
     <div class="system">Duties performed</div>
     <textarea id="militaryDuties"></textarea>
 
-    <div class="system">Achievements, awards, or promotions</div>
+    <div class="system">Achievements or awards</div>
     <textarea id="militaryAchievements"></textarea>
 
-    <div class="system">Additional military-related comments (optional)</div>
+    <div class="system">Additional comments (optional)</div>
     <textarea id="militaryComments"></textarea>
 
+    <button onclick="saveMilitary()">Save Military Service</button>
+    <button onclick="cancelForms()">Cancel</button>
+
   </div>
 
-  <!-- OPTIONAL COMMENTS -->
-  <div class="system">
-    Additional comments or information (optional)
-    <br>
-    <strong>Examples:</strong> temporary work, internships, volunteer work,
-    gaps in employment, or anything else you want an employer to know.
-  </div>
+  <!-- SAVED JOBS -->
+  <div id="jobList"></div>
 
-  <textarea id="workComments"></textarea>
+  <!-- SAVED MILITARY -->
+  <div id="militaryList"></div>
 
   <br>
 
-  <button type="button" onclick="goBack()">Back</button>
-  <button type="button" onclick="goNext()">Next</button>
+  <button onclick="goBack()">Back</button>
+  <button onclick="goNext()">Next</button>
 
 </div>
 
 <script>
-/* ---------- STORAGE ---------- */
 function getData() {
   return JSON.parse(localStorage.getItem("resumeData")) || {};
 }
@@ -118,138 +106,141 @@ function setData(data) {
   localStorage.setItem("resumeData", JSON.stringify(data));
 }
 
-/* ---------- LOAD ---------- */
+/* ---------- INITIALIZE ---------- */
 window.onload = function () {
   const data = getData();
-  if (!Array.isArray(data.jobs)) data.jobs = [];
+  data.workExperience ||= [];
+  data.militaryService ||= [];
+  setData(data);
 
-  document.getElementById("worked").value = data.worked || "";
-  document.getElementById("workComments").value = data.workComments || "";
-
-  document.getElementById("military").value = data.military || "";
-  document.getElementById("militaryRank").value = data.militaryRank || "";
-  document.getElementById("militaryDuties").value = data.militaryDuties || "";
-  document.getElementById("militaryAchievements").value = data.militaryAchievements || "";
-  document.getElementById("militaryComments").value = data.militaryComments || "";
-
-  toggleWork();
-  toggleMilitary();
   renderJobs();
+  renderMilitary();
 };
 
-document.getElementById("worked").addEventListener("change", toggleWork);
-document.getElementById("military").addEventListener("change", toggleMilitary);
-
-function toggleWork() {
-  const worked = document.getElementById("worked").value;
-  document.getElementById("jobEntry").style.display = worked === "yes" ? "block" : "none";
-  document.getElementById("jobList").style.display = worked === "yes" ? "block" : "none";
+/* ---------- VIEW CONTROL ---------- */
+function hideAllForms() {
+  jobForm.style.display = "none";
+  militaryForm.style.display = "none";
+  actionButtons.style.display = "block";
 }
 
-function toggleMilitary() {
-  const military = document.getElementById("military").value;
-  document.getElementById("militarySection").style.display =
-    military === "yes" ? "block" : "none";
+function showJobForm() {
+  actionButtons.style.display = "none";
+  jobForm.style.display = "block";
 }
 
-/* ---------- JOB HANDLING ---------- */
-function addJob() {
-  const employer = employerVal();
-  const title = titleVal();
-  const start = startVal();
-  const end = endVal();
-  const tasks = tasksVal();
+function showMilitaryForm() {
+  actionButtons.style.display = "none";
+  militaryForm.style.display = "block";
+}
 
-  if (!employer || !title || !start || !end || tasks.length < 10) {
+function cancelForms() {
+  hideAllForms();
+}
+
+/* ---------- JOBS ---------- */
+function saveJob() {
+  const job = {
+    employer: employer.value.trim(),
+    title: title.value.trim(),
+    startDate: startDate.value.trim(),
+    endDate: endDate.value.trim(),
+    tasks: tasks.value.trim()
+  };
+
+  if (!job.employer || !job.title || !job.startDate || !job.endDate || job.tasks.length < 10) {
     alert("Please complete all job fields with enough detail.");
     return;
   }
 
   const data = getData();
-  if (!Array.isArray(data.jobs)) data.jobs = [];
-
-  data.jobs.push({ employer, title, start, end, tasks });
+  data.workExperience.push(job);
   setData(data);
 
-  clearInputs();
+  employer.value = title.value = startDate.value = endDate.value = tasks.value = "";
+  hideAllForms();
   renderJobs();
 }
 
 function renderJobs() {
   const data = getData();
-  const list = document.getElementById("jobs");
-  list.innerHTML = "";
+  jobList.innerHTML = "";
 
-  (data.jobs || []).forEach((job, index) => {
-    const li = document.createElement("li");
-    li.innerHTML = `
-      <strong>${job.title}</strong> – ${job.employer}
-      (${job.start} to ${job.end})
-      <br>
-      ${job.tasks}
-      <br>
-      <button type="button" onclick="deleteJob(${index})">Delete</button>
+  data.workExperience.forEach((job, i) => {
+    const div = document.createElement("div");
+    div.className = "entry-card";
+    div.innerHTML = `
+      <strong>${job.title}</strong> – ${job.employer}<br>
+      ${job.startDate} to ${job.endDate}<br>
+      ${job.tasks}<br>
+      <button onclick="deleteJob(${i})">Delete</button>
     `;
-    list.appendChild(li);
+    jobList.appendChild(div);
   });
 }
 
-function deleteJob(index) {
+function deleteJob(i) {
   const data = getData();
-  data.jobs.splice(index, 1);
+  data.workExperience.splice(i, 1);
   setData(data);
   renderJobs();
 }
 
-/* ---------- HELPERS ---------- */
-function employerVal() { return document.getElementById("employer").value.trim(); }
-function titleVal() { return document.getElementById("title").value.trim(); }
-function startVal() { return document.getElementById("startDate").value.trim(); }
-function endVal() { return document.getElementById("endDate").value.trim(); }
-function tasksVal() { return document.getElementById("tasks").value.trim(); }
+/* ---------- MILITARY ---------- */
+function saveMilitary() {
+  const entry = {
+    branchRank: militaryRank.value.trim(),
+    duties: militaryDuties.value.trim(),
+    achievements: militaryAchievements.value.trim(),
+    comments: militaryComments.value.trim()
+  };
 
-function clearInputs() {
-  employer.value = "";
-  title.value = "";
-  startDate.value = "";
-  endDate.value = "";
-  tasks.value = "";
+  if (!entry.branchRank || !entry.duties) {
+    alert("Please enter branch/rank and duties.");
+    return;
+  }
+
+  const data = getData();
+  data.militaryService.push(entry);
+  setData(data);
+
+  militaryRank.value = militaryDuties.value =
+    militaryAchievements.value = militaryComments.value = "";
+
+  hideAllForms();
+  renderMilitary();
+}
+
+function renderMilitary() {
+  const data = getData();
+  militaryList.innerHTML = "";
+
+  data.militaryService.forEach((m, i) => {
+    const div = document.createElement("div");
+    div.className = "entry-card";
+    div.innerHTML = `
+      <strong>${m.branchRank}</strong><br>
+      ${m.duties}<br>
+      ${m.achievements}<br>
+      <button onclick="deleteMilitary(${i})">Delete</button>
+    `;
+    militaryList.appendChild(div);
+  });
+}
+
+function deleteMilitary(i) {
+  const data = getData();
+  data.militaryService.splice(i, 1);
+  setData(data);
+  renderMilitary();
 }
 
 /* ---------- NAV ---------- */
-function saveOnly() {
-  const data = getData();
-  data.worked = document.getElementById("worked").value;
-  data.workComments = document.getElementById("workComments").value.trim();
-
-  data.military = document.getElementById("military").value;
-  data.militaryRank = document.getElementById("militaryRank").value.trim();
-  data.militaryDuties = document.getElementById("militaryDuties").value.trim();
-  data.militaryAchievements = document.getElementById("militaryAchievements").value.trim();
-  data.militaryComments = document.getElementById("militaryComments").value.trim();
-
-  setData(data);
-}
-
 function goBack() {
   window.location.href = "objective.html";
 }
 
 function goNext() {
-  const worked = document.getElementById("worked").value;
-  const data = getData();
-
-  if (!worked) {
-    alert("Please indicate whether you have worked before.");
-    return;
-  }
-
-  if (worked === "yes" && (!data.jobs || data.jobs.length === 0)) {
-    alert("Please add at least one job or change your selection to No.");
-    return;
-  }
-
-  saveOnly();
   window.location.href = "certifications.html";
 }
 </script>
