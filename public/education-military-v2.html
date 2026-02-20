@@ -2,63 +2,89 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <title>Education History</title>
+  <title>Education</title>
   <link rel="stylesheet" href="style.css">
+
+  <style>
+    .page-title {
+      text-align: center;
+      color: #0b3c6d;
+      margin-bottom: 30px;
+      font-size: 28px;
+    }
+
+    .system {
+      color: #0b3c6d;
+      font-weight: 600;
+    }
+
+    .entry-card {
+      border: 1px solid #ccc;
+      padding: 12px;
+      margin-bottom: 12px;
+      background: #f9f9f9;
+    }
+
+    .action-row {
+      display: flex;
+      gap: 15px;
+      margin-bottom: 20px;
+    }
+
+    .action-btn {
+      flex: 1;
+      padding: 14px;
+      font-size: 16px;
+      cursor: pointer;
+    }
+  </style>
 </head>
 <body>
 
 <div class="chat">
 
-  <div class="system">
-    List any education completed outside of your New Castle School of Trades program.
-    <br><br>
-    <strong>Important:</strong> You are responsible for ensuring the accuracy of
-    your GPA and attendance information. This information may be updated on your final
-    resume at a later date. For now, enter your most current information.
+  <h1 class="page-title">NCST’s Resume Builder</h1>
+
+  <!-- ACTION BUTTON -->
+  <div id="actionButtons" class="action-row">
+    <button class="action-btn" onclick="showEducationForm()">Add School / Institution</button>
   </div>
 
-  <!-- GPA / ATTENDANCE (REQUIRED) -->
-  <div class="system">Current GPA <strong>(required)</strong></div>
-  <input id="gpa" placeholder="Example: 3.5">
-
-  <div class="system">Current Attendance Percentage <strong>(required)</strong></div>
-  <input id="attendance" placeholder="Example: 96%">
-
-  <hr>
-
-  <!-- EDUCATION ENTRY -->
-  <div class="system">Education History (Outside of NCST)</div>
-
-  <div id="eduEntry">
+  <!-- EDUCATION FORM -->
+  <div id="educationForm" style="display:none;">
 
     <div class="system">School or Institution Name</div>
-    <input id="school">
+    <input id="schoolName">
 
-    <div class="system">Credential Earned</div>
-    <input id="credential" placeholder="Diploma, GED, Degree, Certificate">
+    <div class="system">Program / Degree / Certificate</div>
+    <input id="programName">
 
-    <div class="system">Completion Year</div>
-    <input id="year" placeholder="YYYY">
+    <div class="system">Start Date (MM/YYYY)</div>
+    <input id="eduStartDate">
 
-    <button type="button" onclick="addEducation()">Add Another Education</button>
+    <div class="system">End Date (MM/YYYY or Expected)</div>
+    <input id="eduEndDate">
+
+    <div class="system">Notes (optional)</div>
+    <textarea id="eduNotes"></textarea>
+
+    <button onclick="saveEducation()">Save Education</button>
+    <button onclick="cancelForm()">Cancel</button>
 
   </div>
 
   <!-- EDUCATION LIST -->
-  <div id="eduList">
-    <div class="system">Education Entered</div>
-    <ul id="education"></ul>
-  </div>
+  <div id="educationList"></div>
 
   <br>
 
-  <button type="button" onclick="goBack()">Back</button>
-  <button type="button" onclick="goNext()">Next</button>
+  <button onclick="goBack()">Back</button>
+  <button onclick="goNext()">Next</button>
 
 </div>
 
 <script>
-/* ---------- STORAGE ---------- */
+/* ===== STORAGE ===== */
 function getData() {
   return JSON.parse(localStorage.getItem("resumeData")) || {};
 }
@@ -66,98 +92,86 @@ function setData(data) {
   localStorage.setItem("resumeData", JSON.stringify(data));
 }
 
-/* ---------- LOAD ---------- */
+/* ===== INIT ===== */
 window.onload = function () {
   const data = getData();
-  if (!Array.isArray(data.education)) data.education = [];
-
-  document.getElementById("gpa").value = data.gpa || "";
-  document.getElementById("attendance").value = data.attendance || "";
-
+  data.education ||= [];
+  setData(data);
   renderEducation();
 };
 
-/* ---------- EDUCATION HANDLING ---------- */
-function addEducation() {
-  const school = document.getElementById("school").value.trim();
-  const credential = document.getElementById("credential").value.trim();
-  const year = document.getElementById("year").value.trim();
+/* ===== VIEW CONTROL ===== */
+function showEducationForm() {
+  educationForm.style.display = "block";
+  actionButtons.style.display = "none";
+}
 
-  if (!school || !credential || !year) {
-    alert("Please complete all education fields.");
+function cancelForm() {
+  educationForm.style.display = "none";
+  actionButtons.style.display = "flex";
+}
+
+/* ===== SAVE ===== */
+function saveEducation() {
+  const entry = {
+    school: schoolName.value.trim(),
+    program: programName.value.trim(),
+    startDate: eduStartDate.value.trim(),
+    endDate: eduEndDate.value.trim(),
+    notes: eduNotes.value.trim()
+  };
+
+  if (!entry.school || !entry.program || !entry.startDate || !entry.endDate) {
+    alert("Please complete all required education fields.");
     return;
   }
 
   const data = getData();
-  if (!Array.isArray(data.education)) data.education = [];
-
-  data.education.push({ school, credential, year });
+  data.education.push(entry);
   setData(data);
 
-  document.getElementById("school").value = "";
-  document.getElementById("credential").value = "";
-  document.getElementById("year").value = "";
+  schoolName.value = programName.value =
+    eduStartDate.value = eduEndDate.value = eduNotes.value = "";
 
+  cancelForm();
   renderEducation();
 }
 
+/* ===== RENDER ===== */
 function renderEducation() {
   const data = getData();
-  const list = document.getElementById("education");
-  list.innerHTML = "";
+  educationList.innerHTML = "";
 
-  (data.education || []).forEach((edu, index) => {
-    const li = document.createElement("li");
-    li.innerHTML = `
-      <strong>${edu.credential}</strong> – ${edu.school} (${edu.year})
-      <br>
-      <button type="button" onclick="deleteEducation(${index})">Delete</button>
+  data.education.forEach((edu, i) => {
+    const div = document.createElement("div");
+    div.className = "entry-card";
+    div.innerHTML = `
+      <strong>${edu.program}</strong><br>
+      ${edu.school}<br>
+      ${edu.startDate} – ${edu.endDate}<br>
+      ${edu.notes ? edu.notes + "<br>" : ""}
+      <button onclick="deleteEducation(${i})">Delete</button>
     `;
-    list.appendChild(li);
+    educationList.appendChild(div);
   });
 }
 
-function deleteEducation(index) {
+function deleteEducation(i) {
   const data = getData();
-  data.education.splice(index, 1);
+  data.education.splice(i, 1);
   setData(data);
   renderEducation();
 }
 
-/* ---------- SAVE ---------- */
-function saveOnly() {
-  const data = getData();
-
-  data.gpa = document.getElementById("gpa").value.trim();
-  data.attendance = document.getElementById("attendance").value.trim();
-
-  setData(data);
-}
-
-/* ---------- NAV ---------- */
+/* ===== NAV ===== */
 function goBack() {
   window.location.href = "certifications.html";
 }
 
 function goNext() {
-  const gpa = document.getElementById("gpa").value.trim();
-  const attendance = document.getElementById("attendance").value.trim();
-
-  if (!gpa) {
-    alert("GPA is required.");
-    return;
-  }
-
-  if (!attendance) {
-    alert("Attendance percentage is required.");
-    return;
-  }
-
-  saveOnly();
-  window.location.href = "/finalize";
+  window.location.href = "finalize.html";
 }
 </script>
 
 </body>
 </html>
- 
