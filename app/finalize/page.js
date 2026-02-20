@@ -3,23 +3,52 @@ import { useState } from "react";
 
 export default function FinalizePage() {
   const [confirmed, setConfirmed] = useState(false);
+  const [loading, setLoading] = useState(false);
 
   async function generateResume() {
     if (!confirmed) return;
 
+    setLoading(true);
+
     const data = JSON.parse(localStorage.getItem("resumeData")) || {};
 
-    await fetch("/api/generateResume", {
+    const res = await fetch("/api/generateResume", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ TEMPLATE: "Template", student: data })
+      body: JSON.stringify({
+        TEMPLATE: "Template",
+        student: data
+      })
     });
+
+    if (!res.ok) {
+      alert("Failed");
+      setLoading(false);
+      return;
+    }
+
+    setLoading(false);
+    alert("API HIT OK");
   }
 
   return (
-    <>
-      <input type="checkbox" onChange={e => setConfirmed(e.target.checked)} />
-      <button onClick={generateResume}>Download</button>
-    </>
+    <div style={{ padding: 40 }}>
+      <h1>Finalize Resume</h1>
+
+      <label>
+        <input
+          type="checkbox"
+          checked={confirmed}
+          onChange={e => setConfirmed(e.target.checked)}
+        />
+        Confirm
+      </label>
+
+      <br /><br />
+
+      <button onClick={generateResume} disabled={!confirmed || loading}>
+        {loading ? "Generating..." : "Generate"}
+      </button>
+    </div>
   );
 }
