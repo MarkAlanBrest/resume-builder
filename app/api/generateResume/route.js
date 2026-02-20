@@ -13,6 +13,18 @@ export async function POST(req) {
   try {
     const body = await req.json();
 
+    // Clean AI output so Word doesn't break
+    function clean(text) {
+      if (!text) return "";
+      return text
+        .replace(/[\u2018\u2019]/g, "'")      // smart single quotes
+        .replace(/[\u201C\u201D]/g, '"')      // smart double quotes
+        .replace(/\u2022/g, "-")              // bullet points
+        .replace(/\u00A0/g, " ")              // non-breaking spaces
+        .replace(/[\u0000-\u001F]/g, " ")     // control chars
+        .trim();
+    }
+
     // AI helper
     async function polish(text) {
       if (!text || text.trim() === "") return "";
@@ -22,21 +34,22 @@ export async function POST(req) {
           {
             role: "system",
             content:
-              "Rewrite the text to be professional, concise, resume-ready, and error-free."
+              "Rewrite the text to be professional, concise, resume-ready, and error-free. Do NOT use bullets, special characters, or fancy formatting."
           },
           { role: "user", content: text }
         ]
       });
-      return response.choices[0].message.content.trim();
+
+      return clean(response.choices[0].message.content);
     }
 
     // AI‑enhanced fields
     const polished = {
-      NAME: body.NAME,
-      EMAIL: body.EMAIL,
-      PHONE: body.PHONE,
-      ADDRESS: body.ADDRESS,
-      LOCATION: body.LOCATION,
+      NAME: clean(body.NAME),
+      EMAIL: clean(body.EMAIL),
+      PHONE: clean(body.PHONE),
+      ADDRESS: clean(body.ADDRESS),
+      LOCATION: clean(body.LOCATION),
       PROFESSIONAL_SUMMARY: await polish(body.PROFESSIONAL_SUMMARY),
       SKILLS: await polish(body.SKILLS),
       EXPERIENCE: await polish(body.EXPERIENCE),
@@ -80,6 +93,9 @@ export async function POST(req) {
     });
   } catch (err) {
     console.error("RESUME GENERATION ERROR:", err);
-    return NextResponse.json({ error: "Failed to generate resume" }, { status: 500 });
+    return NextResponse.json(
+      { error: "Failed to generate resume" },
+      { status: 500 }
+    );
   }
 }
