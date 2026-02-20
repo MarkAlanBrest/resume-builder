@@ -4,23 +4,44 @@
   <meta charset="UTF-8">
   <title>Certifications and Skills</title>
   <link rel="stylesheet" href="style.css">
+
+  <style>
+    .page-title {
+      text-align: center;
+      color: #0b3c6d;
+      margin-bottom: 30px;
+      font-size: 28px;
+    }
+
+    .system {
+      color: #0b3c6d;
+      font-weight: 600;
+    }
+
+    .program-box {
+      background: #f1f6fb;
+      border: 1px solid #c9d9ea;
+      padding: 12px;
+      margin-bottom: 20px;
+      font-weight: bold;
+    }
+  </style>
 </head>
 <body>
 
 <div class="chat">
 
-  <!-- DEGREE / DIPLOMA DISPLAY -->
-  <div id="degreeIntro" class="system"></div>
+  <h1 class="page-title">NCST’s Resume Builder</h1>
 
-  <div id="programCredential" style="font-size:1.2em; font-weight:bold; margin-bottom:20px;"></div>
+  <!-- PROGRAM DISPLAY -->
+  <div class="program-box" id="programDisplay"></div>
 
   <!-- PROGRAM CERTIFICATIONS -->
   <div class="system">
-    Certifications available through your program
+    The following certifications may be earned during your time at NCST.
     <br>
     <small>
-      Select the certifications you believe you will achieve by your graduation date.
-      You can change this later.
+      Select the certifications you expect to achieve by your graduation date.
     </small>
   </div>
 
@@ -46,10 +67,10 @@
 </div>
 
 <script>
-/* ===================== INLINE PROGRAM DATA (WORKING) ===================== */
+/* ===================== PROGRAM DATA ===================== */
 const PROGRAM_CERTS = {
   welding: {
-    credential: "Associate in Specialized Technology Degree",
+    name: "Combination Welding",
     certifications: [
       "AWS D1.1 Structural Steel",
       "AWS D1.3 Sheet Metal",
@@ -68,30 +89,54 @@ function setData(data) {
   localStorage.setItem("resumeData", JSON.stringify(data));
 }
 
+/* ===================== HELPERS ===================== */
+function inferProgramKey(programText) {
+  const s = programText.toLowerCase();
+  if (s.includes("welding")) return "welding";
+  return "";
+}
+
 /* ===================== LOAD ===================== */
 window.onload = function () {
   const data = getData();
 
-  // TEMP: force program key (replace later with real mapping)
-  const programKey = data.programKey || "welding";
-  data.programKey = programKey;
-  setData(data);
+  data.certifications ||= {
+    programKey: "",
+    programName: "",
+    programCertsSelected: [],
+    extraCerts: "",
+    extraSkills: ""
+  };
+
+  const programText = data.student?.program || data.programCampus || "";
+  let programKey = data.certifications.programKey || inferProgramKey(programText);
+
+  if (!PROGRAM_CERTS[programKey]) {
+    programKey = "welding"; // safe fallback
+  }
 
   const programData = PROGRAM_CERTS[programKey];
 
-  const studentName = data.name || "Student";
+  // Save program context
+  data.certifications.programKey = programKey;
+  data.certifications.programName = programText || programData.name;
+  setData(data);
 
-  // Intro text
-  document.getElementById("degreeIntro").innerHTML =
-    `<strong>${studentName}</strong>, you are working toward the following credential:`;
+  // Display program
+  document.getElementById("programDisplay").textContent =
+    `Program Selected: ${data.certifications.programName}`;
 
-  // Degree display
-  document.getElementById("programCredential").textContent =
-    programData.credential;
+  // Restore textareas
+  document.getElementById("extraCerts").value =
+    data.certifications.extraCerts || "";
 
-  // Build certification checkboxes
-  const certContainer = document.getElementById("programCerts");
-  certContainer.innerHTML = "";
+  document.getElementById("extraSkills").value =
+    data.certifications.extraSkills || "";
+
+  // Build cert list
+  const selected = data.certifications.programCertsSelected || [];
+  const container = document.getElementById("programCerts");
+  container.innerHTML = "";
 
   programData.certifications.forEach((cert, i) => {
     const row = document.createElement("div");
@@ -101,6 +146,7 @@ window.onload = function () {
     cb.type = "checkbox";
     cb.id = "cert" + i;
     cb.value = cert;
+    cb.checked = selected.includes(cert);
 
     const label = document.createElement("label");
     label.htmlFor = cb.id;
@@ -108,7 +154,7 @@ window.onload = function () {
 
     row.appendChild(cb);
     row.appendChild(label);
-    certContainer.appendChild(row);
+    container.appendChild(row);
   });
 };
 
@@ -120,12 +166,15 @@ function goBack() {
 function goNext() {
   const data = getData();
 
-  data.programCertsSelected = Array.from(
+  data.certifications.programCertsSelected = Array.from(
     document.querySelectorAll("#programCerts input:checked")
   ).map(cb => cb.value);
 
-  data.extraCerts = document.getElementById("extraCerts").value.trim();
-  data.extraSkills = document.getElementById("extraSkills").value.trim();
+  data.certifications.extraCerts =
+    document.getElementById("extraCerts").value.trim();
+
+  data.certifications.extraSkills =
+    document.getElementById("extraSkills").value.trim();
 
   setData(data);
   window.location.href = "education-military-v2.html";
