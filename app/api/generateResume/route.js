@@ -14,39 +14,45 @@ export async function POST(req) {
     const body = await req.json();
 
     // Clean AI output so Word doesn't break
-function clean(text) {
-  if (!text) return "";
+    function clean(text) {
+      if (!text) return "";
 
-  return text
-    // Remove XML-breaking characters entirely
-    .replace(/[<>&'"]/g, " ")
-    // Remove any remaining non-ASCII characters
-    .replace(/[^\x20-\x7E]/g, " ")
-    // Remove control characters
-    .replace(/[\u0000-\u001F\u007F]/g, " ")
-    // Collapse multiple spaces
-    .replace(/\s+/g, " ")
-    .trim();
-}
-
-
+      return text
+        // Remove XML-breaking characters entirely
+        .replace(/[<>&'"]/g, " ")
+        // Remove any remaining non-ASCII characters
+        .replace(/[^\x20-\x7E]/g, " ")
+        // Remove control characters
+        .replace(/[\u0000-\u001F\u007F]/g, " ")
+        // Collapse multiple spaces
+        .replace(/\s+/g, " ")
+        .trim();
+    }
 
     // AI helper
     async function polish(text) {
       if (!text || text.trim() === "") return "";
-      const response = await client.chat.completions.create({
-        model: "gpt-4o-mini",
-        messages: [
-          {
-            role: "system",
-            content:
-              "Rewrite the text to be professional, concise, resume-ready, and error-free. Do NOT use bullets, special characters, or fancy formatting."
-          },
-          { role: "user", content: text }
-        ]
-      });
 
-      return clean(response.choices[0].message.content);
+      try {
+        const response = await client.chat.completions.create({
+          model: "gpt-4o-mini",
+          messages: [
+            {
+              role: "system",
+              content:
+                "Rewrite the text to be professional, concise, and resume-ready. Use plain ASCII only."
+            },
+            { role: "user", content: text }
+          ]
+        });
+
+        const output = response.choices?.[0]?.message?.content || "";
+        return clean(output);
+
+      } catch (err) {
+        console.error("AI ERROR:", err);
+        return ""; // prevents DOCX corruption
+      }
     }
 
     // AI‑enhanced fields
@@ -97,6 +103,7 @@ function clean(text) {
         "Content-Disposition": "attachment; filename=resume.docx"
       }
     });
+
   } catch (err) {
     console.error("RESUME GENERATION ERROR:", err);
     return NextResponse.json(
