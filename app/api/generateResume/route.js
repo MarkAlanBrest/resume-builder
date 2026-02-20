@@ -1,4 +1,3 @@
-import { NextResponse } from "next/server";
 import path from "path";
 import fs from "fs";
 import PizZip from "pizzip";
@@ -13,23 +12,16 @@ export async function POST(req) {
   try {
     const body = await req.json();
 
-    // Clean AI output so Word doesn't break
+    /* ---------- SAFE TEXT CLEANER ---------- */
     function clean(text) {
       if (!text) return "";
-
-      return text
-        // Remove XML-breaking characters entirely
-        .replace(/[<>&'"]/g, " ")
-        // Remove any remaining non-ASCII characters
-        .replace(/[^\x20-\x7E]/g, " ")
-        // Remove control characters
-        .replace(/[\u0000-\u001F\u007F]/g, " ")
-        // Collapse multiple spaces
+      return String(text)
+        .replace(/[\u0000-\u001F\u007F]/g, " ") // control chars only
         .replace(/\s+/g, " ")
         .trim();
     }
 
-    // AI helper
+    /* ---------- AI POLISHER ---------- */
     async function polish(text) {
       if (!text || text.trim() === "") return "";
 
@@ -40,23 +32,23 @@ export async function POST(req) {
             {
               role: "system",
               content:
-                "Rewrite the text to be professional, concise, and resume-ready. Use plain ASCII only."
+                "Rewrite the text to be professional, concise, and resume-ready."
             },
             { role: "user", content: text }
-          ]
+          ],
+          temperature: 0.4
         });
 
         const output = response.choices?.[0]?.message?.content || "";
         return clean(output);
-
       } catch (err) {
         console.error("AI ERROR:", err);
-        return ""; // prevents DOCX corruption
+        return "";
       }
     }
 
-    // AI‑enhanced fields
-    const polished = {
+    /* ---------- DATA ---------- */
+    const data = {
       NAME: clean(body.NAME),
       EMAIL: clean(body.EMAIL),
       PHONE: clean(body.PHONE),
@@ -71,8 +63,8 @@ export async function POST(req) {
       GENERAL_NOTES: await polish(body.GENERAL_NOTES)
     };
 
-    // Template selection
-    const templateFile = body.TEMPLATE + ".docx";
+    /* ---------- TEMPLATE ---------- */
+    const templateFile = `${body.TEMPLATE}.docx`;
     const templatePath = path.join(
       process.cwd(),
       "public",
@@ -82,12 +74,13 @@ export async function POST(req) {
 
     const content = fs.readFileSync(templatePath, "binary");
     const zip = new PizZip(content);
+
     const doc = new Docxtemplater(zip, {
       paragraphLoop: true,
       linebreaks: true
     });
 
-    doc.setData(polished);
+    doc.setData(data);
     doc.render();
 
     const buffer = doc.getZip().generate({
@@ -95,19 +88,22 @@ export async function POST(req) {
       compression: "DEFLATE"
     });
 
-    return new NextResponse(buffer, {
+    /* ---------- RETURN DOCX (CRITICAL FIX) ---------- */
+    return new Response(new Uint8Array(buffer), {
       status: 200,
       headers: {
         "Content-Type":
           "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
-        "Content-Disposition": "attachment; filename=resume.docx"
+        "Content-Disposition": "attachment; filename=resume.docx",
+        "Content-Length": buffer.length.toString(),
+        "Cache-Control": "no-store"
       }
     });
 
   } catch (err) {
     console.error("RESUME GENERATION ERROR:", err);
-    return NextResponse.json(
-      { error: "Failed to generate resume" },
+    return new Response(
+      JSON.stringify({ error: "Failed to generate resume" }),
       { status: 500 }
     );
   }
