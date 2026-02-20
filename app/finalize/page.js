@@ -10,20 +10,43 @@ export default function FinalizePage() {
 
     setLoading(true);
 
-    const data = JSON.parse(localStorage.getItem("resumeData")) || {};
+    const d = JSON.parse(localStorage.getItem("resumeData")) || {};
+
+    const payload = {
+      TEMPLATE: "Template",
+
+      student: {
+        name: d.name || "",
+        email: d.email || "",
+        phone: d.phone || "",
+        address: d.address || "",
+        city: d.city || "",
+        state: d.state || "",
+        zip: d.zip || "",
+        programCampus: d.programCampus || "",
+        graduationDate: d.grad || ""
+      },
+
+      workExperience: d.jobs || [],
+      militaryService: d.militaryService || [],
+      education: d.education || [],
+
+      certifications: {
+        programCerts: d.programCertsSelected || [],
+        extraCerts: d.extraCerts || "",
+        extraSkills: d.extraSkills || ""
+      }
+    };
 
     const res = await fetch("/api/generateResume", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({
-        TEMPLATE: "Template",
-        student: data
-      })
+      body: JSON.stringify(payload)
     });
 
     if (!res.ok) {
-      setLoading(false);
       alert("Resume generation failed");
+      setLoading(false);
       return;
     }
 
