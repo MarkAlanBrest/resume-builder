@@ -8,69 +8,43 @@ export default function FinalizePage() {
   const [confirmed, setConfirmed] = useState(false);
 
   async function generateResume() {
-    if (!confirmed || loading) return;
+    if (!confirmed) return;
 
     setLoading(true);
 
-    try {
-      const data = JSON.parse(localStorage.getItem("resumeData")) || {};
+    const data = JSON.parse(localStorage.getItem("resumeData")) || {};
 
-      const payload = {
-        TEMPLATE: selectedTemplate,
-        NAME: data.name || "",
-        EMAIL: data.email || "",
-        PHONE: data.phone || "",
-        ADDRESS: data.address || "",
-        LOCATION: `${data.city || ""}, ${data.state || ""}`,
-        PROFESSIONAL_SUMMARY: data.objective || "",
-        SKILLS: data.skills || "",
-        EXPERIENCE: data.experience || "",
-        EDUCATION: data.education || "",
-        PROGRAM_CERTIFICATIONS: data.programCertsSelected || "",
-        OUTSIDE_CERTIFICATIONS: data.extraCerts || "",
-        GENERAL_NOTES: data.generalNotes || ""
-      };
+    const payload = {
+      TEMPLATE: selectedTemplate,
+      NAME: data.name || "",
+      EMAIL: data.email || "",
+      PHONE: data.phone || "",
+      ADDRESS: data.address || "",
+      LOCATION: `${data.city || ""}, ${data.state || ""}`,
+      PROFESSIONAL_SUMMARY: data.objective || "",
+      SKILLS: data.skills || "",
+      EXPERIENCE: data.experience || "",
+      EDUCATION: data.education || "",
+      PROGRAM_CERTIFICATIONS: data.programCertsSelected || "",
+      OUTSIDE_CERTIFICATIONS: data.extraCerts || "",
+      GENERAL_NOTES: data.generalNotes || ""
+    };
 
-      const res = await fetch("/api/generateResume", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(payload)
-      });
+    const res = await fetch("/api/generateResume", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(payload)
+    });
 
-      // 🔴 CRITICAL GUARD — prevents 1 KB corrupt downloads
-      if (!res.ok) {
-        const text = await res.text();
-        console.error("API ERROR:", text);
-        alert("Resume generation failed. Check logs.");
-        setLoading(false);
-        return;
-      }
+    const blob = await res.blob();
+    const url = window.URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = "resume.docx";
+    a.click();
+    window.URL.revokeObjectURL(url);
 
-      const blob = await res.blob();
-
-      // Extra safety check
-      if (blob.size < 10_000) {
-        console.error("Downloaded file too small:", blob.size);
-        alert("Resume generation failed (invalid file).");
-        setLoading(false);
-        return;
-      }
-
-      const url = window.URL.createObjectURL(blob);
-      const a = document.createElement("a");
-      a.href = url;
-      a.download = "resume.docx";
-      document.body.appendChild(a);
-      a.click();
-      a.remove();
-      window.URL.revokeObjectURL(url);
-
-    } catch (err) {
-      console.error("FRONTEND ERROR:", err);
-      alert("Unexpected error generating resume.");
-    } finally {
-      setLoading(false);
-    }
+    setLoading(false);
   }
 
   return (
@@ -126,7 +100,7 @@ export default function FinalizePage() {
         {loading ? "Generating..." : "Download Resume"}
       </button>
 
-      {/* Loading Message */}
+      {/* Red Loading Message */}
       {loading && (
         <p style={{ color: "red", marginTop: "15px" }}>
           Your resume is being generated…
