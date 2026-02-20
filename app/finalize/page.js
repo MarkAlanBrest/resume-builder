@@ -22,13 +22,20 @@ export default function FinalizePage() {
     });
 
     if (!res.ok) {
-      alert("Failed");
       setLoading(false);
+      alert("Resume generation failed");
       return;
     }
 
+    const blob = await res.blob();
+    const url = window.URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = "resume.docx";
+    a.click();
+    window.URL.revokeObjectURL(url);
+
     setLoading(false);
-    alert("API HIT OK");
   }
 
   return (
@@ -39,15 +46,15 @@ export default function FinalizePage() {
         <input
           type="checkbox"
           checked={confirmed}
-          onChange={e => setConfirmed(e.target.checked)}
+          onChange={(e) => setConfirmed(e.target.checked)}
         />
-        Confirm
+        I confirm my resume information is correct
       </label>
 
       <br /><br />
 
       <button onClick={generateResume} disabled={!confirmed || loading}>
-        {loading ? "Generating..." : "Generate"}
+        {loading ? "Generating..." : "Download Resume"}
       </button>
     </div>
   );

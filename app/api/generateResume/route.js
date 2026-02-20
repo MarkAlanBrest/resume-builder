@@ -15,12 +15,20 @@ export async function POST(req) {
 
   const content = fs.readFileSync(templatePath, "binary");
   const zip = new PizZip(content);
-  const doc = new Docxtemplater(zip, { paragraphLoop: true });
 
+  const doc = new Docxtemplater(zip, {
+    paragraphLoop: true,
+    linebreaks: true
+  });
+
+  // IMPORTANT: this matches your current finalize payload
   doc.setData(body.student || {});
   doc.render();
 
-  const buffer = doc.getZip().generate({ type: "nodebuffer" });
+  const buffer = doc.getZip().generate({
+    type: "nodebuffer",
+    compression: "DEFLATE"
+  });
 
   return new Response(buffer, {
     status: 200,
