@@ -58,6 +58,7 @@
 /* ===== PROGRAM CERT DATA ===== */
 const PROGRAM_CERTS = {
   welding: {
+    name: "Combination Welding",
     certifications: [
       "AWS D1.1 Structural Steel",
       "AWS D1.3 Sheet Metal",
@@ -66,8 +67,8 @@ const PROGRAM_CERTS = {
       "Hot Work Safety"
     ]
   },
-
   electrical: {
+    name: "Electrical Technology",
     certifications: [
       "OSHA 10",
       "NFPA 70E",
@@ -84,6 +85,29 @@ function setData(data) {
   localStorage.setItem("resumeData", JSON.stringify(data));
 }
 
+/* ===== PROGRAM KEY FALLBACK ===== */
+function resolveProgram(data) {
+  // 1️⃣ Preferred: explicit key
+  if (data.student?.programKey && PROGRAM_CERTS[data.student.programKey]) {
+    return {
+      key: data.student.programKey,
+      name: data.student.programName
+    };
+  }
+
+  // 2️⃣ Fallback: infer from programCampus text (safe, minimal)
+  const text = (data.programCampus || "").toLowerCase();
+  if (text.includes("welding")) {
+    return { key: "welding", name: data.programCampus };
+  }
+  if (text.includes("electrical")) {
+    return { key: "electrical", name: data.programCampus };
+  }
+
+  // 3️⃣ Final fallback
+  return { key: "welding", name: "Combination Welding" };
+}
+
 /* ===== LOAD ===== */
 window.onload = function () {
   const data = getData();
@@ -94,16 +118,10 @@ window.onload = function () {
     extraSkills: ""
   };
 
-  const programKey = data.student?.programKey;
-  const programName = data.student?.programName;
-
-  if (!PROGRAM_CERTS[programKey]) {
-    alert("Program certifications not found.");
-    return;
-  }
+  const program = resolveProgram(data);
 
   document.getElementById("programDisplay").textContent =
-    `Program Selected: ${programName}`;
+    `Program Selected: ${program.name}`;
 
   document.getElementById("extraCerts").value =
     data.certifications.extraCerts || "";
@@ -115,7 +133,7 @@ window.onload = function () {
   const container = document.getElementById("programCerts");
   container.innerHTML = "";
 
-  PROGRAM_CERTS[programKey].certifications.forEach((cert, i) => {
+  PROGRAM_CERTS[program.key].certifications.forEach((cert, i) => {
     const row = document.createElement("div");
     row.className = "check-row";
 
