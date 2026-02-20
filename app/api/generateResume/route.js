@@ -1,180 +1,125 @@
-export const runtime = "nodejs";
+"use client";
 
-import path from "path";
-import fs from "fs";
-import PizZip from "pizzip";
-import Docxtemplater from "docxtemplater";
-import OpenAI from "openai";
+import { useState } from "react";
 
-const client = new OpenAI({
-  apiKey: process.env.OPENAI_API_KEY
-});
+export default function FinalizePage() {
+  const [loading, setLoading] = useState(false);
+  const [selectedTemplate, setSelectedTemplate] = useState("Template");
+  const [confirmed, setConfirmed] = useState(false);
 
-export async function POST(req) {
-  try {
-    const body = await req.json();
+  async function generateResume() {
+    if (!confirmed) return;
 
-    /* ---------- SAFE TEXT CLEANER ---------- */
-    function clean(text) {
-      if (!text) return "";
-      return String(text)
-        .replace(/[\u0000-\u001F\u007F]/g, " ")
-        .replace(/\s+/g, " ")
-        .trim();
-    }
+    setLoading(true);
 
-    /* ---------- AI POLISHER ---------- */
-    async function polish(text) {
-      if (!text || typeof text !== "string") return "";
+    const data = JSON.parse(localStorage.getItem("resumeData")) || {};
 
-      try {
-        const response = await client.chat.completions.create({
-          model: "gpt-4o-mini",
-          temperature: 0.4,
-          messages: [
-            {
-              role: "system",
-              content:
-                "Rewrite the text to be professional, concise, and resume-ready. Do not add new information."
-            },
-            { role: "user", content: text }
-          ]
-        });
-
-        return clean(response.choices?.[0]?.message?.content || "");
-      } catch (err) {
-        console.error("AI ERROR:", err);
-        return "";
-      }
-    }
-
-    /* ============================================================
-       BUILD DATA OBJECT FOR DOCXTEMPLATER (STRUCTURED)
-       ============================================================ */
-
-    const student = body.student || {};
-    const certifications = body.certifications || {};
-
-    /* ---------- WORK EXPERIENCE ---------- */
-    const workExperience = Array.isArray(body.workExperience)
-      ? await Promise.all(
-          body.workExperience.map(async (job) => ({
-            employer: clean(job.employer),
-            title: clean(job.title),
-            start: clean(job.start),
-            end: clean(job.end),
-            tasks: await polish(job.tasks)
-          }))
-        )
-      : [];
-
-    /* ---------- MILITARY SERVICE ---------- */
-    const militaryService = Array.isArray(body.militaryService)
-      ? await Promise.all(
-          body.militaryService.map(async (mil) => ({
-            branch: clean(mil.branch),
-            rank: clean(mil.rank),
-            dates: clean(mil.dates),
-            duties: await polish(mil.duties),
-            achievements: await polish(mil.achievements)
-          }))
-        )
-      : [];
-
-    /* ---------- EDUCATION ---------- */
-    const education = Array.isArray(body.education)
-      ? await Promise.all(
-          body.education.map(async (edu) => ({
-            school: clean(edu.school),
-            program: clean(edu.program),
-            startDate: clean(edu.startDate),
-            endDate: clean(edu.endDate),
-            notes: await polish(edu.notes)
-          }))
-        )
-      : [];
-
-    /* ---------- CERTIFICATIONS + SKILLS ---------- */
-    const programCerts = Array.isArray(certifications.programCertsSelected)
-      ? certifications.programCertsSelected.map(clean)
-      : [];
-
-    const extraCerts = await polish(certifications.extraCerts || "");
-    const extraSkills = await polish(certifications.extraSkills || "");
-
-    /* ---------- FINAL DATA OBJECT ---------- */
-    const data = {
-      TEMPLATE: body.TEMPLATE,
+    const payload = {
+      TEMPLATE: selectedTemplate,
 
       student: {
-        name: clean(student.name),
-        email: clean(student.email),
-        phone: clean(student.phone),
-        address: clean(student.address),
-        city: clean(student.city),
-        state: clean(student.state),
-        zip: clean(student.zip),
-        location: clean(`${student.city || ""}, ${student.state || ""}`),
-        programCampus: clean(student.programCampus),
-        graduationDate: clean(student.graduationDate)
+        name: data.name || "",
+        email: data.email || "",
+        phone: data.phone || "",
+        address: data.address || "",
+        city: data.city || "",
+        state: data.state || "",
+        zip: data.zip || "",
+        programCampus: data.programCampus || "",
+        graduationDate: data.grad || ""
       },
 
-      workExperience,
-      militaryService,
-      education,
-
-      certifications: {
-        programCerts,
-        extraCerts,
-        extraSkills
-      }
+      workExperience: data.workExperience || [],
+      militaryService: data.militaryService || [],
+      education: data.education || [],
+      certifications: data.certifications || {}
     };
 
-    /* ============================================================
-       TEMPLATE LOAD
-       ============================================================ */
+    try {
+      const res = await fetch("/api/generateResume", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(payload)
+      });
 
-    const templateFile = `${body.TEMPLATE}.docx`;
-    const templatePath = path.join(
-      process.cwd(),
-      "public",
-      "templates",
-      templateFile
-    );
-
-    const content = fs.readFileSync(templatePath, "binary");
-    const zip = new PizZip(content);
-
-    const doc = new Docxtemplater(zip, {
-      paragraphLoop: true,
-      linebreaks: true
-    });
-
-    doc.setData(data);
-    doc.render();
-
-    const buffer = doc.getZip().generate({
-      type: "nodebuffer",
-      compression: "DEFLATE"
-    });
-
-    /* ---------- RETURN DOCX ---------- */
-    return new Response(new Uint8Array(buffer), {
-      status: 200,
-      headers: {
-        "Content-Type":
-          "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
-        "Content-Disposition": "attachment; filename=resume.docx",
-        "Content-Length": buffer.length.toString(),
-        "Cache-Control": "no-store"
+      if (!res.ok) {
+        throw new Error("Resume generation failed");
       }
-    });
 
-  } catch (err) {
-    console.error("RESUME GENERATION ERROR:", err);
-    return new Response(
-      JSON.stringify({ error: "Failed to generate resume" }),
-      { status: 500 }
-    );
+      const blob = await res.blob();
+      const url = window.URL.createObjectURL(blob);
+      const a = document.createElement("a");
+      a.href = url;
+      a.download = "resume.docx";
+      a.click();
+      window.URL.revokeObjectURL(url);
+    } catch (err) {
+      alert("Resume generation failed. Check logs.");
+      console.error(err);
+    }
+
+    setLoading(false);
   }
+
+  return (
+    <div style={{ padding: "40px", fontFamily: "Arial", maxWidth: "600px" }}>
+      <h1>Finalize Resume</h1>
+      <p>Your resume is almost ready.</p>
+
+      <h3>Select a Template</h3>
+      <div style={{ display: "flex", gap: "10px", marginBottom: "20px" }}>
+        {["Template", "TemplateA", "TemplateB", "TemplateC"].map((t) => (
+          <button
+            key={t}
+            onClick={() => setSelectedTemplate(t)}
+            style={{
+              padding: "10px",
+              border:
+                selectedTemplate === t
+                  ? "3px solid #0b3c6d"
+                  : "1px solid gray",
+              cursor: "pointer",
+              background:
+                selectedTemplate === t ? "#e6f0ff" : "white"
+            }}
+          >
+            {t}
+          </button>
+        ))}
+      </div>
+
+      <label style={{ display: "block", marginBottom: "20px" }}>
+        <input
+          type="checkbox"
+          checked={confirmed}
+          onChange={(e) => setConfirmed(e.target.checked)}
+          style={{ marginRight: "8px" }}
+        />
+        I understand it is my responsibility to review and edit my resume before
+        submitting it to my instructor in Canvas LMS.
+      </label>
+
+      <button
+        onClick={generateResume}
+        disabled={!confirmed || loading}
+        style={{
+          padding: "12px 20px",
+          fontSize: "16px",
+          cursor: confirmed && !loading ? "pointer" : "not-allowed",
+          background: loading ? "#ccc" : "#0070f3",
+          color: "white",
+          border: "none",
+          borderRadius: "4px"
+        }}
+      >
+        {loading ? "Generating..." : "Download Resume"}
+      </button>
+
+      {loading && (
+        <p style={{ color: "red", marginTop: "15px" }}>
+          Your resume is being generated…
+        </p>
+      )}
+    </div>
+  );
 }
