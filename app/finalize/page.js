@@ -16,18 +16,40 @@ export default function FinalizePage() {
 
     const payload = {
       TEMPLATE: selectedTemplate,
-      NAME: data.name || "",
-      EMAIL: data.email || "",
-      PHONE: data.phone || "",
-      ADDRESS: data.address || "",
-      LOCATION: `${data.city || ""}, ${data.state || ""}`,
-      PROFESSIONAL_SUMMARY: data.objective || "",
-      SKILLS: data.skills || "",
-      EXPERIENCE: data.experience || "",
-      EDUCATION: data.education || "",
-      PROGRAM_CERTIFICATIONS: data.programCertsSelected || "",
-      OUTSIDE_CERTIFICATIONS: data.extraCerts || "",
-      GENERAL_NOTES: data.generalNotes || ""
+
+      // STUDENT INFO
+      student: {
+        name: data.name || "",
+        email: data.email || "",
+        phone: data.phone || "",
+        address: data.address || "",
+        city: data.city || "",
+        state: data.state || "",
+        zip: data.zip || "",
+        programCampus: data.programCampus || "",
+        graduationDate: data.grad || ""
+      },
+
+      // CAREER CONTEXT
+      careerContext: data.careerContext || {
+        jobInterest: "",
+        personalQualities: [],
+        additionalSoftSkills: ""
+      },
+
+      // WORK + MILITARY
+      workExperience: data.workExperience || [],
+      militaryService: data.militaryService || [],
+
+      // EDUCATION
+      education: data.education || [],
+
+      // CERTIFICATIONS + SKILLS
+      certifications: data.certifications || {
+        programCertsSelected: [],
+        extraCerts: "",
+        extraSkills: ""
+      }
     };
 
     const res = await fetch("/api/generateResume", {
@@ -52,7 +74,6 @@ export default function FinalizePage() {
       <h1>Finalize Resume</h1>
       <p>Your resume is almost ready.</p>
 
-      {/* Template Selection */}
       <h3>Select a Template</h3>
       <div style={{ display: "flex", gap: "10px", marginBottom: "20px" }}>
         {["Template", "TemplateA", "TemplateB", "TemplateC"].map((t) => (
@@ -71,7 +92,6 @@ export default function FinalizePage() {
         ))}
       </div>
 
-      {/* Confirmation Checkbox */}
       <label style={{ display: "block", marginBottom: "20px" }}>
         <input
           type="checkbox"
@@ -83,7 +103,6 @@ export default function FinalizePage() {
         submitting it to my instructor in Canvas LMS.
       </label>
 
-      {/* Generate Button */}
       <button
         onClick={generateResume}
         disabled={!confirmed || loading}
@@ -100,7 +119,6 @@ export default function FinalizePage() {
         {loading ? "Generating..." : "Download Resume"}
       </button>
 
-      {/* Red Loading Message */}
       {loading && (
         <p style={{ color: "red", marginTop: "15px" }}>
           Your resume is being generated…
