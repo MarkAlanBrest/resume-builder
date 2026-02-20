@@ -1,5 +1,6 @@
+<script>
+/* ===== PROGRAM CERT DATA (AS YOU PROVIDED) ===== */
 const PROGRAM_CERTS = {
-
   "Automotive Technology — Main Campus (New Castle, PA)": {
     credential: "Associate in Specialized Technology Degree",
     certifications: [
@@ -9,7 +10,6 @@ const PROGRAM_CERTS = {
       "ASE Entry-Level Certifications"
     ]
   },
-
   "Building Technology — Main Campus (New Castle, PA)": {
     credential: "Associate in Specialized Building Technology",
     certifications: [
@@ -18,7 +18,6 @@ const PROGRAM_CERTS = {
       "Scaffolding and Ladder Safety"
     ]
   },
-
   "Combination Welding — Main Campus (New Castle, PA)": {
     credential: "Diploma",
     certifications: [
@@ -29,7 +28,6 @@ const PROGRAM_CERTS = {
       "Hot Work Safety"
     ]
   },
-
   "Combination Welding — East Liverpool Campus (East Liverpool, OH)": {
     credential: "Diploma",
     certifications: [
@@ -40,7 +38,6 @@ const PROGRAM_CERTS = {
       "Hot Work Safety"
     ]
   },
-
   "Commercial Truck Driving (Class A CDL) — Satellite Campus (Pulaski, PA)": {
     credential: "Certificate",
     certifications: [
@@ -50,7 +47,6 @@ const PROGRAM_CERTS = {
       "OSHA 10 (varies)"
     ]
   },
-
   "Diesel & Heavy Equipment Repair Technology — Satellite Campus (Pulaski, PA)": {
     credential: "Associate in Specialized Technology Degree",
     certifications: [
@@ -61,7 +57,6 @@ const PROGRAM_CERTS = {
       "Hydraulics and Heavy Equipment Safety"
     ]
   },
-
   "Electrical Technology — Main Campus (New Castle, PA)": {
     credential: "Associate in Specialized Technology Degree",
     certifications: [
@@ -72,7 +67,6 @@ const PROGRAM_CERTS = {
       "Electrical Safety Cards"
     ]
   },
-
   "Electrical & Industrial Maintenance — East Liverpool Campus (East Liverpool, OH)": {
     credential: "Diploma",
     certifications: [
@@ -83,7 +77,6 @@ const PROGRAM_CERTS = {
       "Industrial Maintenance Safety"
     ]
   },
-
   "Heavy Equipment Operations with CDL — Satellite Campus (Pulaski, PA)": {
     credential: "Diploma",
     certifications: [
@@ -94,7 +87,6 @@ const PROGRAM_CERTS = {
       "Forklift Certification"
     ]
   },
-
   "Industrial Electro-Mechanical Technology — Main Campus (New Castle, PA)": {
     credential: "Associate in Specialized Technology Degree",
     certifications: [
@@ -105,7 +97,6 @@ const PROGRAM_CERTS = {
       "PLC Safety and Operation"
     ]
   },
-
   "Machinist & CNC Manufacturing — Satellite Campus (Pulaski, PA)": {
     credential: "Diploma",
     certifications: [
@@ -115,7 +106,6 @@ const PROGRAM_CERTS = {
       "Precision Measurement Certification"
     ]
   },
-
   "Motorcycle & Power Equipment Technology — Satellite Campus (Pulaski, PA)": {
     credential: "Diploma",
     certifications: [
@@ -125,7 +115,6 @@ const PROGRAM_CERTS = {
       "EPA Section 609 Certification (varies)"
     ]
   },
-
   "Refrigeration & A/C Technology — Main Campus (New Castle, PA)": {
     credential: "Associate in Specialized Technology Degree",
     certifications: [
@@ -135,7 +124,6 @@ const PROGRAM_CERTS = {
       "Brazing and Refrigeration Safety Cards"
     ]
   },
-
   "Refrigeration & Climate Control — East Liverpool Campus (East Liverpool, OH)": {
     credential: "Diploma",
     certifications: [
@@ -145,5 +133,84 @@ const PROGRAM_CERTS = {
       "Brazing and Refrigeration Safety Cards"
     ]
   }
-
 };
+
+/* ===== STORAGE ===== */
+function getData() {
+  return JSON.parse(localStorage.getItem("resumeData")) || {};
+}
+function setData(data) {
+  localStorage.setItem("resumeData", JSON.stringify(data));
+}
+
+/* ===== LOAD ===== */
+window.onload = function () {
+  const data = getData();
+
+  const program = data.programCampus;
+  if (!PROGRAM_CERTS[program]) {
+    alert("No certifications found for selected program.");
+    return;
+  }
+
+  data.certifications ||= {
+    programCertsSelected: [],
+    extraCerts: "",
+    extraSkills: ""
+  };
+
+  document.getElementById("programDisplay").textContent =
+    `Program Selected: ${program}`;
+
+  document.getElementById("extraCerts").value =
+    data.certifications.extraCerts || "";
+
+  document.getElementById("extraSkills").value =
+    data.certifications.extraSkills || "";
+
+  const selected = data.certifications.programCertsSelected;
+  const container = document.getElementById("programCerts");
+  container.innerHTML = "";
+
+  PROGRAM_CERTS[program].certifications.forEach((cert, i) => {
+    const row = document.createElement("div");
+    row.className = "check-row";
+
+    const cb = document.createElement("input");
+    cb.type = "checkbox";
+    cb.id = "cert" + i;
+    cb.value = cert;
+    cb.checked = selected.includes(cert);
+
+    const label = document.createElement("label");
+    label.htmlFor = cb.id;
+    label.textContent = cert;
+
+    row.appendChild(cb);
+    row.appendChild(label);
+    container.appendChild(row);
+  });
+};
+
+/* ===== NAV ===== */
+function goBack() {
+  window.location.href = "work.html";
+}
+
+function goNext() {
+  const data = getData();
+
+  data.certifications.programCertsSelected = Array.from(
+    document.querySelectorAll("#programCerts input:checked")
+  ).map(cb => cb.value);
+
+  data.certifications.extraCerts =
+    document.getElementById("extraCerts").value.trim();
+
+  data.certifications.extraSkills =
+    document.getElementById("extraSkills").value.trim();
+
+  setData(data);
+  window.location.href = "education-military-v2.html";
+}
+</script>
