@@ -1,6 +1,9 @@
-console.log("TEST PATH:", require("fs").existsSync(
-  require("path").join(process.cwd(), "lib", "styleguides2", "masterStyleGuide.js")
-));
+console.log(
+  "TEST PATH:",
+  require("fs").existsSync(
+    require("path").join(process.cwd(), "lib", "styleguides2", "masterStyleGuide.js")
+  )
+);
 
 import fs from "fs";
 import path from "path";
@@ -21,6 +24,12 @@ function clean(v) {
     .trim();
 }
 
+// NEW: ensure arrays are safe/clean
+function cleanArray(v) {
+  if (!Array.isArray(v)) return [];
+  return v.map(clean).filter((x) => x !== "");
+}
+
 function limit(text, max = 3500) {
   if (!text) return "";
   if (text.length <= max) return text;
@@ -31,9 +40,7 @@ export async function POST(req) {
   const body = await req.json();
 
   const s = body.student || {};
-  const workExperience = Array.isArray(body.workExperience)
-    ? body.workExperience
-    : [];
+  const workExperience = Array.isArray(body.workExperience) ? body.workExperience : [];
   const education = Array.isArray(body.education) ? body.education : [];
   const certifications = body.certifications || {};
   const careerContext = body.careerContext || {};
@@ -42,9 +49,7 @@ export async function POST(req) {
     ? certifications.programCerts
     : [];
 
-  const cleanedProgramCerts = rawProgramCerts
-    .map(clean)
-    .filter((v) => v !== "");
+  const cleanedProgramCerts = rawProgramCerts.map(clean).filter((v) => v !== "");
 
   const baseData = {
     name: clean(s.name),
@@ -57,6 +62,7 @@ export async function POST(req) {
     programCampus: clean(s.programCampus),
     graduationDate: clean(s.graduationDate),
 
+    // CHANGE: tasks becomes ARRAY (for {#tasks}{.}{/tasks})
     workExperience: workExperience.map((j) => ({
       employer: clean(j.employer),
       employerCity: clean(j.employerCity),
@@ -64,7 +70,7 @@ export async function POST(req) {
       title: clean(j.title),
       start: clean(j.start),
       end: clean(j.end),
-      tasks: clean(j.tasks),
+      tasks: cleanArray(j.tasks), // <-- IMPORTANT
     })),
 
     education: education.map((e) => ({
@@ -86,11 +92,9 @@ export async function POST(req) {
     hasEducation: education.length > 0,
     hasProgramCerts: cleanedProgramCerts.length > 0,
     hasExtraCerts:
-      !!certifications.extraCerts &&
-      String(certifications.extraCerts).trim() !== "",
+      !!certifications.extraCerts && String(certifications.extraCerts).trim() !== "",
     hasExtraSkills:
-      !!certifications.extraSkills &&
-      String(certifications.extraSkills).trim() !== "",
+      !!certifications.extraSkills && String(certifications.extraSkills).trim() !== "",
 
     careerContext,
   };
@@ -164,7 +168,8 @@ Using the master style guide above and the student data below:
       "title": "string",
       "start": "string",
       "end": "string",
-      "tasks": "string"
+
+      "tasks": ["string","string","string"]
     }
   ],
   "education": [...],
@@ -174,17 +179,23 @@ Using the master style guide above and the student data below:
 }
 
 Formatting rules for workExperience:
-- Normalize employerCity to Proper Case.
-- Normalize employerState to UPPERCASE 2-letter postal abbreviation.
-- Never remove employerCity or employerState.
+- Normalize employerCity to Proper Case (e.g., "new castle" → "New Castle").
+- Normalize employerState to UPPERCASE 2-letter postal abbreviation (e.g., "pA" → "PA").
+- Never remove or omit employerCity or employerState.
+- Always return employerCity and employerState exactly once, correctly formatted.
 
 Formatting rules for workExperience.tasks:
-- Rewrite tasks into 3–5 strong bullet points.
+- Rewrite tasks into 3–5 strong resume bullet statements.
 - Use the student's provided content FIRST.
-- Add 1–2 reasonable duties ONLY if needed to reach 3 bullets.
-- No unrelated or unrealistic duties.
-- Each bullet begins with "• ".
-- Return bullets as a single string with line breaks.
+- Expand vague or short tasks into clear, professional, employer-ready bullets.
+- If fewer than 3 meaningful tasks were provided, you may add 1–2 reasonable duties implied by the original text.
+- Do NOT add unrelated or unrealistic responsibilities.
+- Improve grammar, clarity, and action verbs.
+- Return tasks as a JSON ARRAY of strings.
+- DO NOT include bullet symbols (no "•", no "-", no numbering).
+- Each array item is ONE bullet statement.
+
+- Preserve employer, employerCity, employerState, title, start, and end exactly as provided.
 
 Return ONLY valid JSON.
 
@@ -195,8 +206,8 @@ ${JSON.stringify(aiInput, null, 2)}
       ],
     });
 
+    console.log("AI RAW OUTPUT:", completion.choices[0].message.content);
     polished = JSON.parse(completion.choices[0].message.content);
-
   } catch (err) {
     console.error("AI polishing failed:", err);
   }
@@ -206,16 +217,19 @@ ${JSON.stringify(aiInput, null, 2)}
 
     professionalSummary: clean(polished.summary || ""),
 
+    // FORCE city/state FROM ORIGINAL INPUT, IGNORE AI FOR THESE
     workExperience: baseData.workExperience.map((base, idx) => {
       const aiJob = polished.workExperience?.[idx] || {};
       return {
         employer: clean(aiJob.employer ?? base.employer),
-        employerCity: clean(aiJob.employerCity ?? base.employerCity),
-        employerState: clean(aiJob.employerState ?? base.employerState),
+        employerCity: base.employerCity,
+        employerState: base.employerState,
         title: clean(aiJob.title ?? base.title),
         start: clean(aiJob.start ?? base.start),
         end: clean(aiJob.end ?? base.end),
-        tasks: clean(aiJob.tasks ?? base.tasks),
+
+        // CHANGE: tasks must be array (support both AI array + fallback to base array)
+        tasks: Array.isArray(aiJob.tasks) ? cleanArray(aiJob.tasks) : base.tasks,
       };
     }),
 
@@ -244,9 +258,10 @@ ${JSON.stringify(aiInput, null, 2)}
 
   finalData.professionalSummary = limit(finalData.professionalSummary, 600);
 
+  // CHANGE: limit tasks as array
   finalData.workExperience = finalData.workExperience.map((j) => ({
     ...j,
-    tasks: limit(j.tasks, 800),
+    tasks: Array.isArray(j.tasks) ? j.tasks.map((t) => limit(t, 300)) : [],
   }));
 
   finalData.education = finalData.education.map((e) => ({
@@ -254,15 +269,8 @@ ${JSON.stringify(aiInput, null, 2)}
     notes: limit(e.notes, 400),
   }));
 
-  finalData.certifications.extraSkills = limit(
-    finalData.certifications.extraSkills,
-    600
-  );
-
-  finalData.certifications.extraCerts = limit(
-    finalData.certifications.extraCerts,
-    600
-  );
+  finalData.certifications.extraSkills = limit(finalData.certifications.extraSkills, 600);
+  finalData.certifications.extraCerts = limit(finalData.certifications.extraCerts, 600);
 
   const templatePath = path.join(
     process.cwd(),
