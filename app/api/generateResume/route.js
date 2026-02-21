@@ -1,42 +1,30 @@
-import fs from "fs";
-import path from "path";
-import PizZip from "pizzip";
-import Docxtemplater from "docxtemplater";
-
-export async function POST(req) {
-  const body = await req.json();
-
-  console.log("STUDENT RECEIVED:", body.student);
-
-  const templatePath = path.join(
-    process.cwd(),
-    "public",
-    "templates",
-    `${body.TEMPLATE}.docx`
-  );
-
-  const content = fs.readFileSync(templatePath, "binary");
-  const zip = new PizZip(content);
-
-  const doc = new Docxtemplater(zip, {
-    paragraphLoop: true,
-    linebreaks: true
-  });
-
-  doc.setData(body.student || {});
-  doc.render();
-
-  const buffer = doc.getZip().generate({
-    type: "nodebuffer",
-    compression: "DEFLATE"
-  });
-
-  return new Response(buffer, {
-    status: 200,
-    headers: {
-      "Content-Type":
-        "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
-      "Content-Disposition": "attachment; filename=resume.docx"
+async function generateResume() {
+  const payload = {
+    TEMPLATE: "Template",
+    student: {
+      name: "TEST NAME",
+      email: "test@email.com",
+      phone: "555-555-5555",
+      address: "123 Main St",
+      city: "New Castle",
+      state: "PA",
+      zip: "16101",
+      programCampus: "TEST PROGRAM",
+      graduationDate: "05/2026"
     }
+  };
+
+  const res = await fetch("/api/generateResume", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(payload)
   });
+
+  const blob = await res.blob();
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement("a");
+  a.href = url;
+  a.download = "resume.docx";
+  a.click();
+  URL.revokeObjectURL(url);
 }
