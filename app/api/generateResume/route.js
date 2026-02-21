@@ -21,15 +21,6 @@ function clean(v) {
     .trim();
 }
 
-/* 🔧 ADDED — bullet splitter */
-function splitBullets(text) {
-  if (!text) return [];
-  return text
-    .split(/\r?\n/)
-    .map(t => t.replace(/^•\s*/, "").trim())
-    .filter(Boolean);
-}
-
 function limit(text, max = 3500) {
   if (!text) return "";
   if (text.length <= max) return text;
@@ -151,7 +142,55 @@ ${masterStyleGuide}
           content: `
 Using the master style guide above and the student data below:
 
-[UNCHANGED PROMPT — AI STILL RETURNS BULLETS AS STRING]
+1. Select the correct PROGRAM block based on "programCampus".
+2. Apply GLOBAL rules + that PROGRAM block only.
+3. Build the "summary" field ONLY from:
+   - The student's Objective Page (careerContext)
+   - The correct PROGRAM block from the style guide
+   - The student's certifications (programCerts, extraCerts)
+   DO NOT use work history or education to build the summary.
+   The summary MUST be a 2–4 sentence professional paragraph that functions as an introduction/objective section.
+   The summary MUST NOT use the student's name. Write in third-person without naming the student.
+
+4. Return polished resume content as STRICT JSON with this exact structure:
+
+{
+  "summary": "string",
+  "workExperience": [
+    {
+      "employer": "string",
+      "employerCity": "string",
+      "employerState": "string",
+      "title": "string",
+      "start": "string",
+      "end": "string",
+      "tasks": "string"
+    }
+  ],
+  "education": [...],
+  "certificationsText": "string",
+  "extraCerts": "string",
+  "extraSkills": "string"
+}
+
+Formatting rules for workExperience:
+- Normalize employerCity to Proper Case (e.g., "new castle" → "New Castle").
+- Normalize employerState to UPPERCASE 2-letter postal abbreviation (e.g., "pA" → "PA").
+- Never remove or omit employerCity or employerState.
+- Always return employerCity and employerState exactly once, correctly formatted.
+
+Formatting rules for workExperience.tasks:
+- Rewrite tasks into 3–5 strong bullet points.
+- Use the student's provided content FIRST.
+- Expand vague or short tasks into clear, professional, employer-ready bullet points.
+- If the student provided fewer than 3 meaningful tasks, you may add 1–2 reasonable duties that are commonly implied by the student's original text.
+- Do NOT add unrelated or unrealistic responsibilities.
+- Improve grammar, clarity, and action verbs.
+- Each bullet MUST begin with "• " (bullet + space).
+- Return the bullet points as a single string with line breaks between bullets.
+- Preserve employer, employerCity, employerState, title, start, and end exactly as provided.
+
+Return ONLY valid JSON.
 
 STUDENT DATA:
 ${JSON.stringify(aiInput, null, 2)}
@@ -172,6 +211,7 @@ ${JSON.stringify(aiInput, null, 2)}
 
     professionalSummary: clean(polished.summary || ""),
 
+    // FORCE city/state FROM ORIGINAL INPUT, IGNORE AI FOR THESE
     workExperience: baseData.workExperience.map((base, idx) => {
       const aiJob = polished.workExperience?.[idx] || {};
       return {
@@ -181,9 +221,7 @@ ${JSON.stringify(aiInput, null, 2)}
         title: clean(aiJob.title ?? base.title),
         start: clean(aiJob.start ?? base.start),
         end: clean(aiJob.end ?? base.end),
-
-        /* 🔧 ONLY LOGIC CHANGE */
-        tasks: splitBullets(aiJob.tasks ?? base.tasks),
+        tasks: clean(aiJob.tasks ?? base.tasks),
       };
     }),
 
@@ -212,12 +250,9 @@ ${JSON.stringify(aiInput, null, 2)}
 
   finalData.professionalSummary = limit(finalData.professionalSummary, 600);
 
-  /* 🔧 ADJUSTED because tasks is now an array */
   finalData.workExperience = finalData.workExperience.map((j) => ({
     ...j,
-    tasks: Array.isArray(j.tasks)
-      ? j.tasks.map(t => limit(t, 300))
-      : [],
+    tasks: limit(j.tasks, 800),
   }));
 
   finalData.education = finalData.education.map((e) => ({
