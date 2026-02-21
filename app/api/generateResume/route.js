@@ -151,16 +151,29 @@ Using the master style guide above and the student data below:
    DO NOT use work history or education to build the summary.
    The summary MUST be a 2–4 sentence professional paragraph that functions as an introduction/objective section.
    The summary MUST NOT use the student's name. Write in third-person without naming the student.
-4. Return polished resume content as STRICT JSON:
+
+4. Return polished resume content as STRICT JSON with this exact structure:
 
 {
   "summary": "string",
-  "workExperience": [...],
+  "workExperience": [
+    {
+      "employer": "string",
+      "employerCity": "string",
+      "employerState": "string",
+      "title": "string",
+      "start": "string",
+      "end": "string",
+      "tasks": "string"
+    }
+  ],
   "education": [...],
   "certificationsText": "string",
   "extraCerts": "string",
   "extraSkills": "string"
 }
+
+When returning workExperience, preserve employerCity and employerState exactly as provided.
 
 Return ONLY valid JSON.
 
