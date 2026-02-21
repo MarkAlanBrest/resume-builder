@@ -21,6 +21,15 @@ export async function POST(req) {
   const education = Array.isArray(body.education) ? body.education : [];
   const certifications = body.certifications || {};
 
+  // ⭐ CLEAN + FLATTEN PROGRAM CERTS
+  const rawProgramCerts = Array.isArray(certifications.programCerts)
+    ? certifications.programCerts
+    : [];
+
+  const cleanedProgramCerts = rawProgramCerts
+    .map(clean)
+    .filter((v) => v !== "");
+
   const data = {
     name: clean(s.name),
     email: clean(s.email),
@@ -48,19 +57,18 @@ export async function POST(req) {
       notes: clean(e.notes),
     })),
 
+    // ⭐ UPDATED CERTIFICATIONS BLOCK
     certifications: {
-      programCerts: Array.isArray(certifications.programCerts)
-        ? certifications.programCerts.map(clean)
-        : [],
+      programCerts: cleanedProgramCerts,
+      programCertsText: cleanedProgramCerts.join(", "),
       extraCerts: clean(certifications.extraCerts),
       extraSkills: clean(certifications.extraSkills),
     },
 
+    // ⭐ FLAGS
     hasWorkExperience: workExperience.length > 0,
     hasEducation: education.length > 0,
-    hasProgramCerts:
-      Array.isArray(certifications.programCerts) &&
-      certifications.programCerts.length > 0,
+    hasProgramCerts: cleanedProgramCerts.length > 0,
     hasExtraCerts:
       !!certifications.extraCerts &&
       String(certifications.extraCerts).trim() !== "",
@@ -84,7 +92,6 @@ export async function POST(req) {
     linebreaks: true,
     delimiters: { start: "{", end: "}" },
 
-    // ⭐ FIXED PARSER — supports nested fields everywhere
     parser(tag) {
       return {
         get: (scope) => {
