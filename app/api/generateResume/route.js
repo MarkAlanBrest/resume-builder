@@ -3,7 +3,8 @@ import path from "path";
 import PizZip from "pizzip";
 import Docxtemplater from "docxtemplater";
 import OpenAI from "openai";
-import { masterStyleGuide } from "@/lib/style-guides/masterStyleGuide.js";
+import { masterStyleGuide } from "@/lib/styleguides/masterStyleGuide.js";
+
 
 const openai = new OpenAI({
   apiKey: process.env.OPENAI_API_KEY,
