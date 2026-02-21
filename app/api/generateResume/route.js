@@ -22,7 +22,7 @@ export async function POST(req) {
   });
 
   // FLAT data (matches template tags like {name})
-  doc.setData(body.student || {});
+doc.setData(body);
 
   doc.render();
 
