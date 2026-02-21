@@ -184,7 +184,9 @@ ${JSON.stringify(aiInput, null, 2)}
       ],
     });
 
+    console.log("AI RAW OUTPUT:", completion.choices[0].message.content);
     polished = JSON.parse(completion.choices[0].message.content);
+
   } catch (err) {
     console.error("AI polishing failed:", err);
   }
