@@ -35,22 +35,23 @@ export default function FinalizePage() {
           graduationDate: d.grad || ""
         },
 
-        // ⭐ FIXED: correct field name
         workExperience: d.workExperience || [],
-
-        // ⭐ FIXED: correct field name
         militaryService: d.militaryService || [],
-
         education: d.education || [],
 
-        // ⭐ FIXED: correct structure
         certifications: {
           programCerts: d.certifications?.programCerts || [],
           extraCerts: d.certifications?.extraCerts || "",
           extraSkills: d.certifications?.extraSkills || ""
         },
 
-        // ⭐ NEW: include career context
+        // ⭐ REQUIRED FLAGS FOR DOCX TEMPLATE
+        hasWorkExperience: (d.workExperience?.length ?? 0) > 0,
+        hasEducation: (d.education?.length ?? 0) > 0,
+        hasProgramCerts: (d.certifications?.programCerts?.length ?? 0) > 0,
+        hasExtraCerts: !!d.certifications?.extraCerts,
+        hasExtraSkills: !!d.certifications?.extraSkills,
+
         careerContext: d.careerContext || {}
       };
 
