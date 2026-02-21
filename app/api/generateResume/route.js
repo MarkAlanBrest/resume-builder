@@ -29,11 +29,12 @@ function cleanArray(v) {
   return v.map(clean).filter((x) => x !== "");
 }
 
+/* ONLY FIX IS HERE */
 function tasksToArray(v) {
   if (Array.isArray(v)) return cleanArray(v);
 
-  const s = clean(v);
-  if (!s) return [];
+  const s = String(v || "");
+  if (!s.trim()) return [];
 
   return s
     .split(/\r?\n|;/g)
