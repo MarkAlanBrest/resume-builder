@@ -15,7 +15,6 @@ export default function FinalizePage() {
 
   async function generateResume() {
     if (!confirmed || loading) return;
-
     setLoading(true);
 
     try {
@@ -23,6 +22,7 @@ export default function FinalizePage() {
 
       const payload = {
         TEMPLATE: selectedTemplate,
+
         student: {
           name: d.name || "",
           email: d.email || "",
@@ -33,6 +33,28 @@ export default function FinalizePage() {
           zip: d.zip || "",
           programCampus: d.programCampus || "",
           graduationDate: d.grad || ""
+        },
+
+        workExperience: d.jobs || [],
+
+        militaryService: d.military
+          ? [
+              {
+                branch: d.militaryRank || "",
+                rank: "",
+                dates: "",
+                duties: d.militaryDuties || "",
+                achievements: d.militaryAchievements || ""
+              }
+            ]
+          : [],
+
+        education: d.education || [],
+
+        certifications: {
+          programCertsSelected: d.programCertsSelected || [],
+          extraCerts: d.extraCerts || "",
+          extraSkills: d.extraSkills || ""
         }
       };
 
@@ -57,8 +79,8 @@ export default function FinalizePage() {
       a.remove();
       window.URL.revokeObjectURL(url);
     } catch (e) {
+      alert("Resume generation failed");
       console.error(e);
-      alert("Resume generation failed. Check logs.");
     } finally {
       setLoading(false);
     }
