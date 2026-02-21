@@ -8,25 +8,32 @@ export default function FinalizePage() {
   async function generateResume() {
     setLoading(true);
 
-    // Pull the saved resume data from localStorage
     const data = JSON.parse(localStorage.getItem("resumeData")) || {};
 
-    // Build payload (root-level keys)
     const payload = {
       TEMPLATE: data.template || "Template",
+
       NAME: data.name || "",
       EMAIL: data.email || "",
       PHONE: data.phone || "",
       ADDRESS: data.address || "",
       LOCATION: `${data.city || ""}, ${data.state || ""}`,
+
       PROFESSIONAL_SUMMARY: data.objective || "",
       SKILLS: data.skills || "",
       EXPERIENCE: data.experience || "",
+
       EDUCATION: data.education || "",
-      PROGRAM_CERTIFICATIONS: data.certifications?.programCertsSelected?.join(", ") || "",
+
+      PROGRAM_CERTIFICATIONS:
+        data.certifications?.programCertsSelected?.join(", ") || "",
+
       OUTSIDE_CERTIFICATIONS: data.certifications?.extraCerts || "",
-      GENERAL_NOTES: data.generalNotes || ""
+
+      GENERAL_NOTES: data.certifications?.extraSkills || ""
     };
+
+    console.log("PAYLOAD SENT:", payload);
 
     const res = await fetch("/api/generateResume", {
       method: "POST",

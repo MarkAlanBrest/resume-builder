@@ -6,6 +6,8 @@ import Docxtemplater from "docxtemplater";
 export async function POST(req) {
   const body = await req.json();
 
+  console.log("BACKEND RECEIVED:", body);
+
   const templatePath = path.join(
     process.cwd(),
     "public",
@@ -21,8 +23,9 @@ export async function POST(req) {
     linebreaks: true
   });
 
-  // IMPORTANT: this matches your current finalize payload
-  doc.setData(body.student || {});
+  // IMPORTANT: use root-level keys
+  doc.setData(body);
+
   doc.render();
 
   const buffer = doc.getZip().generate({
