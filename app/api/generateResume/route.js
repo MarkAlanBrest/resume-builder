@@ -1,44 +1,17 @@
-import fs from "fs";
-import path from "path";
-import PizZip from "pizzip";
-import Docxtemplater from "docxtemplater";
+const payload = {
+  TEMPLATE: "Template",
 
-export async function POST(req) {
-  const body = await req.json();
+  NAME: "Test Student",
+  EMAIL: "test@example.com",
+  PHONE: "555-555-5555",
+  ADDRESS: "123 Main St",
+  LOCATION: "New Castle, PA",
 
-  console.log("BACKEND RECEIVED:", body);
-
-  const templatePath = path.join(
-    process.cwd(),
-    "public",
-    "templates",
-    `${body.TEMPLATE}.docx`
-  );
-
-  const content = fs.readFileSync(templatePath, "binary");
-  const zip = new PizZip(content);
-
-  const doc = new Docxtemplater(zip, {
-    paragraphLoop: true,
-    linebreaks: true
-  });
-
-  // IMPORTANT: use root-level keys
-  doc.setData(body);
-
-  doc.render();
-
-  const buffer = doc.getZip().generate({
-    type: "nodebuffer",
-    compression: "DEFLATE"
-  });
-
-  return new Response(buffer, {
-    status: 200,
-    headers: {
-      "Content-Type":
-        "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
-      "Content-Disposition": "attachment; filename=resume.docx"
-    }
-  });
-}
+  PROFESSIONAL_SUMMARY: "This is a test summary.",
+  SKILLS: "Skill A, Skill B, Skill C",
+  EXPERIENCE: "Job 1 at Company X\nJob 2 at Company Y",
+  EDUCATION: "NCST — Program Name — 05/2026",
+  PROGRAM_CERTIFICATIONS: "Cert 1, Cert 2",
+  OUTSIDE_CERTIFICATIONS: "OSHA 10",
+  GENERAL_NOTES: "These are test notes."
+};
