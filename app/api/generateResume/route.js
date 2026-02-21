@@ -18,7 +18,7 @@ export async function POST(req) {
 
   // MERGED DATA OBJECT (what the template sees)
   const data = {
-    // flat fields (use {name}, {email}, etc.)
+    // flat fields
     name: clean(s.name),
     email: clean(s.email),
     phone: clean(s.phone),
@@ -54,7 +54,7 @@ export async function POST(req) {
       extraSkills: clean(certifications.extraSkills),
     },
 
-    // booleans to hide headings
+    // booleans
     hasWorkExperience: workExperience.length > 0,
     hasEducation: education.length > 0,
     hasProgramCerts:
@@ -73,15 +73,37 @@ export async function POST(req) {
   const content = fs.readFileSync(templatePath, "binary");
   const zip = new PizZip(content);
 
-const doc = new Docxtemplater(zip, {
-  paragraphLoop: true,
-  linebreaks: true,
-  delimiters: { start: '{', end: '}' }
-});
+  // ⭐ THE CRITICAL FIXES ⭐
+  const doc = new Docxtemplater(zip, {
+    paragraphLoop: true,
+    linebreaks: true,
+
+    // 1. Use single braces like your template
+    delimiters: { start: "{", end: "}" },
+
+    // 2. Allow nested paths like certifications.programCerts
+    parser(tag) {
+      return {
+        get: (scope) => {
+          const parts = tag.split(".");
+          let value = scope;
+          for (const p of parts) {
+            if (value == null) return "";
+            value = value[p];
+          }
+          return value;
+        }
+      };
+    }
+  });
+
   doc.setData(data);
   doc.render();
 
-  const buffer = doc.getZip().generate({ type: "nodebuffer", compression: "DEFLATE" });
+  const buffer = doc.getZip().generate({
+    type: "nodebuffer",
+    compression: "DEFLATE"
+  });
 
   return new Response(new Uint8Array(buffer), {
     status: 200,
