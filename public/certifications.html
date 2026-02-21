@@ -25,6 +25,14 @@
       margin-bottom: 20px;
       font-weight: bold;
     }
+
+    /* ⭐ REQUIRED FIX — ensures checkboxes render and are clickable */
+    .check-row {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      margin: 6px 0;
+    }
   </style>
 </head>
 <body>
@@ -188,7 +196,6 @@ window.onload = function () {
     return;
   }
 
-  /* ⭐ FIX: backend expects certifications.programCerts */
   data.certifications ||= {
     programCerts: [],
     extraCerts: "",
@@ -238,7 +245,6 @@ function goBack() {
 function goNext() {
   const data = getData();
 
-  /* ⭐ FIX: backend expects certifications.programCerts */
   data.certifications ||= {
     programCerts: [],
     extraCerts: "",
