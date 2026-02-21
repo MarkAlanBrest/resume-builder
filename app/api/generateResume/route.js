@@ -147,7 +147,10 @@ Using the master style guide above and the student data below:
    - The correct PROGRAM block from the style guide
    - The student's certifications (programCerts, extraCerts)
    DO NOT use work history or education to build the summary.
-   The summary MUST be a 3–5 sentence professional paragraph that functions as an introduction/objective section.
+   The summary MUST be a 2–4 sentence professional paragraph that functions as an introduction/objective section.
+   The summary MUST NOT use the student's name. Write in third-person without naming the student.
+4. Return polished resume content as STRICT JSON:
+
 4. Return polished resume content as STRICT JSON:
 
 
