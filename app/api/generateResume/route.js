@@ -73,7 +73,11 @@ export async function POST(req) {
   const content = fs.readFileSync(templatePath, "binary");
   const zip = new PizZip(content);
 
-  const doc = new Docxtemplater(zip, { paragraphLoop: true, linebreaks: true });
+const doc = new Docxtemplater(zip, {
+  paragraphLoop: true,
+  linebreaks: true,
+  delimiters: { start: '{', end: '}' }
+});
   doc.setData(data);
   doc.render();
 
