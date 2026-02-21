@@ -173,7 +173,11 @@ Using the master style guide above and the student data below:
   "extraSkills": "string"
 }
 
-When returning workExperience, preserve employerCity and employerState exactly as provided.
+Formatting rules for workExperience:
+- Normalize employerCity to Proper Case (e.g., "new castle" → "New Castle").
+- Normalize employerState to UPPERCASE 2-letter postal abbreviation (e.g., "pA" → "PA").
+- Never remove or omit employerCity or employerState.
+- Always return employerCity and employerState exactly once, correctly formatted.
 
 Return ONLY valid JSON.
 
@@ -196,23 +200,30 @@ ${JSON.stringify(aiInput, null, 2)}
 
     professionalSummary: clean(polished.summary || ""),
 
-    workExperience: polished.workExperience.map((j) => ({
-      employer: clean(j.employer),
-      employerCity: clean(j.employerCity),
-      employerState: clean(j.employerState),
-      title: clean(j.title),
-      start: clean(j.start),
-      end: clean(j.end),
-      tasks: clean(j.tasks),
-    })),
+    // Fallback to baseData so city/state are NEVER undefined
+    workExperience: polished.workExperience.map((j, idx) => {
+      const base = baseData.workExperience[idx] || {};
+      return {
+        employer: clean(j.employer ?? base.employer),
+        employerCity: clean(j.employerCity ?? base.employerCity),
+        employerState: clean(j.employerState ?? base.employerState),
+        title: clean(j.title ?? base.title),
+        start: clean(j.start ?? base.start),
+        end: clean(j.end ?? base.end),
+        tasks: clean(j.tasks ?? base.tasks),
+      };
+    }),
 
-    education: polished.education.map((e) => ({
-      school: clean(e.school),
-      program: clean(e.program),
-      startDate: clean(e.startDate),
-      endDate: clean(e.endDate),
-      notes: clean(e.notes),
-    })),
+    education: polished.education.map((e, idx) => {
+      const base = baseData.education[idx] || {};
+      return {
+        school: clean(e.school ?? base.school),
+        program: clean(e.program ?? base.program),
+        startDate: clean(e.startDate ?? base.startDate),
+        endDate: clean(e.endDate ?? base.endDate),
+        notes: clean(e.notes ?? base.notes),
+      };
+    }),
 
     certifications: {
       programCerts: baseData.certifications.programCerts,
