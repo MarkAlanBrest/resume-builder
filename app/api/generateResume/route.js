@@ -151,7 +151,7 @@ Using the master style guide above and the student data below:
    The summary MUST NOT use the student's name. Write in third-person without naming the student.
 4. Return polished resume content as STRICT JSON:
 
-4. Return polished resume content as STRICT JSON:
+
 
 
 {
