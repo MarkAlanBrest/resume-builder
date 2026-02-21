@@ -35,27 +35,23 @@ export default function FinalizePage() {
           graduationDate: d.grad || ""
         },
 
-        workExperience: d.jobs || [],
+        // ⭐ FIXED: correct field name
+        workExperience: d.workExperience || [],
 
-        militaryService: d.military
-          ? [
-              {
-                branch: d.militaryRank || "",
-                rank: "",
-                dates: "",
-                duties: d.militaryDuties || "",
-                achievements: d.militaryAchievements || ""
-              }
-            ]
-          : [],
+        // ⭐ FIXED: correct field name
+        militaryService: d.militaryService || [],
 
         education: d.education || [],
 
+        // ⭐ FIXED: correct structure
         certifications: {
-          programCertsSelected: d.programCertsSelected || [],
-          extraCerts: d.extraCerts || "",
-          extraSkills: d.extraSkills || ""
-        }
+          programCerts: d.certifications?.programCerts || [],
+          extraCerts: d.certifications?.extraCerts || "",
+          extraSkills: d.certifications?.extraSkills || ""
+        },
+
+        // ⭐ NEW: include career context
+        careerContext: d.careerContext || {}
       };
 
       const res = await fetch("/api/generateResume", {

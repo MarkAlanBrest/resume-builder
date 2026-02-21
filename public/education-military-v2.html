@@ -52,7 +52,6 @@
 
   <h1 class="page-title">NCST’s Resume Builder</h1>
 
-  <!-- INSTRUCTIONS -->
   <div class="info-box">
     <strong>Important:</strong><br>
     Be sure to list <strong>New Castle School of Trades</strong> as one of your schools.
@@ -64,12 +63,10 @@
     colleges, or other training programs.
   </div>
 
-  <!-- ACTION BUTTON -->
   <div id="actionButtons" class="action-row">
     <button class="action-btn" onclick="showEducationForm()">Add School / Institution</button>
   </div>
 
-  <!-- EDUCATION FORM -->
   <div id="educationForm" style="display:none;">
 
     <div class="system">School or Institution Name</div>
@@ -92,7 +89,6 @@
 
   </div>
 
-  <!-- EDUCATION LIST -->
   <div id="educationList"></div>
 
   <br>
@@ -182,7 +178,7 @@ function goBack() {
 }
 
 function goNext() {
-  window.location.href = "finalize/";
+  window.location.href = "finalize.html";  /* ⭐ FIXED */
 }
 </script>
 

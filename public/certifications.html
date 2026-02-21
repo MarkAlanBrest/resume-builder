@@ -40,23 +40,17 @@
   <div class="system">
     The following certifications may be earned during your time at NCST.
     <br>
-    <small>
-      Select the certifications you expect to achieve by your graduation date.
-    </small>
+    <small>Select the certifications you expect to achieve by your graduation date.</small>
   </div>
 
   <div id="programCerts"></div>
 
   <!-- OUTSIDE CERTIFICATIONS -->
-  <div class="system">
-    Certifications earned outside of school (optional)
-  </div>
+  <div class="system">Certifications earned outside of school (optional)</div>
   <textarea id="extraCerts"></textarea>
 
   <!-- OUTSIDE SKILLS -->
-  <div class="system">
-    Skills learned outside of school or work experience (optional)
-  </div>
+  <div class="system">Skills learned outside of school or work experience (optional)</div>
   <textarea id="extraSkills"></textarea>
 
   <br>
@@ -67,7 +61,7 @@
 </div>
 
 <script>
-/* ===== ALL DATA LIVES ON THIS PAGE (NO DEPENDENCIES) ===== */
+/* ===== PROGRAM CERT LIST ===== */
 const PROGRAM_CERTS = {
   "Automotive Technology — Main Campus (New Castle, PA)": [
     "PA State Safety Inspection License",
@@ -182,11 +176,9 @@ function setData(data) {
   localStorage.setItem("resumeData", JSON.stringify(data));
 }
 
-/* ===== LOAD ===== */
+/* ===== LOAD PAGE ===== */
 window.onload = function () {
   const data = getData();
-
-  // exact string stored by the student-info select
   const program = (data.programCampus || "").trim();
 
   if (!program || !PROGRAM_CERTS[program]) {
@@ -196,27 +188,23 @@ window.onload = function () {
     return;
   }
 
-  // certifications object (stable)
+  /* ⭐ FIX: backend expects certifications.programCerts */
   data.certifications ||= {
-    programCertsSelected: [],
+    programCerts: [],
     extraCerts: "",
     extraSkills: ""
   };
 
-  // show program line
   document.getElementById("programDisplay").textContent =
     `Program Selected: ${program}`;
 
-  // restore text fields
   document.getElementById("extraCerts").value = data.certifications.extraCerts || "";
   document.getElementById("extraSkills").value = data.certifications.extraSkills || "";
 
-  // restore checked selections
-  const selected = Array.isArray(data.certifications.programCertsSelected)
-    ? data.certifications.programCertsSelected
+  const selected = Array.isArray(data.certifications.programCerts)
+    ? data.certifications.programCerts
     : [];
 
-  // build checkboxes
   const container = document.getElementById("programCerts");
   container.innerHTML = "";
 
@@ -239,11 +227,10 @@ window.onload = function () {
     container.appendChild(row);
   });
 
-  // persist object shell in case it was missing
   setData(data);
 };
 
-/* ===== NAV ===== */
+/* ===== NAVIGATION ===== */
 function goBack() {
   window.location.href = "work.html";
 }
@@ -251,13 +238,14 @@ function goBack() {
 function goNext() {
   const data = getData();
 
+  /* ⭐ FIX: backend expects certifications.programCerts */
   data.certifications ||= {
-    programCertsSelected: [],
+    programCerts: [],
     extraCerts: "",
     extraSkills: ""
   };
 
-  data.certifications.programCertsSelected = Array.from(
+  data.certifications.programCerts = Array.from(
     document.querySelectorAll("#programCerts input:checked")
   ).map(cb => cb.value);
 

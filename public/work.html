@@ -36,11 +36,10 @@
 
   <h1 class="page-title">NCST’s Resume Builder</h1>
 
-  <!-- ACTION BUTTONS -->
   <div id="actionButtons" class="action-row">
-  <button class="action-btn" onclick="showJobForm()">Enter Work History</button>
-  <button class="action-btn" onclick="showMilitaryForm()">Enter Military History</button>
-</div>
+    <button class="action-btn" onclick="showJobForm()">Enter Work History</button>
+    <button class="action-btn" onclick="showMilitaryForm()">Enter Military History</button>
+  </div>
 
   <!-- JOB FORM -->
   <div id="jobForm" style="display:none;">
@@ -85,10 +84,7 @@
 
   </div>
 
-  <!-- SAVED JOBS -->
   <div id="jobList"></div>
-
-  <!-- SAVED MILITARY -->
   <div id="militaryList"></div>
 
   <br>
@@ -106,7 +102,6 @@ function setData(data) {
   localStorage.setItem("resumeData", JSON.stringify(data));
 }
 
-/* ---------- INITIALIZE ---------- */
 window.onload = function () {
   const data = getData();
   data.workExperience ||= [];
@@ -117,7 +112,6 @@ window.onload = function () {
   renderMilitary();
 };
 
-/* ---------- VIEW CONTROL ---------- */
 function hideAllForms() {
   jobForm.style.display = "none";
   militaryForm.style.display = "none";
@@ -143,12 +137,12 @@ function saveJob() {
   const job = {
     employer: employer.value.trim(),
     title: title.value.trim(),
-    startDate: startDate.value.trim(),
-    endDate: endDate.value.trim(),
+    start: startDate.value.trim(),   // ⭐ FIXED
+    end: endDate.value.trim(),       // ⭐ FIXED
     tasks: tasks.value.trim()
   };
 
-  if (!job.employer || !job.title || !job.startDate || !job.endDate || job.tasks.length < 10) {
+  if (!job.employer || !job.title || !job.start || !job.end || job.tasks.length < 10) {
     alert("Please complete all job fields with enough detail.");
     return;
   }
@@ -171,7 +165,7 @@ function renderJobs() {
     div.className = "entry-card";
     div.innerHTML = `
       <strong>${job.title}</strong> – ${job.employer}<br>
-      ${job.startDate} to ${job.endDate}<br>
+      ${job.start} to ${job.end}<br>
       ${job.tasks}<br>
       <button onclick="deleteJob(${i})">Delete</button>
     `;
@@ -235,7 +229,6 @@ function deleteMilitary(i) {
   renderMilitary();
 }
 
-/* ---------- NAV ---------- */
 function goBack() {
   window.location.href = "objective.html";
 }
