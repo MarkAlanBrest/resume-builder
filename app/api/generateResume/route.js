@@ -1,9 +1,14 @@
+console.log("TEST PATH:", require("fs").existsSync(
+  require("path").join(process.cwd(), "lib", "styleguides2", "masterStyleGuide.js")
+));
+
 import fs from "fs";
 import path from "path";
 import PizZip from "pizzip";
 import Docxtemplater from "docxtemplater";
 import OpenAI from "openai";
-import { masterStyleGuide } from "@/lib/styleguides2/masterStyleGuide.js";
+import { masterStyleGuide } from "../../../lib/styleguides2/masterStyleGuide.js";
+
 
  
 const openai = new OpenAI({
