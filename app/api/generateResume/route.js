@@ -79,14 +79,20 @@ export async function POST(req) {
   const content = fs.readFileSync(templatePath, "binary");
   const zip = new PizZip(content);
 
-  // ⭐ SAFE, BUILT-IN DOT-NOTATION PARSER
   const doc = new Docxtemplater(zip, {
     paragraphLoop: true,
     linebreaks: true,
     delimiters: { start: "{", end: "}" },
+
     parser(tag) {
       return {
-        get: (scope) => {
+        get: (scope, context) => {
+          // ⭐ Preserve Docxtemplater's section behavior
+          if (context && context.scopePath.length > 0) {
+            return scope[tag];
+          }
+
+          // ⭐ Dot notation for normal variables
           const parts = tag.split(".");
           let value = scope;
           for (const p of parts) {
