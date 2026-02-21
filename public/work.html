@@ -15,6 +15,7 @@
     .system {
       color: #0b3c6d;
       font-weight: 600;
+      margin-top: 10px;
     }
     .entry-card {
       border: 1px solid #ccc;
@@ -24,6 +25,11 @@
     }
     .action-btn {
       margin-bottom: 15px;
+    }
+    input, textarea {
+      width: 100%;
+      margin-bottom: 10px;
+      padding: 6px;
     }
   </style>
 </head>
@@ -59,8 +65,12 @@
     <div class="system">End date (MM/YYYY or Present)</div>
     <input id="endDate">
 
-    <div class="system">Tasks performed (one per line)</div>
-    <textarea id="tasks"></textarea>
+    <div class="system">Job Duties (enter 3–5)</div>
+    <input id="duty1" placeholder="Duty 1 (required)">
+    <input id="duty2" placeholder="Duty 2 (required)">
+    <input id="duty3" placeholder="Duty 3 (required)">
+    <input id="duty4" placeholder="Duty 4 (optional)">
+    <input id="duty5" placeholder="Duty 5 (optional)">
 
     <button onclick="saveJob()">Save Job</button>
     <button onclick="cancelForms()">Cancel</button>
@@ -134,6 +144,19 @@ function cancelForms() {
 
 /* ---------- JOBS ---------- */
 function saveJob() {
+  const duties = [
+    duty1.value.trim(),
+    duty2.value.trim(),
+    duty3.value.trim(),
+    duty4.value.trim(),
+    duty5.value.trim()
+  ].filter(Boolean);
+
+  if (duties.length < 3) {
+    alert("Please enter at least 3 job duties.");
+    return;
+  }
+
   const job = {
     employer: employer.value.trim(),
     employerCity: employerCity.value.trim(),
@@ -141,15 +164,12 @@ function saveJob() {
     title: title.value.trim(),
     start: startDate.value.trim(),
     end: endDate.value.trim(),
-    tasks: tasks.value
-      .split("\n")
-      .map(t => t.trim())
-      .filter(Boolean)
+    tasks: duties
   };
 
   if (!job.employer || !job.employerCity || !job.employerState ||
-      !job.title || !job.start || !job.end || job.tasks.length === 0) {
-    alert("Please complete all job fields with enough detail.");
+      !job.title || !job.start || !job.end) {
+    alert("Please complete all job fields.");
     return;
   }
 
@@ -163,7 +183,11 @@ function saveJob() {
   title.value =
   startDate.value =
   endDate.value =
-  tasks.value = "";
+  duty1.value =
+  duty2.value =
+  duty3.value =
+  duty4.value =
+  duty5.value = "";
 
   hideAllForms();
   renderJobs();
@@ -176,10 +200,13 @@ function renderJobs() {
   data.workExperience.forEach((job, i) => {
     const div = document.createElement("div");
     div.className = "entry-card";
+
+    const dutiesHtml = job.tasks.map(t => `• ${t}`).join("<br>");
+
     div.innerHTML = `
       <strong>${job.title}</strong> – ${job.employer} (${job.employerCity}, ${job.employerState})<br>
-      ${job.start} to ${job.end}<br>
-      ${job.tasks.join("<br>")}<br>
+      ${job.start} to ${job.end}<br><br>
+      ${dutiesHtml}<br><br>
       <button onclick="deleteJob(${i})">Delete</button>
     `;
     jobList.appendChild(div);
@@ -233,7 +260,7 @@ function renderMilitary() {
       ${m.achievements}<br>
       <button onclick="deleteMilitary(${i})">Delete</button>
     `;
-    militaryList.appendChild(div);
+    jobList.appendChild(div);
   });
 }
 
