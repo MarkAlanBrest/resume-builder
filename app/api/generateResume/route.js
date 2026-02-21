@@ -59,6 +59,8 @@ export async function POST(req) {
 
     workExperience: workExperience.map((j) => ({
       employer: clean(j.employer),
+      employerCity: clean(j.employerCity),
+      employerState: clean(j.employerState),
       title: clean(j.title),
       start: clean(j.start),
       end: clean(j.end),
@@ -151,9 +153,6 @@ Using the master style guide above and the student data below:
    The summary MUST NOT use the student's name. Write in third-person without naming the student.
 4. Return polished resume content as STRICT JSON:
 
-
-
-
 {
   "summary": "string",
   "workExperience": [...],
@@ -184,6 +183,8 @@ ${JSON.stringify(aiInput, null, 2)}
 
     workExperience: polished.workExperience.map((j) => ({
       employer: clean(j.employer),
+      employerCity: clean(j.employerCity),
+      employerState: clean(j.employerState),
       title: clean(j.title),
       start: clean(j.start),
       end: clean(j.end),

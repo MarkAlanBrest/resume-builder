@@ -47,6 +47,12 @@
     <div class="system">Employer name</div>
     <input id="employer">
 
+    <div class="system">Employer city</div>
+    <input id="employerCity">
+
+    <div class="system">Employer state</div>
+    <input id="employerState">
+
     <div class="system">Job title</div>
     <input id="title">
 
@@ -136,13 +142,16 @@ function cancelForms() {
 function saveJob() {
   const job = {
     employer: employer.value.trim(),
+    employerCity: employerCity.value.trim(),
+    employerState: employerState.value.trim(),
     title: title.value.trim(),
-    start: startDate.value.trim(),   // ⭐ FIXED
-    end: endDate.value.trim(),       // ⭐ FIXED
+    start: startDate.value.trim(),
+    end: endDate.value.trim(),
     tasks: tasks.value.trim()
   };
 
-  if (!job.employer || !job.title || !job.start || !job.end || job.tasks.length < 10) {
+  if (!job.employer || !job.employerCity || !job.employerState ||
+      !job.title || !job.start || !job.end || job.tasks.length < 10) {
     alert("Please complete all job fields with enough detail.");
     return;
   }
@@ -151,7 +160,14 @@ function saveJob() {
   data.workExperience.push(job);
   setData(data);
 
-  employer.value = title.value = startDate.value = endDate.value = tasks.value = "";
+  employer.value =
+  employerCity.value =
+  employerState.value =
+  title.value =
+  startDate.value =
+  endDate.value =
+  tasks.value = "";
+
   hideAllForms();
   renderJobs();
 }
@@ -164,7 +180,7 @@ function renderJobs() {
     const div = document.createElement("div");
     div.className = "entry-card";
     div.innerHTML = `
-      <strong>${job.title}</strong> – ${job.employer}<br>
+      <strong>${job.title}</strong> – ${job.employer} (${job.employerCity}, ${job.employerState})<br>
       ${job.start} to ${job.end}<br>
       ${job.tasks}<br>
       <button onclick="deleteJob(${i})">Delete</button>
@@ -198,8 +214,10 @@ function saveMilitary() {
   data.militaryService.push(entry);
   setData(data);
 
-  militaryRank.value = militaryDuties.value =
-    militaryAchievements.value = militaryComments.value = "";
+  militaryRank.value =
+  militaryDuties.value =
+  militaryAchievements.value =
+  militaryComments.value = "";
 
   hideAllForms();
   renderMilitary();
