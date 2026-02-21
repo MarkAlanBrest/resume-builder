@@ -23,15 +23,12 @@
 
 <div class="chat">
 
-  <!-- PAGE TITLE -->
   <h1 class="page-title">NCST’s Resume Builder</h1>
 
   <div class="system">
     Optional: What type of job are you interested in after graduation?
     <br><br>
-    <small>
-      This information helps tailor your resume but may not appear exactly as written.
-    </small>
+    <small>This helps tailor your resume but may not appear exactly as written.</small>
   </div>
 
   <textarea
@@ -45,7 +42,6 @@
 
   <div class="qual-list">
 
-    <!-- QUALITIES -->
     <div class="check-row">
       <input type="checkbox" class="qual" value="Arrives on time and ready to work">
       <label>Arrives on time and ready to work</label>
@@ -114,7 +110,7 @@ function setData(data) {
   localStorage.setItem("resumeData", JSON.stringify(data));
 }
 
-/* ---------- LOAD ---------- */
+/* ---------- LOAD EXISTING DATA ---------- */
 window.onload = function () {
   const data = getData();
   const ctx = data.careerContext || {};
@@ -129,7 +125,7 @@ window.onload = function () {
   }
 };
 
-/* ---------- SAVE ---------- */
+/* ---------- SAVE DATA ---------- */
 function saveOnly() {
   const data = getData();
 
@@ -144,7 +140,7 @@ function saveOnly() {
   setData(data);
 }
 
-/* ---------- NAV ---------- */
+/* ---------- NAVIGATION ---------- */
 function goBack() {
   saveOnly();
   window.location.href = "student-info.html";
