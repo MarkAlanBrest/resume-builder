@@ -6,8 +6,6 @@ import Docxtemplater from "docxtemplater";
 export async function POST(req) {
   const body = await req.json();
 
-  console.log("BACKEND RECEIVED:", body);
-
   const templatePath = path.join(
     process.cwd(),
     "public",
@@ -23,7 +21,8 @@ export async function POST(req) {
     linebreaks: true
   });
 
-  doc.setData(body);
+  // IMPORTANT: use FLAT student object
+  doc.setData(body.student || {});
 
   doc.render();
 
