@@ -2,7 +2,6 @@ import fs from "fs";
 import path from "path";
 import PizZip from "pizzip";
 import Docxtemplater from "docxtemplater";
-import expressions from "docxtemplater/expressions";   // ⭐ REQUIRED FOR DOT-NOTATION
 
 function clean(v) {
   if (v === undefined || v === null) return "";
@@ -22,9 +21,7 @@ export async function POST(req) {
   const education = Array.isArray(body.education) ? body.education : [];
   const certifications = body.certifications || {};
 
-  // ⭐ MERGED DATA OBJECT (what the template sees)
   const data = {
-    // flat fields
     name: clean(s.name),
     email: clean(s.email),
     phone: clean(s.phone),
@@ -35,7 +32,6 @@ export async function POST(req) {
     programCampus: clean(s.programCampus),
     graduationDate: clean(s.graduationDate),
 
-    // arrays for loops
     workExperience: workExperience.map((j) => ({
       employer: clean(j.employer),
       title: clean(j.title),
@@ -60,7 +56,6 @@ export async function POST(req) {
       extraSkills: clean(certifications.extraSkills),
     },
 
-    // booleans
     hasWorkExperience: workExperience.length > 0,
     hasEducation: education.length > 0,
     hasProgramCerts:
@@ -74,7 +69,6 @@ export async function POST(req) {
       String(certifications.extraSkills).trim() !== "",
   };
 
-  // ⭐ LOAD TEMPLATE
   const templatePath = path.join(
     process.cwd(),
     "public",
@@ -85,12 +79,24 @@ export async function POST(req) {
   const content = fs.readFileSync(templatePath, "binary");
   const zip = new PizZip(content);
 
-  // ⭐ THE CRITICAL FIX — OFFICIAL DOT-NOTATION PARSER
+  // ⭐ SAFE, BUILT-IN DOT-NOTATION PARSER
   const doc = new Docxtemplater(zip, {
     paragraphLoop: true,
     linebreaks: true,
-    delimiters: { start: "{", end: "}" }, // single braces like your template
-    parser: expressions.parser, // ⭐ enables nested paths + sections + {.}
+    delimiters: { start: "{", end: "}" },
+    parser(tag) {
+      return {
+        get: (scope) => {
+          const parts = tag.split(".");
+          let value = scope;
+          for (const p of parts) {
+            if (value == null) return "";
+            value = value[p];
+          }
+          return value;
+        },
+      };
+    },
   });
 
   doc.setData(data);
