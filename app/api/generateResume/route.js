@@ -179,6 +179,17 @@ Formatting rules for workExperience:
 - Never remove or omit employerCity or employerState.
 - Always return employerCity and employerState exactly once, correctly formatted.
 
+Formatting rules for workExperience.tasks:
+- Rewrite tasks into 3–5 strong bullet points.
+- Use the student's provided content FIRST.
+- Expand vague or short tasks into clear, professional, employer-ready bullet points.
+- If the student provided fewer than 3 meaningful tasks, you may add 1–2 reasonable duties that are commonly implied by the student's original text.
+- Do NOT add unrelated or unrealistic responsibilities.
+- Improve grammar, clarity, and action verbs.
+- Each bullet MUST begin with "• " (bullet + space).
+- Return the bullet points as a single string with line breaks between bullets.
+- Preserve employer, employerCity, employerState, title, start, and end exactly as provided.
+
 Return ONLY valid JSON.
 
 STUDENT DATA:
@@ -205,8 +216,8 @@ ${JSON.stringify(aiInput, null, 2)}
       const aiJob = polished.workExperience?.[idx] || {};
       return {
         employer: clean(aiJob.employer ?? base.employer),
-        employerCity: base.employerCity,      // <- always from baseData
-        employerState: base.employerState,    // <- always from baseData
+        employerCity: base.employerCity,
+        employerState: base.employerState,
         title: clean(aiJob.title ?? base.title),
         start: clean(aiJob.start ?? base.start),
         end: clean(aiJob.end ?? base.end),
