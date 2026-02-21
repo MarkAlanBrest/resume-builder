@@ -5,7 +5,7 @@ import Docxtemplater from "docxtemplater";
 import OpenAI from "openai";
 import { masterStyleGuide } from "@/lib/styleguides2/masterStyleGuide.js";
 
-
+ 
 const openai = new OpenAI({
   apiKey: process.env.OPENAI_API_KEY,
 });
