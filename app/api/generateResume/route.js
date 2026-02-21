@@ -29,7 +29,7 @@ function cleanArray(v) {
   return v.map(clean).filter((x) => x !== "");
 }
 
-/* ONLY FIX IS HERE */
+/* FIXED */
 function tasksToArray(v) {
   if (Array.isArray(v)) return cleanArray(v);
 
@@ -37,7 +37,7 @@ function tasksToArray(v) {
   if (!s.trim()) return [];
 
   return s
-    .split(/\r?\n|;/g)
+    .split(/\r?\n|;|,/g)
     .map((t) =>
       clean(t)
         .replace(/^([•\-\–\—*]+)\s*/g, "")
