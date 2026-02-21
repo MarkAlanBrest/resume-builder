@@ -2,21 +2,27 @@ import fs from "fs";
 import path from "path";
 import PizZip from "pizzip";
 import Docxtemplater from "docxtemplater";
+import expressions from "docxtemplater/expressions";   // ⭐ REQUIRED FOR DOT-NOTATION
 
 function clean(v) {
   if (v === undefined || v === null) return "";
-  return String(v).replace(/[\u0000-\u001F\u007F]/g, " ").replace(/\s+/g, " ").trim();
+  return String(v)
+    .replace(/[\u0000-\u001F\u007F]/g, " ")
+    .replace(/\s+/g, " ")
+    .trim();
 }
 
 export async function POST(req) {
   const body = await req.json();
 
   const s = body.student || {};
-  const workExperience = Array.isArray(body.workExperience) ? body.workExperience : [];
+  const workExperience = Array.isArray(body.workExperience)
+    ? body.workExperience
+    : [];
   const education = Array.isArray(body.education) ? body.education : [];
   const certifications = body.certifications || {};
 
-  // MERGED DATA OBJECT (what the template sees)
+  // ⭐ MERGED DATA OBJECT (what the template sees)
   const data = {
     // flat fields
     name: clean(s.name),
@@ -30,7 +36,7 @@ export async function POST(req) {
     graduationDate: clean(s.graduationDate),
 
     // arrays for loops
-    workExperience: workExperience.map(j => ({
+    workExperience: workExperience.map((j) => ({
       employer: clean(j.employer),
       title: clean(j.title),
       start: clean(j.start),
@@ -38,7 +44,7 @@ export async function POST(req) {
       tasks: clean(j.tasks),
     })),
 
-    education: education.map(e => ({
+    education: education.map((e) => ({
       school: clean(e.school),
       program: clean(e.program),
       startDate: clean(e.startDate),
@@ -58,11 +64,17 @@ export async function POST(req) {
     hasWorkExperience: workExperience.length > 0,
     hasEducation: education.length > 0,
     hasProgramCerts:
-      Array.isArray(certifications.programCerts) && certifications.programCerts.length > 0,
-    hasExtraCerts: !!(certifications.extraCerts && String(certifications.extraCerts).trim()),
-    hasExtraSkills: !!(certifications.extraSkills && String(certifications.extraSkills).trim()),
+      Array.isArray(certifications.programCerts) &&
+      certifications.programCerts.length > 0,
+    hasExtraCerts:
+      !!certifications.extraCerts &&
+      String(certifications.extraCerts).trim() !== "",
+    hasExtraSkills:
+      !!certifications.extraSkills &&
+      String(certifications.extraSkills).trim() !== "",
   };
 
+  // ⭐ LOAD TEMPLATE
   const templatePath = path.join(
     process.cwd(),
     "public",
@@ -73,28 +85,12 @@ export async function POST(req) {
   const content = fs.readFileSync(templatePath, "binary");
   const zip = new PizZip(content);
 
-  // ⭐ THE CRITICAL FIXES ⭐
+  // ⭐ THE CRITICAL FIX — OFFICIAL DOT-NOTATION PARSER
   const doc = new Docxtemplater(zip, {
     paragraphLoop: true,
     linebreaks: true,
-
-    // 1. Use single braces like your template
-    delimiters: { start: "{", end: "}" },
-
-    // 2. Allow nested paths like certifications.programCerts
-    parser(tag) {
-      return {
-        get: (scope) => {
-          const parts = tag.split(".");
-          let value = scope;
-          for (const p of parts) {
-            if (value == null) return "";
-            value = value[p];
-          }
-          return value;
-        }
-      };
-    }
+    delimiters: { start: "{", end: "}" }, // single braces like your template
+    parser: expressions.parser, // ⭐ enables nested paths + sections + {.}
   });
 
   doc.setData(data);
@@ -102,7 +98,7 @@ export async function POST(req) {
 
   const buffer = doc.getZip().generate({
     type: "nodebuffer",
-    compression: "DEFLATE"
+    compression: "DEFLATE",
   });
 
   return new Response(new Uint8Array(buffer), {
