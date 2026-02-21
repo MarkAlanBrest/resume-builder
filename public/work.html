@@ -92,6 +92,7 @@
 
   <button onclick="goBack()">Back</button>
   <button onclick="goNext()">Next</button>
+
 </div>
 
 <script>
@@ -144,11 +145,10 @@ function saveJob() {
       .split("\n")
       .map(t => t.trim())
       .filter(Boolean)
-      .join("\n")
   };
 
   if (!job.employer || !job.employerCity || !job.employerState ||
-      !job.title || !job.start || !job.end || job.tasks.length < 10) {
+      !job.title || !job.start || !job.end || job.tasks.length === 0) {
     alert("Please complete all job fields with enough detail.");
     return;
   }
@@ -179,7 +179,7 @@ function renderJobs() {
     div.innerHTML = `
       <strong>${job.title}</strong> – ${job.employer} (${job.employerCity}, ${job.employerState})<br>
       ${job.start} to ${job.end}<br>
-      ${job.tasks.replace(/\n/g, "<br>")}<br>
+      ${job.tasks.join("<br>")}<br>
       <button onclick="deleteJob(${i})">Delete</button>
     `;
     jobList.appendChild(div);
