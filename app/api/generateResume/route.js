@@ -200,17 +200,17 @@ ${JSON.stringify(aiInput, null, 2)}
 
     professionalSummary: clean(polished.summary || ""),
 
-    // Fallback to baseData so city/state are NEVER undefined
-    workExperience: polished.workExperience.map((j, idx) => {
-      const base = baseData.workExperience[idx] || {};
+    // FORCE city/state FROM ORIGINAL INPUT, IGNORE AI FOR THESE
+    workExperience: baseData.workExperience.map((base, idx) => {
+      const aiJob = polished.workExperience?.[idx] || {};
       return {
-        employer: clean(j.employer ?? base.employer),
-        employerCity: clean(j.employerCity ?? base.employerCity),
-        employerState: clean(j.employerState ?? base.employerState),
-        title: clean(j.title ?? base.title),
-        start: clean(j.start ?? base.start),
-        end: clean(j.end ?? base.end),
-        tasks: clean(j.tasks ?? base.tasks),
+        employer: clean(aiJob.employer ?? base.employer),
+        employerCity: base.employerCity,      // <- always from baseData
+        employerState: base.employerState,    // <- always from baseData
+        title: clean(aiJob.title ?? base.title),
+        start: clean(aiJob.start ?? base.start),
+        end: clean(aiJob.end ?? base.end),
+        tasks: clean(aiJob.tasks ?? base.tasks),
       };
     }),
 
