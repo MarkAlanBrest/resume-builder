@@ -1,41 +1,31 @@
 "use client";
+
 import { useState } from "react";
 
 export default function FinalizePage() {
-  const [confirmed, setConfirmed] = useState(false);
   const [loading, setLoading] = useState(false);
 
   async function generateResume() {
-    if (!confirmed) return;
-
     setLoading(true);
 
-    const d = JSON.parse(localStorage.getItem("resumeData")) || {};
+    // Pull the saved resume data from localStorage
+    const data = JSON.parse(localStorage.getItem("resumeData")) || {};
 
+    // Build payload (root-level keys)
     const payload = {
-      TEMPLATE: "Template",
-
-      student: {
-        name: d.name || "",
-        email: d.email || "",
-        phone: d.phone || "",
-        address: d.address || "",
-        city: d.city || "",
-        state: d.state || "",
-        zip: d.zip || "",
-        programCampus: d.programCampus || "",
-        graduationDate: d.grad || ""
-      },
-
-      workExperience: d.jobs || [],
-      militaryService: d.militaryService || [],
-      education: d.education || [],
-
-      certifications: {
-        programCerts: d.programCertsSelected || [],
-        extraCerts: d.extraCerts || "",
-        extraSkills: d.extraSkills || ""
-      }
+      TEMPLATE: data.template || "Template",
+      NAME: data.name || "",
+      EMAIL: data.email || "",
+      PHONE: data.phone || "",
+      ADDRESS: data.address || "",
+      LOCATION: `${data.city || ""}, ${data.state || ""}`,
+      PROFESSIONAL_SUMMARY: data.objective || "",
+      SKILLS: data.skills || "",
+      EXPERIENCE: data.experience || "",
+      EDUCATION: data.education || "",
+      PROGRAM_CERTIFICATIONS: data.certifications?.programCertsSelected?.join(", ") || "",
+      OUTSIDE_CERTIFICATIONS: data.certifications?.extraCerts || "",
+      GENERAL_NOTES: data.generalNotes || ""
     };
 
     const res = await fetch("/api/generateResume", {
@@ -43,12 +33,6 @@ export default function FinalizePage() {
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify(payload)
     });
-
-    if (!res.ok) {
-      alert("Resume generation failed");
-      setLoading(false);
-      return;
-    }
 
     const blob = await res.blob();
     const url = window.URL.createObjectURL(blob);
@@ -62,21 +46,20 @@ export default function FinalizePage() {
   }
 
   return (
-    <div style={{ padding: 40 }}>
+    <div style={{ padding: "40px", fontFamily: "Arial" }}>
       <h1>Finalize Resume</h1>
+      <p>Your resume is almost ready.</p>
 
-      <label>
-        <input
-          type="checkbox"
-          checked={confirmed}
-          onChange={(e) => setConfirmed(e.target.checked)}
-        />
-        I confirm my resume information is correct
-      </label>
-
-      <br /><br />
-
-      <button onClick={generateResume} disabled={!confirmed || loading}>
+      <button
+        onClick={generateResume}
+        disabled={loading}
+        style={{
+          padding: "12px 20px",
+          fontSize: "16px",
+          cursor: "pointer",
+          marginTop: "20px"
+        }}
+      >
         {loading ? "Generating..." : "Download Resume"}
       </button>
     </div>
