@@ -122,10 +122,14 @@ export async function POST(req) {
       },
     };
 
-    const completion = await openai.chat.completions.create({
-      model: "gpt-4o-mini",
-      temperature: 0.4,
-      messages: [
+  const completion = await openai.chat.completions.create({
+  model: "gpt-4o-mini",
+  temperature: 0.4,
+  response_format: { type: "json_object" },   // ← LINE 158
+  messages: [
+
+
+
         {
           role: "system",
           content: `
