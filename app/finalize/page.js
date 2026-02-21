@@ -14,42 +14,54 @@ export default function FinalizePage() {
   const [loading, setLoading] = useState(false);
 
   async function generateResume() {
-    if (!confirmed) return;
+    if (!confirmed || loading) return;
+
     setLoading(true);
 
-    const d = JSON.parse(localStorage.getItem("resumeData")) || {};
+    try {
+      const d = JSON.parse(localStorage.getItem("resumeData")) || {};
 
-    const payload = {
-      TEMPLATE: selectedTemplate,
-      student: {
-        name: d.name || "",
-        email: d.email || "",
-        phone: d.phone || "",
-        address: d.address || "",
-        city: d.city || "",
-        state: d.state || "",
-        zip: d.zip || "",
-        programCampus: d.programCampus || "",
-        graduationDate: d.grad || ""
+      const payload = {
+        TEMPLATE: selectedTemplate,
+        student: {
+          name: d.name || "",
+          email: d.email || "",
+          phone: d.phone || "",
+          address: d.address || "",
+          city: d.city || "",
+          state: d.state || "",
+          zip: d.zip || "",
+          programCampus: d.programCampus || "",
+          graduationDate: d.grad || ""
+        }
+      };
+
+      const res = await fetch("/api/generateResume", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(payload)
+      });
+
+      if (!res.ok) {
+        alert("Resume generation failed");
+        return;
       }
-    };
 
-    const res = await fetch("/api/generateResume", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(payload)
-    });
-
-    const blob = await res.blob();
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement("a");
-    a.href = url;
-    note;
-    a.download = "resume.docx";
-    a.click();
-    URL.revokeObjectURL(url);
-
-    setLoading(false);
+      const blob = await res.blob();
+      const url = window.URL.createObjectURL(blob);
+      const a = document.createElement("a");
+      a.href = url;
+      a.download = "resume.docx";
+      document.body.appendChild(a);
+      a.click();
+      a.remove();
+      window.URL.revokeObjectURL(url);
+    } catch (e) {
+      console.error(e);
+      alert("Resume generation failed. Check logs.");
+    } finally {
+      setLoading(false);
+    }
   }
 
   return (
@@ -64,7 +76,7 @@ export default function FinalizePage() {
     >
       <div
         style={{
-          width: "700px",
+          width: "720px",
           background: "#fff",
           padding: "40px",
           borderRadius: "8px",
@@ -75,7 +87,6 @@ export default function FinalizePage() {
         <h1 style={{ marginBottom: "10px" }}>Finalize Resume</h1>
         <p>Select a resume layout below.</p>
 
-        {/* TEMPLATE SELECTOR */}
         <div
           style={{
             display: "grid",
@@ -87,7 +98,7 @@ export default function FinalizePage() {
           {templates.map((t) => (
             <div
               key={t.id}
-              onClick={() => setSelectedTemplate(t.id)}
+              onClick={() => !loading && setSelectedTemplate(t.id)}
               style={{
                 height: "120px",
                 border:
@@ -95,13 +106,14 @@ export default function FinalizePage() {
                     ? "3px solid #0b3c6d"
                     : "2px dashed #aaa",
                 borderRadius: "6px",
-                cursor: "pointer",
+                cursor: loading ? "not-allowed" : "pointer",
                 display: "flex",
                 alignItems: "center",
                 justifyContent: "center",
                 fontWeight: "bold",
                 background:
-                  selectedTemplate === t.id ? "#e6f0ff" : "#fafafa"
+                  selectedTemplate === t.id ? "#e6f0ff" : "#fafafa",
+                userSelect: "none"
               }}
             >
               {t.label}
@@ -109,28 +121,26 @@ export default function FinalizePage() {
           ))}
         </div>
 
-        {/* CONFIRMATION */}
         <label style={{ display: "block", marginBottom: "20px" }}>
           <input
             type="checkbox"
             checked={confirmed}
             onChange={(e) => setConfirmed(e.target.checked)}
             style={{ marginRight: "8px" }}
+            disabled={loading}
           />
           Students must agree to review their resume. They are responsible for
           the accuracy and final content of the document.
         </label>
 
-        {/* ACTION BUTTON */}
         <button
           onClick={generateResume}
           disabled={!confirmed || loading}
           style={{
             padding: "14px 28px",
             fontSize: "16px",
-            cursor:
-              confirmed && !loading ? "pointer" : "not-allowed",
-            background: "#0b3c6d",
+            cursor: confirmed && !loading ? "pointer" : "not-allowed",
+            background: loading ? "#999" : "#0b3c6d",
             color: "white",
             border: "none",
             borderRadius: "4px"
@@ -141,7 +151,7 @@ export default function FinalizePage() {
 
         {loading && (
           <p style={{ color: "red", marginTop: "15px" }}>
-            Please wait while your resume is being generated.
+            Resume being generated…
           </p>
         )}
       </div>
