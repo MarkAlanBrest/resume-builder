@@ -10,6 +10,26 @@ export default function FinalizePage() {
 
     const data = JSON.parse(localStorage.getItem("resumeData")) || {};
 
+    // Format EDUCATION array into printable text
+    const formattedEducation = Array.isArray(data.education)
+      ? data.education
+          .map(e =>
+            `${e.program || ""} — ${e.school || ""} (${e.startDate || ""} – ${e.endDate || ""})${
+              e.notes ? " — " + e.notes : ""
+            }`
+          )
+          .join("\n")
+      : "";
+
+    // Format EXPERIENCE if your work page uses arrays (safe fallback)
+    const formattedExperience = Array.isArray(data.experience)
+      ? data.experience
+          .map(w =>
+            `${w.jobTitle || ""} — ${w.company || ""} (${w.startDate || ""} – ${w.endDate || ""})\n${w.description || ""}`
+          )
+          .join("\n\n")
+      : data.experience || "";
+
     const payload = {
       TEMPLATE: data.template || "Template",
 
@@ -21,19 +41,18 @@ export default function FinalizePage() {
 
       PROFESSIONAL_SUMMARY: data.objective || "",
       SKILLS: data.skills || "",
-      EXPERIENCE: data.experience || "",
 
-      EDUCATION: data.education || "",
+      EXPERIENCE: formattedExperience,
+      EDUCATION: formattedEducation,
 
       PROGRAM_CERTIFICATIONS:
         data.certifications?.programCertsSelected?.join(", ") || "",
 
       OUTSIDE_CERTIFICATIONS: data.certifications?.extraCerts || "",
-
       GENERAL_NOTES: data.certifications?.extraSkills || ""
     };
 
-    console.log("PAYLOAD SENT:", payload);
+    console.log("FINAL PAYLOAD:", payload);
 
     const res = await fetch("/api/generateResume", {
       method: "POST",
