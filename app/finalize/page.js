@@ -45,14 +45,17 @@ export default function FinalizePage() {
           extraSkills: d.certifications?.extraSkills || ""
         },
 
-        // ⭐ REQUIRED FLAGS FOR DOCX TEMPLATE
         hasWorkExperience: (d.workExperience?.length ?? 0) > 0,
         hasEducation: (d.education?.length ?? 0) > 0,
         hasProgramCerts: (d.certifications?.programCerts?.length ?? 0) > 0,
         hasExtraCerts: !!d.certifications?.extraCerts,
         hasExtraSkills: !!d.certifications?.extraSkills,
 
-        careerContext: d.careerContext || {}
+        careerContext: {
+          objectives: d.objectives || "",
+          jobTarget: d.jobTarget || "",
+          notes: d.notes || ""
+        }
       };
 
       const res = await fetch("/api/generateResume", {

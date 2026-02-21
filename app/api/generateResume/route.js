@@ -2,6 +2,12 @@ import fs from "fs";
 import path from "path";
 import PizZip from "pizzip";
 import Docxtemplater from "docxtemplater";
+import OpenAI from "openai";
+import { masterStyleGuide } from "@/lib/style-guides/masterStyleGuide";
+
+const openai = new OpenAI({
+  apiKey: process.env.OPENAI_API_KEY,
+});
 
 function clean(v) {
   if (v === undefined || v === null) return "";
@@ -9,6 +15,12 @@ function clean(v) {
     .replace(/[\u0000-\u001F\u007F]/g, " ")
     .replace(/\s+/g, " ")
     .trim();
+}
+
+function limit(text, max = 3500) {
+  if (!text) return "";
+  if (text.length <= max) return text;
+  return text.slice(0, max) + "…";
 }
 
 export async function POST(req) {
@@ -20,8 +32,8 @@ export async function POST(req) {
     : [];
   const education = Array.isArray(body.education) ? body.education : [];
   const certifications = body.certifications || {};
+  const careerContext = body.careerContext || {};
 
-  // ⭐ CLEAN + FLATTEN PROGRAM CERTS
   const rawProgramCerts = Array.isArray(certifications.programCerts)
     ? certifications.programCerts
     : [];
@@ -30,7 +42,7 @@ export async function POST(req) {
     .map(clean)
     .filter((v) => v !== "");
 
-  const data = {
+  const baseData = {
     name: clean(s.name),
     email: clean(s.email),
     phone: clean(s.phone),
@@ -57,7 +69,6 @@ export async function POST(req) {
       notes: clean(e.notes),
     })),
 
-    // ⭐ UPDATED CERTIFICATIONS BLOCK
     certifications: {
       programCerts: cleanedProgramCerts,
       programCertsText: cleanedProgramCerts.join(", "),
@@ -65,7 +76,6 @@ export async function POST(req) {
       extraSkills: clean(certifications.extraSkills),
     },
 
-    // ⭐ FLAGS
     hasWorkExperience: workExperience.length > 0,
     hasEducation: education.length > 0,
     hasProgramCerts: cleanedProgramCerts.length > 0,
@@ -75,7 +85,138 @@ export async function POST(req) {
     hasExtraSkills:
       !!certifications.extraSkills &&
       String(certifications.extraSkills).trim() !== "",
+
+    careerContext,
   };
+
+  let polished = {
+    summary: "",
+    workExperience: baseData.workExperience,
+    education: baseData.education,
+    certificationsText: baseData.certifications.programCertsText,
+    extraCerts: baseData.certifications.extraCerts,
+    extraSkills: baseData.certifications.extraSkills,
+  };
+
+  try {
+    const aiInput = {
+      student: {
+        name: baseData.name,
+        programCampus: baseData.programCampus,
+        graduationDate: baseData.graduationDate,
+      },
+      careerContext: baseData.careerContext,
+      workExperience: baseData.workExperience,
+      education: baseData.education,
+      certifications: {
+        programCerts: baseData.certifications.programCerts,
+        programCertsText: baseData.certifications.programCertsText,
+        extraCerts: baseData.certifications.extraCerts,
+        extraSkills: baseData.certifications.extraSkills,
+      },
+    };
+
+    const completion = await openai.chat.completions.create({
+      model: "gpt-4o-mini",
+      temperature: 0.4,
+      messages: [
+        {
+          role: "system",
+          content: `
+You are an AI resume writer for a technical school.
+Follow the master style guide EXACTLY.
+
+MASTER STYLE GUIDE:
+${masterStyleGuide}
+          `.trim(),
+        },
+        {
+          role: "user",
+          content: `
+Using the master style guide above and the student data below:
+
+1. Select the correct PROGRAM block based on "programCampus".
+2. Apply GLOBAL rules + that PROGRAM block only.
+3. Return polished resume content as STRICT JSON:
+
+{
+  "summary": "string",
+  "workExperience": [...],
+  "education": [...],
+  "certificationsText": "string",
+  "extraCerts": "string",
+  "extraSkills": "string"
+}
+
+Return ONLY valid JSON.
+
+STUDENT DATA:
+${JSON.stringify(aiInput, null, 2)}
+          `.trim(),
+        },
+      ],
+    });
+
+    polished = JSON.parse(completion.choices[0].message.content);
+  } catch (err) {
+    console.error("AI polishing failed:", err);
+  }
+
+  const finalData = {
+    ...baseData,
+
+    professionalSummary: clean(polished.summary || ""),
+
+    workExperience: polished.workExperience.map((j) => ({
+      employer: clean(j.employer),
+      title: clean(j.title),
+      start: clean(j.start),
+      end: clean(j.end),
+      tasks: clean(j.tasks),
+    })),
+
+    education: polished.education.map((e) => ({
+      school: clean(e.school),
+      program: clean(e.program),
+      startDate: clean(e.startDate),
+      endDate: clean(e.endDate),
+      notes: clean(e.notes),
+    })),
+
+    certifications: {
+      programCerts: baseData.certifications.programCerts,
+      programCertsText: clean(polished.certificationsText),
+      extraCerts: clean(polished.extraCerts),
+      extraSkills: clean(polished.extraSkills),
+    },
+
+    hasProgramCerts: clean(polished.certificationsText) !== "",
+    hasExtraCerts: clean(polished.extraCerts) !== "",
+    hasExtraSkills: clean(polished.extraSkills) !== "",
+  };
+
+  // ENFORCE 2-PAGE LIMIT
+  finalData.professionalSummary = limit(finalData.professionalSummary, 600);
+
+  finalData.workExperience = finalData.workExperience.map((j) => ({
+    ...j,
+    tasks: limit(j.tasks, 800),
+  }));
+
+  finalData.education = finalData.education.map((e) => ({
+    ...e,
+    notes: limit(e.notes, 400),
+  }));
+
+  finalData.certifications.extraSkills = limit(
+    finalData.certifications.extraSkills,
+    600
+  );
+
+  finalData.certifications.extraCerts = limit(
+    finalData.certifications.extraCerts,
+    600
+  );
 
   const templatePath = path.join(
     process.cwd(),
@@ -91,7 +232,6 @@ export async function POST(req) {
     paragraphLoop: true,
     linebreaks: true,
     delimiters: { start: "{", end: "}" },
-
     parser(tag) {
       return {
         get: (scope) => {
@@ -107,7 +247,7 @@ export async function POST(req) {
     },
   });
 
-  doc.setData(data);
+  doc.setData(finalData);
   doc.render();
 
   const buffer = doc.getZip().generate({
