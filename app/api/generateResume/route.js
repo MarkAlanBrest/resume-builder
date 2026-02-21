@@ -30,6 +30,38 @@ function cleanArray(v) {
   return v.map(clean).filter((x) => x !== "");
 }
 
+/**
+ * NEW: Accepts tasks from form/AI as:
+ * - array of strings
+ * - single string with bullets/newlines/semicolons
+ * Returns clean array of bullet statements (NO bullet symbols).
+ */
+function tasksToArray(v) {
+  if (Array.isArray(v)) return cleanArray(v);
+
+  const s = clean(v);
+  if (!s) return [];
+
+  // Split on newlines or semicolons (covers "• a\n• b" and "a; b; c")
+  return s
+    .split(/\r?\n|;/g)
+    .map((t) =>
+      clean(t)
+        .replace(/^([•\-\–\—*]+)\s*/g, "") // strip leading bullet-like chars
+        .trim()
+    )
+    .filter(Boolean);
+}
+
+/**
+ * NEW: Convert array tasks back into a single string for AI input.
+ * (AI is more reliable rewriting when it sees tasks as plain text.)
+ */
+function tasksToText(arr) {
+  if (!Array.isArray(arr) || arr.length === 0) return "";
+  return arr.map(clean).filter(Boolean).join("; ");
+}
+
 function limit(text, max = 3500) {
   if (!text) return "";
   if (text.length <= max) return text;
@@ -40,7 +72,9 @@ export async function POST(req) {
   const body = await req.json();
 
   const s = body.student || {};
-  const workExperience = Array.isArray(body.workExperience) ? body.workExperience : [];
+  const workExperience = Array.isArray(body.workExperience)
+    ? body.workExperience
+    : [];
   const education = Array.isArray(body.education) ? body.education : [];
   const certifications = body.certifications || {};
   const careerContext = body.careerContext || {};
@@ -49,7 +83,9 @@ export async function POST(req) {
     ? certifications.programCerts
     : [];
 
-  const cleanedProgramCerts = rawProgramCerts.map(clean).filter((v) => v !== "");
+  const cleanedProgramCerts = rawProgramCerts
+    .map(clean)
+    .filter((v) => v !== "");
 
   const baseData = {
     name: clean(s.name),
@@ -62,7 +98,6 @@ export async function POST(req) {
     programCampus: clean(s.programCampus),
     graduationDate: clean(s.graduationDate),
 
-    // CHANGE: tasks becomes ARRAY (for {#tasks}{.}{/tasks})
     workExperience: workExperience.map((j) => ({
       employer: clean(j.employer),
       employerCity: clean(j.employerCity),
@@ -70,7 +105,9 @@ export async function POST(req) {
       title: clean(j.title),
       start: clean(j.start),
       end: clean(j.end),
-      tasks: cleanArray(j.tasks), // <-- IMPORTANT
+
+      // FIX: always store tasks internally as ARRAY
+      tasks: tasksToArray(j.tasks),
     })),
 
     education: education.map((e) => ({
@@ -92,9 +129,11 @@ export async function POST(req) {
     hasEducation: education.length > 0,
     hasProgramCerts: cleanedProgramCerts.length > 0,
     hasExtraCerts:
-      !!certifications.extraCerts && String(certifications.extraCerts).trim() !== "",
+      !!certifications.extraCerts &&
+      String(certifications.extraCerts).trim() !== "",
     hasExtraSkills:
-      !!certifications.extraSkills && String(certifications.extraSkills).trim() !== "",
+      !!certifications.extraSkills &&
+      String(certifications.extraSkills).trim() !== "",
 
     careerContext,
   };
@@ -116,7 +155,18 @@ export async function POST(req) {
         graduationDate: baseData.graduationDate,
       },
       careerContext: baseData.careerContext,
-      workExperience: baseData.workExperience,
+
+      // FIX: send tasks as STRING to AI (better rewriting)
+      workExperience: baseData.workExperience.map((j) => ({
+        employer: j.employer,
+        employerCity: j.employerCity,
+        employerState: j.employerState,
+        title: j.title,
+        start: j.start,
+        end: j.end,
+        tasks: tasksToText(j.tasks),
+      })),
+
       education: baseData.education,
       certifications: {
         programCerts: baseData.certifications.programCerts,
@@ -168,7 +218,6 @@ Using the master style guide above and the student data below:
       "title": "string",
       "start": "string",
       "end": "string",
-
       "tasks": ["string","string","string"]
     }
   ],
@@ -217,19 +266,23 @@ ${JSON.stringify(aiInput, null, 2)}
 
     professionalSummary: clean(polished.summary || ""),
 
-    // FORCE city/state FROM ORIGINAL INPUT, IGNORE AI FOR THESE
     workExperience: baseData.workExperience.map((base, idx) => {
       const aiJob = polished.workExperience?.[idx] || {};
+      const aiTasks = tasksToArray(aiJob.tasks);
+
       return {
         employer: clean(aiJob.employer ?? base.employer),
-        employerCity: base.employerCity,
-        employerState: base.employerState,
+
+        // FIX: use AI-normalized city/state (fallback to base)
+        employerCity: clean(aiJob.employerCity ?? base.employerCity),
+        employerState: clean(aiJob.employerState ?? base.employerState),
+
         title: clean(aiJob.title ?? base.title),
         start: clean(aiJob.start ?? base.start),
         end: clean(aiJob.end ?? base.end),
 
-        // CHANGE: tasks must be array (support both AI array + fallback to base array)
-        tasks: Array.isArray(aiJob.tasks) ? cleanArray(aiJob.tasks) : base.tasks,
+        // FIX: ensure tasks is ALWAYS an array for the template loop
+        tasks: aiTasks.length ? aiTasks : base.tasks,
       };
     }),
 
@@ -258,7 +311,7 @@ ${JSON.stringify(aiInput, null, 2)}
 
   finalData.professionalSummary = limit(finalData.professionalSummary, 600);
 
-  // CHANGE: limit tasks as array
+  // FIX: limit each bullet line, not the whole tasks field
   finalData.workExperience = finalData.workExperience.map((j) => ({
     ...j,
     tasks: Array.isArray(j.tasks) ? j.tasks.map((t) => limit(t, 300)) : [],
@@ -269,8 +322,15 @@ ${JSON.stringify(aiInput, null, 2)}
     notes: limit(e.notes, 400),
   }));
 
-  finalData.certifications.extraSkills = limit(finalData.certifications.extraSkills, 600);
-  finalData.certifications.extraCerts = limit(finalData.certifications.extraCerts, 600);
+  finalData.certifications.extraSkills = limit(
+    finalData.certifications.extraSkills,
+    600
+  );
+
+  finalData.certifications.extraCerts = limit(
+    finalData.certifications.extraCerts,
+    600
+  );
 
   const templatePath = path.join(
     process.cwd(),
