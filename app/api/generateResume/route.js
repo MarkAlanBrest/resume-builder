@@ -174,21 +174,17 @@ Using the master style guide above and the student data below:
 }
 
 Formatting rules for workExperience:
-- Normalize employerCity to Proper Case (e.g., "new castle" → "New Castle").
-- Normalize employerState to UPPERCASE 2-letter postal abbreviation (e.g., "pA" → "PA").
-- Never remove or omit employerCity or employerState.
-- Always return employerCity and employerState exactly once, correctly formatted.
+- Normalize employerCity to Proper Case.
+- Normalize employerState to UPPERCASE 2-letter postal abbreviation.
+- Never remove employerCity or employerState.
 
 Formatting rules for workExperience.tasks:
 - Rewrite tasks into 3–5 strong bullet points.
 - Use the student's provided content FIRST.
-- Expand vague or short tasks into clear, professional, employer-ready bullet points.
-- If the student provided fewer than 3 meaningful tasks, you may add 1–2 reasonable duties that are commonly implied by the student's original text.
-- Do NOT add unrelated or unrealistic responsibilities.
-- Improve grammar, clarity, and action verbs.
-- Each bullet MUST begin with "• " (bullet + space).
-- Return the bullet points as a single string with line breaks between bullets.
-- Preserve employer, employerCity, employerState, title, start, and end exactly as provided.
+- Add 1–2 reasonable duties ONLY if needed to reach 3 bullets.
+- No unrelated or unrealistic duties.
+- Each bullet begins with "• ".
+- Return bullets as a single string with line breaks.
 
 Return ONLY valid JSON.
 
@@ -199,7 +195,6 @@ ${JSON.stringify(aiInput, null, 2)}
       ],
     });
 
-    console.log("AI RAW OUTPUT:", completion.choices[0].message.content);
     polished = JSON.parse(completion.choices[0].message.content);
 
   } catch (err) {
@@ -211,13 +206,12 @@ ${JSON.stringify(aiInput, null, 2)}
 
     professionalSummary: clean(polished.summary || ""),
 
-    // FORCE city/state FROM ORIGINAL INPUT, IGNORE AI FOR THESE
     workExperience: baseData.workExperience.map((base, idx) => {
       const aiJob = polished.workExperience?.[idx] || {};
       return {
         employer: clean(aiJob.employer ?? base.employer),
-        employerCity: base.employerCity,
-        employerState: base.employerState,
+        employerCity: clean(aiJob.employerCity ?? base.employerCity),
+        employerState: clean(aiJob.employerState ?? base.employerState),
         title: clean(aiJob.title ?? base.title),
         start: clean(aiJob.start ?? base.start),
         end: clean(aiJob.end ?? base.end),
