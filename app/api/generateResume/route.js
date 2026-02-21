@@ -29,6 +29,7 @@ function cleanArray(v) {
   return v.map(clean).filter((x) => x !== "");
 }
 
+/* FIXED */
 function tasksToArray(v) {
   if (Array.isArray(v)) return cleanArray(v);
 
@@ -179,6 +180,47 @@ ${masterStyleGuide}
           content: `
 Using the master style guide above and the student data below:
 
+1. Select the correct PROGRAM block based on "programCampus".
+2. Apply GLOBAL rules + that PROGRAM block only.
+3. Build the "summary" field ONLY from:
+   - The student's Objective Page (careerContext)
+   - The correct PROGRAM block from the style guide
+   - The student's certifications (programCerts, extraCerts)
+   DO NOT use work history or education to build the summary.
+   The summary MUST be a 2–4 sentence professional paragraph that functions as an introduction/objective section.
+   The summary MUST NOT use the student's name. Write in third-person without naming the student.
+
+4. Return polished resume content as STRICT JSON with this exact structure:
+
+{
+  "summary": "string",
+  "workExperience": [
+    {
+      "employer": "string",
+      "employerCity": "string",
+      "employerState": "string",
+      "title": "string",
+      "start": "string",
+      "end": "string",
+      "tasks": ["string","string","string"]
+    }
+  ],
+  "education": [...],
+  "certificationsText": "string",
+  "extraCerts": "string",
+  "extraSkills": "string"
+}
+
+Formatting rules for workExperience:
+- Normalize employerCity to Proper Case.
+- Normalize employerState to UPPERCASE 2-letter postal abbreviation.
+- Never remove or omit employerCity or employerState.
+
+Formatting rules for workExperience.tasks:
+- Rewrite tasks into 3–5 strong resume bullet statements.
+- Return tasks as a JSON ARRAY of strings.
+- NO bullet symbols.
+
 Return ONLY valid JSON.
 
 STUDENT DATA:
@@ -195,10 +237,15 @@ ${JSON.stringify(aiInput, null, 2)}
 
   const finalData = {
     ...baseData,
+
     professionalSummary: clean(polished.summary || ""),
+
     workExperience: baseData.workExperience.map((base, idx) => {
       const aiJob = polished.workExperience?.[idx] || {};
-      const aiTasks = tasksToArray(aiJob.tasks || base.tasks);
+      const aiTasks = tasksToArray(
+  aiJob.tasks && aiJob.tasks.length ? aiJob.tasks : base.tasks
+);
+
       return {
         employer: clean(aiJob.employer ?? base.employer),
         employerCity: clean(aiJob.employerCity ?? base.employerCity),
@@ -206,12 +253,54 @@ ${JSON.stringify(aiInput, null, 2)}
         title: clean(aiJob.title ?? base.title),
         start: clean(aiJob.start ?? base.start),
         end: clean(aiJob.end ?? base.end),
-        tasks: aiTasks,
+        tasks: aiTasks.length ? aiTasks : base.tasks,
       };
     }),
-    education: baseData.education,
-    certifications: baseData.certifications,
+
+    education: polished.education.map((e, idx) => {
+      const base = baseData.education[idx] || {};
+      return {
+        school: clean(e.school ?? base.school),
+        program: clean(e.program ?? base.program),
+        startDate: clean(e.startDate ?? base.startDate),
+        endDate: clean(e.endDate ?? base.endDate),
+        notes: clean(e.notes ?? base.notes),
+      };
+    }),
+
+    certifications: {
+      programCerts: baseData.certifications.programCerts,
+      programCertsText: clean(polished.certificationsText),
+      extraCerts: clean(polished.extraCerts),
+      extraSkills: clean(polished.extraSkills),
+    },
+
+    hasProgramCerts: clean(polished.certificationsText) !== "",
+    hasExtraCerts: clean(polished.extraCerts) !== "",
+    hasExtraSkills: clean(polished.extraSkills) !== "",
   };
+
+  finalData.professionalSummary = limit(finalData.professionalSummary, 600);
+
+  finalData.workExperience = finalData.workExperience.map((j) => ({
+    ...j,
+    tasks: Array.isArray(j.tasks) ? j.tasks.map((t) => limit(t, 300)) : [],
+  }));
+
+  finalData.education = finalData.education.map((e) => ({
+    ...e,
+    notes: limit(e.notes, 400),
+  }));
+
+  finalData.certifications.extraSkills = limit(
+    finalData.certifications.extraSkills,
+    600
+  );
+
+  finalData.certifications.extraCerts = limit(
+    finalData.certifications.extraCerts,
+    600
+  );
 
   const templatePath = path.join(
     process.cwd(),
@@ -227,8 +316,36 @@ ${JSON.stringify(aiInput, null, 2)}
     paragraphLoop: true,
     linebreaks: true,
     delimiters: { start: "{", end: "}" },
+    parser(tag) {
+      return {
+        get: (scope) => {
+          const parts = tag.split(".");
+          let value = scope;
+          for (const p of parts) {
+            if (value == null) return "";
+            value = value[p];
+          }
+          return value;
+        },
+      };
+    },
   });
-
+finalData.workExperience = [
+  {
+    employer: "Test Company",
+    employerCity: "New Castle",
+    employerState: "PA",
+    title: "Test Technician",
+    start: "01/2024",
+    end: "Present",
+    tasks: [
+      "Installed and tested electrical systems",
+      "Read blueprints and schematics",
+      "Maintained tools and work area",
+    ],
+  },
+];
+finalData.hasWorkExperience = true;
   doc.setData(finalData);
   doc.render();
 
@@ -243,6 +360,7 @@ ${JSON.stringify(aiInput, null, 2)}
       "Content-Type":
         "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
       "Content-Disposition": "attachment; filename=resume.docx",
+      "Content-Length": buffer.length.toString(),
     },
   });
 }
