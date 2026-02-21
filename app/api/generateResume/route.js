@@ -84,15 +84,10 @@ export async function POST(req) {
     linebreaks: true,
     delimiters: { start: "{", end: "}" },
 
+    // ⭐ FIXED PARSER — supports nested fields everywhere
     parser(tag) {
       return {
-        get: (scope, context) => {
-          // ⭐ Preserve Docxtemplater's section behavior
-          if (context && context.scopePath.length > 0) {
-            return scope[tag];
-          }
-
-          // ⭐ Dot notation for normal variables
+        get: (scope) => {
           const parts = tag.split(".");
           let value = scope;
           for (const p of parts) {
