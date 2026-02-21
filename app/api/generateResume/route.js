@@ -242,7 +242,9 @@ ${JSON.stringify(aiInput, null, 2)}
 
     workExperience: baseData.workExperience.map((base, idx) => {
       const aiJob = polished.workExperience?.[idx] || {};
-      const aiTasks = tasksToArray(aiJob.tasks);
+      const aiTasks = tasksToArray(
+  aiJob.tasks && aiJob.tasks.length ? aiJob.tasks : base.tasks
+);
 
       return {
         employer: clean(aiJob.employer ?? base.employer),
