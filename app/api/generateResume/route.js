@@ -328,7 +328,22 @@ ${JSON.stringify(aiInput, null, 2)}
       };
     },
   });
-
+finalData.workExperience = [
+  {
+    employer: "Test Company",
+    employerCity: "New Castle",
+    employerState: "PA",
+    title: "Test Technician",
+    start: "01/2024",
+    end: "Present",
+    tasks: [
+      "Installed and tested electrical systems",
+      "Read blueprints and schematics",
+      "Maintained tools and work area",
+    ],
+  },
+];
+finalData.hasWorkExperience = true;
   doc.setData(finalData);
   doc.render();
 
