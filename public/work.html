@@ -12,19 +12,16 @@
       margin-bottom: 30px;
       font-size: 28px;
     }
-
     .system {
       color: #0b3c6d;
       font-weight: 600;
     }
-
     .entry-card {
       border: 1px solid #ccc;
       padding: 12px;
       margin-bottom: 12px;
       background: #f9f9f9;
     }
-
     .action-btn {
       margin-bottom: 15px;
     }
@@ -62,12 +59,11 @@
     <div class="system">End date (MM/YYYY or Present)</div>
     <input id="endDate">
 
-    <div class="system">Tasks performed</div>
+    <div class="system">Tasks performed (one per line)</div>
     <textarea id="tasks"></textarea>
 
     <button onclick="saveJob()">Save Job</button>
     <button onclick="cancelForms()">Cancel</button>
-
   </div>
 
   <!-- MILITARY FORM -->
@@ -87,7 +83,6 @@
 
     <button onclick="saveMilitary()">Save Military Service</button>
     <button onclick="cancelForms()">Cancel</button>
-
   </div>
 
   <div id="jobList"></div>
@@ -97,7 +92,6 @@
 
   <button onclick="goBack()">Back</button>
   <button onclick="goNext()">Next</button>
-
 </div>
 
 <script>
@@ -113,7 +107,6 @@ window.onload = function () {
   data.workExperience ||= [];
   data.militaryService ||= [];
   setData(data);
-
   renderJobs();
   renderMilitary();
 };
@@ -143,11 +136,15 @@ function saveJob() {
   const job = {
     employer: employer.value.trim(),
     employerCity: employerCity.value.trim(),
-    employerState: employerState.value.trim(),
+    employerState: employerState.value.trim().toUpperCase().slice(0, 2),
     title: title.value.trim(),
     start: startDate.value.trim(),
     end: endDate.value.trim(),
-    tasks: tasks.value.trim()
+    tasks: tasks.value
+      .split("\n")
+      .map(t => t.trim())
+      .filter(Boolean)
+      .join("\n")
   };
 
   if (!job.employer || !job.employerCity || !job.employerState ||
@@ -182,7 +179,7 @@ function renderJobs() {
     div.innerHTML = `
       <strong>${job.title}</strong> – ${job.employer} (${job.employerCity}, ${job.employerState})<br>
       ${job.start} to ${job.end}<br>
-      ${job.tasks}<br>
+      ${job.tasks.replace(/\n/g, "<br>")}<br>
       <button onclick="deleteJob(${i})">Delete</button>
     `;
     jobList.appendChild(div);

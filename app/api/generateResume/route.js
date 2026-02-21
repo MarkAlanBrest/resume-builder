@@ -24,39 +24,27 @@ function clean(v) {
     .trim();
 }
 
-// NEW: ensure arrays are safe/clean
 function cleanArray(v) {
   if (!Array.isArray(v)) return [];
   return v.map(clean).filter((x) => x !== "");
 }
 
-/**
- * NEW: Accepts tasks from form/AI as:
- * - array of strings
- * - single string with bullets/newlines/semicolons
- * Returns clean array of bullet statements (NO bullet symbols).
- */
 function tasksToArray(v) {
   if (Array.isArray(v)) return cleanArray(v);
 
   const s = clean(v);
   if (!s) return [];
 
-  // Split on newlines or semicolons (covers "• a\n• b" and "a; b; c")
   return s
     .split(/\r?\n|;/g)
     .map((t) =>
       clean(t)
-        .replace(/^([•\-\–\—*]+)\s*/g, "") // strip leading bullet-like chars
+        .replace(/^([•\-\–\—*]+)\s*/g, "")
         .trim()
     )
     .filter(Boolean);
 }
 
-/**
- * NEW: Convert array tasks back into a single string for AI input.
- * (AI is more reliable rewriting when it sees tasks as plain text.)
- */
 function tasksToText(arr) {
   if (!Array.isArray(arr) || arr.length === 0) return "";
   return arr.map(clean).filter(Boolean).join("; ");
@@ -105,8 +93,6 @@ export async function POST(req) {
       title: clean(j.title),
       start: clean(j.start),
       end: clean(j.end),
-
-      // FIX: always store tasks internally as ARRAY
       tasks: tasksToArray(j.tasks),
     })),
 
@@ -155,8 +141,6 @@ export async function POST(req) {
         graduationDate: baseData.graduationDate,
       },
       careerContext: baseData.careerContext,
-
-      // FIX: send tasks as STRING to AI (better rewriting)
       workExperience: baseData.workExperience.map((j) => ({
         employer: j.employer,
         employerCity: j.employerCity,
@@ -166,7 +150,6 @@ export async function POST(req) {
         end: j.end,
         tasks: tasksToText(j.tasks),
       })),
-
       education: baseData.education,
       certifications: {
         programCerts: baseData.certifications.programCerts,
@@ -228,23 +211,14 @@ Using the master style guide above and the student data below:
 }
 
 Formatting rules for workExperience:
-- Normalize employerCity to Proper Case (e.g., "new castle" → "New Castle").
-- Normalize employerState to UPPERCASE 2-letter postal abbreviation (e.g., "pA" → "PA").
+- Normalize employerCity to Proper Case.
+- Normalize employerState to UPPERCASE 2-letter postal abbreviation.
 - Never remove or omit employerCity or employerState.
-- Always return employerCity and employerState exactly once, correctly formatted.
 
 Formatting rules for workExperience.tasks:
 - Rewrite tasks into 3–5 strong resume bullet statements.
-- Use the student's provided content FIRST.
-- Expand vague or short tasks into clear, professional, employer-ready bullets.
-- If fewer than 3 meaningful tasks were provided, you may add 1–2 reasonable duties implied by the original text.
-- Do NOT add unrelated or unrealistic responsibilities.
-- Improve grammar, clarity, and action verbs.
 - Return tasks as a JSON ARRAY of strings.
-- DO NOT include bullet symbols (no "•", no "-", no numbering).
-- Each array item is ONE bullet statement.
-
-- Preserve employer, employerCity, employerState, title, start, and end exactly as provided.
+- NO bullet symbols.
 
 Return ONLY valid JSON.
 
@@ -255,7 +229,6 @@ ${JSON.stringify(aiInput, null, 2)}
       ],
     });
 
-    console.log("AI RAW OUTPUT:", completion.choices[0].message.content);
     polished = JSON.parse(completion.choices[0].message.content);
   } catch (err) {
     console.error("AI polishing failed:", err);
@@ -272,16 +245,11 @@ ${JSON.stringify(aiInput, null, 2)}
 
       return {
         employer: clean(aiJob.employer ?? base.employer),
-
-        // FIX: use AI-normalized city/state (fallback to base)
         employerCity: clean(aiJob.employerCity ?? base.employerCity),
         employerState: clean(aiJob.employerState ?? base.employerState),
-
         title: clean(aiJob.title ?? base.title),
         start: clean(aiJob.start ?? base.start),
         end: clean(aiJob.end ?? base.end),
-
-        // FIX: ensure tasks is ALWAYS an array for the template loop
         tasks: aiTasks.length ? aiTasks : base.tasks,
       };
     }),
@@ -311,7 +279,6 @@ ${JSON.stringify(aiInput, null, 2)}
 
   finalData.professionalSummary = limit(finalData.professionalSummary, 600);
 
-  // FIX: limit each bullet line, not the whole tasks field
   finalData.workExperience = finalData.workExperience.map((j) => ({
     ...j,
     tasks: Array.isArray(j.tasks) ? j.tasks.map((t) => limit(t, 300)) : [],
