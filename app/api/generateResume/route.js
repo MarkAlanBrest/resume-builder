@@ -142,7 +142,14 @@ Using the master style guide above and the student data below:
 
 1. Select the correct PROGRAM block based on "programCampus".
 2. Apply GLOBAL rules + that PROGRAM block only.
-3. Return polished resume content as STRICT JSON:
+3. Build the "summary" field ONLY from:
+   - The student's Objective Page (careerContext)
+   - The correct PROGRAM block from the style guide
+   - The student's certifications (programCerts, extraCerts)
+   DO NOT use work history or education to build the summary.
+   The summary MUST be a 3–5 sentence professional paragraph that functions as an introduction/objective section.
+4. Return polished resume content as STRICT JSON:
+
 
 {
   "summary": "string",
