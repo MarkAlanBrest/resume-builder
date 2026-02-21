@@ -9,8 +9,6 @@ import Docxtemplater from "docxtemplater";
 import OpenAI from "openai";
 import { masterStyleGuide } from "../../../lib/styleguides2/masterStyleGuide.js";
 
-
- 
 const openai = new OpenAI({
   apiKey: process.env.OPENAI_API_KEY,
 });
@@ -122,14 +120,11 @@ export async function POST(req) {
       },
     };
 
-  const completion = await openai.chat.completions.create({
-  model: "gpt-4o-mini",
-  temperature: 0.4,
-  response_format: { type: "json_object" },   // ← LINE 158
-  messages: [
-
-
-
+    const completion = await openai.chat.completions.create({
+      model: "gpt-4o-mini",
+      temperature: 0.4,
+      response_format: { type: "json_object" },
+      messages: [
         {
           role: "system",
           content: `
@@ -205,7 +200,6 @@ ${JSON.stringify(aiInput, null, 2)}
     hasExtraSkills: clean(polished.extraSkills) !== "",
   };
 
-  // ENFORCE 2-PAGE LIMIT
   finalData.professionalSummary = limit(finalData.professionalSummary, 600);
 
   finalData.workExperience = finalData.workExperience.map((j) => ({
