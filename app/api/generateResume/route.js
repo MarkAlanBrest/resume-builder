@@ -24,32 +24,6 @@ function clean(v) {
     .trim();
 }
 
-function cleanArray(v) {
-  if (!Array.isArray(v)) return [];
-  return v.map(clean).filter((x) => x !== "");
-}
-
-function tasksToArray(v) {
-  if (Array.isArray(v)) return cleanArray(v);
-
-  const s = String(v || "");
-  if (!s.trim()) return [];
-
-  return s
-    .split(/\r?\n|;|,/g)
-    .map((t) =>
-      clean(t)
-        .replace(/^([•\-\–\—*]+)\s*/g, "")
-        .trim()
-    )
-    .filter(Boolean);
-}
-
-function tasksToText(arr) {
-  if (!Array.isArray(arr) || arr.length === 0) return "";
-  return arr.map(clean).filter(Boolean).join("; ");
-}
-
 function limit(text, max = 3500) {
   if (!text) return "";
   if (text.length <= max) return text;
@@ -86,15 +60,23 @@ export async function POST(req) {
     programCampus: clean(s.programCampus),
     graduationDate: clean(s.graduationDate),
 
-    workExperience: workExperience.map((j) => ({
-      employer: clean(j.employer),
-      employerCity: clean(j.employerCity),
-      employerState: clean(j.employerState),
-      title: clean(j.title),
-      start: clean(j.start),
-      end: clean(j.end),
-      tasks: tasksToArray(j.tasks),
-    })),
+    // map workExperience into fixed task1–task5 slots
+    workExperience: workExperience.map((j) => {
+      const tasks = Array.isArray(j.tasks) ? j.tasks : [];
+      return {
+        employer: clean(j.employer),
+        employerCity: clean(j.employerCity),
+        employerState: clean(j.employerState),
+        title: clean(j.title),
+        start: clean(j.start),
+        end: clean(j.end),
+        task1: clean(tasks[0] || ""),
+        task2: clean(tasks[1] || ""),
+        task3: clean(tasks[2] || ""),
+        task4: clean(tasks[3] || ""),
+        task5: clean(tasks[4] || ""),
+      };
+    }),
 
     education: education.map((e) => ({
       school: clean(e.school),
@@ -148,7 +130,11 @@ export async function POST(req) {
         title: j.title,
         start: j.start,
         end: j.end,
-        tasks: tasksToText(j.tasks),
+        task1: j.task1,
+        task2: j.task2,
+        task3: j.task3,
+        task4: j.task4,
+        task5: j.task5,
       })),
       education: baseData.education,
       certifications: {
@@ -201,7 +187,11 @@ Using the master style guide above and the student data below:
       "title": "string",
       "start": "string",
       "end": "string",
-      "tasks": ["string","string","string"]
+      "task1": "string",
+      "task2": "string",
+      "task3": "string",
+      "task4": "string",
+      "task5": "string"
     }
   ],
   "education": [...],
@@ -215,10 +205,10 @@ Formatting rules for workExperience:
 - Normalize employerState to UPPERCASE 2-letter postal abbreviation.
 - Never remove or omit employerCity or employerState.
 
-Formatting rules for workExperience.tasks:
-- Rewrite tasks into 3–5 strong resume bullet statements.
-- Return tasks as a JSON ARRAY of strings.
-- NO bullet symbols.
+Formatting rules for workExperience task fields:
+- Rewrite each non-empty task into a strong resume bullet statement.
+- Preserve up to 5 tasks per job (task1–task5).
+- Return them as plain strings (NO bullet symbols).
 
 Return ONLY valid JSON.
 
@@ -241,9 +231,6 @@ ${JSON.stringify(aiInput, null, 2)}
 
     workExperience: baseData.workExperience.map((base, idx) => {
       const aiJob = polished.workExperience?.[idx] || {};
-      const aiTasks = tasksToArray(
-        aiJob.tasks && aiJob.tasks.length ? aiJob.tasks : base.tasks
-      );
 
       return {
         employer: clean(aiJob.employer ?? base.employer),
@@ -252,7 +239,11 @@ ${JSON.stringify(aiInput, null, 2)}
         title: clean(aiJob.title ?? base.title),
         start: clean(aiJob.start ?? base.start),
         end: clean(aiJob.end ?? base.end),
-        tasks: aiTasks.length ? aiTasks : base.tasks,
+        task1: limit(clean(aiJob.task1 ?? base.task1), 300),
+        task2: limit(clean(aiJob.task2 ?? base.task2), 300),
+        task3: limit(clean(aiJob.task3 ?? base.task3), 300),
+        task4: limit(clean(aiJob.task4 ?? base.task4), 300),
+        task5: limit(clean(aiJob.task5 ?? base.task5), 300),
       };
     }),
 
@@ -263,15 +254,15 @@ ${JSON.stringify(aiInput, null, 2)}
         program: clean(e.program ?? base.program),
         startDate: clean(e.startDate ?? base.startDate),
         endDate: clean(e.endDate ?? base.endDate),
-        notes: clean(e.notes ?? base.notes),
+        notes: limit(clean(e.notes ?? base.notes), 400),
       };
     }),
 
     certifications: {
       programCerts: baseData.certifications.programCerts,
       programCertsText: clean(polished.certificationsText),
-      extraCerts: clean(polished.extraCerts),
-      extraSkills: clean(polished.extraSkills),
+      extraCerts: limit(clean(polished.extraCerts), 600),
+      extraSkills: limit(clean(polished.extraSkills), 600),
     },
 
     hasProgramCerts: clean(polished.certificationsText) !== "",
@@ -280,26 +271,6 @@ ${JSON.stringify(aiInput, null, 2)}
   };
 
   finalData.professionalSummary = limit(finalData.professionalSummary, 600);
-
-  finalData.workExperience = finalData.workExperience.map((j) => ({
-    ...j,
-    tasks: Array.isArray(j.tasks) ? j.tasks.map((t) => limit(t, 300)) : [],
-  }));
-
-  finalData.education = finalData.education.map((e) => ({
-    ...e,
-    notes: limit(e.notes, 400),
-  }));
-
-  finalData.certifications.extraSkills = limit(
-    finalData.certifications.extraSkills,
-    600
-  );
-
-  finalData.certifications.extraCerts = limit(
-    finalData.certifications.extraCerts,
-    600
-  );
 
   const templatePath = path.join(
     process.cwd(),
