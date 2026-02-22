@@ -27,16 +27,23 @@ function clean(v) {
     .trim();
 }
 
+function formatPhone(phone) {
+  const digits = String(phone || "").replace(/\D/g, "");
+  if (digits.length === 10) {
+    return `(${digits.slice(0, 3)}) ${digits.slice(3, 6)}-${digits.slice(6)}`;
+  }
+  return clean(phone);
+}
+
 function limit(text, max = 3500) {
   if (!text) return "";
   if (text.length <= max) return text;
   return text.slice(0, max) + "…";
 }
 
-// Convert MM/YYYY → Month YYYY
 function formatDateToText(dateStr) {
   if (!dateStr) return "";
-  const cleaned = dateStr.replace(/-/g, "/").trim();
+  const cleaned = clean(dateStr).replace(/-/g, "/").trim();
   const parts = cleaned.split("/");
   if (parts.length < 2) return clean(dateStr);
 
@@ -46,16 +53,15 @@ function formatDateToText(dateStr) {
   if (isNaN(month) || !year) return clean(dateStr);
 
   const monthNames = [
-    "January","February","March","April","May","June",
-    "July","August","September","October","November","December"
+    "January", "February", "March", "April", "May", "June",
+    "July", "August", "September", "October", "November", "December"
   ];
 
-  return `${monthNames[month - 1]} ${year}`;
+  const idx = month - 1;
+  if (idx < 0 || idx > 11) return clean(dateStr);
+  return `${monthNames[idx]} ${year}`;
 }
 
-/* ===========================
-   STRING → ARRAY (SAFE)
-=========================== */
 function splitLines(text) {
   if (!text) return [];
   return String(text)
@@ -68,7 +74,8 @@ function splitLines(text) {
    AI HELPER — CLEAN LIST ONLY
 =========================== */
 async function polishList(list, label) {
-  if (!Array.isArray(list) || list.length === 0) return list;
+  const safeList = Array.isArray(list) ? list.map(clean).filter(Boolean) : [];
+  if (safeList.length === 0) return [];
 
   const prompt = `
 You are cleaning a list of ${label} for a student's resume.
@@ -88,7 +95,7 @@ Return JSON ONLY:
 { "items": ["...", "..."] }
 
 LIST:
-${JSON.stringify(list, null, 2)}
+${JSON.stringify(safeList, null, 2)}
 `.trim();
 
   const response = await openai.chat.completions.create({
@@ -103,11 +110,10 @@ ${JSON.stringify(list, null, 2)}
 
   try {
     const parsed = JSON.parse(response.choices[0].message.content);
-    return Array.isArray(parsed.items)
-      ? parsed.items.map(clean).filter(Boolean)
-      : list;
+    const items = Array.isArray(parsed.items) ? parsed.items : safeList;
+    return items.map(clean).filter(Boolean);
   } catch {
-    return list;
+    return safeList;
   }
 }
 
@@ -121,19 +127,14 @@ export async function POST(req) {
   const workExperience = Array.isArray(body.workExperience) ? body.workExperience : [];
   const education = Array.isArray(body.education) ? body.education : [];
 
-  // 🔑 STRINGS FROM FRONTEND
   const allCertsTextRaw = clean(body.allCerts || "");
   const allSkillsTextRaw = clean(body.allSkills || "");
-
   const careerContext = body.careerContext || {};
 
-  /* ===========================
-     BASE DATA
-  =========================== */
   const baseData = {
     name: clean(s.name),
     email: clean(s.email),
-    phone: clean(s.phone),
+    phone: formatPhone(s.phone), // ✅ formatted
     address: clean(s.address),
     city: clean(s.city),
     state: clean(s.state),
@@ -142,7 +143,14 @@ export async function POST(req) {
     graduationDate: clean(s.graduationDate),
 
     workExperience: workExperience.map(j => {
-      const tasks = Array.isArray(j.tasks) ? j.tasks : [];
+      // ✅ supports BOTH old array tasks and new string fields
+      const tasksArr = Array.isArray(j.tasks) ? j.tasks.map(clean) : [];
+      const t1 = clean(j.task1 || tasksArr[0] || "");
+      const t2 = clean(j.task2 || tasksArr[1] || "");
+      const t3 = clean(j.task3 || tasksArr[2] || "");
+      const t4 = clean(j.task4 || tasksArr[3] || "");
+      const t5 = clean(j.task5 || tasksArr[4] || "");
+
       return {
         employer: clean(j.employer),
         employerCity: clean(j.employerCity),
@@ -150,11 +158,11 @@ export async function POST(req) {
         title: clean(j.title),
         start: formatDateToText(clean(j.start)),
         end: formatDateToText(clean(j.end)),
-        task1: clean(tasks[0] || ""),
-        task2: clean(tasks[1] || ""),
-        task3: clean(tasks[2] || ""),
-        task4: clean(tasks[3] || ""),
-        task5: clean(tasks[4] || ""),
+        task1: t1,
+        task2: t2,
+        task3: t3,
+        task4: t4,
+        task5: t5,
       };
     }),
 
@@ -166,22 +174,34 @@ export async function POST(req) {
       notes: clean(e.notes),
     })),
 
-    hasWorkExperience: workExperience.length > 0,
+    hasWorkExperience: workExperience.some(j => clean(j.employer) || clean(j.title)),
     hasEducation: education.length > 0,
 
     careerContext,
   };
 
   /* ===========================
-     AI POLISH (SUMMARY / WORK / EDU)
-  =========================== */
+     AI POLISH (SUMMARY + WORK + EDU)
+=========================== */
   let polished = {
     summary: "",
+    summaryBullets: [],
     workExperience: baseData.workExperience,
     education: baseData.education,
   };
 
   try {
+    const aiInput = {
+      student: {
+        name: baseData.name,
+        programCampus: baseData.programCampus,
+        graduationDate: baseData.graduationDate,
+      },
+      careerContext: baseData.careerContext,
+      workExperience: baseData.workExperience,
+      education: baseData.education
+    };
+
     const completion = await openai.chat.completions.create({
       model: "gpt-4o",
       temperature: 0.4,
@@ -193,6 +213,7 @@ export async function POST(req) {
 You are an AI resume writer.
 Follow the MASTER STYLE GUIDE EXACTLY.
 
+MASTER STYLE GUIDE:
 ${masterStyleGuide}
 
 REQUIRED OUTPUT (JSON):
@@ -203,59 +224,34 @@ REQUIRED OUTPUT (JSON):
   "education": [...]
 }
 
-PROFESSIONAL SUMMARY:
-- Use ONLY careerContext (objectives, jobTarget, notes)
-- 4–6 complete sentences
-- Professional tone
-- One paragraph
+PROFESSIONAL SUMMARY RULES (STRICT):
+- Build "summary" and "summaryBullets" using ONLY careerContext (objectives, jobTarget, notes)
 - Do NOT use workExperience or education for the summary
+- summary = 4–6 complete sentences, one paragraph
+- No filler or vague language
 
-WORK EXPERIENCE (FORMAT + REWRITE — STRICT):
-For EACH job, rewrite to match this presentation intent:
-Title (professional)
-Employer (proper name) (City, STATE)
-Start Month Year – End Month Year
+SUMMARY BULLETS (STRICT):
+- Return 4–6 bullets
+- Each bullet must be 14–22 words
+- Very professional, detailed, outcome-focused
+- NO bullet symbols in the returned strings
 
-TITLE RULES:
-- Fix spelling/capitalization
-- Convert generic titles to professional titles when obvious
-  Example: "teacher" → "Instructor, Building Technology"
+WORK EXPERIENCE RULES:
+- Rewrite each non-empty task into a strong resume bullet (12–22 words)
+- No bullet symbols
+- Never remove employerCity or employerState
+- Normalize employerCity to Proper Case
+- Normalize employerState to UPPERCASE 2-letter
 
-EMPLOYER RULES:
-- Fix spelling/capitalization
-- Expand obvious abbreviations
-  Example: "new castle scholl of trades" → "New Castle School of Trades"
-
-LOCATION RULES:
-- employerCity in Proper Case (e.g., "New Castle")
-- employerState UPPERCASE 2-letter (e.g., "PA")
-- Never remove city/state
-
-BULLET RULES:
-- Rewrite each non-empty task into a professional resume bullet
-- 14–22 words per bullet
-- Start with a strong action verb
-- Add clarity (scope/tools/outcome) without inventing facts
-- No bullet symbols in returned strings
-
-EDUCATION:
-- Clean and normalize school/program text
+EDUCATION RULES:
+- Clean and normalize school/program
 - Keep dates clean
-- No invented degrees or institutions
+- No invented degrees or schools
           `.trim()
         },
         {
           role: "user",
-          content: JSON.stringify({
-            student: {
-              name: baseData.name,
-              programCampus: baseData.programCampus,
-              graduationDate: baseData.graduationDate,
-            },
-            careerContext,
-            workExperience: baseData.workExperience,
-            education: baseData.education
-          }, null, 2)
+          content: JSON.stringify(aiInput, null, 2)
         }
       ]
     });
@@ -266,18 +262,26 @@ EDUCATION:
   }
 
   /* ===========================
-     CERTS / SKILLS — STRINGS
-  =========================== */
-  let certArray = splitLines(allCertsTextRaw);
-  let skillArray = splitLines(allSkillsTextRaw);
+     CERTS / SKILLS (LIGHT CLEAN)
+=========================== */
+  const certArray = await polishList(splitLines(allCertsTextRaw), "certifications");
+  const skillArray = await polishList(splitLines(allSkillsTextRaw), "skills");
 
-  certArray = await polishList(certArray, "certifications");
-  skillArray = await polishList(skillArray, "skills");
+  const summaryBullets = Array.isArray(polished.summaryBullets)
+    ? polished.summaryBullets.map(clean).filter(Boolean)
+    : [];
 
   const finalData = {
     ...baseData,
 
     professionalSummary: limit(clean(polished.summary || ""), 600),
+
+    // Template uses summary1..summary5
+    summary1: clean(summaryBullets[0] || ""),
+    summary2: clean(summaryBullets[1] || ""),
+    summary3: clean(summaryBullets[2] || ""),
+    summary4: clean(summaryBullets[3] || ""),
+    summary5: clean(summaryBullets[4] || ""),
 
     workExperience: baseData.workExperience.map((base, i) => {
       const ai = polished.workExperience?.[i] || {};
@@ -307,17 +311,31 @@ EDUCATION:
       };
     }),
 
-    // 🔑 FINAL STRINGS FOR TEMPLATE
-    allCertsText: certArray.join("\n"),
-    allSkillsText: skillArray.join("\n"),
+    hasProgramCerts: certArray.length > 0,
+    cert1: certArray[0] || "",
+    cert2: certArray[1] || "",
+    cert3: certArray[2] || "",
+    cert4: certArray[3] || "",
+    cert5: certArray[4] || "",
+    cert6: certArray[5] || "",
+    cert7: certArray[6] || "",
+    cert8: certArray[7] || "",
+    cert9: certArray[8] || "",
+    cert10: certArray[9] || "",
 
-    hasCertifications: certArray.length > 0,
-    hasSkills: skillArray.length > 0,
+    hasExtraSkills: skillArray.length > 0,
+    skill1: skillArray[0] || "",
+    skill2: skillArray[1] || "",
+    skill3: skillArray[2] || "",
+    skill4: skillArray[3] || "",
+    skill5: skillArray[4] || "",
+    skill6: skillArray[5] || "",
+    skill7: skillArray[6] || "",
+    skill8: skillArray[7] || "",
+    skill9: skillArray[8] || "",
+    skill10: skillArray[9] || "",
   };
 
-  /* ===========================
-     DOCXTEMPLATER
-  =========================== */
   const templatePath = path.join(
     process.cwd(),
     "public",
