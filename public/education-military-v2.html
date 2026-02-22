@@ -72,7 +72,7 @@
   ============================= -->
   <div id="educationForm" style="display:none;">
 
-    <!-- NEW: Auto-Fill Button (appears at top of form) -->
+    <!-- NEW: Auto-Fill Button (top of form) -->
     <button
       id="autoFillNCSTBtn"
       class="action-btn"
@@ -245,21 +245,24 @@ function deleteEducation(i) {
    AUTO-FILL NCST (NO SAVE)
 ============================ */
 function autoFillNCST() {
-  const data = getData();
+  const data = getData() || {};
+  const student = data.student || {};
 
-  if (!data.student || !data.student.programCampus) {
-    alert("Program information is missing. Please complete earlier steps first.");
-    return;
-  }
+  // Try multiple possible keys
+  const programKey =
+    student.programCampus ||
+    student.program ||
+    data.programCampus ||
+    data.program ||
+    "";
 
-  const programKey = data.student.programCampus;
-  const formattedProgram = PROGRAM_INFO[programKey] || programKey;
+  const formattedProgram = programKey ? (PROGRAM_INFO[programKey] || programKey) : "";
 
-  // Only fill the textboxes — nothing is saved
+  // Fill fields ONLY — no saving
   schoolName.value = "New Castle School of Trades";
   programName.value = formattedProgram;
-  eduStartDate.value = ""; // student still enters this
-  eduEndDate.value = data.student.graduationDate || "";
+  eduStartDate.value = ""; // student must enter
+  eduEndDate.value = student.graduationDate || data.graduationDate || "";
   eduNotes.value = "";
 }
 
