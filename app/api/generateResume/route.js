@@ -172,33 +172,8 @@ Using the master style guide above and the student data below:
    - The correct PROGRAM block from the style guide
    - The student's certifications (programCerts, extraCerts)
    DO NOT use work history or education to build the summary.
-   The summary MUST be a 2–4 sentence professional paragraph that functions as an introduction/objective section.
-   The summary MUST NOT use the student's name. Write in third-person without naming the student.
 
-4. Return polished resume content as STRICT JSON with this exact structure:
-
-{
-  "summary": "string",
-  "workExperience": [
-    {
-      "employer": "string",
-      "employerCity": "string",
-      "employerState": "string",
-      "title": "string",
-      "start": "string",
-      "end": "string",
-      "task1": "string",
-      "task2": "string",
-      "task3": "string",
-      "task4": "string",
-      "task5": "string"
-    }
-  ],
-  "education": [...],
-  "certificationsText": "string",
-  "extraCerts": "string",
-  "extraSkills": "string"
-}
+4. Return polished resume content as STRICT JSON.
 
 Formatting rules for workExperience:
 - Normalize employerCity to Proper Case.
@@ -207,19 +182,24 @@ Formatting rules for workExperience:
 
 Formatting rules for workExperience task fields:
 - Rewrite each non-empty task into a strong, detailed, professional resume bullet.
-- If the student's task is vague, extremely short, or missing context, expand it using:
-  • standard responsibilities for that job title,
-  • common industry expectations,
-  • typical tools, equipment, or methods used in that role,
-  • typical outcomes or impacts associated with that task.
-- Add meaningful context such as purpose, scope, impact, or results (e.g., “to support student learning,” “to maintain a safe work environment,” “to ensure project accuracy”).
-- Keep each bullet concise but substantial (12–22 words).
-- Maintain the student’s original intent, but elevate clarity, professionalism, and detail.
-- Do NOT fabricate certifications, credentials, or job titles.
-- Preserve up to 5 tasks per job (task1–task5).
-- Return each task as a plain string with NO bullet symbols.
+- Expand vague tasks using standard responsibilities, tools, methods, or outcomes.
+- Keep each bullet 12–22 words.
+- No bullet symbols in the returned strings.
 
+⭐ ADDED — EDUCATION RULES
+Formatting rules for education:
+- Rewrite school, program, startDate, endDate, and notes into clean, professional resume text.
+- Normalize school and program names to Proper Case.
+- Expand vague program names into industry-recognized wording.
+- Keep dates clean; if incomplete, keep year only.
+- No invented degrees or institutions.
 
+⭐ ADDED — CERTIFICATIONS & SKILLS RULES
+Formatting rules for certifications and skills:
+- Rewrite certificationsText, extraCerts, and extraSkills into clean, professional resume text.
+- Expand vague items into clear, industry-recognized wording.
+- Do NOT invent certifications or skills.
+- Return each field as a plain string.
 
 Return ONLY valid JSON.
 
