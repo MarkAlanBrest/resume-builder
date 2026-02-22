@@ -39,11 +39,11 @@ export default function FinalizePage() {
         militaryService: d.militaryService || [],
         education: d.education || [],
 
-        // ✅ NEW — send the correct arrays
-        allCerts: d.allCerts || [],
-        allSkills: d.allSkills || [],
+        // ✅ STRINGS — NOT ARRAYS
+        allCertsText: (d.allCerts || []).join("\n"),
+        allSkillsText: (d.allSkills || []).join("\n"),
 
-        // ✅ NEW — correct flags for conditional template blocks
+        // Flags for conditional blocks
         hasProgramCerts: (d.allCerts?.length ?? 0) > 0,
         hasExtraSkills: (d.allSkills?.length ?? 0) > 0,
 
