@@ -134,7 +134,7 @@ export async function POST(req) {
   const baseData = {
     name: clean(s.name),
     email: clean(s.email),
-    phone: formatPhone(s.phone), // ✅ formatted
+    phone: formatPhone(s.phone),
     address: clean(s.address),
     city: clean(s.city),
     state: clean(s.state),
@@ -143,14 +143,7 @@ export async function POST(req) {
     graduationDate: clean(s.graduationDate),
 
     workExperience: workExperience.map(j => {
-      // ✅ supports BOTH old array tasks and new string fields
       const tasksArr = Array.isArray(j.tasks) ? j.tasks.map(clean) : [];
-      const t1 = clean(j.task1 || tasksArr[0] || "");
-      const t2 = clean(j.task2 || tasksArr[1] || "");
-      const t3 = clean(j.task3 || tasksArr[2] || "");
-      const t4 = clean(j.task4 || tasksArr[3] || "");
-      const t5 = clean(j.task5 || tasksArr[4] || "");
-
       return {
         employer: clean(j.employer),
         employerCity: clean(j.employerCity),
@@ -158,11 +151,11 @@ export async function POST(req) {
         title: clean(j.title),
         start: formatDateToText(clean(j.start)),
         end: formatDateToText(clean(j.end)),
-        task1: t1,
-        task2: t2,
-        task3: t3,
-        task4: t4,
-        task5: t5,
+        task1: clean(j.task1 || tasksArr[0] || ""),
+        task2: clean(j.task2 || tasksArr[1] || ""),
+        task3: clean(j.task3 || tasksArr[2] || ""),
+        task4: clean(j.task4 || tasksArr[3] || ""),
+        task5: clean(j.task5 || tasksArr[4] || ""),
       };
     }),
 
@@ -191,17 +184,6 @@ export async function POST(req) {
   };
 
   try {
-    const aiInput = {
-      student: {
-        name: baseData.name,
-        programCampus: baseData.programCampus,
-        graduationDate: baseData.graduationDate,
-      },
-      careerContext: baseData.careerContext,
-      workExperience: baseData.workExperience,
-      education: baseData.education
-    };
-
     const completion = await openai.chat.completions.create({
       model: "gpt-4o",
       temperature: 0.4,
@@ -225,33 +207,62 @@ REQUIRED OUTPUT (JSON):
 }
 
 PROFESSIONAL SUMMARY RULES (STRICT):
-- Build "summary" and "summaryBullets" using ONLY careerContext (objectives, jobTarget, notes)
-- Do NOT use workExperience or education for the summary
-- summary = 4–6 complete sentences, one paragraph
-- No filler or vague language
+- Build "summary" and "summaryBullets" using ONLY careerContext
+- summary = 4–6 complete sentences
+- Professional tone
+- One paragraph
 
-SUMMARY BULLETS (STRICT):
-- Return 4–6 bullets
-- Each bullet must be 14–22 words
-- Very professional, detailed, outcome-focused
-- NO bullet symbols in the returned strings
+SUMMARY BULLETS:
+- 4–6 bullets
+- 14–22 words each
+- No symbols
 
-WORK EXPERIENCE RULES:
-- Rewrite each non-empty task into a strong resume bullet (12–22 words)
-- No bullet symbols
-- Never remove employerCity or employerState
-- Normalize employerCity to Proper Case
-- Normalize employerState to UPPERCASE 2-letter
+WORK EXPERIENCE RULES (STRICT — FORMAT + REWRITE):
 
-EDUCATION RULES:
-- Clean and normalize school/program
-- Keep dates clean
-- No invented degrees or schools
+FORMAT EACH JOB AS:
+Professional Title
+Employer Name (City, STATE)
+Start Month Year – End Month Year
+
+TITLE:
+- Fix spelling/capitalization
+- Convert generic titles when obvious
+  Example: "teacher" → "Instructor, Building Technology"
+
+EMPLOYER:
+- Fix spelling/capitalization
+- Expand misspellings
+  Example: "new castle scholl of trades" → "New Castle School of Trades"
+
+LOCATION:
+- City Proper Case
+- State UPPERCASE 2-letter
+- Never remove location
+
+BULLETS:
+- Rewrite each task into a professional resume bullet
+- 14–22 words
+- Strong action verbs
+- Expand vague duties
+- NO bullet symbols
+
+EDUCATION:
+- Clean and normalize
+- No invented content
           `.trim()
         },
         {
           role: "user",
-          content: JSON.stringify(aiInput, null, 2)
+          content: JSON.stringify({
+            student: {
+              name: baseData.name,
+              programCampus: baseData.programCampus,
+              graduationDate: baseData.graduationDate,
+            },
+            careerContext,
+            workExperience: baseData.workExperience,
+            education: baseData.education
+          }, null, 2)
         }
       ]
     });
@@ -262,7 +273,7 @@ EDUCATION RULES:
   }
 
   /* ===========================
-     CERTS / SKILLS (LIGHT CLEAN)
+     CERTS / SKILLS
 =========================== */
   const certArray = await polishList(splitLines(allCertsTextRaw), "certifications");
   const skillArray = await polishList(splitLines(allSkillsTextRaw), "skills");
@@ -276,12 +287,11 @@ EDUCATION RULES:
 
     professionalSummary: limit(clean(polished.summary || ""), 600),
 
-    // Template uses summary1..summary5
-    summary1: clean(summaryBullets[0] || ""),
-    summary2: clean(summaryBullets[1] || ""),
-    summary3: clean(summaryBullets[2] || ""),
-    summary4: clean(summaryBullets[3] || ""),
-    summary5: clean(summaryBullets[4] || ""),
+    summary1: summaryBullets[0] || "",
+    summary2: summaryBullets[1] || "",
+    summary3: summaryBullets[2] || "",
+    summary4: summaryBullets[3] || "",
+    summary5: summaryBullets[4] || "",
 
     workExperience: baseData.workExperience.map((base, i) => {
       const ai = polished.workExperience?.[i] || {};
