@@ -27,6 +27,14 @@ function clean(v) {
     .trim();
 }
 
+function formatPhone(phone) {
+  const digits = String(phone || "").replace(/\D/g, "");
+  if (digits.length === 10) {
+    return `(${digits.slice(0, 3)}) ${digits.slice(3, 6)}-${digits.slice(6)}`;
+  }
+  return clean(phone);
+}
+
 function limit(text, max = 3500) {
   if (!text) return "";
   if (text.length <= max) return text;
@@ -35,7 +43,7 @@ function limit(text, max = 3500) {
 
 function formatDateToText(dateStr) {
   if (!dateStr) return "";
-  const cleaned = dateStr.replace(/-/g, "/").trim();
+  const cleaned = clean(dateStr).replace(/-/g, "/").trim();
   const parts = cleaned.split("/");
   if (parts.length < 2) return clean(dateStr);
 
@@ -45,11 +53,13 @@ function formatDateToText(dateStr) {
   if (isNaN(month) || !year) return clean(dateStr);
 
   const monthNames = [
-    "January","February","March","April","May","June",
-    "July","August","September","October","November","December"
+    "January", "February", "March", "April", "May", "June",
+    "July", "August", "September", "October", "November", "December"
   ];
 
-  return `${monthNames[month - 1]} ${year}`;
+  const idx = month - 1;
+  if (idx < 0 || idx > 11) return clean(dateStr);
+  return `${monthNames[idx]} ${year}`;
 }
 
 function splitLines(text) {
@@ -124,7 +134,7 @@ export async function POST(req) {
   const baseData = {
     name: clean(s.name),
     email: clean(s.email),
-    phone: clean(s.phone),
+    phone: formatPhone(s.phone), // ✅ formatted
     address: clean(s.address),
     city: clean(s.city),
     state: clean(s.state),
@@ -133,7 +143,14 @@ export async function POST(req) {
     graduationDate: clean(s.graduationDate),
 
     workExperience: workExperience.map(j => {
-      const tasks = Array.isArray(j.tasks) ? j.tasks : [];
+      // ✅ supports BOTH old array tasks and new string fields
+      const tasksArr = Array.isArray(j.tasks) ? j.tasks.map(clean) : [];
+      const t1 = clean(j.task1 || tasksArr[0] || "");
+      const t2 = clean(j.task2 || tasksArr[1] || "");
+      const t3 = clean(j.task3 || tasksArr[2] || "");
+      const t4 = clean(j.task4 || tasksArr[3] || "");
+      const t5 = clean(j.task5 || tasksArr[4] || "");
+
       return {
         employer: clean(j.employer),
         employerCity: clean(j.employerCity),
@@ -141,11 +158,11 @@ export async function POST(req) {
         title: clean(j.title),
         start: formatDateToText(clean(j.start)),
         end: formatDateToText(clean(j.end)),
-        task1: clean(tasks[0] || ""),
-        task2: clean(tasks[1] || ""),
-        task3: clean(tasks[2] || ""),
-        task4: clean(tasks[3] || ""),
-        task5: clean(tasks[4] || ""),
+        task1: t1,
+        task2: t2,
+        task3: t3,
+        task4: t4,
+        task5: t5,
       };
     }),
 
@@ -207,11 +224,17 @@ REQUIRED OUTPUT (JSON):
   "education": [...]
 }
 
-PROFESSIONAL SUMMARY RULES:
+PROFESSIONAL SUMMARY RULES (STRICT):
 - Build "summary" and "summaryBullets" using ONLY careerContext (objectives, jobTarget, notes)
 - Do NOT use workExperience or education for the summary
-- summary = 3–4 sentences, one paragraph
-- summaryBullets = 3–5 bullets, 8–14 words each, NO bullet symbols
+- summary = 4–6 complete sentences, one paragraph
+- No filler or vague language
+
+SUMMARY BULLETS (STRICT):
+- Return 4–6 bullets
+- Each bullet must be 14–22 words
+- Very professional, detailed, outcome-focused
+- NO bullet symbols in the returned strings
 
 WORK EXPERIENCE RULES:
 - Rewrite each non-empty task into a strong resume bullet (12–22 words)
@@ -244,13 +267,16 @@ EDUCATION RULES:
   const certArray = await polishList(splitLines(allCertsTextRaw), "certifications");
   const skillArray = await polishList(splitLines(allSkillsTextRaw), "skills");
 
-  const summaryBullets = Array.isArray(polished.summaryBullets) ? polished.summaryBullets : [];
+  const summaryBullets = Array.isArray(polished.summaryBullets)
+    ? polished.summaryBullets.map(clean).filter(Boolean)
+    : [];
 
   const finalData = {
     ...baseData,
 
     professionalSummary: limit(clean(polished.summary || ""), 600),
 
+    // Template uses summary1..summary5
     summary1: clean(summaryBullets[0] || ""),
     summary2: clean(summaryBullets[1] || ""),
     summary3: clean(summaryBullets[2] || ""),
