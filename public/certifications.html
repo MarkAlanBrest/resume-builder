@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <title>Certifications and Skills</title>
+  <title>Certifications & Skills</title>
   <link rel="stylesheet" href="style.css">
 
   <style>
@@ -16,6 +16,7 @@
     .system {
       color: #0b3c6d;
       font-weight: 600;
+      margin-top: 20px;
     }
 
     .program-box {
@@ -26,12 +27,16 @@
       font-weight: bold;
     }
 
-    /* ⭐ REQUIRED FIX — ensures checkboxes render and are clickable */
     .check-row {
       display: flex;
       align-items: center;
       gap: 8px;
       margin: 6px 0;
+    }
+
+    .check-row input[type="text"] {
+      flex: 1;
+      padding: 6px;
     }
   </style>
 </head>
@@ -41,25 +46,21 @@
 
   <h1 class="page-title">NCST’s Resume Builder</h1>
 
-  <!-- PROGRAM DISPLAY -->
   <div id="programDisplay" class="program-box"></div>
 
-  <!-- PROGRAM CERTIFICATIONS -->
-  <div class="system">
-    The following certifications may be earned during your time at NCST.
-    <br>
-    <small>Select the certifications you expect to achieve by your graduation date.</small>
-  </div>
-
+  <!-- CERTIFICATIONS -->
+  <div class="system">Program Certifications</div>
   <div id="programCerts"></div>
 
-  <!-- OUTSIDE CERTIFICATIONS -->
-  <div class="system">Certifications earned outside of school (optional)</div>
-  <textarea id="extraCerts"></textarea>
+  <div class="system">Add Your Own Certifications</div>
+  <div id="customCerts"></div>
 
-  <!-- OUTSIDE SKILLS -->
-  <div class="system">Skills learned outside of school or work experience (optional)</div>
-  <textarea id="extraSkills"></textarea>
+  <!-- SKILLS -->
+  <div class="system">Program Skills</div>
+  <div id="programSkills"></div>
+
+  <div class="system">Add Your Own Skills</div>
+  <div id="customSkills"></div>
 
   <br>
 
@@ -69,7 +70,9 @@
 </div>
 
 <script>
-/* ===== PROGRAM CERT LIST ===== */
+/* ===========================
+   PROGRAM CERTIFICATIONS
+=========================== */
 const PROGRAM_CERTS = {
   "Automotive Technology — Main Campus (New Castle, PA)": [
     "PA State Safety Inspection License",
@@ -134,7 +137,7 @@ const PROGRAM_CERTS = {
   "Heavy Equipment Operations with CDL — Satellite Campus (Pulaski, PA)": [
     "Class A CDL License",
     "OSHA 10",
-    "Heavy Equipment Operation Cards (Loader, Excavator, Dozer, etc.)",
+    "Heavy Equipment Operation Cards",
     "Rigging and Signaling",
     "Forklift Certification"
   ],
@@ -176,7 +179,140 @@ const PROGRAM_CERTS = {
   ]
 };
 
-/* ===== STORAGE ===== */
+/* ===========================
+   PROGRAM SKILLS (6 each)
+=========================== */
+const PROGRAM_SKILLS = {
+  "Automotive Technology — Main Campus (New Castle, PA)": [
+    "Engine diagnostics and repair",
+    "Brake system service",
+    "Steering and suspension troubleshooting",
+    "Electrical system testing",
+    "Routine maintenance and inspections",
+    "Using scan tools and diagnostic equipment"
+  ],
+
+  "Building Technology — Main Campus (New Castle, PA)": [
+    "Framing walls, floors, and roofs",
+    "Installing drywall and trim",
+    "Reading construction blueprints",
+    "Using hand and power tools",
+    "Basic plumbing and electrical work",
+    "Jobsite safety practices"
+  ],
+
+  "Combination Welding — Main Campus (New Castle, PA)": [
+    "SMAW welding",
+    "GMAW welding",
+    "FCAW welding",
+    "Blueprint reading",
+    "Metal cutting and prep",
+    "Weld inspection"
+  ],
+
+  "Combination Welding — East Liverpool Campus (East Liverpool, OH)": [
+    "SMAW welding",
+    "GMAW and FCAW welding",
+    "Sheet metal and structural welding",
+    "Oxy-fuel and plasma cutting",
+    "Joint prep and fit-up",
+    "Weld defect identification"
+  ],
+
+  "Commercial Truck Driving (Class A CDL) — Satellite Campus (Pulaski, PA)": [
+    "Vehicle safety inspections",
+    "Shifting and maneuvering a tractor-trailer",
+    "Coupling and uncoupling",
+    "Trip planning and logbooks",
+    "Defensive driving",
+    "DOT and FMCSA compliance"
+  ],
+
+  "Diesel & Heavy Equipment Repair Technology — Satellite Campus (Pulaski, PA)": [
+    "Diesel engine diagnostics",
+    "Hydraulic system repair",
+    "Electrical troubleshooting",
+    "Brake and suspension service",
+    "Preventive maintenance",
+    "Reading service manuals"
+  ],
+
+  "Electrical Technology — Main Campus (New Castle, PA)": [
+    "Residential and commercial wiring",
+    "Installing circuits and lighting",
+    "Reading electrical diagrams",
+    "Using multimeters",
+    "Conduit bending",
+    "Electrical safety procedures"
+  ],
+
+  "Electrical & Industrial Maintenance — East Liverpool Campus (East Liverpool, OH)": [
+    "Industrial electrical troubleshooting",
+    "Motor controls and relay logic",
+    "PLC basics",
+    "Mechanical maintenance",
+    "Preventive maintenance",
+    "Industrial safety practices"
+  ],
+
+  "Heavy Equipment Operations with CDL — Satellite Campus (Pulaski, PA)": [
+    "Operating loaders and excavators",
+    "Reading grade stakes",
+    "Equipment inspections",
+    "Earthmoving techniques",
+    "Basic equipment maintenance",
+    "CDL vehicle operation"
+  ],
+
+  "Industrial Electro-Mechanical Technology — Main Campus (New Castle, PA)": [
+    "Electrical troubleshooting",
+    "Mechanical drive systems",
+    "PLC operation",
+    "Hydraulic and pneumatic repair",
+    "Preventive maintenance",
+    "Reading industrial schematics"
+  ],
+
+  "Machinist & CNC Manufacturing — Satellite Campus (Pulaski, PA)": [
+    "Operating mills and lathes",
+    "CNC setup and operation",
+    "Blueprint reading",
+    "Precision measurement",
+    "Tool selection",
+    "Basic G-code"
+  ],
+
+  "Motorcycle & Power Equipment Technology — Satellite Campus (Pulaski, PA)": [
+    "Small engine repair",
+    "Electrical diagnostics",
+    "Fuel system service",
+    "Engine teardown and rebuild",
+    "Routine maintenance",
+    "Using diagnostic tools"
+  ],
+
+  "Refrigeration & A/C Technology — Main Campus (New Castle, PA)": [
+    "HVAC installation and service",
+    "Refrigerant recovery and charging",
+    "Electrical troubleshooting",
+    "Brazing and piping",
+    "Reading HVAC schematics",
+    "Airflow testing"
+  ],
+
+  "Refrigeration & Climate Control — East Liverpool Campus (East Liverpool, OH)": [
+    "HVAC repair",
+    "Refrigerant handling",
+    "Control system diagnostics",
+    "Brazing and soldering",
+    "Heat pump troubleshooting",
+    "Preventive maintenance"
+  ]
+};
+
+/* ===========================
+   STORAGE
+=========================== */
 function getData() {
   return JSON.parse(localStorage.getItem("resumeData")) || {};
 }
@@ -184,87 +320,36 @@ function setData(data) {
   localStorage.setItem("resumeData", JSON.stringify(data));
 }
 
-/* ===== LOAD PAGE ===== */
+/* ===========================
+   PAGE LOAD
+=========================== */
 window.onload = function () {
   const data = getData();
-  const program = (data.programCampus || "").trim();
-
-  if (!program || !PROGRAM_CERTS[program]) {
-    document.getElementById("programDisplay").textContent =
-      "Program not found. Please go back and reselect your program.";
-    document.getElementById("programCerts").innerHTML = "";
-    return;
-  }
-
-  data.certifications ||= {
-    programCerts: [],
-    extraCerts: "",
-    extraSkills: ""
-  };
+  const program = data.programCampus || "";
 
   document.getElementById("programDisplay").textContent =
     `Program Selected: ${program}`;
 
-  document.getElementById("extraCerts").value = data.certifications.extraCerts || "";
-  document.getElementById("extraSkills").value = data.certifications.extraSkills || "";
-
-  const selected = Array.isArray(data.certifications.programCerts)
-    ? data.certifications.programCerts
-    : [];
-
-  const container = document.getElementById("programCerts");
-  container.innerHTML = "";
-
-  PROGRAM_CERTS[program].forEach((cert, i) => {
+  /* ----- CERTIFICATIONS (PROGRAM) ----- */
+  const certBox = document.getElementById("programCerts");
+  certBox.innerHTML = "";
+  (PROGRAM_CERTS[program] || []).forEach((cert, i) => {
     const row = document.createElement("div");
     row.className = "check-row";
 
     const cb = document.createElement("input");
     cb.type = "checkbox";
-    cb.id = "cert" + i;
     cb.value = cert;
-    cb.checked = selected.includes(cert);
 
     const label = document.createElement("label");
-    label.htmlFor = cb.id;
     label.textContent = cert;
 
     row.appendChild(cb);
     row.appendChild(label);
-    container.appendChild(row);
+    certBox.appendChild(row);
   });
 
-  setData(data);
-};
-
-/* ===== NAVIGATION ===== */
-function goBack() {
-  window.location.href = "work.html";
-}
-
-function goNext() {
-  const data = getData();
-
-  data.certifications ||= {
-    programCerts: [],
-    extraCerts: "",
-    extraSkills: ""
-  };
-
-  data.certifications.programCerts = Array.from(
-    document.querySelectorAll("#programCerts input:checked")
-  ).map(cb => cb.value);
-
-  data.certifications.extraCerts =
-    document.getElementById("extraCerts").value.trim();
-
-  data.certifications.extraSkills =
-    document.getElementById("extraSkills").value.trim();
-
-  setData(data);
-  window.location.href = "education-military-v2.html";
-}
-</script>
-
-</body>
-</html>
+  /* ----- CUSTOM CERTIFICATIONS ----- */
+  const customCertBox = document.getElementById("customCerts");
+  customCertBox.innerHTML = "";
+  for (let i = 0
