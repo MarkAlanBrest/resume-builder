@@ -72,7 +72,7 @@
   ============================= -->
   <div id="educationForm" style="display:none;">
 
-    <!-- NEW: Auto-Fill Button (top of form) -->
+    <!-- Auto-Fill Button -->
     <button
       id="autoFillNCSTBtn"
       class="action-btn"
@@ -87,6 +87,12 @@
 
     <div class="system">Program / Degree / Certificate</div>
     <input id="programName">
+
+    <div class="system">School City</div>
+    <input id="schoolCity">
+
+    <div class="system">School State</div>
+    <input id="schoolState">
 
     <div class="system">Start Date (MM/YYYY)</div>
     <input id="eduStartDate">
@@ -123,37 +129,79 @@ function setData(data) {
 }
 
 /* ============================
-   PROGRAM → DEGREE MAPPING
+   PROGRAM → DEGREE + CITY/STATE
 ============================ */
 const PROGRAM_INFO = {
-  "Automotive Technology — Main Campus (New Castle, PA)":
-    "Automotive Technology — Associate in Specialized Technology Degree",
-  "Building Technology — Main Campus (New Castle, PA)":
-    "Building Technology — Diploma",
-  "Combination Welding — Main Campus (New Castle, PA)":
-    "Combination Welding — Diploma",
-  "Combination Welding — East Liverpool Campus (East Liverpool, OH)":
-    "Combination Welding — Diploma",
-  "Commercial Truck Driving (Class A CDL) — Satellite Campus (Pulaski, PA)":
-    "Commercial Truck Driving (Class A CDL) — Diploma",
-  "Diesel & Heavy Equipment Repair Technology — Satellite Campus (Pulaski, PA)":
-    "Diesel & Heavy Equipment Repair Technology — Associate in Specialized Technology Degree",
-  "Electrical Technology — Main Campus (New Castle, PA)":
-    "Electrical Technology — Associate in Specialized Technology Degree",
-  "Electrical & Industrial Maintenance — East Liverpool Campus (East Liverpool, OH)":
-    "Electrical & Industrial Maintenance — Diploma",
-  "Heavy Equipment Operations with CDL — Satellite Campus (Pulaski, PA)":
-    "Heavy Equipment Operations with CDL — Diploma",
-  "Industrial Electro-Mechanical Technology — Main Campus (New Castle, PA)":
-    "Industrial Electro-Mechanical Technology — Associate in Specialized Technology Degree",
-  "Machinist & CNC Manufacturing — Satellite Campus (Pulaski, PA)":
-    "Machinist & CNC Manufacturing — Diploma",
-  "Motorcycle & Power Equipment Technology — Satellite Campus (Pulaski, PA)":
-    "Motorcycle & Power Equipment Technology — Diploma",
-  "Refrigeration & A/C Technology — Main Campus (New Castle, PA)":
-    "Refrigeration & A/C Technology — Associate in Specialized Technology Degree",
-  "Refrigeration & Climate Control — East Liverpool Campus (East Liverpool, OH)":
-    "Refrigeration & Climate Control — Diploma",
+  "Automotive Technology — Main Campus (New Castle, PA)": {
+    program: "Automotive Technology — Associate in Specialized Technology Degree",
+    city: "New Castle",
+    state: "PA"
+  },
+  "Building Technology — Main Campus (New Castle, PA)": {
+    program: "Building Technology — Diploma",
+    city: "New Castle",
+    state: "PA"
+  },
+  "Combination Welding — Main Campus (New Castle, PA)": {
+    program: "Combination Welding — Diploma",
+    city: "New Castle",
+    state: "PA"
+  },
+  "Combination Welding — East Liverpool Campus (East Liverpool, OH)": {
+    program: "Combination Welding — Diploma",
+    city: "East Liverpool",
+    state: "OH"
+  },
+  "Commercial Truck Driving (Class A CDL) — Satellite Campus (Pulaski, PA)": {
+    program: "Commercial Truck Driving (Class A CDL) — Diploma",
+    city: "Pulaski",
+    state: "PA"
+  },
+  "Diesel & Heavy Equipment Repair Technology — Satellite Campus (Pulaski, PA)": {
+    program: "Diesel & Heavy Equipment Repair Technology — Associate in Specialized Technology Degree",
+    city: "Pulaski",
+    state: "PA"
+  },
+  "Electrical Technology — Main Campus (New Castle, PA)": {
+    program: "Electrical Technology — Associate in Specialized Technology Degree",
+    city: "New Castle",
+    state: "PA"
+  },
+  "Electrical & Industrial Maintenance — East Liverpool Campus (East Liverpool, OH)": {
+    program: "Electrical & Industrial Maintenance — Diploma",
+    city: "East Liverpool",
+    state: "OH"
+  },
+  "Heavy Equipment Operations with CDL — Satellite Campus (Pulaski, PA)": {
+    program: "Heavy Equipment Operations with CDL — Diploma",
+    city: "Pulaski",
+    state: "PA"
+  },
+  "Industrial Electro-Mechanical Technology — Main Campus (New Castle, PA)": {
+    program: "Industrial Electro-Mechanical Technology — Associate in Specialized Technology Degree",
+    city: "New Castle",
+    state: "PA"
+  },
+  "Machinist & CNC Manufacturing — Satellite Campus (Pulaski, PA)": {
+    program: "Machinist & CNC Manufacturing — Diploma",
+    city: "Pulaski",
+    state: "PA"
+  },
+  "Motorcycle & Power Equipment Technology — Satellite Campus (Pulaski, PA)": {
+    program: "Motorcycle & Power Equipment Technology — Diploma",
+    city: "Pulaski",
+    state: "PA"
+  },
+  "Refrigeration & A/C Technology — Main Campus (New Castle, PA)": {
+    program: "Refrigeration & A/C Technology — Associate in Specialized Technology Degree",
+    city: "New Castle",
+    state: "PA"
+  },
+  "Refrigeration & Climate Control — East Liverpool Campus (East Liverpool, OH)": {
+    program: "Refrigeration & Climate Control — Diploma",
+    city: "East Liverpool",
+    state: "OH"
+  }
 };
 
 /* ============================
@@ -172,16 +220,12 @@ window.onload = function () {
 function showEducationForm() {
   educationForm.style.display = "block";
   actionButtons.style.display = "none";
-
-  // Show auto-fill button
   autoFillNCSTBtn.style.display = "inline-block";
 }
 
 function cancelForm() {
   educationForm.style.display = "none";
   actionButtons.style.display = "flex";
-
-  // Hide auto-fill button
   autoFillNCSTBtn.style.display = "none";
 }
 
@@ -192,13 +236,15 @@ function saveEducation() {
   const entry = {
     school: schoolName.value.trim(),
     program: programName.value.trim(),
+    city: schoolCity.value.trim(),
+    state: schoolState.value.trim(),
     startDate: eduStartDate.value.trim(),
     endDate: eduEndDate.value.trim(),
     notes: eduNotes.value.trim()
   };
 
-  if (!entry.school || !entry.program || !entry.startDate || !entry.endDate) {
-    alert("Please complete all required education fields.");
+  if (!entry.school || !entry.program || !entry.city || !entry.state || !entry.startDate || !entry.endDate) {
+    alert("Please complete all required education fields, including city and state.");
     return;
   }
 
@@ -207,6 +253,7 @@ function saveEducation() {
   setData(data);
 
   schoolName.value = programName.value =
+    schoolCity.value = schoolState.value =
     eduStartDate.value = eduEndDate.value = eduNotes.value = "";
 
   cancelForm();
@@ -225,7 +272,7 @@ function renderEducation() {
     div.className = "entry-card";
     div.innerHTML = `
       <strong>${edu.program}</strong><br>
-      ${edu.school}<br>
+      ${edu.school} — ${edu.city}, ${edu.state}<br>
       ${edu.startDate} – ${edu.endDate}<br>
       ${edu.notes ? edu.notes + "<br>" : ""}
       <button onclick="deleteEducation(${i})">Delete</button>
@@ -248,7 +295,6 @@ function autoFillNCST() {
   const data = getData() || {};
   const student = data.student || {};
 
-  // Try multiple possible keys
   const programKey =
     student.programCampus ||
     student.program ||
@@ -256,12 +302,13 @@ function autoFillNCST() {
     data.program ||
     "";
 
-  const formattedProgram = programKey ? (PROGRAM_INFO[programKey] || programKey) : "";
+  const info = PROGRAM_INFO[programKey] || {};
 
-  // Fill fields ONLY — no saving
   schoolName.value = "New Castle School of Trades";
-  programName.value = formattedProgram;
-  eduStartDate.value = ""; // student must enter
+  programName.value = info.program || "";
+  schoolCity.value = info.city || "";
+  schoolState.value = info.state || "";
+  eduStartDate.value = "";
   eduEndDate.value = student.graduationDate || data.graduationDate || "";
   eduNotes.value = "";
 }

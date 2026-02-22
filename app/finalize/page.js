@@ -8,6 +8,23 @@ const templates = [
   { id: "TemplateC", label: "Template 4 (Creative)" }
 ];
 
+// Basic cleanup helpers
+function cleanText(v) {
+  if (!v) return "";
+  return String(v).trim();
+}
+
+function capitalizeFirst(v) {
+  if (!v) return "";
+  v = v.trim();
+  return v.charAt(0).toUpperCase() + v.slice(1).toLowerCase();
+}
+
+function upper(v) {
+  if (!v) return "";
+  return v.trim().toUpperCase();
+}
+
 export default function FinalizePage() {
   const [selectedTemplate, setSelectedTemplate] = useState("Template");
   const [confirmed, setConfirmed] = useState(false);
@@ -20,34 +37,47 @@ export default function FinalizePage() {
     try {
       const d = JSON.parse(localStorage.getItem("resumeData")) || {};
 
+      // Clean + normalize education entries
+      const cleanedEducation = (d.education || []).map((e) => ({
+        school: cleanText(e.school),
+        program: cleanText(e.program),
+        city: capitalizeFirst(e.city),
+        state: upper(e.state),
+        startDate: cleanText(e.startDate),
+        endDate: cleanText(e.endDate),
+        notes: cleanText(e.notes)
+      }));
+
       const payload = {
         TEMPLATE: selectedTemplate,
 
         student: {
-          name: d.name || "",
-          email: d.email || "",
-          phone: d.phone || "",
-          address: d.address || "",
-          city: d.city || "",
-          state: d.state || "",
-          zip: d.zip || "",
-          programCampus: d.programCampus || "",
-          graduationDate: d.grad || ""
+          name: cleanText(d.name),
+          email: cleanText(d.email),
+          phone: cleanText(d.phone),
+          address: cleanText(d.address),
+          city: capitalizeFirst(d.city),
+          state: upper(d.state),
+          zip: cleanText(d.zip),
+          programCampus: cleanText(d.programCampus),
+          graduationDate: cleanText(d.grad)
         },
 
         workExperience: d.workExperience || [],
         militaryService: d.militaryService || [],
-        education: d.education || [],
+
+        // UPDATED: includes city + state
+        education: cleanedEducation,
 
         // STRINGS
-        allCerts: d.allCerts || "",
-        allSkills: d.allSkills || "",
+        allCerts: cleanText(d.allCerts),
+        allSkills: cleanText(d.allSkills),
 
         // OBJECTIVE PAGE DATA (AI USES THIS)
         careerContext: {
-          objectives: d.objectives || "",
-          jobTarget: d.jobTarget || "",
-          notes: d.notes || ""
+          objectives: cleanText(d.objectives),
+          jobTarget: cleanText(d.jobTarget),
+          notes: cleanText(d.notes)
         }
       };
 
@@ -165,7 +195,7 @@ export default function FinalizePage() {
         </button>
 
         {loading && (
-          <p style={{ color: "red", marginTop: "15px" }}>
+          <p style={{ color: "red",fontSize: "20px", marginTop: "15px" }}>
             Resume being generated…
           </p>
         )}
