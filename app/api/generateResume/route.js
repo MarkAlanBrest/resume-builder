@@ -206,9 +206,20 @@ Formatting rules for workExperience:
 - Never remove or omit employerCity or employerState.
 
 Formatting rules for workExperience task fields:
-- Rewrite each non-empty task into a strong resume bullet statement.
+- Rewrite each non-empty task into a strong, detailed, professional resume bullet.
+- If the student's task is vague, extremely short, or missing context, expand it using:
+  • standard responsibilities for that job title,
+  • common industry expectations,
+  • typical tools, equipment, or methods used in that role,
+  • typical outcomes or impacts associated with that task.
+- Add meaningful context such as purpose, scope, impact, or results (e.g., “to support student learning,” “to maintain a safe work environment,” “to ensure project accuracy”).
+- Keep each bullet concise but substantial (12–22 words).
+- Maintain the student’s original intent, but elevate clarity, professionalism, and detail.
+- Do NOT fabricate certifications, credentials, or job titles.
 - Preserve up to 5 tasks per job (task1–task5).
-- Return them as plain strings (NO bullet symbols).
+- Return each task as a plain string with NO bullet symbols.
+
+
 
 Return ONLY valid JSON.
 
