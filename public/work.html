@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <title>Work Experience</title>
+  <title>Work & Military Experience</title>
   <link rel="stylesheet" href="style.css">
 
   <style>
@@ -39,25 +39,30 @@
 
   <h1 class="page-title">NCST’s Resume Builder</h1>
 
+  <p style="text-align:center; max-width:600px; margin:0 auto 20px;">
+    <strong>Enter all work experience AND any military service here.</strong><br>
+    Military roles should be entered the same way as jobs.<br>
+    Example: Employer = “United States Army”, Title = “Infantryman”.
+  </p>
+
   <div id="actionButtons" class="action-row">
-    <button class="action-btn" onclick="showJobForm()">Enter Work History</button>
-    <button class="action-btn" onclick="showMilitaryForm()">Enter Military History</button>
+    <button class="action-btn" onclick="showJobForm()">Add Work or Military Experience</button>
   </div>
 
-  <!-- JOB FORM -->
+  <!-- JOB/MILITARY FORM -->
   <div id="jobForm" style="display:none;">
 
-    <div class="system">Employer name</div>
-    <input id="employer">
+    <div class="system">Employer / Branch</div>
+    <input id="employer" placeholder="Example: ABC Manufacturing or United States Army">
 
-    <div class="system">Employer city</div>
+    <div class="system">City</div>
     <input id="employerCity">
 
-    <div class="system">Employer state</div>
+    <div class="system">State</div>
     <input id="employerState">
 
-    <div class="system">Job title</div>
-    <input id="title">
+    <div class="system">Job Title / Military Role</div>
+    <input id="title" placeholder="Example: Welder or Infantryman">
 
     <div class="system">Start date (MM/YYYY)</div>
     <input id="startDate">
@@ -65,38 +70,18 @@
     <div class="system">End date (MM/YYYY or Present)</div>
     <input id="endDate">
 
-    <div class="system">Job Duties (enter 3–5)</div>
+    <div class="system">Duties (enter 3–5)</div>
     <input id="duty1" placeholder="Duty 1 (required)">
     <input id="duty2" placeholder="Duty 2 (required)">
     <input id="duty3" placeholder="Duty 3 (required)">
     <input id="duty4" placeholder="Duty 4 (optional)">
     <input id="duty5" placeholder="Duty 5 (optional)">
 
-    <button onclick="saveJob()">Save Job</button>
-    <button onclick="cancelForms()">Cancel</button>
-  </div>
-
-  <!-- MILITARY FORM -->
-  <div id="militaryForm" style="display:none;">
-
-    <div class="system">Branch and rank</div>
-    <input id="militaryRank">
-
-    <div class="system">Duties performed</div>
-    <textarea id="militaryDuties"></textarea>
-
-    <div class="system">Achievements or awards</div>
-    <textarea id="militaryAchievements"></textarea>
-
-    <div class="system">Additional comments (optional)</div>
-    <textarea id="militaryComments"></textarea>
-
-    <button onclick="saveMilitary()">Save Military Service</button>
+    <button onclick="saveJob()">Save Entry</button>
     <button onclick="cancelForms()">Cancel</button>
   </div>
 
   <div id="jobList"></div>
-  <div id="militaryList"></div>
 
   <br>
 
@@ -116,15 +101,12 @@ function setData(data) {
 window.onload = function () {
   const data = getData();
   data.workExperience ||= [];
-  data.militaryService ||= [];
   setData(data);
   renderJobs();
-  renderMilitary();
 };
 
 function hideAllForms() {
   jobForm.style.display = "none";
-  militaryForm.style.display = "none";
   actionButtons.style.display = "block";
 }
 
@@ -133,16 +115,11 @@ function showJobForm() {
   jobForm.style.display = "block";
 }
 
-function showMilitaryForm() {
-  actionButtons.style.display = "none";
-  militaryForm.style.display = "block";
-}
-
 function cancelForms() {
   hideAllForms();
 }
 
-/* ---------- JOBS ---------- */
+/* ---------- SAVE ENTRY (WORK OR MILITARY) ---------- */
 function saveJob() {
   const duties = [
     duty1.value.trim(),
@@ -153,7 +130,7 @@ function saveJob() {
   ].filter(Boolean);
 
   if (duties.length < 3) {
-    alert("Please enter at least 3 job duties.");
+    alert("Please enter at least 3 duties.");
     return;
   }
 
@@ -169,7 +146,7 @@ function saveJob() {
 
   if (!job.employer || !job.employerCity || !job.employerState ||
       !job.title || !job.start || !job.end) {
-    alert("Please complete all job fields.");
+    alert("Please complete all fields.");
     return;
   }
 
@@ -220,57 +197,6 @@ function deleteJob(i) {
   renderJobs();
 }
 
-/* ---------- MILITARY ---------- */
-function saveMilitary() {
-  const entry = {
-    branchRank: militaryRank.value.trim(),
-    duties: militaryDuties.value.trim(),
-    achievements: militaryAchievements.value.trim(),
-    comments: militaryComments.value.trim()
-  };
-
-  if (!entry.branchRank || !entry.duties) {
-    alert("Please enter branch/rank and duties.");
-    return;
-  }
-
-  const data = getData();
-  data.militaryService.push(entry);
-  setData(data);
-
-  militaryRank.value =
-  militaryDuties.value =
-  militaryAchievements.value =
-  militaryComments.value = "";
-
-  hideAllForms();
-  renderMilitary();
-}
-
-function renderMilitary() {
-  const data = getData();
-  militaryList.innerHTML = "";
-
-  data.militaryService.forEach((m, i) => {
-    const div = document.createElement("div");
-    div.className = "entry-card";
-    div.innerHTML = `
-      <strong>${m.branchRank}</strong><br>
-      ${m.duties}<br>
-      ${m.achievements}<br>
-      <button onclick="deleteMilitary(${i})">Delete</button>
-    `;
-    jobList.appendChild(div);
-  });
-}
-
-function deleteMilitary(i) {
-  const data = getData();
-  data.militaryService.splice(i, 1);
-  setData(data);
-  renderMilitary();
-}
-
 function goBack() {
   window.location.href = "objective.html"; 
 }  
@@ -281,4 +207,4 @@ function goNext() {
 </script>
 
 </body>
-</html> 
+</html>
