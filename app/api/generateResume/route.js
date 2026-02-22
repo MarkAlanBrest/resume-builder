@@ -240,6 +240,14 @@ WORK EXPERIENCE RULES:
 - Normalize employerCity to Proper Case
 - Normalize employerState to UPPERCASE
 
+TASK FIELD RULES (CRITICAL):
+- Each job contains fields task1, task2, task3, task4, task5
+- These fields contain the student’s raw job duties
+- Rewrite each non-empty task field into a 12–22 word professional resume bullet
+- Return rewritten bullets in the SAME fields: task1, task2, task3, task4, task5
+- Never return empty strings; if a task cannot be rewritten, return the original text cleaned
+- Do NOT add new tasks or remove tasks
+
 EDUCATION RULES:
 - Clean and normalize school/program
 - Keep dates clean
@@ -288,7 +296,6 @@ EDUCATION RULES:
         start: formatDateToText(clean(ai.start ?? base.start)),
         end: formatDateToText(clean(ai.end ?? base.end)),
 
-        // ⭐ FIXED MERGE LOGIC — AI OUTPUT NOW ALWAYS USED WHEN PRESENT
         task1: limit(clean(ai.task1 || base.task1), 300),
         task2: limit(clean(ai.task2 || base.task2), 300),
         task3: limit(clean(ai.task3 || base.task3), 300),
