@@ -319,11 +319,13 @@ ${JSON.stringify(aiInput, null, 2)}
     certifications: {
       allCerts: cleanedCerts,
       allSkills: cleanedSkills,
-
-      // NEW — required for bullet points
       allCertsText: cleanedCerts.join("\n"),
       allSkillsText: cleanedSkills.join("\n"),
     },
+
+    // REQUIRED FOR DOCXTEMPLATER LOOPS
+    allCerts: cleanedCerts,
+    allSkills: cleanedSkills,
 
     hasProgramCerts: cleanedCerts.length > 0,
     hasExtraSkills: cleanedSkills.length > 0,
