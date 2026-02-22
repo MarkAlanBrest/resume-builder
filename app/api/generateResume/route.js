@@ -230,11 +230,11 @@ PROFESSIONAL SUMMARY RULES (STRICT):
 
 SUMMARY BULLETS:
 - 4–6 bullets
-- 14–22 words each
+- 16–28 words each
 - No bullet symbols
 
 WORK EXPERIENCE RULES:
-- Rewrite each non-empty task into a strong resume bullet (12–22 words)
+- Rewrite each non-empty task into a strong resume bullet (16–28 words)
 - No bullet symbols
 - Never remove employerCity or employerState
 - Normalize employerCity to Proper Case
