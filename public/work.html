@@ -23,10 +23,7 @@
       margin-bottom: 12px;
       background: #f9f9f9;
     }
-    .action-btn {
-      margin-bottom: 15px;
-    }
-    input, textarea {
+    input {
       width: 100%;
       margin-bottom: 10px;
       padding: 6px;
@@ -39,21 +36,16 @@
 
   <h1 class="page-title">NCST’s Resume Builder</h1>
 
-  <p style="text-align:center; max-width:650px; margin:0 auto 20px; line-height:1.4;">
-    <strong>Enter all work experience AND any military service here.</strong><br>
-    Military roles should be entered the same way as jobs.<br>
-    Example: Employer = “United States Army”, Title = “Infantryman”.
+  <p style="text-align:center; max-width:650px; margin:0 auto 20px;">
+    Enter <strong>all work and military experience</strong> here.
   </p>
 
-  <div id="actionButtons" class="action-row">
-    <button class="action-btn" onclick="showJobForm()">Add Work or Military Experience</button>
-  </div>
+  <button onclick="showJobForm()">Add Work or Military Experience</button>
 
-  <!-- JOB/MILITARY FORM -->
   <div id="jobForm" style="display:none;">
 
     <div class="system">Employer / Branch</div>
-    <input id="employer" placeholder="Example: ABC Manufacturing or United States Army">
+    <input id="employer">
 
     <div class="system">City</div>
     <input id="employerCity">
@@ -62,7 +54,7 @@
     <input id="employerState">
 
     <div class="system">Job Title / Military Role</div>
-    <input id="title" placeholder="Example: Welder or Infantryman">
+    <input id="title">
 
     <div class="system">Start date (MM/YYYY)</div>
     <input id="startDate">
@@ -70,38 +62,20 @@
     <div class="system">End date (MM/YYYY or Present)</div>
     <input id="endDate">
 
-    <div class="system">
-      Job Duties (enter 3–5 detailed statements)
-      <div style="font-size: 13px; color: #444; margin-top: 4px; line-height:1.3;">
-        Write clear, specific duties that describe what you actually did.  
-        Avoid one‑word answers. Use action verbs and include tools, tasks, or outcomes.
-        <br><br>
-        <strong>Example (Work):</strong><br>
-        • Installed and repaired HVAC systems using hand and power tools<br>
-        • Performed routine maintenance and safety inspections<br>
-        • Assisted senior technicians with troubleshooting electrical components
-        <br><br>
-        <strong>Example (Military):</strong><br>
-        • Operated and maintained tactical communication equipment<br>
-        • Trained new personnel on safety procedures and mission protocols<br>
-        • Performed equipment inspections to ensure operational readiness
-      </div>
-    </div>
-
-    <input id="duty1" placeholder="Duty 1 (required)">
-    <input id="duty2" placeholder="Duty 2 (required)">
-    <input id="duty3" placeholder="Duty 3 (required)">
-    <input id="duty4" placeholder="Duty 4 (optional)">
-    <input id="duty5" placeholder="Duty 5 (optional)">
+    <div class="system">Job Duties (3–5)</div>
+    <input id="task1" placeholder="Duty 1 (required)">
+    <input id="task2" placeholder="Duty 2 (required)">
+    <input id="task3" placeholder="Duty 3 (required)">
+    <input id="task4" placeholder="Duty 4 (optional)">
+    <input id="task5" placeholder="Duty 5 (optional)">
 
     <button onclick="saveJob()">Save Entry</button>
-    <button onclick="cancelForms()">Cancel</button>
+    <button onclick="cancel()">Cancel</button>
   </div>
 
   <div id="jobList"></div>
 
   <br>
-
   <button onclick="goBack()">Back</button>
   <button onclick="goNext()">Next</button>
 
@@ -111,43 +85,28 @@
 function getData() {
   return JSON.parse(localStorage.getItem("resumeData")) || {};
 }
-function setData(data) {
-  localStorage.setItem("resumeData", JSON.stringify(data));
+function setData(d) {
+  localStorage.setItem("resumeData", JSON.stringify(d));
 }
 
 window.onload = function () {
-  const data = getData();
-  data.workExperience ||= [];
-  setData(data);
+  const d = getData();
+  d.workExperience ||= [];
+  setData(d);
   renderJobs();
 };
 
-function hideAllForms() {
-  jobForm.style.display = "none";
-  actionButtons.style.display = "block";
-}
-
 function showJobForm() {
-  actionButtons.style.display = "none";
   jobForm.style.display = "block";
 }
 
-function cancelForms() {
-  hideAllForms();
+function cancel() {
+  jobForm.style.display = "none";
 }
 
-/* ---------- SAVE ENTRY (WORK OR MILITARY) ---------- */
 function saveJob() {
-  const duties = [
-    duty1.value.trim(),
-    duty2.value.trim(),
-    duty3.value.trim(),
-    duty4.value.trim(),
-    duty5.value.trim()
-  ].filter(Boolean);
-
-  if (duties.length < 3) {
-    alert("Please enter at least 3 duties.");
+  if (!task1.value || !task2.value || !task3.value) {
+    alert("At least 3 duties are required.");
     return;
   }
 
@@ -158,18 +117,16 @@ function saveJob() {
     title: title.value.trim(),
     start: startDate.value.trim(),
     end: endDate.value.trim(),
-    tasks: duties
+    task1: task1.value.trim(),
+    task2: task2.value.trim(),
+    task3: task3.value.trim(),
+    task4: task4.value.trim(),
+    task5: task5.value.trim()
   };
 
-  if (!job.employer || !job.employerCity || !job.employerState ||
-      !job.title || !job.start || !job.end) {
-    alert("Please complete all fields.");
-    return;
-  }
-
-  const data = getData();
-  data.workExperience.push(job);
-  setData(data);
+  const d = getData();
+  d.workExperience.push(job);
+  setData(d);
 
   employer.value =
   employerCity.value =
@@ -177,52 +134,48 @@ function saveJob() {
   title.value =
   startDate.value =
   endDate.value =
-  duty1.value =
-  duty2.value =
-  duty3.value =
-  duty4.value =
-  duty5.value = "";
+  task1.value =
+  task2.value =
+  task3.value =
+  task4.value =
+  task5.value = "";
 
-  hideAllForms();
+  jobForm.style.display = "none";
   renderJobs();
 }
 
 function renderJobs() {
-  const data = getData();
+  const d = getData();
   jobList.innerHTML = "";
 
-  // ⭐ Sort newest → oldest by start date
-  data.workExperience.sort((a, b) => {
-    return new Date(b.start) - new Date(a.start);
-  });
-
-  data.workExperience.forEach((job, i) => {
-    const div = document.createElement("div");
-    div.className = "entry-card";
-
-    const dutiesHtml = job.tasks.map(t => `• ${t}`).join("<br>");
-
-    div.innerHTML = `
-      <strong>${job.title}</strong> – ${job.employer} (${job.employerCity}, ${job.employerState})<br>
-      ${job.start} to ${job.end}<br><br>
-      ${dutiesHtml}<br><br>
-      <button onclick="deleteJob(${i})">Delete</button>
+  d.workExperience.forEach((j, i) => {
+    jobList.innerHTML += `
+      <div class="entry-card">
+        <strong>${j.title}</strong> – ${j.employer}
+        (${j.employerCity}, ${j.employerState})<br>
+        ${j.start} – ${j.end}<br><br>
+        ${j.task1 ? "• " + j.task1 + "<br>" : ""}
+        ${j.task2 ? "• " + j.task2 + "<br>" : ""}
+        ${j.task3 ? "• " + j.task3 + "<br>" : ""}
+        ${j.task4 ? "• " + j.task4 + "<br>" : ""}
+        ${j.task5 ? "• " + j.task5 + "<br>" : ""}
+        <br>
+        <button onclick="deleteJob(${i})">Delete</button>
+      </div>
     `;
-    jobList.appendChild(div);
   });
 }
 
 function deleteJob(i) {
-  const data = getData();
-  data.workExperience.splice(i, 1);
-  setData(data);
+  const d = getData();
+  d.workExperience.splice(i, 1);
+  setData(d);
   renderJobs();
 }
 
 function goBack() {
-  window.location.href = "objective.html"; 
-}  
-
+  window.location.href = "objective.html";
+}
 function goNext() {
   window.location.href = "certifications.html";
 }

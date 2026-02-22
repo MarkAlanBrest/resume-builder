@@ -28,11 +28,11 @@
   <div class="system">
     Optional: What type of job are you interested in after graduation?
     <br><br>
-    <small>This helps tailor your resume but may not appear exactly as written.</small>
+    <small>This helps tailor your resume.</small>
   </div>
 
   <textarea
-    id="jobInterest"
+    id="jobTarget"
     placeholder="Example: Entry-level welding position in a fabrication or industrial setting"
   ></textarea>
 
@@ -85,12 +85,12 @@
   </div>
 
   <div class="system">
-    Optional: Any additional soft skills or qualities?
+    Optional: Anything else an employer should know about you?
   </div>
 
   <textarea
-    id="additionalSoftSkills"
-    placeholder="Example: leadership, reliability, strong work ethic"
+    id="notes"
+    placeholder="Example: dependable, motivated, eager to learn, strong work ethic"
   ></textarea>
 
   <br>
@@ -113,29 +113,30 @@ function setData(data) {
 /* ---------- LOAD EXISTING DATA ---------- */
 window.onload = function () {
   const data = getData();
-  const ctx = data.careerContext || {};
 
-  document.getElementById("jobInterest").value = ctx.jobInterest || "";
-  document.getElementById("additionalSoftSkills").value = ctx.additionalSoftSkills || "";
+  document.getElementById("jobTarget").value = data.jobTarget || "";
+  document.getElementById("notes").value = data.notes || "";
 
-  if (Array.isArray(ctx.personalQualities)) {
+  if (data.objectives) {
+    const selected = data.objectives.split("\n");
     document.querySelectorAll(".qual").forEach(cb => {
-      if (ctx.personalQualities.includes(cb.value)) cb.checked = true;
+      if (selected.includes(cb.value)) cb.checked = true;
     });
   }
 };
 
-/* ---------- SAVE DATA ---------- */
+/* ---------- SAVE DATA (STRINGS ONLY) ---------- */
 function saveOnly() {
   const data = getData();
 
-  data.careerContext = {
-    jobInterest: document.getElementById("jobInterest").value.trim(),
-    personalQualities: Array.from(
-      document.querySelectorAll(".qual:checked")
-    ).map(cb => cb.value),
-    additionalSoftSkills: document.getElementById("additionalSoftSkills").value.trim()
-  };
+  const qualities = Array.from(
+    document.querySelectorAll(".qual:checked")
+  ).map(cb => cb.value);
+
+  data.jobTarget = document.getElementById("jobTarget").value.trim();
+
+  data.objectives = qualities.join("\n");   // STRING
+  data.notes = document.getElementById("notes").value.trim();
 
   setData(data);
 }

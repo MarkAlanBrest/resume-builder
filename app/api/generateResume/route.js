@@ -64,7 +64,8 @@ function splitLines(text) {
    AI HELPER — CLEAN LIST ONLY
 =========================== */
 async function polishList(list, label) {
-  if (!Array.isArray(list) || list.length === 0) return list;
+  const safeList = Array.isArray(list) ? list.map(clean).filter(Boolean) : [];
+  if (safeList.length === 0) return [];
 
   const prompt = `
 You are cleaning a list of ${label} for a student's resume.
@@ -75,11 +76,16 @@ ONLY:
 - Fix minor formatting
 - Remove exact duplicates
 
+DO NOT:
+- Rewrite
+- Add content
+- Strengthen language
+
 Return JSON ONLY:
 { "items": ["...", "..."] }
 
 LIST:
-${JSON.stringify(list, null, 2)}
+${JSON.stringify(safeList, null, 2)}
 `.trim();
 
   const response = await openai.chat.completions.create({
@@ -94,11 +100,10 @@ ${JSON.stringify(list, null, 2)}
 
   try {
     const parsed = JSON.parse(response.choices[0].message.content);
-    return Array.isArray(parsed.items)
-      ? parsed.items.map(clean).filter(Boolean)
-      : list;
+    const items = Array.isArray(parsed.items) ? parsed.items : safeList;
+    return items.map(clean).filter(Boolean);
   } catch {
-    return list;
+    return safeList;
   }
 }
 
@@ -152,17 +157,15 @@ export async function POST(req) {
       notes: clean(e.notes),
     })),
 
-    hasWorkExperience: workExperience.some(
-      j => clean(j.employer) || clean(j.title)
-    ),
+    hasWorkExperience: workExperience.some(j => clean(j.employer) || clean(j.title)),
     hasEducation: education.length > 0,
 
     careerContext,
   };
 
   /* ===========================
-     AI POLISH (SUMMARY + BULLETS)
-  =========================== */
+     AI POLISH (SUMMARY + WORK + EDU)
+=========================== */
   let polished = {
     summary: "",
     summaryBullets: [],
@@ -171,6 +174,17 @@ export async function POST(req) {
   };
 
   try {
+    const aiInput = {
+      student: {
+        name: baseData.name,
+        programCampus: baseData.programCampus,
+        graduationDate: baseData.graduationDate,
+      },
+      careerContext: baseData.careerContext,
+      workExperience: baseData.workExperience,
+      education: baseData.education
+    };
+
     const completion = await openai.chat.completions.create({
       model: "gpt-4o",
       temperature: 0.4,
@@ -182,27 +196,39 @@ export async function POST(req) {
 You are an AI resume writer.
 Follow the MASTER STYLE GUIDE EXACTLY.
 
+MASTER STYLE GUIDE:
 ${masterStyleGuide}
 
-You must return:
-- summary (one paragraph)
-- summaryBullets (3–5 short bullets, strings, no symbols)
-- workExperience
-- education
+REQUIRED OUTPUT (JSON):
+{
+  "summary": "one paragraph",
+  "summaryBullets": ["...", "..."],
+  "workExperience": [...],
+  "education": [...]
+}
+
+PROFESSIONAL SUMMARY RULES:
+- Build "summary" and "summaryBullets" using ONLY careerContext (objectives, jobTarget, notes)
+- Do NOT use workExperience or education for the summary
+- summary = 3–4 sentences, one paragraph
+- summaryBullets = 3–5 bullets, 8–14 words each, NO bullet symbols
+
+WORK EXPERIENCE RULES:
+- Rewrite each non-empty task into a strong resume bullet (12–22 words)
+- No bullet symbols
+- Never remove employerCity or employerState
+- Normalize employerCity to Proper Case
+- Normalize employerState to UPPERCASE 2-letter
+
+EDUCATION RULES:
+- Clean and normalize school/program
+- Keep dates clean
+- No invented degrees or schools
           `.trim()
         },
         {
           role: "user",
-          content: JSON.stringify({
-            student: {
-              name: baseData.name,
-              programCampus: baseData.programCampus,
-              graduationDate: baseData.graduationDate,
-            },
-            careerContext,
-            workExperience: baseData.workExperience,
-            education: baseData.education
-          }, null, 2)
+          content: JSON.stringify(aiInput, null, 2)
         }
       ]
     });
@@ -212,25 +238,24 @@ You must return:
     console.error("AI polish failed:", e);
   }
 
+  /* ===========================
+     CERTS / SKILLS (LIGHT CLEAN)
+=========================== */
   const certArray = await polishList(splitLines(allCertsTextRaw), "certifications");
   const skillArray = await polishList(splitLines(allSkillsTextRaw), "skills");
-  const summaryBullets = Array.isArray(polished.summaryBullets)
-    ? polished.summaryBullets
-    : [];
+
+  const summaryBullets = Array.isArray(polished.summaryBullets) ? polished.summaryBullets : [];
 
   const finalData = {
     ...baseData,
 
-    professionalSummary: limit(
-      clean(polished.summary || careerContext.objectives || ""),
-      600
-    ),
+    professionalSummary: limit(clean(polished.summary || ""), 600),
 
-    summary1: summaryBullets[0] || "",
-    summary2: summaryBullets[1] || "",
-    summary3: summaryBullets[2] || "",
-    summary4: summaryBullets[3] || "",
-    summary5: summaryBullets[4] || "",
+    summary1: clean(summaryBullets[0] || ""),
+    summary2: clean(summaryBullets[1] || ""),
+    summary3: clean(summaryBullets[2] || ""),
+    summary4: clean(summaryBullets[3] || ""),
+    summary5: clean(summaryBullets[4] || ""),
 
     workExperience: baseData.workExperience.map((base, i) => {
       const ai = polished.workExperience?.[i] || {};
