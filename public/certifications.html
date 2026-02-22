@@ -35,14 +35,12 @@
       font-weight: bold;
     }
 
-    .check-row {
+    .row {
       display: flex;
-      align-items: center;
-      gap: 8px;
       margin: 6px 0;
     }
 
-    .check-row input[type="text"] {
+    .row input[type="text"] {
       flex: 1;
       padding: 6px;
     }
@@ -55,9 +53,9 @@
   <h1 class="page-title">NCST Resume Builder</h1>
 
   <div class="instructions">
-    Select the certifications and skills you want included on your resume.<br>
-    Program suggestions are already checked. You may edit them or uncheck them.<br>
-    Add your own items in the blank fields below.
+    Review the suggested certifications and skills below.<br>
+    You may edit or delete any item. Add as many new items as you want.<br>
+    Only fields with text will appear on your resume.
   </div>
 
   <div id="programDisplay" class="program-box"></div>
@@ -346,40 +344,29 @@ window.onload = function () {
 
   (PROGRAM_CERTS[program] || []).forEach(cert => {
     const row = document.createElement("div");
-    row.className = "check-row";
-
-    const cb = document.createElement("input");
-    cb.type = "checkbox";
-    cb.checked = true;
+    row.className = "row";
 
     const input = document.createElement("input");
     input.type = "text";
     input.value = cert;
     input.placeholder = "Certification";
-    input.style.flex = "1";
 
-    row.appendChild(cb);
     row.appendChild(input);
     certBox.appendChild(row);
   });
 
-  /* ----- CUSTOM CERTIFICATIONS (NO HEADER) ----- */
+  /* ----- CUSTOM CERTIFICATIONS ----- */
   const customCertBox = document.getElementById("customCerts");
   customCertBox.innerHTML = "";
 
   for (let i = 0; i < 5; i++) {
     const row = document.createElement("div");
-    row.className = "check-row";
-
-    const cb = document.createElement("input");
-    cb.type = "checkbox";
+    row.className = "row";
 
     const input = document.createElement("input");
     input.type = "text";
-    input.placeholder = "Enter your own certification";
-    input.style.flex = "1";
+    input.placeholder = "Add another certification";
 
-    row.appendChild(cb);
     row.appendChild(input);
     customCertBox.appendChild(row);
   }
@@ -390,40 +377,29 @@ window.onload = function () {
 
   (PROGRAM_SKILLS[program] || []).forEach(skill => {
     const row = document.createElement("div");
-    row.className = "check-row";
-
-    const cb = document.createElement("input");
-    cb.type = "checkbox";
-    cb.checked = true;
+    row.className = "row";
 
     const input = document.createElement("input");
     input.type = "text";
     input.value = skill;
     input.placeholder = "Skill";
-    input.style.flex = "1";
 
-    row.appendChild(cb);
     row.appendChild(input);
     skillBox.appendChild(row);
   });
 
-  /* ----- CUSTOM SKILLS (NO HEADER) ----- */
+  /* ----- CUSTOM SKILLS ----- */
   const customSkillBox = document.getElementById("customSkills");
   customSkillBox.innerHTML = "";
 
   for (let i = 0; i < 5; i++) {
     const row = document.createElement("div");
-    row.className = "check-row";
-
-    const cb = document.createElement("input");
-    cb.type = "checkbox";
+    row.className = "row";
 
     const input = document.createElement("input");
     input.type = "text";
-    input.placeholder = "Enter your own skill";
-    input.style.flex = "1";
+    input.placeholder = "Add another skill";
 
-    row.appendChild(cb);
     row.appendChild(input);
     customSkillBox.appendChild(row);
   }
@@ -440,50 +416,22 @@ function goNext() {
   const data = getData();
 
   /* ----- COLLECT CERTIFICATIONS ----- */
-  const programCerts = Array.from(
-    document.querySelectorAll("#programCerts .check-row")
-  )
-    .map(row => {
-      const cb = row.querySelector("input[type='checkbox']");
-      const input = row.querySelector("input[type='text']");
-      return cb.checked && input.value.trim() ? input.value.trim() : null;
-    })
-    .filter(Boolean);
+  const certInputs = Array.from(
+    document.querySelectorAll("#programCerts input, #customCerts input")
+  );
 
-  const customCerts = Array.from(
-    document.querySelectorAll("#customCerts .check-row")
-  )
-    .map(row => {
-      const cb = row.querySelector("input[type='checkbox']");
-      const input = row.querySelector("input[type='text']");
-      return cb.checked && input.value.trim() ? input.value.trim() : null;
-    })
-    .filter(Boolean);
-
-  data.allCerts = [...programCerts, ...customCerts];
+  data.allCerts = certInputs
+    .map(input => input.value.trim())
+    .filter(text => text.length > 0);
 
   /* ----- COLLECT SKILLS ----- */
-  const programSkills = Array.from(
-    document.querySelectorAll("#programSkills .check-row")
-  )
-    .map(row => {
-      const cb = row.querySelector("input[type='checkbox']");
-      const input = row.querySelector("input[type='text']");
-      return cb.checked && input.value.trim() ? input.value.trim() : null;
-    })
-    .filter(Boolean);
+  const skillInputs = Array.from(
+    document.querySelectorAll("#programSkills input, #customSkills input")
+  );
 
-  const customSkills = Array.from(
-    document.querySelectorAll("#customSkills .check-row")
-  )
-    .map(row => {
-      const cb = row.querySelector("input[type='checkbox']");
-      const input = row.querySelector("input[type='text']");
-      return cb.checked && input.value.trim() ? input.value.trim() : null;
-    })
-    .filter(Boolean);
-
-  data.allSkills = [...programSkills, ...customSkills];
+  data.allSkills = skillInputs
+    .map(input => input.value.trim())
+    .filter(text => text.length > 0);
 
   setData(data);
   window.location.href = "education-military-v2.html";
