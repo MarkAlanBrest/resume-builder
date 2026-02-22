@@ -39,17 +39,13 @@ export default function FinalizePage() {
         militaryService: d.militaryService || [],
         education: d.education || [],
 
-        certifications: {
-          programCerts: d.certifications?.programCerts || [],
-          extraCerts: d.certifications?.extraCerts || "",
-          extraSkills: d.certifications?.extraSkills || ""
-        },
+        // ✅ NEW — send the correct arrays
+        allCerts: d.allCerts || [],
+        allSkills: d.allSkills || [],
 
-        hasWorkExperience: (d.workExperience?.length ?? 0) > 0,
-        hasEducation: (d.education?.length ?? 0) > 0,
-        hasProgramCerts: (d.certifications?.programCerts?.length ?? 0) > 0,
-        hasExtraCerts: !!d.certifications?.extraCerts,
-        hasExtraSkills: !!d.certifications?.extraSkills,
+        // ✅ NEW — correct flags for conditional template blocks
+        hasProgramCerts: (d.allCerts?.length ?? 0) > 0,
+        hasExtraSkills: (d.allSkills?.length ?? 0) > 0,
 
         careerContext: {
           objectives: d.objectives || "",
