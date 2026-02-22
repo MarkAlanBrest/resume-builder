@@ -30,6 +30,26 @@ function limit(text, max = 3500) {
   return text.slice(0, max) + "…";
 }
 
+// NEW — Convert MM/YYYY → Month YYYY
+function formatDateToText(dateStr) {
+  if (!dateStr) return "";
+  const cleaned = dateStr.replace(/-/g, "/").trim();
+  const parts = cleaned.split("/");
+  if (parts.length < 2) return clean(dateStr);
+
+  const month = parseInt(parts[0], 10);
+  const year = parts[1];
+
+  if (isNaN(month) || !year) return clean(dateStr);
+
+  const monthNames = [
+    "January", "February", "March", "April", "May", "June",
+    "July", "August", "September", "October", "November", "December"
+  ];
+
+  return `${monthNames[month - 1]} ${year}`;
+}
+
 // AI helper: clean a list without changing meaning/intent
 async function polishList(list, label) {
   const safeList = Array.isArray(list) ? list.map(clean) : [];
@@ -99,7 +119,6 @@ export async function POST(req) {
     : [];
   const education = Array.isArray(body.education) ? body.education : [];
 
-  // NEW: take certs/skills directly from frontend arrays
   const allCertsRaw = Array.isArray(body.allCerts) ? body.allCerts : [];
   const allSkillsRaw = Array.isArray(body.allSkills) ? body.allSkills : [];
 
@@ -116,7 +135,6 @@ export async function POST(req) {
     programCampus: clean(s.programCampus),
     graduationDate: clean(s.graduationDate),
 
-    // map workExperience into fixed task1–task5 slots
     workExperience: workExperience.map((j) => {
       const tasks = Array.isArray(j.tasks) ? j.tasks : [];
       return {
@@ -124,8 +142,8 @@ export async function POST(req) {
         employerCity: clean(j.employerCity),
         employerState: clean(j.employerState),
         title: clean(j.title),
-        start: clean(j.start),
-        end: clean(j.end),
+        start: formatDateToText(clean(j.start)),
+        end: formatDateToText(clean(j.end)),
         task1: clean(tasks[0] || ""),
         task2: clean(tasks[1] || ""),
         task3: clean(tasks[2] || ""),
@@ -142,7 +160,6 @@ export async function POST(req) {
       notes: clean(e.notes),
     })),
 
-    // placeholder; will be filled after AI polishing
     certifications: {
       allCerts: [],
       allSkills: [],
@@ -156,7 +173,6 @@ export async function POST(req) {
     careerContext,
   };
 
-  // AI polishing for summary/work/education (unchanged structure, but no cert/skill rewriting here)
   let polished = {
     summary: "",
     workExperience: baseData.workExperience,
@@ -251,21 +267,18 @@ ${JSON.stringify(aiInput, null, 2)}
     console.error("AI polishing (summary/work/education) failed:", err);
   }
 
-  // Separate AI pass: clean certs/skills without changing intent
   let cleanedCerts = [];
   let cleanedSkills = [];
 
   try {
     cleanedCerts = await polishList(allCertsRaw, "certifications");
   } catch (e) {
-    console.error("Cert polishing failed:", e);
     cleanedCerts = allCertsRaw.map(clean).filter((v) => v !== "");
   }
 
   try {
     cleanedSkills = await polishList(allSkillsRaw, "skills");
   } catch (e) {
-    console.error("Skill polishing failed:", e);
     cleanedSkills = allSkillsRaw.map(clean).filter((v) => v !== "");
   }
 
@@ -282,8 +295,8 @@ ${JSON.stringify(aiInput, null, 2)}
         employerCity: clean(aiJob.employerCity ?? base.employerCity),
         employerState: clean(aiJob.employerState ?? base.employerState),
         title: clean(aiJob.title ?? base.title),
-        start: clean(aiJob.start ?? base.start),
-        end: clean(aiJob.end ?? base.end),
+        start: formatDateToText(clean(aiJob.start ?? base.start)),
+        end: formatDateToText(clean(aiJob.end ?? base.end)),
         task1: limit(clean(aiJob.task1 ?? base.task1), 300),
         task2: limit(clean(aiJob.task2 ?? base.task2), 300),
         task3: limit(clean(aiJob.task3 ?? base.task3), 300),
@@ -306,12 +319,13 @@ ${JSON.stringify(aiInput, null, 2)}
     certifications: {
       allCerts: cleanedCerts,
       allSkills: cleanedSkills,
-      allCertsText: cleanedCerts.join(", "),
-      allSkillsText: cleanedSkills.join(", "),
+
+      // NEW — required for bullet points
+      allCertsText: cleanedCerts.join("\n"),
+      allSkillsText: cleanedSkills.join("\n"),
     },
 
     hasProgramCerts: cleanedCerts.length > 0,
-    hasExtraCerts: false, // legacy flags no longer used
     hasExtraSkills: cleanedSkills.length > 0,
   };
 
