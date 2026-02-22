@@ -63,17 +63,13 @@
   <div id="programDisplay" class="program-box"></div>
 
   <!-- CERTIFICATIONS -->
-  <div class="system">Program Certifications</div>
+  <div class="system">Certifications</div>
   <div id="programCerts"></div>
-
-  <div class="system">Add Your Own Certifications</div>
   <div id="customCerts"></div>
 
   <!-- SKILLS -->
-  <div class="system">Program Skills</div>
+  <div class="system">Skills</div>
   <div id="programSkills"></div>
-
-  <div class="system">Add Your Own Skills</div>
   <div id="customSkills"></div>
 
   <br>
@@ -367,7 +363,7 @@ window.onload = function () {
     certBox.appendChild(row);
   });
 
-  /* ----- CUSTOM CERTIFICATIONS ----- */
+  /* ----- CUSTOM CERTIFICATIONS (NO HEADER) ----- */
   const customCertBox = document.getElementById("customCerts");
   customCertBox.innerHTML = "";
 
@@ -411,7 +407,7 @@ window.onload = function () {
     skillBox.appendChild(row);
   });
 
-  /* ----- CUSTOM SKILLS ----- */
+  /* ----- CUSTOM SKILLS (NO HEADER) ----- */
   const customSkillBox = document.getElementById("customSkills");
   customSkillBox.innerHTML = "";
 
