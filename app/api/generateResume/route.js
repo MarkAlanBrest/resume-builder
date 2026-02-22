@@ -144,6 +144,12 @@ export async function POST(req) {
 
     workExperience: workExperience.map(j => {
       const tasksArr = Array.isArray(j.tasks) ? j.tasks.map(clean) : [];
+      const t1 = clean(j.task1 || tasksArr[0] || "");
+      const t2 = clean(j.task2 || tasksArr[1] || "");
+      const t3 = clean(j.task3 || tasksArr[2] || "");
+      const t4 = clean(j.task4 || tasksArr[3] || "");
+      const t5 = clean(j.task5 || tasksArr[4] || "");
+
       return {
         employer: clean(j.employer),
         employerCity: clean(j.employerCity),
@@ -151,11 +157,11 @@ export async function POST(req) {
         title: clean(j.title),
         start: formatDateToText(clean(j.start)),
         end: formatDateToText(clean(j.end)),
-        task1: clean(j.task1 || tasksArr[0] || ""),
-        task2: clean(j.task2 || tasksArr[1] || ""),
-        task3: clean(j.task3 || tasksArr[2] || ""),
-        task4: clean(j.task4 || tasksArr[3] || ""),
-        task5: clean(j.task5 || tasksArr[4] || ""),
+        task1: t1,
+        task2: t2,
+        task3: t3,
+        task4: t4,
+        task5: t5,
       };
     }),
 
@@ -174,7 +180,7 @@ export async function POST(req) {
   };
 
   /* ===========================
-     AI POLISH (SUMMARY + WORK + EDU)
+     AI POLISH
 =========================== */
   let polished = {
     summary: "",
@@ -184,6 +190,17 @@ export async function POST(req) {
   };
 
   try {
+    const aiInput = {
+      student: {
+        name: baseData.name,
+        programCampus: baseData.programCampus,
+        graduationDate: baseData.graduationDate,
+      },
+      careerContext: baseData.careerContext,
+      workExperience: baseData.workExperience,
+      education: baseData.education
+    };
+
     const completion = await openai.chat.completions.create({
       model: "gpt-4o",
       temperature: 0.4,
@@ -209,60 +226,28 @@ REQUIRED OUTPUT (JSON):
 PROFESSIONAL SUMMARY RULES (STRICT):
 - Build "summary" and "summaryBullets" using ONLY careerContext
 - summary = 4–6 complete sentences
-- Professional tone
-- One paragraph
+- No filler
 
 SUMMARY BULLETS:
 - 4–6 bullets
 - 14–22 words each
-- No symbols
+- No bullet symbols
 
-WORK EXPERIENCE RULES (STRICT — FORMAT + REWRITE):
+WORK EXPERIENCE RULES:
+- Rewrite each non-empty task into a strong resume bullet (12–22 words)
+- No bullet symbols
+- Never remove employerCity or employerState
+- Normalize employerCity to Proper Case
+- Normalize employerState to UPPERCASE
 
-FORMAT EACH JOB AS:
-Professional Title
-Employer Name (City, STATE)
-Start Month Year – End Month Year
-
-TITLE:
-- Fix spelling/capitalization
-- Convert generic titles when obvious
-  Example: "teacher" → "Instructor, Building Technology"
-
-EMPLOYER:
-- Fix spelling/capitalization
-- Expand misspellings
-  Example: "new castle scholl of trades" → "New Castle School of Trades"
-
-LOCATION:
-- City Proper Case
-- State UPPERCASE 2-letter
-- Never remove location
-
-BULLETS:
-- Rewrite each task into a professional resume bullet
-- 14–22 words
-- Strong action verbs
-- Expand vague duties
-- NO bullet symbols
-
-EDUCATION:
-- Clean and normalize
-- No invented content
+EDUCATION RULES:
+- Clean and normalize school/program
+- Keep dates clean
           `.trim()
         },
         {
           role: "user",
-          content: JSON.stringify({
-            student: {
-              name: baseData.name,
-              programCampus: baseData.programCampus,
-              graduationDate: baseData.graduationDate,
-            },
-            careerContext,
-            workExperience: baseData.workExperience,
-            education: baseData.education
-          }, null, 2)
+          content: JSON.stringify(aiInput, null, 2)
         }
       ]
     });
@@ -287,11 +272,11 @@ EDUCATION:
 
     professionalSummary: limit(clean(polished.summary || ""), 600),
 
-    summary1: summaryBullets[0] || "",
-    summary2: summaryBullets[1] || "",
-    summary3: summaryBullets[2] || "",
-    summary4: summaryBullets[3] || "",
-    summary5: summaryBullets[4] || "",
+    summary1: clean(summaryBullets[0] || ""),
+    summary2: clean(summaryBullets[1] || ""),
+    summary3: clean(summaryBullets[2] || ""),
+    summary4: clean(summaryBullets[3] || ""),
+    summary5: clean(summaryBullets[4] || ""),
 
     workExperience: baseData.workExperience.map((base, i) => {
       const ai = polished.workExperience?.[i] || {};
@@ -302,11 +287,13 @@ EDUCATION:
         title: clean(ai.title ?? base.title),
         start: formatDateToText(clean(ai.start ?? base.start)),
         end: formatDateToText(clean(ai.end ?? base.end)),
-        task1: limit(clean(ai.task1 ?? base.task1), 300),
-        task2: limit(clean(ai.task2 ?? base.task2), 300),
-        task3: limit(clean(ai.task3 ?? base.task3), 300),
-        task4: limit(clean(ai.task4 ?? base.task4), 300),
-        task5: limit(clean(ai.task5 ?? base.task5), 300),
+
+        // ⭐ FIXED MERGE LOGIC — AI OUTPUT NOW ALWAYS USED WHEN PRESENT
+        task1: limit(clean(ai.task1 || base.task1), 300),
+        task2: limit(clean(ai.task2 || base.task2), 300),
+        task3: limit(clean(ai.task3 || base.task3), 300),
+        task4: limit(clean(ai.task4 || base.task4), 300),
+        task5: limit(clean(ai.task5 || base.task5), 300),
       };
     }),
 
