@@ -84,6 +84,16 @@
     <div class="system">Notes (optional)</div>
     <textarea id="eduNotes"></textarea>
 
+    <!-- NEW: NCST Auto-Fill Button -->
+    <button
+      id="autoFillNCSTBtn"
+      class="action-btn"
+      style="display:none; margin-top:10px;"
+      onclick="autoFillNCST()"
+    >
+      Auto‑Fill NCST Education
+    </button>
+
     <button onclick="saveEducation()">Save Education</button>
     <button onclick="cancelForm()">Cancel</button>
 
@@ -106,6 +116,40 @@ function setData(data) {
   localStorage.setItem("resumeData", JSON.stringify(data));
 }
 
+/* ============================
+   PROGRAM → DEGREE MAPPING
+============================ */
+const PROGRAM_INFO = {
+  "Automotive Technology — Main Campus (New Castle, PA)":
+    "Automotive Technology — Associate in Specialized Technology Degree",
+  "Building Technology — Main Campus (New Castle, PA)":
+    "Building Technology — Diploma",
+  "Combination Welding — Main Campus (New Castle, PA)":
+    "Combination Welding — Diploma",
+  "Combination Welding — East Liverpool Campus (East Liverpool, OH)":
+    "Combination Welding — Diploma",
+  "Commercial Truck Driving (Class A CDL) — Satellite Campus (Pulaski, PA)":
+    "Commercial Truck Driving (Class A CDL) — Diploma",
+  "Diesel & Heavy Equipment Repair Technology — Satellite Campus (Pulaski, PA)":
+    "Diesel & Heavy Equipment Repair Technology — Associate in Specialized Technology Degree",
+  "Electrical Technology — Main Campus (New Castle, PA)":
+    "Electrical Technology — Associate in Specialized Technology Degree",
+  "Electrical & Industrial Maintenance — East Liverpool Campus (East Liverpool, OH)":
+    "Electrical & Industrial Maintenance — Diploma",
+  "Heavy Equipment Operations with CDL — Satellite Campus (Pulaski, PA)":
+    "Heavy Equipment Operations with CDL — Diploma",
+  "Industrial Electro-Mechanical Technology — Main Campus (New Castle, PA)":
+    "Industrial Electro-Mechanical Technology — Associate in Specialized Technology Degree",
+  "Machinist & CNC Manufacturing — Satellite Campus (Pulaski, PA)":
+    "Machinist & CNC Manufacturing — Diploma",
+  "Motorcycle & Power Equipment Technology — Satellite Campus (Pulaski, PA)":
+    "Motorcycle & Power Equipment Technology — Diploma",
+  "Refrigeration & A/C Technology — Main Campus (New Castle, PA)":
+    "Refrigeration & A/C Technology — Associate in Specialized Technology Degree",
+  "Refrigeration & Climate Control — East Liverpool Campus (East Liverpool, OH)":
+    "Refrigeration & Climate Control — Diploma",
+};
+
 window.onload = function () {
   const data = getData();
   data.education ||= [];
@@ -116,11 +160,13 @@ window.onload = function () {
 function showEducationForm() {
   educationForm.style.display = "block";
   actionButtons.style.display = "none";
+  autoFillNCSTBtn.style.display = "inline-block";
 }
 
 function cancelForm() {
   educationForm.style.display = "none";
   actionButtons.style.display = "flex";
+  autoFillNCSTBtn.style.display = "none";
 }
 
 function saveEducation() {
@@ -173,13 +219,33 @@ function deleteEducation(i) {
   renderEducation();
 }
 
+/* ============================
+   NCST AUTO-FILL
+============================ */
+function autoFillNCST() {
+  const data = getData();
+
+  if (!data.student || !data.student.programCampus) {
+    alert("Program information is missing. Please complete earlier steps first.");
+    return;
+  }
+
+  const programKey = data.student.programCampus;
+  const formattedProgram = PROGRAM_INFO[programKey] || programKey;
+
+  schoolName.value = "New Castle School of Trades";
+  programName.value = formattedProgram;
+  eduStartDate.value = ""; // student still enters this
+  eduEndDate.value = data.student.graduationDate || "";
+  eduNotes.value = "";
+}
+
 function goBack() {
   window.location.href = "certifications.html";
 }
 
 function goNext() {
   window.location.href = "/finalize";
-
 }
 </script>
 
