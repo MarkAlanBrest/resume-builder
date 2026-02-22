@@ -29,7 +29,6 @@ function cleanArray(v) {
   return v.map(clean).filter((x) => x !== "");
 }
 
-/* FIXED */
 function tasksToArray(v) {
   if (Array.isArray(v)) return cleanArray(v);
 
@@ -243,8 +242,8 @@ ${JSON.stringify(aiInput, null, 2)}
     workExperience: baseData.workExperience.map((base, idx) => {
       const aiJob = polished.workExperience?.[idx] || {};
       const aiTasks = tasksToArray(
-  aiJob.tasks && aiJob.tasks.length ? aiJob.tasks : base.tasks
-);
+        aiJob.tasks && aiJob.tasks.length ? aiJob.tasks : base.tasks
+      );
 
       return {
         employer: clean(aiJob.employer ?? base.employer),
@@ -330,22 +329,7 @@ ${JSON.stringify(aiInput, null, 2)}
       };
     },
   });
-finalData.workExperience = [
-  {
-    employer: "Test Company",
-    employerCity: "New Castle",
-    employerState: "PA",
-    title: "Test Technician",
-    start: "01/2024",
-    end: "Present",
-    tasks: [
-      "Installed and tested electrical systems",
-      "Read blueprints and schematics",
-      "Maintained tools and work area",
-    ],
-  },
-];
-finalData.hasWorkExperience = true;
+
   doc.setData(finalData);
   doc.render();
 
