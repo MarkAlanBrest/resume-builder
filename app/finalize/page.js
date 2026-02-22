@@ -39,10 +39,11 @@ export default function FinalizePage() {
         militaryService: d.militaryService || [],
         education: d.education || [],
 
-        // ✅ STRINGS (as stored)
+        // STRINGS
         allCerts: d.allCerts || "",
         allSkills: d.allSkills || "",
 
+        // OBJECTIVE PAGE DATA (AI USES THIS)
         careerContext: {
           objectives: d.objectives || "",
           jobTarget: d.jobTarget || "",

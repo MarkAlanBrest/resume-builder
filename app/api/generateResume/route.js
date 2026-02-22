@@ -33,7 +33,6 @@ function limit(text, max = 3500) {
   return text.slice(0, max) + "…";
 }
 
-// Convert MM/YYYY → Month YYYY
 function formatDateToText(dateStr) {
   if (!dateStr) return "";
   const cleaned = dateStr.replace(/-/g, "/").trim();
@@ -53,7 +52,6 @@ function formatDateToText(dateStr) {
   return `${monthNames[month - 1]} ${year}`;
 }
 
-// STRING → ARRAY
 function splitLines(text) {
   if (!text) return [];
   return String(text)
@@ -76,11 +74,6 @@ ONLY:
 - Fix capitalization
 - Fix minor formatting
 - Remove exact duplicates
-
-DO NOT:
-- Rewrite
-- Add content
-- Strengthen language
 
 Return JSON ONLY:
 { "items": ["...", "..."] }
@@ -119,15 +112,10 @@ export async function POST(req) {
   const workExperience = Array.isArray(body.workExperience) ? body.workExperience : [];
   const education = Array.isArray(body.education) ? body.education : [];
 
-  // STRINGS FROM FRONTEND
   const allCertsTextRaw = clean(body.allCerts || "");
   const allSkillsTextRaw = clean(body.allSkills || "");
-
   const careerContext = body.careerContext || {};
 
-  /* ===========================
-     BASE DATA
-  =========================== */
   const baseData = {
     name: clean(s.name),
     email: clean(s.email),
@@ -164,17 +152,20 @@ export async function POST(req) {
       notes: clean(e.notes),
     })),
 
-    hasWorkExperience: workExperience.length > 0,
+    hasWorkExperience: workExperience.some(
+      j => clean(j.employer) || clean(j.title)
+    ),
     hasEducation: education.length > 0,
 
     careerContext,
   };
 
   /* ===========================
-     AI POLISH (SUMMARY / WORK / EDU)
+     AI POLISH (SUMMARY + BULLETS)
   =========================== */
   let polished = {
     summary: "",
+    summaryBullets: [],
     workExperience: baseData.workExperience,
     education: baseData.education,
   };
@@ -192,6 +183,12 @@ You are an AI resume writer.
 Follow the MASTER STYLE GUIDE EXACTLY.
 
 ${masterStyleGuide}
+
+You must return:
+- summary (one paragraph)
+- summaryBullets (3–5 short bullets, strings, no symbols)
+- workExperience
+- education
           `.trim()
         },
         {
@@ -215,16 +212,25 @@ ${masterStyleGuide}
     console.error("AI polish failed:", e);
   }
 
-  /* ===========================
-     CERTS / SKILLS → SLOTS
-  =========================== */
-  let certArray = await polishList(splitLines(allCertsTextRaw), "certifications");
-  let skillArray = await polishList(splitLines(allSkillsTextRaw), "skills");
+  const certArray = await polishList(splitLines(allCertsTextRaw), "certifications");
+  const skillArray = await polishList(splitLines(allSkillsTextRaw), "skills");
+  const summaryBullets = Array.isArray(polished.summaryBullets)
+    ? polished.summaryBullets
+    : [];
 
   const finalData = {
     ...baseData,
 
-    professionalSummary: limit(clean(polished.summary || ""), 600),
+    professionalSummary: limit(
+      clean(polished.summary || careerContext.objectives || ""),
+      600
+    ),
+
+    summary1: summaryBullets[0] || "",
+    summary2: summaryBullets[1] || "",
+    summary3: summaryBullets[2] || "",
+    summary4: summaryBullets[3] || "",
+    summary5: summaryBullets[4] || "",
 
     workExperience: baseData.workExperience.map((base, i) => {
       const ai = polished.workExperience?.[i] || {};
@@ -254,7 +260,6 @@ ${masterStyleGuide}
       };
     }),
 
-    // CERTIFICATIONS
     hasProgramCerts: certArray.length > 0,
     cert1: certArray[0] || "",
     cert2: certArray[1] || "",
@@ -267,7 +272,6 @@ ${masterStyleGuide}
     cert9: certArray[8] || "",
     cert10: certArray[9] || "",
 
-    // SKILLS
     hasExtraSkills: skillArray.length > 0,
     skill1: skillArray[0] || "",
     skill2: skillArray[1] || "",
@@ -281,9 +285,6 @@ ${masterStyleGuide}
     skill10: skillArray[9] || "",
   };
 
-  /* ===========================
-     DOCXTEMPLATER
-  =========================== */
   const templatePath = path.join(
     process.cwd(),
     "public",
