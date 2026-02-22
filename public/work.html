@@ -39,7 +39,7 @@
 
   <h1 class="page-title">NCST’s Resume Builder</h1>
 
-  <p style="text-align:center; max-width:600px; margin:0 auto 20px;">
+  <p style="text-align:center; max-width:650px; margin:0 auto 20px; line-height:1.4;">
     <strong>Enter all work experience AND any military service here.</strong><br>
     Military roles should be entered the same way as jobs.<br>
     Example: Employer = “United States Army”, Title = “Infantryman”.
@@ -70,7 +70,24 @@
     <div class="system">End date (MM/YYYY or Present)</div>
     <input id="endDate">
 
-    <div class="system">Duties (enter 3–5)</div>
+    <div class="system">
+      Job Duties (enter 3–5 detailed statements)
+      <div style="font-size: 13px; color: #444; margin-top: 4px; line-height:1.3;">
+        Write clear, specific duties that describe what you actually did.  
+        Avoid one‑word answers. Use action verbs and include tools, tasks, or outcomes.
+        <br><br>
+        <strong>Example (Work):</strong><br>
+        • Installed and repaired HVAC systems using hand and power tools<br>
+        • Performed routine maintenance and safety inspections<br>
+        • Assisted senior technicians with troubleshooting electrical components
+        <br><br>
+        <strong>Example (Military):</strong><br>
+        • Operated and maintained tactical communication equipment<br>
+        • Trained new personnel on safety procedures and mission protocols<br>
+        • Performed equipment inspections to ensure operational readiness
+      </div>
+    </div>
+
     <input id="duty1" placeholder="Duty 1 (required)">
     <input id="duty2" placeholder="Duty 2 (required)">
     <input id="duty3" placeholder="Duty 3 (required)">
@@ -174,7 +191,7 @@ function renderJobs() {
   const data = getData();
   jobList.innerHTML = "";
 
-  // Sort newest → oldest
+  // ⭐ Sort newest → oldest by start date
   data.workExperience.sort((a, b) => {
     return new Date(b.start) - new Date(a.start);
   });
@@ -194,7 +211,6 @@ function renderJobs() {
     jobList.appendChild(div);
   });
 }
-
 
 function deleteJob(i) {
   const data = getData();
