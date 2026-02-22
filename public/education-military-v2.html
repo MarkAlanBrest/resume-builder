@@ -67,7 +67,20 @@
     <button class="action-btn" onclick="showEducationForm()">Add School / Institution</button>
   </div>
 
+  <!-- ============================
+       EDUCATION FORM
+  ============================= -->
   <div id="educationForm" style="display:none;">
+
+    <!-- NEW: Auto-Fill Button (appears at top of form) -->
+    <button
+      id="autoFillNCSTBtn"
+      class="action-btn"
+      style="display:none; margin-bottom:15px;"
+      onclick="autoFillNCST()"
+    >
+      Auto‑Fill NCST Education
+    </button>
 
     <div class="system">School or Institution Name</div>
     <input id="schoolName">
@@ -84,16 +97,6 @@
     <div class="system">Notes (optional)</div>
     <textarea id="eduNotes"></textarea>
 
-    <!-- NEW: NCST Auto-Fill Button -->
-    <button
-      id="autoFillNCSTBtn"
-      class="action-btn"
-      style="display:none; margin-top:10px;"
-      onclick="autoFillNCST()"
-    >
-      Auto‑Fill NCST Education
-    </button>
-
     <button onclick="saveEducation()">Save Education</button>
     <button onclick="cancelForm()">Cancel</button>
 
@@ -109,6 +112,9 @@
 </div>
 
 <script>
+/* ============================
+   LOCAL STORAGE HELPERS
+============================ */
 function getData() {
   return JSON.parse(localStorage.getItem("resumeData")) || {};
 }
@@ -150,6 +156,9 @@ const PROGRAM_INFO = {
     "Refrigeration & Climate Control — Diploma",
 };
 
+/* ============================
+   INITIAL LOAD
+============================ */
 window.onload = function () {
   const data = getData();
   data.education ||= [];
@@ -157,18 +166,28 @@ window.onload = function () {
   renderEducation();
 };
 
+/* ============================
+   SHOW / HIDE FORM
+============================ */
 function showEducationForm() {
   educationForm.style.display = "block";
   actionButtons.style.display = "none";
+
+  // Show auto-fill button
   autoFillNCSTBtn.style.display = "inline-block";
 }
 
 function cancelForm() {
   educationForm.style.display = "none";
   actionButtons.style.display = "flex";
+
+  // Hide auto-fill button
   autoFillNCSTBtn.style.display = "none";
 }
 
+/* ============================
+   SAVE EDUCATION ENTRY
+============================ */
 function saveEducation() {
   const entry = {
     school: schoolName.value.trim(),
@@ -194,6 +213,9 @@ function saveEducation() {
   renderEducation();
 }
 
+/* ============================
+   RENDER EDUCATION LIST
+============================ */
 function renderEducation() {
   const data = getData();
   educationList.innerHTML = "";
@@ -220,7 +242,7 @@ function deleteEducation(i) {
 }
 
 /* ============================
-   NCST AUTO-FILL
+   AUTO-FILL NCST (NO SAVE)
 ============================ */
 function autoFillNCST() {
   const data = getData();
@@ -233,6 +255,7 @@ function autoFillNCST() {
   const programKey = data.student.programCampus;
   const formattedProgram = PROGRAM_INFO[programKey] || programKey;
 
+  // Only fill the textboxes — nothing is saved
   schoolName.value = "New Castle School of Trades";
   programName.value = formattedProgram;
   eduStartDate.value = ""; // student still enters this
@@ -240,6 +263,9 @@ function autoFillNCST() {
   eduNotes.value = "";
 }
 
+/* ============================
+   NAVIGATION
+============================ */
 function goBack() {
   window.location.href = "certifications.html";
 }
