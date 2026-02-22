@@ -39,13 +39,9 @@ export default function FinalizePage() {
         militaryService: d.militaryService || [],
         education: d.education || [],
 
-        // ✅ STRINGS — NOT ARRAYS
-        allCertsText: (d.allCerts || []).join("\n"),
-        allSkillsText: (d.allSkills || []).join("\n"),
-
-        // Flags for conditional blocks
-        hasProgramCerts: (d.allCerts?.length ?? 0) > 0,
-        hasExtraSkills: (d.allSkills?.length ?? 0) > 0,
+        // ✅ STRINGS (as stored)
+        allCerts: d.allCerts || "",
+        allSkills: d.allSkills || "",
 
         careerContext: {
           objectives: d.objectives || "",

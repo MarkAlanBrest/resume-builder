@@ -16,6 +16,9 @@ const openai = new OpenAI({
   apiKey: process.env.OPENAI_API_KEY,
 });
 
+/* ===========================
+   HELPERS
+=========================== */
 function clean(v) {
   if (v === undefined || v === null) return "";
   return String(v)
@@ -30,7 +33,7 @@ function limit(text, max = 3500) {
   return text.slice(0, max) + "…";
 }
 
-// NEW — Convert MM/YYYY → Month YYYY
+// Convert MM/YYYY → Month YYYY
 function formatDateToText(dateStr) {
   if (!dateStr) return "";
   const cleaned = dateStr.replace(/-/g, "/").trim();
@@ -43,45 +46,47 @@ function formatDateToText(dateStr) {
   if (isNaN(month) || !year) return clean(dateStr);
 
   const monthNames = [
-    "January", "February", "March", "April", "May", "June",
-    "July", "August", "September", "October", "November", "December"
+    "January","February","March","April","May","June",
+    "July","August","September","October","November","December"
   ];
 
   return `${monthNames[month - 1]} ${year}`;
 }
 
-// AI helper: clean a list without changing meaning/intent
-async function polishList(list, label) {
-  const safeList = Array.isArray(list) ? list.map(clean) : [];
+// STRING → ARRAY
+function splitLines(text) {
+  if (!text) return [];
+  return String(text)
+    .split(/\r?\n/)
+    .map(clean)
+    .filter(Boolean);
+}
 
-  if (safeList.length === 0) {
-    return [];
-  }
+/* ===========================
+   AI HELPER — CLEAN LIST ONLY
+=========================== */
+async function polishList(list, label) {
+  if (!Array.isArray(list) || list.length === 0) return list;
 
   const prompt = `
 You are cleaning a list of ${label} for a student's resume.
 
-Your job is ONLY to:
-- fix spelling errors
-- fix capitalization
-- fix obvious typos
-- fix small formatting issues (extra spaces, stray punctuation)
-- merge exact duplicates if they appear
+ONLY:
+- Fix spelling
+- Fix capitalization
+- Fix minor formatting
+- Remove exact duplicates
 
-You MUST NOT:
-- change the meaning or intent
-- rewrite items to sound "stronger" or more professional
-- add new items
-- remove items unless they are clearly nonsense (like "asdfasdf")
+DO NOT:
+- Rewrite
+- Add content
+- Strengthen language
 
-Return ONLY valid JSON in this format:
+Return JSON ONLY:
+{ "items": ["...", "..."] }
 
-{
-  "items": ["...", "...", "..."]
-}
-
-Here is the list to clean:
-${JSON.stringify(safeList, null, 2)}
+LIST:
+${JSON.stringify(list, null, 2)}
 `.trim();
 
   const response = await openai.chat.completions.create({
@@ -89,41 +94,40 @@ ${JSON.stringify(safeList, null, 2)}
     temperature: 0,
     response_format: { type: "json_object" },
     messages: [
-      {
-        role: "system",
-        content: "You clean text without changing meaning or intent.",
-      },
-      {
-        role: "user",
-        content: prompt,
-      },
-    ],
+      { role: "system", content: "You clean text only." },
+      { role: "user", content: prompt }
+    ]
   });
 
   try {
     const parsed = JSON.parse(response.choices[0].message.content);
-    const items = Array.isArray(parsed.items) ? parsed.items : [];
-    return items.map(clean).filter((v) => v !== "");
-  } catch (e) {
-    console.error("polishList JSON parse error:", e);
-    return safeList;
+    return Array.isArray(parsed.items)
+      ? parsed.items.map(clean).filter(Boolean)
+      : list;
+  } catch {
+    return list;
   }
 }
 
+/* ===========================
+   API HANDLER
+=========================== */
 export async function POST(req) {
   const body = await req.json();
 
   const s = body.student || {};
-  const workExperience = Array.isArray(body.workExperience)
-    ? body.workExperience
-    : [];
+  const workExperience = Array.isArray(body.workExperience) ? body.workExperience : [];
   const education = Array.isArray(body.education) ? body.education : [];
 
-  const allCertsRaw = Array.isArray(body.allCerts) ? body.allCerts : [];
-  const allSkillsRaw = Array.isArray(body.allSkills) ? body.allSkills : [];
+  // STRINGS FROM FRONTEND
+  const allCertsTextRaw = clean(body.allCerts || "");
+  const allSkillsTextRaw = clean(body.allSkills || "");
 
   const careerContext = body.careerContext || {};
 
+  /* ===========================
+     BASE DATA
+  =========================== */
   const baseData = {
     name: clean(s.name),
     email: clean(s.email),
@@ -135,7 +139,7 @@ export async function POST(req) {
     programCampus: clean(s.programCampus),
     graduationDate: clean(s.graduationDate),
 
-    workExperience: workExperience.map((j) => {
+    workExperience: workExperience.map(j => {
       const tasks = Array.isArray(j.tasks) ? j.tasks : [];
       return {
         employer: clean(j.employer),
@@ -152,7 +156,7 @@ export async function POST(req) {
       };
     }),
 
-    education: education.map((e) => ({
+    education: education.map(e => ({
       school: clean(e.school),
       program: clean(e.program),
       startDate: clean(e.startDate),
@@ -160,19 +164,15 @@ export async function POST(req) {
       notes: clean(e.notes),
     })),
 
-    certifications: {
-      allCerts: [],
-      allSkills: [],
-      allCertsText: "",
-      allSkillsText: "",
-    },
-
     hasWorkExperience: workExperience.length > 0,
     hasEducation: education.length > 0,
 
     careerContext,
   };
 
+  /* ===========================
+     AI POLISH (SUMMARY / WORK / EDU)
+  =========================== */
   let polished = {
     summary: "",
     workExperience: baseData.workExperience,
@@ -180,29 +180,6 @@ export async function POST(req) {
   };
 
   try {
-    const aiInput = {
-      student: {
-        name: baseData.name,
-        programCampus: baseData.programCampus,
-        graduationDate: baseData.graduationDate,
-      },
-      careerContext: baseData.careerContext,
-      workExperience: baseData.workExperience.map((j) => ({
-        employer: j.employer,
-        employerCity: j.employerCity,
-        employerState: j.employerState,
-        title: j.title,
-        start: j.start,
-        end: j.end,
-        task1: j.task1,
-        task2: j.task2,
-        task3: j.task3,
-        task4: j.task4,
-        task5: j.task5,
-      })),
-      education: baseData.education,
-    };
-
     const completion = await openai.chat.completions.create({
       model: "gpt-4o",
       temperature: 0.4,
@@ -211,102 +188,63 @@ export async function POST(req) {
         {
           role: "system",
           content: `
-You are an AI resume writer for a technical school.
-Follow the master style guide EXACTLY.
+You are an AI resume writer.
+Follow the MASTER STYLE GUIDE EXACTLY.
 
-MASTER STYLE GUIDE:
 ${masterStyleGuide}
-          `.trim(),
+          `.trim()
         },
         {
           role: "user",
-          content: `
-Using the master style guide above and the student data below:
-
-1. Select the correct PROGRAM block based on "programCampus".
-2. Apply GLOBAL rules + that PROGRAM block only.
-3. Build the "summary" field ONLY from:
-   - The student's Objective Page (careerContext)
-   - The correct PROGRAM block from the style guide
-   DO NOT use work history or education to build the summary.
-
-4. Return polished resume content as STRICT JSON.
-
-Formatting rules for workExperience:
-- Normalize employerCity to Proper Case.
-- Normalize employerState to UPPERCASE 2-letter postal abbreviation.
-- Never remove or omit employerCity or employerState.
-
-Formatting rules for workExperience task fields:
-- Rewrite each non-empty task into a strong, detailed, professional resume bullet.
-- Expand vague tasks using standard responsibilities, tools, methods, or outcomes.
-- Keep each bullet 12–22 words.
-- No bullet symbols in the returned strings.
-
-⭐ EDUCATION RULES
-Formatting rules for education:
-- Rewrite school, program, startDate, endDate, and notes into clean, professional resume text.
-- Normalize school and program names to Proper Case.
-- Expand vague program names into industry-recognized wording.
-- Keep dates clean; if incomplete, keep year only.
-- No invented degrees or institutions.
-
-Do NOT touch certifications or skills in this call.
-
-Return ONLY valid JSON.
-
-STUDENT DATA:
-${JSON.stringify(aiInput, null, 2)}
-          `.trim(),
-        },
-      ],
+          content: JSON.stringify({
+            student: {
+              name: baseData.name,
+              programCampus: baseData.programCampus,
+              graduationDate: baseData.graduationDate,
+            },
+            careerContext,
+            workExperience: baseData.workExperience,
+            education: baseData.education
+          }, null, 2)
+        }
+      ]
     });
 
     polished = JSON.parse(completion.choices[0].message.content);
-  } catch (err) {
-    console.error("AI polishing (summary/work/education) failed:", err);
-  }
-
-  let cleanedCerts = [];
-  let cleanedSkills = [];
-
-  try {
-    cleanedCerts = await polishList(allCertsRaw, "certifications");
   } catch (e) {
-    cleanedCerts = allCertsRaw.map(clean).filter((v) => v !== "");
+    console.error("AI polish failed:", e);
   }
 
-  try {
-    cleanedSkills = await polishList(allSkillsRaw, "skills");
-  } catch (e) {
-    cleanedSkills = allSkillsRaw.map(clean).filter((v) => v !== "");
-  }
+  /* ===========================
+     CERTS / SKILLS → SLOTS
+  =========================== */
+  let certArray = await polishList(splitLines(allCertsTextRaw), "certifications");
+  let skillArray = await polishList(splitLines(allSkillsTextRaw), "skills");
 
   const finalData = {
     ...baseData,
 
-    professionalSummary: clean(polished.summary || ""),
+    professionalSummary: limit(clean(polished.summary || ""), 600),
 
-    workExperience: baseData.workExperience.map((base, idx) => {
-      const aiJob = polished.workExperience?.[idx] || {};
-
+    workExperience: baseData.workExperience.map((base, i) => {
+      const ai = polished.workExperience?.[i] || {};
       return {
-        employer: clean(aiJob.employer ?? base.employer),
-        employerCity: clean(aiJob.employerCity ?? base.employerCity),
-        employerState: clean(aiJob.employerState ?? base.employerState),
-        title: clean(aiJob.title ?? base.title),
-        start: formatDateToText(clean(aiJob.start ?? base.start)),
-        end: formatDateToText(clean(aiJob.end ?? base.end)),
-        task1: limit(clean(aiJob.task1 ?? base.task1), 300),
-        task2: limit(clean(aiJob.task2 ?? base.task2), 300),
-        task3: limit(clean(aiJob.task3 ?? base.task3), 300),
-        task4: limit(clean(aiJob.task4 ?? base.task4), 300),
-        task5: limit(clean(aiJob.task5 ?? base.task5), 300),
+        employer: clean(ai.employer ?? base.employer),
+        employerCity: clean(ai.employerCity ?? base.employerCity),
+        employerState: clean(ai.employerState ?? base.employerState),
+        title: clean(ai.title ?? base.title),
+        start: formatDateToText(clean(ai.start ?? base.start)),
+        end: formatDateToText(clean(ai.end ?? base.end)),
+        task1: limit(clean(ai.task1 ?? base.task1), 300),
+        task2: limit(clean(ai.task2 ?? base.task2), 300),
+        task3: limit(clean(ai.task3 ?? base.task3), 300),
+        task4: limit(clean(ai.task4 ?? base.task4), 300),
+        task5: limit(clean(ai.task5 ?? base.task5), 300),
       };
     }),
 
-    education: (polished.education || baseData.education).map((e, idx) => {
-      const base = baseData.education[idx] || {};
+    education: (polished.education || baseData.education).map((e, i) => {
+      const base = baseData.education[i] || {};
       return {
         school: clean(e.school ?? base.school),
         program: clean(e.program ?? base.program),
@@ -316,23 +254,36 @@ ${JSON.stringify(aiInput, null, 2)}
       };
     }),
 
-    certifications: {
-      allCerts: cleanedCerts,
-      allSkills: cleanedSkills,
-      allCertsText: cleanedCerts.join("\n"),
-      allSkillsText: cleanedSkills.join("\n"),
-    },
+    // CERTIFICATIONS
+    hasProgramCerts: certArray.length > 0,
+    cert1: certArray[0] || "",
+    cert2: certArray[1] || "",
+    cert3: certArray[2] || "",
+    cert4: certArray[3] || "",
+    cert5: certArray[4] || "",
+    cert6: certArray[5] || "",
+    cert7: certArray[6] || "",
+    cert8: certArray[7] || "",
+    cert9: certArray[8] || "",
+    cert10: certArray[9] || "",
 
-    // REQUIRED FOR DOCXTEMPLATER LOOPS
-    allCerts: cleanedCerts,
-    allSkills: cleanedSkills,
-
-    hasProgramCerts: cleanedCerts.length > 0,
-    hasExtraSkills: cleanedSkills.length > 0,
+    // SKILLS
+    hasExtraSkills: skillArray.length > 0,
+    skill1: skillArray[0] || "",
+    skill2: skillArray[1] || "",
+    skill3: skillArray[2] || "",
+    skill4: skillArray[3] || "",
+    skill5: skillArray[4] || "",
+    skill6: skillArray[5] || "",
+    skill7: skillArray[6] || "",
+    skill8: skillArray[7] || "",
+    skill9: skillArray[8] || "",
+    skill10: skillArray[9] || "",
   };
 
-  finalData.professionalSummary = limit(finalData.professionalSummary, 600);
-
+  /* ===========================
+     DOCXTEMPLATER
+  =========================== */
   const templatePath = path.join(
     process.cwd(),
     "public",
@@ -347,19 +298,6 @@ ${JSON.stringify(aiInput, null, 2)}
     paragraphLoop: true,
     linebreaks: true,
     delimiters: { start: "{", end: "}" },
-    parser(tag) {
-      return {
-        get: (scope) => {
-          const parts = tag.split(".");
-          let value = scope;
-          for (const p of parts) {
-            if (value == null) return "";
-            value = value[p];
-          }
-          return value;
-        },
-      };
-    },
   });
 
   doc.setData(finalData);
