@@ -30,6 +30,66 @@ function limit(text, max = 3500) {
   return text.slice(0, max) + "…";
 }
 
+// AI helper: clean a list without changing meaning/intent
+async function polishList(list, label) {
+  const safeList = Array.isArray(list) ? list.map(clean) : [];
+
+  if (safeList.length === 0) {
+    return [];
+  }
+
+  const prompt = `
+You are cleaning a list of ${label} for a student's resume.
+
+Your job is ONLY to:
+- fix spelling errors
+- fix capitalization
+- fix obvious typos
+- fix small formatting issues (extra spaces, stray punctuation)
+- merge exact duplicates if they appear
+
+You MUST NOT:
+- change the meaning or intent
+- rewrite items to sound "stronger" or more professional
+- add new items
+- remove items unless they are clearly nonsense (like "asdfasdf")
+
+Return ONLY valid JSON in this format:
+
+{
+  "items": ["...", "...", "..."]
+}
+
+Here is the list to clean:
+${JSON.stringify(safeList, null, 2)}
+`.trim();
+
+  const response = await openai.chat.completions.create({
+    model: "gpt-4o-mini",
+    temperature: 0,
+    response_format: { type: "json_object" },
+    messages: [
+      {
+        role: "system",
+        content: "You clean text without changing meaning or intent.",
+      },
+      {
+        role: "user",
+        content: prompt,
+      },
+    ],
+  });
+
+  try {
+    const parsed = JSON.parse(response.choices[0].message.content);
+    const items = Array.isArray(parsed.items) ? parsed.items : [];
+    return items.map(clean).filter((v) => v !== "");
+  } catch (e) {
+    console.error("polishList JSON parse error:", e);
+    return safeList;
+  }
+}
+
 export async function POST(req) {
   const body = await req.json();
 
@@ -38,16 +98,12 @@ export async function POST(req) {
     ? body.workExperience
     : [];
   const education = Array.isArray(body.education) ? body.education : [];
-  const certifications = body.certifications || {};
+
+  // NEW: take certs/skills directly from frontend arrays
+  const allCertsRaw = Array.isArray(body.allCerts) ? body.allCerts : [];
+  const allSkillsRaw = Array.isArray(body.allSkills) ? body.allSkills : [];
+
   const careerContext = body.careerContext || {};
-
-  const rawProgramCerts = Array.isArray(certifications.programCerts)
-    ? certifications.programCerts
-    : [];
-
-  const cleanedProgramCerts = rawProgramCerts
-    .map(clean)
-    .filter((v) => v !== "");
 
   const baseData = {
     name: clean(s.name),
@@ -86,33 +142,25 @@ export async function POST(req) {
       notes: clean(e.notes),
     })),
 
+    // placeholder; will be filled after AI polishing
     certifications: {
-      programCerts: cleanedProgramCerts,
-      programCertsText: cleanedProgramCerts.join(", "),
-      extraCerts: clean(certifications.extraCerts),
-      extraSkills: clean(certifications.extraSkills),
+      allCerts: [],
+      allSkills: [],
+      allCertsText: "",
+      allSkillsText: "",
     },
 
     hasWorkExperience: workExperience.length > 0,
     hasEducation: education.length > 0,
-    hasProgramCerts: cleanedProgramCerts.length > 0,
-    hasExtraCerts:
-      !!certifications.extraCerts &&
-      String(certifications.extraCerts).trim() !== "",
-    hasExtraSkills:
-      !!certifications.extraSkills &&
-      String(certifications.extraSkills).trim() !== "",
 
     careerContext,
   };
 
+  // AI polishing for summary/work/education (unchanged structure, but no cert/skill rewriting here)
   let polished = {
     summary: "",
     workExperience: baseData.workExperience,
     education: baseData.education,
-    certificationsText: baseData.certifications.programCertsText,
-    extraCerts: baseData.certifications.extraCerts,
-    extraSkills: baseData.certifications.extraSkills,
   };
 
   try {
@@ -137,12 +185,6 @@ export async function POST(req) {
         task5: j.task5,
       })),
       education: baseData.education,
-      certifications: {
-        programCerts: baseData.certifications.programCerts,
-        programCertsText: baseData.certifications.programCertsText,
-        extraCerts: baseData.certifications.extraCerts,
-        extraSkills: baseData.certifications.extraSkills,
-      },
     };
 
     const completion = await openai.chat.completions.create({
@@ -170,7 +212,6 @@ Using the master style guide above and the student data below:
 3. Build the "summary" field ONLY from:
    - The student's Objective Page (careerContext)
    - The correct PROGRAM block from the style guide
-   - The student's certifications (programCerts, extraCerts)
    DO NOT use work history or education to build the summary.
 
 4. Return polished resume content as STRICT JSON.
@@ -186,7 +227,7 @@ Formatting rules for workExperience task fields:
 - Keep each bullet 12–22 words.
 - No bullet symbols in the returned strings.
 
-⭐ ADDED — EDUCATION RULES
+⭐ EDUCATION RULES
 Formatting rules for education:
 - Rewrite school, program, startDate, endDate, and notes into clean, professional resume text.
 - Normalize school and program names to Proper Case.
@@ -194,12 +235,7 @@ Formatting rules for education:
 - Keep dates clean; if incomplete, keep year only.
 - No invented degrees or institutions.
 
-⭐ ADDED — CERTIFICATIONS & SKILLS RULES
-Formatting rules for certifications and skills:
-- Rewrite certificationsText, extraCerts, and extraSkills into clean, professional resume text.
-- Expand vague items into clear, industry-recognized wording.
-- Do NOT invent certifications or skills.
-- Return each field as a plain string.
+Do NOT touch certifications or skills in this call.
 
 Return ONLY valid JSON.
 
@@ -212,7 +248,25 @@ ${JSON.stringify(aiInput, null, 2)}
 
     polished = JSON.parse(completion.choices[0].message.content);
   } catch (err) {
-    console.error("AI polishing failed:", err);
+    console.error("AI polishing (summary/work/education) failed:", err);
+  }
+
+  // Separate AI pass: clean certs/skills without changing intent
+  let cleanedCerts = [];
+  let cleanedSkills = [];
+
+  try {
+    cleanedCerts = await polishList(allCertsRaw, "certifications");
+  } catch (e) {
+    console.error("Cert polishing failed:", e);
+    cleanedCerts = allCertsRaw.map(clean).filter((v) => v !== "");
+  }
+
+  try {
+    cleanedSkills = await polishList(allSkillsRaw, "skills");
+  } catch (e) {
+    console.error("Skill polishing failed:", e);
+    cleanedSkills = allSkillsRaw.map(clean).filter((v) => v !== "");
   }
 
   const finalData = {
@@ -238,7 +292,7 @@ ${JSON.stringify(aiInput, null, 2)}
       };
     }),
 
-    education: polished.education.map((e, idx) => {
+    education: (polished.education || baseData.education).map((e, idx) => {
       const base = baseData.education[idx] || {};
       return {
         school: clean(e.school ?? base.school),
@@ -250,15 +304,15 @@ ${JSON.stringify(aiInput, null, 2)}
     }),
 
     certifications: {
-      programCerts: baseData.certifications.programCerts,
-      programCertsText: clean(polished.certificationsText),
-      extraCerts: limit(clean(polished.extraCerts), 600),
-      extraSkills: limit(clean(polished.extraSkills), 600),
+      allCerts: cleanedCerts,
+      allSkills: cleanedSkills,
+      allCertsText: cleanedCerts.join(", "),
+      allSkillsText: cleanedSkills.join(", "),
     },
 
-    hasProgramCerts: clean(polished.certificationsText) !== "",
-    hasExtraCerts: clean(polished.extraCerts) !== "",
-    hasExtraSkills: clean(polished.extraSkills) !== "",
+    hasProgramCerts: cleanedCerts.length > 0,
+    hasExtraCerts: false, // legacy flags no longer used
+    hasExtraSkills: cleanedSkills.length > 0,
   };
 
   finalData.professionalSummary = limit(finalData.professionalSummary, 600);
