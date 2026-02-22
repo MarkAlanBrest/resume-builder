@@ -2,21 +2,29 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <title>Certifications & Skills</title>
+  <title>NCST Resume Builder – Certifications & Skills</title>
   <link rel="stylesheet" href="style.css">
 
   <style>
     .page-title {
       text-align: center;
       color: #0b3c6d;
-      margin-bottom: 30px;
+      margin-bottom: 10px;
       font-size: 28px;
+    }
+
+    .instructions {
+      text-align: center;
+      color: #333;
+      margin-bottom: 25px;
+      font-size: 16px;
     }
 
     .system {
       color: #0b3c6d;
       font-weight: 600;
-      margin-top: 20px;
+      margin-top: 25px;
+      margin-bottom: 8px;
     }
 
     .program-box {
@@ -44,7 +52,13 @@
 
 <div class="chat">
 
-  <h1 class="page-title">NCST’s Resume Builder</h1>
+  <h1 class="page-title">NCST Resume Builder</h1>
+
+  <div class="instructions">
+    Select the certifications and skills you want included on your resume.<br>
+    Program suggestions are already checked. You may edit them or uncheck them.<br>
+    Add your own items in the blank fields below.
+  </div>
 
   <div id="programDisplay" class="program-box"></div>
 
@@ -330,26 +344,155 @@ window.onload = function () {
   document.getElementById("programDisplay").textContent =
     `Program Selected: ${program}`;
 
-  /* ----- CERTIFICATIONS (PROGRAM) ----- */
+  /* ----- PROGRAM CERTIFICATIONS ----- */
   const certBox = document.getElementById("programCerts");
   certBox.innerHTML = "";
-  (PROGRAM_CERTS[program] || []).forEach((cert, i) => {
+
+  (PROGRAM_CERTS[program] || []).forEach(cert => {
     const row = document.createElement("div");
     row.className = "check-row";
 
     const cb = document.createElement("input");
     cb.type = "checkbox";
-    cb.value = cert;
+    cb.checked = true;
 
-    const label = document.createElement("label");
-    label.textContent = cert;
+    const input = document.createElement("input");
+    input.type = "text";
+    input.value = cert;
+    input.placeholder = "Certification";
+    input.style.flex = "1";
 
     row.appendChild(cb);
-    row.appendChild(label);
+    row.appendChild(input);
     certBox.appendChild(row);
   });
 
   /* ----- CUSTOM CERTIFICATIONS ----- */
   const customCertBox = document.getElementById("customCerts");
   customCertBox.innerHTML = "";
-  for (let i = 0
+
+  for (let i = 0; i < 5; i++) {
+    const row = document.createElement("div");
+    row.className = "check-row";
+
+    const cb = document.createElement("input");
+    cb.type = "checkbox";
+
+    const input = document.createElement("input");
+    input.type = "text";
+    input.placeholder = "Enter your own certification";
+    input.style.flex = "1";
+
+    row.appendChild(cb);
+    row.appendChild(input);
+    customCertBox.appendChild(row);
+  }
+
+  /* ----- PROGRAM SKILLS ----- */
+  const skillBox = document.getElementById("programSkills");
+  skillBox.innerHTML = "";
+
+  (PROGRAM_SKILLS[program] || []).forEach(skill => {
+    const row = document.createElement("div");
+    row.className = "check-row";
+
+    const cb = document.createElement("input");
+    cb.type = "checkbox";
+    cb.checked = true;
+
+    const input = document.createElement("input");
+    input.type = "text";
+    input.value = skill;
+    input.placeholder = "Skill";
+    input.style.flex = "1";
+
+    row.appendChild(cb);
+    row.appendChild(input);
+    skillBox.appendChild(row);
+  });
+
+  /* ----- CUSTOM SKILLS ----- */
+  const customSkillBox = document.getElementById("customSkills");
+  customSkillBox.innerHTML = "";
+
+  for (let i = 0; i < 5; i++) {
+    const row = document.createElement("div");
+    row.className = "check-row";
+
+    const cb = document.createElement("input");
+    cb.type = "checkbox";
+
+    const input = document.createElement("input");
+    input.type = "text";
+    input.placeholder = "Enter your own skill";
+    input.style.flex = "1";
+
+    row.appendChild(cb);
+    row.appendChild(input);
+    customSkillBox.appendChild(row);
+  }
+};
+
+/* ===========================
+   NAVIGATION
+=========================== */
+function goBack() {
+  window.location.href = "work.html";
+}
+
+function goNext() {
+  const data = getData();
+
+  /* ----- COLLECT CERTIFICATIONS ----- */
+  const programCerts = Array.from(
+    document.querySelectorAll("#programCerts .check-row")
+  )
+    .map(row => {
+      const cb = row.querySelector("input[type='checkbox']");
+      const input = row.querySelector("input[type='text']");
+      return cb.checked && input.value.trim() ? input.value.trim() : null;
+    })
+    .filter(Boolean);
+
+  const customCerts = Array.from(
+    document.querySelectorAll("#customCerts .check-row")
+  )
+    .map(row => {
+      const cb = row.querySelector("input[type='checkbox']");
+      const input = row.querySelector("input[type='text']");
+      return cb.checked && input.value.trim() ? input.value.trim() : null;
+    })
+    .filter(Boolean);
+
+  data.allCerts = [...programCerts, ...customCerts];
+
+  /* ----- COLLECT SKILLS ----- */
+  const programSkills = Array.from(
+    document.querySelectorAll("#programSkills .check-row")
+  )
+    .map(row => {
+      const cb = row.querySelector("input[type='checkbox']");
+      const input = row.querySelector("input[type='text']");
+      return cb.checked && input.value.trim() ? input.value.trim() : null;
+    })
+    .filter(Boolean);
+
+  const customSkills = Array.from(
+    document.querySelectorAll("#customSkills .check-row")
+  )
+    .map(row => {
+      const cb = row.querySelector("input[type='checkbox']");
+      const input = row.querySelector("input[type='text']");
+      return cb.checked && input.value.trim() ? input.value.trim() : null;
+    })
+    .filter(Boolean);
+
+  data.allSkills = [...programSkills, ...customSkills];
+
+  setData(data);
+  window.location.href = "education-military-v2.html";
+}
+</script>
+
+</body>
+</html>
