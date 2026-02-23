@@ -168,6 +168,8 @@ export async function POST(req) {
     education: education.map(e => ({
       school: clean(e.school),
       program: clean(e.program),
+      eduCity: clean(e.eduCity),     // ✅ ADDED
+      eduState: clean(e.eduState),   // ✅ ADDED
       startDate: clean(e.startDate),
       endDate: clean(e.endDate),
       notes: clean(e.notes),
@@ -309,6 +311,8 @@ EDUCATION RULES:
       return {
         school: clean(e.school ?? base.school),
         program: clean(e.program ?? base.program),
+        eduCity: clean(e.eduCity ?? base.eduCity),     // ✅ ADDED
+        eduState: clean(e.eduState ?? base.eduState), // ✅ ADDED
         startDate: clean(e.startDate ?? base.startDate),
         endDate: clean(e.endDate ?? base.endDate),
         notes: limit(clean(e.notes ?? base.notes), 400),
