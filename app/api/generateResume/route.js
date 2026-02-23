@@ -170,8 +170,9 @@ export async function POST(req) {
       program: clean(e.program),
       eduCity: clean(e.eduCity),     // ✅ ADDED
       eduState: clean(e.eduState),   // ✅ ADDED
-      startDate: clean(e.startDate),
-      endDate: clean(e.endDate),
+  startDate: formatDateToText(clean(e.startDate)),
+endDate: formatDateToText(clean(e.endDate)),
+
       notes: clean(e.notes),
     })),
 
