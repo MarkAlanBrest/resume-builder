@@ -302,6 +302,8 @@ PROGRAM DESCRIPTION STYLE RULES (CRITICAL):
 - Describe skills and hands-on experience directly
 - Avoid phrases like “completed a comprehensive program”
 - Avoid biography tone or storytelling
+- Do NOT mention certifications in the program description
+
 
 
 
