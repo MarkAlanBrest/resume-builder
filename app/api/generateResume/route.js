@@ -168,11 +168,10 @@ export async function POST(req) {
     education: education.map(e => ({
       school: clean(e.school),
       program: clean(e.program),
-      eduCity: clean(e.eduCity),     // ✅ ADDED
-      eduState: clean(e.eduState),   // ✅ ADDED
-  startDate: formatDateToText(clean(e.startDate)),
-endDate: formatDateToText(clean(e.endDate)),
-
+      eduCity: clean(e.eduCity),
+      eduState: clean(e.eduState),
+      startDate: formatDateToText(clean(e.startDate)),
+      endDate: formatDateToText(clean(e.endDate)),
       notes: clean(e.notes),
     })),
 
@@ -199,6 +198,12 @@ endDate: formatDateToText(clean(e.endDate)),
         programCampus: baseData.programCampus,
         graduationDate: baseData.graduationDate,
       },
+
+      // ⭐ REQUIRED ADDITIONS
+      program: baseData.education?.[0]?.program || "",
+      skills: skillArray,
+      certifications: certArray,
+
       careerContext: baseData.careerContext,
       workExperience: baseData.workExperience,
       education: baseData.education
@@ -223,7 +228,8 @@ REQUIRED OUTPUT (JSON):
   "summary": "one paragraph",
   "summaryBullets": ["...", "..."],
   "workExperience": [...],
-  "education": [...]
+  "education": [...],
+  "programDescription": "5–7 sentence paragraph describing what the student studied, using program style guide, skills, and certifications."
 }
 
 PROFESSIONAL SUMMARY RULES (STRICT):
@@ -283,6 +289,9 @@ EDUCATION RULES:
 
     professionalSummary: limit(clean(polished.summary || ""), 600),
 
+    // ⭐ REQUIRED ADDITION
+    programDescription: clean(polished.programDescription || ""),
+
     summary1: clean(summaryBullets[0] || ""),
     summary2: clean(summaryBullets[1] || ""),
     summary3: clean(summaryBullets[2] || ""),
@@ -312,8 +321,8 @@ EDUCATION RULES:
       return {
         school: clean(e.school ?? base.school),
         program: clean(e.program ?? base.program),
-        eduCity: clean(e.eduCity ?? base.eduCity),     // ✅ ADDED
-        eduState: clean(e.eduState ?? base.eduState), // ✅ ADDED
+        eduCity: clean(e.eduCity ?? base.eduCity),
+        eduState: clean(e.eduState ?? base.eduState),
         startDate: clean(e.startDate ?? base.startDate),
         endDate: clean(e.endDate ?? base.endDate),
         notes: limit(clean(e.notes ?? base.notes), 400),
