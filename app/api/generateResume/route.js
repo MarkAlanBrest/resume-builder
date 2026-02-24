@@ -71,6 +71,18 @@ function splitLines(text) {
 }
 
 /* ===========================
+   PROGRAM BLOCK EXTRACTOR
+=========================== */
+function extractProgramBlock(guide, programName) {
+  if (!guide || !programName) return "";
+  const marker = `===== PROGRAM: ${programName} =====`;
+  const start = guide.indexOf(marker);
+  if (start === -1) return "";
+  const next = guide.indexOf("===== PROGRAM:", start + marker.length);
+  return guide.slice(start, next === -1 ? guide.length : next).trim();
+}
+
+/* ===========================
    AI HELPER — CLEAN LIST ONLY
 =========================== */
 async function polishList(list, label) {
@@ -181,6 +193,10 @@ export async function POST(req) {
     careerContext,
   };
 
+  // derive program name + block from masterStyleGuide
+  const programName = baseData.education?.[0]?.program || "";
+  const programGuide = extractProgramBlock(masterStyleGuide, programName);
+
   /* ===========================
      CERTS / SKILLS (MOVED UP)
 =========================== */
@@ -207,7 +223,8 @@ export async function POST(req) {
       careerContext: baseData.careerContext,
 
       // new inputs for program description + richer summary
-      program: baseData.education?.[0]?.program || "",
+      program: programName,
+      programGuide,
       skills: skillArray,
       certifications: certArray,
 
@@ -266,6 +283,14 @@ TASK FIELD RULES (CRITICAL):
 EDUCATION RULES:
 - Clean and normalize school/program
 - Keep dates clean
+
+PROGRAM DESCRIPTION RULES:
+- Use programGuide as the primary source for what the student studied
+- Write a 5–7 sentence paragraph
+- Use the student's skills and certifications when relevant
+- Focus on what the student learned and practiced
+- Use an employer-focused tone
+- No filler or school marketing language
           `.trim()
         },
         {
