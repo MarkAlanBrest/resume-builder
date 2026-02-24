@@ -182,6 +182,12 @@ export async function POST(req) {
   };
 
   /* ===========================
+     CERTS / SKILLS (MOVED UP)
+=========================== */
+  const certArray = await polishList(splitLines(allCertsTextRaw), "certifications");
+  const skillArray = await polishList(splitLines(allSkillsTextRaw), "skills");
+
+  /* ===========================
      AI POLISH
 =========================== */
   let polished = {
@@ -198,13 +204,13 @@ export async function POST(req) {
         programCampus: baseData.programCampus,
         graduationDate: baseData.graduationDate,
       },
+      careerContext: baseData.careerContext,
 
-      // ⭐ REQUIRED ADDITIONS
+      // new inputs for program description + richer summary
       program: baseData.education?.[0]?.program || "",
       skills: skillArray,
       certifications: certArray,
 
-      careerContext: baseData.careerContext,
       workExperience: baseData.workExperience,
       education: baseData.education
     };
@@ -274,12 +280,6 @@ EDUCATION RULES:
     console.error("AI polish failed:", e);
   }
 
-  /* ===========================
-     CERTS / SKILLS
-=========================== */
-  const certArray = await polishList(splitLines(allCertsTextRaw), "certifications");
-  const skillArray = await polishList(splitLines(allSkillsTextRaw), "skills");
-
   const summaryBullets = Array.isArray(polished.summaryBullets)
     ? polished.summaryBullets.map(clean).filter(Boolean)
     : [];
@@ -288,8 +288,6 @@ EDUCATION RULES:
     ...baseData,
 
     professionalSummary: limit(clean(polished.summary || ""), 600),
-
-    // ⭐ REQUIRED ADDITION
     programDescription: clean(polished.programDescription || ""),
 
     summary1: clean(summaryBullets[0] || ""),
