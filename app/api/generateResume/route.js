@@ -252,9 +252,10 @@ REQUIRED OUTPUT (JSON):
   "summaryBullets": ["...", "..."],
   "workExperience": [...],
   "education": [...],
-  "programDescription": "5–7 sentence paragraph describing what the student studied, using program style guide and skills.",
-  "programTools": "3–5 sentence paragraph describing the tools and equipment the student used in the program."
+  "programDescription": "5–7 sentence paragraph describing what the student studied, using program style guide and skills. Must not use the student's name, pronouns, or hypothetical language (no 'students may', 'students have', etc.).",
+  "programTools": "3–5 sentence paragraph describing the tools and equipment the student used in the program. Must not use the student's name, pronouns, or hypothetical language (no 'students may', 'students have', etc.)."
 }
+
 
 
 PROFESSIONAL SUMMARY RULES (STRICT):
