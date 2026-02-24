@@ -177,15 +177,18 @@ export async function POST(req) {
       };
     }),
 
-    education: education.map(e => ({
-      school: clean(e.school),
-      program: clean(e.program),
-      eduCity: clean(e.eduCity),
-      eduState: clean(e.eduState),
-      startDate: formatDateToText(clean(e.startDate)),
-      endDate: formatDateToText(clean(e.endDate)),
-      notes: clean(e.notes),
-    })),
+  education: education.map(e => ({
+  school: clean(e.school),
+  program: clean(e.program),
+  eduCity: clean(e.city),
+  eduState: clean(e.state),
+  startDate: formatDateToText(clean(e.startDate)),
+  endDate: formatDateToText(clean(e.endDate)),
+  notes: clean(e.notes),
+})),
+
+
+    
 
     hasWorkExperience: workExperience.some(j => clean(j.employer) || clean(j.title)),
     hasEducation: education.length > 0,
@@ -383,6 +386,7 @@ PROGRAM TOOLS RULES:
       };
     }),
 
+    
     hasProgramCerts: certArray.length > 0,
     cert1: certArray[0] || "",
     cert2: certArray[1] || "",
