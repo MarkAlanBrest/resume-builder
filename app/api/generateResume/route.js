@@ -252,8 +252,10 @@ REQUIRED OUTPUT (JSON):
   "summaryBullets": ["...", "..."],
   "workExperience": [...],
   "education": [...],
-  "programDescription": "5–7 sentence paragraph describing what the student studied, using program style guide, skills, and certifications."
+  "programDescription": "5–7 sentence paragraph describing what the student studied, using program style guide and skills.",
+  "programTools": "3–5 sentence paragraph describing the tools and equipment the student used in the program."
 }
+
 
 PROFESSIONAL SUMMARY RULES (STRICT):
 - Build "summary" and "summaryBullets" using ONLY careerContext
@@ -304,6 +306,16 @@ PROGRAM DESCRIPTION STYLE RULES (CRITICAL):
 - Avoid biography tone or storytelling
 - Do NOT mention certifications in the program description
 
+PROGRAM TOOLS RULES:
+- Use the Program‑Specific Tools section from programGuide
+- Write a 3–5 sentence paragraph
+- Do NOT use the student's name
+- Do NOT use pronouns (no he, she, they)
+- Write in resume style, not narrative style
+- Focus on tools, equipment, and diagnostic devices the student used
+- No filler, no marketing language
+- No certifications
+
 
 
 
@@ -329,7 +341,7 @@ PROGRAM DESCRIPTION STYLE RULES (CRITICAL):
 
   const finalData = {
     ...baseData,
-
+    programTools: clean(polished.programTools || ""),   
     professionalSummary: limit(clean(polished.summary || ""), 600),
     programDescription: clean(polished.programDescription || ""),
 
