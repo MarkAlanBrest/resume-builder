@@ -291,6 +291,22 @@ PROGRAM DESCRIPTION RULES:
 - Focus on what the student learned and practiced
 - Use an employer-focused tone
 - No filler or school marketing language
+
+PROGRAM DESCRIPTION STYLE RULES (CRITICAL):
+- Do NOT use the student's name
+- Do NOT use pronouns (no he, she, they)
+- Write in resume style, not narrative style
+- Use concise, employer-focused language
+- Use third-person implied voice (no “I”, no “Mark”)
+- Begin with a strong statement of training focus
+- Describe skills and hands-on experience directly
+- Avoid phrases like “completed a comprehensive program”
+- Avoid biography tone or storytelling
+
+
+
+
+
           `.trim()
         },
         {
