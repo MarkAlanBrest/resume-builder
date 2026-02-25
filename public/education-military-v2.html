@@ -100,7 +100,12 @@
     <div class="system">End Date (MM/YYYY or Expected)</div>
     <input id="eduEndDate">
 
-    <div class="system">Notes (optional)</div>
+    <div class="system">
+      Notes (optional)<br>
+      <span style="font-weight: normal; font-size: 14px;">
+        If you achieved 90% or better attendance or a GPA of 3.00 or higher, we recommend listing it here along with any awards or accomplishments earned during school.
+      </span>
+    </div>
     <textarea id="eduNotes"></textarea>
 
     <button onclick="saveEducation()">Save Education</button>
@@ -273,7 +278,7 @@ function renderEducation() {
     div.innerHTML = `
       <strong>${edu.program}</strong><br>
       ${edu.school} — ${edu.city}, ${edu.state}<br>
-      ${edu.startDate} – ${edu.endDate}<br>
+      ${edu.startDate} – ${eduEndDate}<br>
       ${edu.notes ? edu.notes + "<br>" : ""}
       <button onclick="deleteEducation(${i})">Delete</button>
     `;
