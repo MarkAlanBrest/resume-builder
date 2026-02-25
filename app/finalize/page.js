@@ -30,8 +30,8 @@ export default function FinalizePage() {
   const [confirmed, setConfirmed] = useState(false);
   const [loading, setLoading] = useState(false);
 
-  async function generateResume() {
-    if (!confirmed || loading) return;
+  async function generateResume(templateOverride) {
+    if ((!confirmed && !templateOverride) || loading) return;
     setLoading(true);
 
     try {
@@ -49,7 +49,7 @@ export default function FinalizePage() {
       }));
 
       const payload = {
-        TEMPLATE: selectedTemplate,
+        TEMPLATE: templateOverride || selectedTemplate,
 
         student: {
           name: cleanText(d.name),
@@ -66,14 +66,11 @@ export default function FinalizePage() {
         workExperience: d.workExperience || [],
         militaryService: d.militaryService || [],
 
-        // UPDATED: includes city + state
         education: cleanedEducation,
 
-        // STRINGS
         allCerts: cleanText(d.allCerts),
         allSkills: cleanText(d.allSkills),
 
-        // OBJECTIVE PAGE DATA (AI USES THIS)
         careerContext: {
           objectives: cleanText(d.objectives),
           jobTarget: cleanText(d.jobTarget),
@@ -107,6 +104,10 @@ export default function FinalizePage() {
     } finally {
       setLoading(false);
     }
+  }
+
+  function generateTestResume() {
+    generateResume("TemplateD");
   }
 
   return (
@@ -179,7 +180,7 @@ export default function FinalizePage() {
         </label>
 
         <button
-          onClick={generateResume}
+          onClick={() => generateResume()}
           disabled={!confirmed || loading}
           style={{
             padding: "14px 28px",
@@ -194,8 +195,25 @@ export default function FinalizePage() {
           {loading ? "Resume being generated…" : "Download Resume"}
         </button>
 
+        <button
+          onClick={generateTestResume}
+          disabled={loading}
+          style={{
+            marginTop: "12px",
+            padding: "10px 22px",
+            fontSize: "14px",
+            background: "#eee",
+            color: "#333",
+            border: "1px solid #aaa",
+            borderRadius: "4px",
+            cursor: loading ? "not-allowed" : "pointer"
+          }}
+        >
+          Test Resume (TemplateD)
+        </button>
+
         {loading && (
-          <p style={{ color: "red",fontSize: "20px", marginTop: "15px" }}>
+          <p style={{ color: "red", fontSize: "20px", marginTop: "15px" }}>
             Resume being generated…
           </p>
         )}
