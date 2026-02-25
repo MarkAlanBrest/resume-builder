@@ -1,6 +1,9 @@
 "use client";
 import { useState } from "react";
 
+const SHOW_TEST_BUTTON =
+  process.env.NEXT_PUBLIC_SHOW_TEST_BUTTON === "true";
+
 const templates = [
   { id: "Template", label: "Template 1 (Classic)" },
   { id: "TemplateA", label: "Template 2 (Modern)" },
@@ -37,7 +40,6 @@ export default function FinalizePage() {
     try {
       const d = JSON.parse(localStorage.getItem("resumeData")) || {};
 
-      // Clean + normalize education entries
       const cleanedEducation = (d.education || []).map((e) => ({
         school: cleanText(e.school),
         program: cleanText(e.program),
@@ -65,7 +67,6 @@ export default function FinalizePage() {
 
         workExperience: d.workExperience || [],
         militaryService: d.militaryService || [],
-
         education: cleanedEducation,
 
         allCerts: cleanText(d.allCerts),
@@ -195,22 +196,25 @@ export default function FinalizePage() {
           {loading ? "Resume being generated…" : "Download Resume"}
         </button>
 
-        <button
-          onClick={generateTestResume}
-          disabled={loading}
-          style={{
-            marginTop: "12px",
-            padding: "10px 22px",
-            fontSize: "14px",
-            background: "#eee",
-            color: "#333",
-            border: "1px solid #aaa",
-            borderRadius: "4px",
-            cursor: loading ? "not-allowed" : "pointer"
-          }}
-        >
-          Test Resume (TemplateD)
-        </button>
+        {/* ONLY YOU SEE THIS */}
+        {SHOW_TEST_BUTTON && (
+          <button
+            onClick={generateTestResume}
+            disabled={loading}
+            style={{
+              marginTop: "12px",
+              padding: "10px 22px",
+              fontSize: "14px",
+              background: "#eee",
+              color: "#333",
+              border: "1px solid #aaa",
+              borderRadius: "4px",
+              cursor: loading ? "not-allowed" : "pointer"
+            }}
+          >
+            Test Resume (TemplateD)
+          </button>
+        )}
 
         {loading && (
           <p style={{ color: "red", fontSize: "20px", marginTop: "15px" }}>
