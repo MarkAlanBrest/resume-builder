@@ -199,16 +199,25 @@ export async function POST(req) {
     workExperience: workExperience.map(j => {
       
       
+const rawTasks = [
+  j.task1,
+  j.task2,
+  j.task3,
+  j.task4,
+  j.task5
+].map(clean).filter(Boolean);
+
 const tasksArr =
   Array.isArray(j.tasks) && j.tasks.length > 0
-    ? j.tasks.map(clean)
-    : [j.task1, j.task2, j.task3, j.task4, j.task5].filter(Boolean);
+    ? j.tasks.map(clean).filter(Boolean)
+    : rawTasks;
 
-const t1 = clean(tasksArr[0] || "");
-const t2 = clean(tasksArr[1] || "");
-const t3 = clean(tasksArr[2] || "");
-const t4 = clean(tasksArr[3] || "");
-const t5 = clean(tasksArr[4] || "");
+const t1 = tasksArr[0] || "";
+const t2 = tasksArr[1] || "";
+const t3 = tasksArr[2] || "";
+const t4 = tasksArr[3] || "";
+const t5 = tasksArr[4] || "";
+
 
 
 
