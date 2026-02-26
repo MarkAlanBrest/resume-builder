@@ -92,6 +92,20 @@ function splitLines(text) {
 function looksWeak(text) {
   return !text || String(text).trim() === "";
 }
+function isWeakTask(text, base) {
+  if (!text) return true;
+
+  const cleaned = clean(text);
+  const baseClean = clean(base);
+
+  // Too short (not expanded properly)
+  if (cleaned.split(" ").length < 10) return true;
+
+  // Identical to original input
+  if (cleaned.toLowerCase() === baseClean.toLowerCase()) return true;
+
+  return false;
+}
 
 function expandFallback(text, title) {
   if (!text) return "";
@@ -522,7 +536,14 @@ REQUIRED OUTPUT (JSON):
 
 
 
-const raw = completion.choices[0].message.content;
+let raw = completion.choices[0].message.content || "";
+
+// 🔥 STRIP MARKDOWN CODE FENCES IF PRESENT
+raw = raw
+  .replace(/```json/g, "")
+  .replace(/```/g, "")
+  .trim();
+
 
 try {
   polished = JSON.parse(raw);
@@ -530,8 +551,6 @@ try {
   console.error("JSON PARSE FAILED");
   console.error(raw);
 }
-
-
 
 
 if (Array.isArray(polished.workExperience)) {
@@ -574,25 +593,27 @@ employerState: clean(ai.employerState ?? base.employerState),
 title: titleCaseSafe(clean(ai.title ?? base.title)),
 start: formatDateToText(clean(ai.start ?? base.start)),
 end: formatDateToText(clean(ai.end ?? base.end)),
-task1: ai.task1
-  ? limit(clean(ai.task1), 300)
-  : limit(clean(base.task1), 300),
 
-task2: ai.task2
-  ? limit(clean(ai.task2), 300)
-  : limit(clean(base.task2), 300),
+task1: isWeakTask(ai.task1, base.task1)
+  ? expandFallback(base.task1, base.title)
+  : limit(clean(ai.task1), 300),
 
-task3: ai.task3
-  ? limit(clean(ai.task3), 300)
-  : limit(clean(base.task3), 300),
+task2: isWeakTask(ai.task2, base.task2)
+  ? expandFallback(base.task2, base.title)
+  : limit(clean(ai.task2), 300),
 
-task4: ai.task4
-  ? limit(clean(ai.task4), 300)
-  : limit(clean(base.task4), 300),
+task3: isWeakTask(ai.task3, base.task3)
+  ? expandFallback(base.task3, base.title)
+  : limit(clean(ai.task3), 300),
 
-task5: ai.task5
-  ? limit(clean(ai.task5), 300)
-  : limit(clean(base.task5), 300),
+task4: isWeakTask(ai.task4, base.task4)
+  ? expandFallback(base.task4, base.title)
+  : limit(clean(ai.task4), 300),
+
+task5: isWeakTask(ai.task5, base.task5)
+  ? expandFallback(base.task5, base.title)
+  : limit(clean(ai.task5), 300),
+
   };
 }), 
 
