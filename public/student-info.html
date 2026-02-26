@@ -66,8 +66,10 @@
     <option>Refrigeration & Climate Control — East Liverpool Campus (East Liverpool, OH)</option>
   </select>
 
+  <div style="display:none;">
   <div class="system">Expected graduation date (MM/YYYY)</div>
   <input id="grad" placeholder="05/2026">
+</div>
 
   <br><br>
 
@@ -132,7 +134,6 @@ function goNext() {
   if (!phone) { alert("Phone number is required."); return; }
   if (!address || !city || !state || !zip) { alert("Complete address is required."); return; }
   if (!programCampus) { alert("Please select a program."); return; }
-  if (!grad) { alert("Graduation date required."); return; }
 
   saveOnly();
   window.location.href = "objective.html";
