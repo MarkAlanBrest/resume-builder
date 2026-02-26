@@ -197,12 +197,19 @@ export async function POST(req) {
     graduationDate: clean(s.graduationDate),
 
     workExperience: workExperience.map(j => {
-      const tasksArr = Array.isArray(j.tasks) ? j.tasks.map(clean) : [];
-      const t1 = clean(tasksArr[0] || j.task1 || "");
-      const t2 = clean(tasksArr[1] || j.task2 || "");
-      const t3 = clean(tasksArr[2] || j.task3 || "");
-      const t4 = clean(tasksArr[3] || j.task4 || "");
-      const t5 = clean(tasksArr[4] || j.task5 || "");
+      
+      
+const tasksArr =
+  Array.isArray(j.tasks) && j.tasks.length > 0
+    ? j.tasks.map(clean)
+    : [j.task1, j.task2, j.task3, j.task4, j.task5].filter(Boolean);
+
+const t1 = clean(tasksArr[0] || "");
+const t2 = clean(tasksArr[1] || "");
+const t3 = clean(tasksArr[2] || "");
+const t4 = clean(tasksArr[3] || "");
+const t5 = clean(tasksArr[4] || "");
+
 
 
       return {
