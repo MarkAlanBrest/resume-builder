@@ -311,10 +311,23 @@ REQUIRED OUTPUT (JSON):
       ]
     });
 
-    polished = JSON.parse(completion.choices[0].message.content);
-  } catch (e) {
-    console.error("AI polish failed:", e);
-  }
+ polished = JSON.parse(completion.choices[0].message.content);
+
+// ⭐ FIX: Sort AI output BEFORE mapping so indexes stay aligned
+if (Array.isArray(polished.workExperience)) {
+  polished.workExperience = sortJobsNewestFirst(polished.workExperience);
+}
+
+if (Array.isArray(polished.education)) {
+  polished.education = sortEducationNewestFirst(polished.education);
+}
+
+} catch (e) {
+  console.error("AI polish failed:", e);
+}
+
+
+  
 
   const summaryBullets = Array.isArray(polished.summaryBullets)
     ? polished.summaryBullets.map(clean).filter(Boolean)
