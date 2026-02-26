@@ -110,19 +110,26 @@ function isWeakTask(text, base) {
 function expandFallback(text, title) {
   if (!text) return "";
 
-  const cleaned = clean(text);
+  const cleaned = clean(text)
+    .replace(/^(managed|manage|created|create|taught|teach|performed|handled)\s+/i, "")
+    .replace(/\bmaanged\b/gi, "managed")
+    .replace(/\blessonss?\b/gi, "lessons")
+    .replace(/\bcarpentryy\b/gi, "carpentry")
+    .replace(/\bclassroomm?\b/gi, "classroom");
 
-  // very small, safe typo corrections
-  const fixed = cleaned
-    .replace(/\btaugght\b/gi, "taught")
-    .replace(/\blessosn\b/gi, "lessons")
-    .replace(/\bclassromo\b/gi, "classroom");
+  const role = titleCaseSafe(title);
 
-  const normalized = fixed.replace(
-    /^(managed|manage|taught|teach|created|create|performed|handled)\s+/i,
-    ""
-  );
+  const variations = [
+    t => `Delivered ${t} responsibilities while maintaining operational standards in the ${role} role.`,
+    t => `Managed and executed ${t} functions to support daily performance expectations within the ${role} role.`,
+    t => `Directed ${t} activities with attention to efficiency, organization, and professional standards.`,
+    t => `Performed ${t} duties while ensuring compliance with established procedures and workplace expectations.`,
+    t => `Executed ${t} responsibilities with consistent accountability and professional oversight.`
+  ];
 
+  const pick = variations[Math.floor(Math.random() * variations.length)];
+  return pick(cleaned);
+}
   const patterns = [
     t => `Provided instruction related to ${t} while maintaining professional standards in the ${titleCaseSafe(title)} role.`,
     t => `Oversaw and coordinated ${t} as part of daily responsibilities in the ${titleCaseSafe(title)} role.`,
