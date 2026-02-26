@@ -276,7 +276,16 @@ const t5 = tasksArr[4] || "";
   let polished = {
     summary: "",
     summaryBullets: [],
-    workExperience: baseData.workExperience,
+workExperience: baseData.workExperience.map(j => ({
+  ...j,
+  task1: j.task1 || "",
+  task2: j.task2 || "",
+  task3: j.task3 || "",
+  task4: j.task4 || "",
+  task5: j.task5 || ""
+})),
+
+    
     education: baseData.education,
   };
 
