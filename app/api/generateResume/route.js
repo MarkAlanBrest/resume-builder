@@ -316,7 +316,7 @@ REQUIRED OUTPUT (JSON):
     console.error("AI polish failed:", e);
   }
 
-    const summaryBullets = Array.isArray(polished.summaryBullets)
+  const summaryBullets = Array.isArray(polished.summaryBullets)
     ? polished.summaryBullets.map(clean).filter(Boolean)
     : [];
 
@@ -387,6 +387,10 @@ REQUIRED OUTPUT (JSON):
     skill9: skillArray[8] || "",
     skill10: skillArray[9] || "",
   };
+
+  /* ⭐ FINAL SORT — guarantees newest → oldest AFTER AI polish */
+  finalData.workExperience = sortJobsNewestFirst(finalData.workExperience);
+  finalData.education = sortEducationNewestFirst(finalData.education);
 
   const templatePath = path.join(
     process.cwd(),
