@@ -74,7 +74,7 @@ function splitLines(text) {
 
 
 function looksWeak(text) {
-  return !text || text.split(" ").length < 7;
+  return !text || text.split(" ").length < 4;
 }
 
 function expandFallback(text, title) {
