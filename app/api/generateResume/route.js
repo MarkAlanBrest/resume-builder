@@ -62,12 +62,25 @@ function formatDateToText(dateStr) {
   return `${monthNames[idx]} ${year}`;
 }
 
+
+
 function splitLines(text) {
   if (!text) return [];
   return String(text)
     .split(/\r?\n/)
     .map(clean)
     .filter(Boolean);
+}
+
+
+function looksWeak(text) {
+  return !text || text.split(" ").length < 7;
+}
+
+function expandFallback(text, title) {
+  if (!text) return "";
+  const cleaned = clean(text).toLowerCase();
+  return `Performed duties related to ${cleaned} as part of the ${title} role.`;
 }
 
 /* ===========================
@@ -472,23 +485,36 @@ if (Array.isArray(polished.education)) {
     summary5: clean(summaryBullets[4] || ""),
 
     workExperience: baseData.workExperience.map((base, i) => {
-const ai = polished.workExperience?.[i] || {};
-      return {
-        employer: clean(ai.employer ?? base.employer),
-        employerCity: clean(ai.employerCity ?? base.employerCity),
-        employerState: clean(ai.employerState ?? base.employerState),
-        title: clean(ai.title ?? base.title),
-        start: formatDateToText(clean(ai.start ?? base.start)),
-        end: formatDateToText(clean(ai.end ?? base.end)),
+  const ai = polished.workExperience?.[i] || {};
+  return {
+    employer: clean(ai.employer ?? base.employer),
+    employerCity: clean(ai.employerCity ?? base.employerCity),
+    employerState: clean(ai.employerState ?? base.employerState),
+    title: clean(ai.title ?? base.title),
+    start: formatDateToText(clean(ai.start ?? base.start)),
+    end: formatDateToText(clean(ai.end ?? base.end)),
 
- task1: limit(clean(ai.task1 ?? base.task1), 300),
-task2: limit(clean(ai.task2 ?? base.task2), 300),
-task3: limit(clean(ai.task3 ?? base.task3), 300),
-task4: limit(clean(ai.task4 ?? base.task4), 300),
-task5: limit(clean(ai.task5 ?? base.task5), 300),
+   task1: looksWeak(ai.task1)
+  ? expandFallback(base.task1, base.title)
+  : limit(clean(ai.task1), 300),
 
-      };
-    }),
+task2: looksWeak(ai.task2)
+  ? expandFallback(base.task2, base.title)
+  : limit(clean(ai.task2), 300),
+
+task3: looksWeak(ai.task3)
+  ? expandFallback(base.task3, base.title)
+  : limit(clean(ai.task3), 300),
+
+task4: looksWeak(ai.task4)
+  ? expandFallback(base.task4, base.title)
+  : limit(clean(ai.task4), 300),
+
+task5: looksWeak(ai.task5)
+  ? expandFallback(base.task5, base.title)
+  : limit(clean(ai.task5), 300),
+  };
+}),
 
     education: (polished.education || baseData.education).map((e, i) => {
       const base = baseData.education[i] || {};
