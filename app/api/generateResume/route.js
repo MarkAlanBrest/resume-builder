@@ -397,7 +397,6 @@ TENSE RULES:
 - Professional summary, objectives, program description, and tools use present tense.
 
 --------------------------------------------------
-
 WORK EXPERIENCE RULES:
 - For each job in workExperience:
   - Rewrite task1–task5 into ONE clear, professional, resume-ready sentence EACH.
@@ -408,11 +407,12 @@ WORK EXPERIENCE RULES:
     • context or outcome when appropriate
   - Use the student’s wording as the base and EXPAND it into a complete sentence.
   - Do NOT invent duties, employers, dates, tools, or experience.
-  - - Fix spelling, grammar, capitalization, clarity, and punctuation.
+  - Fix spelling, grammar, capitalization, clarity, and punctuation.
   - Do NOT add bullet characters.
   - Keep employer, city, state, title, start, and end fields unchanged
     unless correcting spelling.
-
+  - NEVER return empty task fields.
+  - If input task text exists, you MUST rewrite it into a complete sentence.
 --------------------------------------------------
 
 EDUCATION RULES:
