@@ -346,7 +346,7 @@ if (Array.isArray(polished.education)) {
     summary5: clean(summaryBullets[4] || ""),
 
     workExperience: baseData.workExperience.map((base, i) => {
-      const ai = polished.workExperience?.[i] || {};
+const ai = polished.workExperience?.find(j => j.employer === base.employer) || {};
       return {
         employer: clean(ai.employer ?? base.employer),
         employerCity: clean(ai.employerCity ?? base.employerCity),
