@@ -520,9 +520,20 @@ REQUIRED OUTPUT (JSON):
       ]
     });
 
- polished = JSON.parse(completion.choices[0].message.content);
 
-// ⭐ FIX: Sort AI output BEFORE mapping so indexes stay aligned
+
+const raw = completion.choices[0].message.content;
+
+try {
+  polished = JSON.parse(raw);
+} catch (err) {
+  console.error("JSON PARSE FAILED");
+  console.error(raw);
+}
+
+
+
+
 if (Array.isArray(polished.workExperience)) {
   polished.workExperience = sortJobsNewestFirst(polished.workExperience);
 }
