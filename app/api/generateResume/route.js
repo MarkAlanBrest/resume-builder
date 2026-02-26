@@ -290,20 +290,23 @@ workExperience: baseData.workExperience.map(j => ({
   };
 
   try {
-    const aiInput = {
-      student: {
-        name: baseData.name,
-        programCampus: baseData.programCampus,
-        graduationDate: baseData.graduationDate,
-      },
-      careerContext: baseData.careerContext,
-      program: programName,
-      programGuide,
-      skills: skillArray,
-      certifications: certArray,
-      workExperience: baseData.workExperience,
-      education: baseData.education
-    };
+ const aiInput = {
+  student: {
+    name: baseData.name,
+    programCampus: baseData.programCampus,
+    graduationDate: baseData.graduationDate,
+  },
+  careerContext: baseData.careerContext,
+
+  objectives: body.objectives || "", // 👈 ADD THIS LINE
+
+  program: programName,
+  programGuide,
+  skills: skillArray,
+  certifications: certArray,
+  workExperience: baseData.workExperience,
+  education: baseData.education
+};
 
     const completion = await openai.chat.completions.create({
       model: "gpt-4o",
@@ -321,20 +324,42 @@ Follow the MASTER STYLE GUIDE EXACTLY.
 MASTER STYLE GUIDE:
 ${masterStyleGuide}
 
+GLOBAL RULES:
+- Follow the MASTER STYLE GUIDE exactly.
+- If a section requires a minimum number of sentences, you MUST meet it.
+- Do not return empty or partial sections.
+
+LANGUAGE & STYLE RULES:
+- Use professional, employer-facing language.
+- Do NOT use first person ("I", "we").
+- Do NOT refer to "student", "learner", or "trainee".
+- Avoid filler phrases and buzzwords.
+- Do not repeat the same idea across sections.
+
+FORMATTING RULES:
+- Return plain text only.
+- Do NOT include bullet characters, numbering, or line breaks.
+- Do NOT include headings inside fields.
+
+TENSE RULES:
+- Work experience uses past tense unless the end date is Present.
+- Professional summary, objectives, program description, and tools use present tense.
+
+--------------------------------------------------
+
 WORK EXPERIENCE RULES:
 - For each job in workExperience:
-  - Rewrite task1–task5 into full, professional, resume-ready bullet sentences using the student's wording as the base.
- - Use the student's task1–task5 content as the base, but you MAY add
-  minimal neutral context (object, audience, outcome) to form a complete sentence.
-  - Fix capitalization, grammar, clarity, and punctuation.
-  - Do NOT add bullet characters (•) — return plain text only.
+  - Rewrite task1–task5 into full, professional, resume-ready sentences.
+  - Use the student’s wording as the base, but you MAY add minimal neutral context
+    (object, audience, outcome) to form complete sentences.
   - Do NOT invent duties, employers, dates, or titles.
-  - Keep employer, city, state, title, start, and end fields unchanged unless fixing spelling.
-- Each task MUST be a complete sentence (minimum 8 words).
-- Each task must include an action verb and an object.
-EXAMPLE:
-Input: "taught carpenty"
-Output: "Taught carpentry fundamentals to students in a structured classroom environment."
+  - Fix grammar, capitalization, clarity, and punctuation.
+  - Do NOT add bullet characters.
+  - Keep employer, city, state, title, start, and end fields unchanged
+    unless correcting spelling.
+  - Each task must be a complete sentence (minimum 8 words).
+
+--------------------------------------------------
 
 EDUCATION RULES:
 - Education fields are factual.
@@ -343,29 +368,64 @@ EDUCATION RULES:
 - Do NOT change dates, school names, or program names.
 - Notes may be cleaned for punctuation only.
 
+--------------------------------------------------
+
+PROGRAM DESCRIPTION RULES:
+- Write a professional program description of 5–7 complete sentences.
+- Base content on the program name, programGuide, education, and career context.
+- Describe skills learned, training focus, and career preparation.
+- Do NOT invent certifications, licenses, or outcomes.
+
+PROGRAM TOOLS RULES:
+- Write 3–4 complete sentences.
+- Describe tools, equipment, software, or systems used in the program.
+- Base content ONLY on the programGuide and program context.
+- Do NOT invent tools not reasonably implied by the program.
+
+--------------------------------------------------
+
+OBJECTIVES RULES:
+- Objectives represent the student’s career goal and intent.
+- Rewrite objectives into professional resume language.
+- Preserve the original intent and job focus.
+- Do NOT repeat the objectives verbatim.
+- Do NOT invent job titles, credentials, or experience.
+- Use present or future-oriented language.
+- Objectives must inform both the Professional Summary and Summary Bullets.
+
+--------------------------------------------------
+
+PROFESSIONAL SUMMARY RULES:
+- Write ONE concise paragraph (3–4 complete sentences).
+- Write in third person only.
+- The summary MUST be primarily based on the Objectives input.
+- Use work experience, education, and skills only to SUPPORT the objectives.
+- Do NOT repeat objectives verbatim.
+- Do NOT exaggerate experience or invent credentials.
+- Use present tense for current skills and career focus.
+
+SUMMARY BULLETS RULES:
+- Write 3–5 concise bullet statements.
+- Bullets MUST be derived from the Objectives input.
+- Each bullet must be one complete sentence.
+- Bullets should reflect career goals, skills focus, or job intent.
+- Do NOT repeat paragraph sentences word-for-word.
+- Do NOT include bullet characters or numbering.
+
+--------------------------------------------------
+
 REQUIRED OUTPUT (JSON):
 {
   "summary": "one paragraph",
   "summaryBullets": ["...", "..."],
-  "workExperience": [
-    {
-      "employer": "...",
-      "employerCity": "...",
-      "employerState": "...",
-      "title": "...",
-      "start": "...",
-      "end": "...",
-      "task1": "...",
-      "task2": "...",
-      "task3": "...",
-      "task4": "...",
-      "task5": "..."
-    }
-  ],
+  "workExperience": [...],
   "education": [...],
   "programDescription": "...",
   "programTools": "..."
 }
+
+
+
 `.trim()
 
 
