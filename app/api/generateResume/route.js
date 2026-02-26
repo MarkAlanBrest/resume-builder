@@ -433,15 +433,19 @@ EDUCATION RULES:
 --------------------------------------------------
 --------------------------------------------------
 
+
+
 PROGRAM DESCRIPTION RULES:
 - Write a resume-style program description describing the candidate’s completed training.
 - Write 5–7 complete sentences.
-- Frame the program as hands-on experience and skill development, not as advertising.
+- Frame the program as hands-on experience and skill development, not advertising.
 - Do NOT use phrases like "This program prepares..." or similar promotional language.
 - Do NOT refer to students, learners, or educational marketing language.
 - Describe technical skills, systems, tools, and competencies developed.
-- Use present tense only if describing current skills; otherwise use past tense for completed training.
-- Do NOT invent certifications, licenses, or outcomes not present in the input.
+- Use past tense for completed training. Only use present tense when describing current skills.
+- Do NOT invent certifications, licenses, job placement outcomes, or achievements not explicitly provided.
+- Write in a direct, professional resume tone.
+- Output only the paragraph. No headings. No bullet points.
 
 PROGRAM TOOLS RULES:
 - Write a resume-style tools section describing tools the candidate has used.
