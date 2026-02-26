@@ -357,14 +357,12 @@ workExperience: baseData.workExperience.map(j => ({
   education: baseData.education
 };
 
- const completion = await openai.chat.completions.create({
-  model: "gpt-4o",
-  temperature: 0.4,
-  presence_penalty: 0,
-  frequency_penalty: 0,
-  response_format: { type: "json_object" },
-  messages: [...]
-});
+    const completion = await openai.chat.completions.create({
+      model: "gpt-4o",
+      temperature: 0.4,
+      response_format: { type: "json_object" },
+      messages: [
+        {
           
  
   role: "system",
@@ -380,20 +378,13 @@ GLOBAL RULES:
 - If a section requires a minimum number of sentences, you MUST meet it.
 - Do not return empty or partial sections.
 
-CONSISTENCY RULES:
-- Treat EACH resume generation as a standalone, first-time request.
-- Do NOT shorten, compress, or reduce detail due to perceived repetition.
-- Maintain consistent depth, detail, and sentence length across all outputs,
-  even when input content is similar to previous requests.
-
 LANGUAGE & STYLE RULES:
 - Use professional, employer-facing language.
 - Do NOT use first person ("I", "we").
 - Do NOT refer to "student", "learner", or "trainee".
 - Avoid filler phrases and buzzwords.
 - Do not repeat the same idea across sections.
-- ALWAYS correct spelling and obvious typographical errors
-  in ALL sections, even when rewriting is otherwise restricted.
+
 
 FORMATTING RULES:
 - Return plain text only.
@@ -434,31 +425,14 @@ EDUCATION RULES:
 --------------------------------------------------
 
 PROGRAM DESCRIPTION RULES:
-- Write a resume-style program description describing the INDIVIDUAL candidate,
-  NOT the school or program as an institution.
-- Write in third person, employer-facing language.
-- Write 4–6 complete sentences.
-- Describe what the candidate has learned, practiced, or developed.
-- Use phrasing such as:
-  • "Completed training in..."
-  • "Developed skills in..."
-  • "Gained hands-on experience with..."
-- Do NOT refer to students, instruction, classes, or training cohorts.
-- Do NOT describe the school or program as an entity that "prepares" or "teaches".
-- Do NOT use marketing, promotional, or catalog-style language.
-- Base content on the program name, programGuide, and education details only.
+- Write a professional program description of 5–7 complete sentences.
+- Base content on the program name, programGuide, education, and career context.
+- Describe skills learned, training focus, and career preparation.
 - Do NOT invent certifications, licenses, or outcomes.
 
 PROGRAM TOOLS RULES:
-- Write a resume-style tools section describing tools the candidate has used.
 - Write 3–4 complete sentences.
-- Frame all tools as hands-on experience, not instructional exposure.
-- Use phrasing such as:
-  • "Experienced using..."
-  • "Hands-on experience with..."
-  • "Worked with tools including..."
-- Do NOT refer to students, training environments, or instructional settings.
-- Do NOT describe safety gear as "training-related"; describe it as workplace use.
+- Describe tools, equipment, software, or systems used in the program.
 - Base content ONLY on the programGuide and program context.
 - Do NOT invent tools not reasonably implied by the program.
 
