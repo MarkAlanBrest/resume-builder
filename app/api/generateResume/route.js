@@ -177,15 +177,15 @@ async function polishList(list, label) {
 You are cleaning a list of ${label} for a student's resume.
 
 ONLY:
-- Fix spelling
-- Fix capitalization
-- Fix minor formatting
-- Remove exact duplicates
+- Correct spelling and capitalization
+- Normalize formatting
+- Rewrite text into clear, professional, resume-ready language
+- Preserve the original meaning and intent
 
 DO NOT:
-- Rewrite
-- Add content
-- Strengthen language
+- Invent duties, skills, credentials, or experience
+- Add facts not present in the input
+- Exaggerate responsibilities or seniority
 
 Return JSON ONLY:
 { "items": ["...", "..."] }
@@ -408,7 +408,7 @@ WORK EXPERIENCE RULES:
     • context or outcome when appropriate
   - Use the student’s wording as the base and EXPAND it into a complete sentence.
   - Do NOT invent duties, employers, dates, tools, or experience.
-  - Fix grammar, capitalization, clarity, and punctuation only.
+  - - Fix spelling, grammar, capitalization, clarity, and punctuation.
   - Do NOT add bullet characters.
   - Keep employer, city, state, title, start, and end fields unchanged
     unless correcting spelling.
@@ -417,11 +417,13 @@ WORK EXPERIENCE RULES:
 
 EDUCATION RULES:
 - Education fields are factual.
-- Fix punctuation, capitalization, and spacing ONLY.
+- Fix spelling, punctuation, capitalization, and spacing.
 - Do NOT rewrite, summarize, or add any education content.
 - GPA formatting is allowed (example: "Achieved a 3.8 GPA").
 - Do NOT change dates, school names, or program names.
-- Notes may be cleaned for punctuation only.
+- - Notes may be rewritten into professional, resume-ready language.
+- Preserve the original meaning and achievement.
+- Do NOT invent honors, awards, or accomplishments not present in the input.
 
 --------------------------------------------------
 
@@ -438,18 +440,6 @@ PROGRAM TOOLS RULES:
 - Base content ONLY on the programGuide and program context.
 - Do NOT invent tools not reasonably implied by the program.
 
-PROGRAM TOOLS RULES:
-- Write a resume-style tools section describing tools the candidate has used.
-- Write 3–4 complete sentences.
-- Frame all tools as hands-on experience, not instructional exposure.
-- Use phrasing such as:
-  • "Experienced using..."
-  • "Hands-on experience with..."
-  • "Worked with tools including..."
-- Do NOT refer to students, training environments, or instructional settings.
-- Do NOT describe safety gear as "training-related"; describe it as workplace use.
-- Base content ONLY on the programGuide and program context.
-- Do NOT invent tools not reasonably implied by the program.
 
 --------------------------------------------------
 
