@@ -397,6 +397,8 @@ TENSE RULES:
 - Professional summary, objectives, program description, and tools use present tense.
 
 --------------------------------------------------
+
+
 WORK EXPERIENCE RULES:
 - For each job in workExperience:
   - Rewrite task1–task5 into ONE clear, professional, resume-ready sentence EACH.
@@ -415,7 +417,7 @@ WORK EXPERIENCE RULES:
   - If input task text exists, you MUST rewrite it into a complete sentence.
   - Do NOT refer to students, learners, or education outcomes; describe duties in employer-facing, professional terms.
   - Do NOT use the words "student", "students", "learning", or "learners" in work experience tasks.
-  
+
 --------------------------------------------------
 
 EDUCATION RULES:
@@ -429,6 +431,17 @@ EDUCATION RULES:
 - Do NOT invent honors, awards, or accomplishments not present in the input.
 
 --------------------------------------------------
+--------------------------------------------------
+
+PROGRAM DESCRIPTION RULES:
+- Write a resume-style program description describing the candidate’s completed training.
+- Write 5–7 complete sentences.
+- Frame the program as hands-on experience and skill development, not as advertising.
+- Do NOT use phrases like "This program prepares..." or similar promotional language.
+- Do NOT refer to students, learners, or educational marketing language.
+- Describe technical skills, systems, tools, and competencies developed.
+- Use present tense only if describing current skills; otherwise use past tense for completed training.
+- Do NOT invent certifications, licenses, or outcomes not present in the input.
 
 PROGRAM TOOLS RULES:
 - Write a resume-style tools section describing tools the candidate has used.
