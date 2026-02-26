@@ -27,6 +27,14 @@ function clean(v) {
     .trim();
 }
 
+function titleCaseSafe(v) {
+  if (!v) return "";
+  return String(v)
+    .trim()
+    .toLowerCase()
+    .replace(/\b\w/g, c => c.toUpperCase());
+}
+
 function formatPhone(phone) {
   const digits = String(phone || "").replace(/\D/g, "");
   if (digits.length === 10) {
@@ -490,12 +498,12 @@ if (Array.isArray(polished.education)) {
     workExperience: baseData.workExperience.map((base, i) => {
   const ai = polished.workExperience?.[i] || {};
   return {
-    employer: clean(ai.employer ?? base.employer),
-    employerCity: clean(ai.employerCity ?? base.employerCity),
-    employerState: clean(ai.employerState ?? base.employerState),
-    title: clean(ai.title ?? base.title),
-    start: formatDateToText(clean(ai.start ?? base.start)),
-    end: formatDateToText(clean(ai.end ?? base.end)),
+  employer: titleCaseSafe(clean(ai.employer ?? base.employer)),
+employerCity: clean(ai.employerCity ?? base.employerCity),
+employerState: clean(ai.employerState ?? base.employerState),
+title: titleCaseSafe(clean(ai.title ?? base.title)),
+start: formatDateToText(clean(ai.start ?? base.start)),
+end: formatDateToText(clean(ai.end ?? base.end)),
 
    task1: looksWeak(ai.task1)
   ? expandFallback(base.task1, base.title)
