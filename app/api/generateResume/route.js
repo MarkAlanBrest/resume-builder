@@ -87,8 +87,22 @@ function looksWeak(text) {
 
 function expandFallback(text, title) {
   if (!text) return "";
-  const cleaned = clean(text).toLowerCase();
-  return `Performed duties related to ${cleaned} as part of the ${title} role.`;
+
+  const cleaned = clean(text);
+
+  const verbMap = [
+    { test: /teach|taught|instruct/i, out: "Delivered instruction in" },
+    { test: /manage|managed/i, out: "Managed and organized" },
+    { test: /budget|ordering|inventory/i, out: "Oversaw budgeting and ordering for" },
+    { test: /build|construct|install/i, out: "Performed hands-on work involving" },
+    { test: /repair|diagnos/i, out: "Performed repair and diagnostic work related to" },
+    { test: /safety/i, out: "Maintained safety standards while working with" }
+  ];
+
+  const match = verbMap.find(v => v.test.test(cleaned));
+  const opener = match ? match.out : "Performed responsibilities related to";
+
+  return `${opener} ${cleaned}, demonstrating professionalism and reliability in the ${title} role.`;
 }
 
 /* ===========================
