@@ -335,6 +335,14 @@ WORK EXPERIENCE RULES:
 EXAMPLE:
 Input: "taught carpenty"
 Output: "Taught carpentry fundamentals to students in a structured classroom environment."
+
+EDUCATION RULES:
+- Education fields are factual.
+- Fix punctuation, capitalization, and spacing ONLY.
+- Do NOT rewrite, expand, summarize, or add content.
+- Do NOT change dates, school names, or program names.
+- Notes may be cleaned for punctuation only.
+
 REQUIRED OUTPUT (JSON):
 {
   "summary": "one paragraph",
