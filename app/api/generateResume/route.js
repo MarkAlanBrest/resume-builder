@@ -401,9 +401,7 @@ if (Array.isArray(polished.education)) {
     skill10: skillArray[9] || "",
   };
 
-  /* ⭐ FINAL SORT — guarantees newest → oldest AFTER AI polish */
-  finalData.workExperience = sortJobsNewestFirst(finalData.workExperience);
-  finalData.education = sortEducationNewestFirst(finalData.education);
+  
 
   const templatePath = path.join(
     process.cwd(),
