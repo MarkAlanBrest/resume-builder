@@ -37,8 +37,7 @@
   ></textarea>
 
   <div class="system">
-  Select at least <strong>3</strong> or more personal qualities that describe you best.
-</div>
+    Select at least <strong>3</strong> or more personal qualities that describe you best.
   </div>
 
   <div class="qual-list">
@@ -102,7 +101,6 @@
 </div>
 
 <script>
-/* ---------- STORAGE HELPERS ---------- */
 function getData() {
   return JSON.parse(localStorage.getItem("resumeData")) || {};
 }
@@ -111,7 +109,6 @@ function setData(data) {
   localStorage.setItem("resumeData", JSON.stringify(data));
 }
 
-/* ---------- LOAD EXISTING DATA ---------- */
 window.onload = function () {
   const data = getData();
 
@@ -126,7 +123,6 @@ window.onload = function () {
   }
 };
 
-/* ---------- SAVE DATA (STRINGS ONLY) ---------- */
 function saveOnly() {
   const data = getData();
 
@@ -135,21 +131,18 @@ function saveOnly() {
   ).map(cb => cb.value);
 
   data.jobTarget = document.getElementById("jobTarget").value.trim();
-
-  data.objectives = qualities.join("\n");   // STRING
+  data.objectives = qualities.join("\n");
   data.notes = document.getElementById("notes").value.trim();
 
   setData(data);
 }
 
-/* ---------- NAVIGATION ---------- */
 function goBack() {
   saveOnly();
   window.location.href = "student-info.html";
 }
 
 function goNext() {
-
   const checked = document.querySelectorAll(".qual:checked").length;
 
   if (checked < 3) {
