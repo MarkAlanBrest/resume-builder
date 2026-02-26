@@ -89,123 +89,22 @@ function sortJobsNewestFirst(jobs) {
   });
 }
 
-function sortJobsNewestFirst(jobs) {
-  function toTime(v) {
-    const s = String(v || "").trim();
-    if (!s) return new Date("9999-12-31").getTime(); // blank = current job
-    if (/^(present|current|now)$/i.test(s)) return new Date("9999-12-31").getTime();
+function sortEducationNewestFirst(education) {
+  return [...education].sort((a, b) => {
+    const endA =
+      !a.endDate || String(a.endDate).toLowerCase() === "present"
+        ? new Date("9999-12-31")
+        : new Date(a.endDate);
 
-    const x = s.replace(/-/g, "/").replace(/\s+/g, " ").trim();
+    const endB =
+      !b.endDate || String(b.endDate).toLowerCase() === "present"
+        ? new Date("9999-12-31")
+        : new Date(b.endDate);
 
-    const monthMap = {
-      jan: 1, january: 1,
-      feb: 2, february: 2,
-      mar: 3, march: 3,
-      apr: 4, april: 4,
-      may: 5,
-      jun: 6, june: 6,
-      jul: 7, july: 7,
-      aug: 8, august: 8,
-      sep: 9, sept: 9, september: 9,
-      oct: 10, october: 10,
-      nov: 11, november: 11,
-      dec: 12, december: 12
-    };
-
-    const parts = x.toLowerCase().split(/[\/ ]+/).filter(Boolean);
-
-    // "jan 2024"
-    if (parts.length >= 2 && monthMap[parts[0]] && /^\d{4}$/.test(parts[1])) {
-      return new Date(parseInt(parts[1], 10), monthMap[parts[0]] - 1, 1).getTime();
-    }
-
-    // "01/2024"
-    if (parts.length >= 2 && /^\d{1,2}$/.test(parts[0]) && /^\d{4}$/.test(parts[1])) {
-      const m = parseInt(parts[0], 10);
-      const y = parseInt(parts[1], 10);
-      if (m >= 1 && m <= 12) return new Date(y, m - 1, 1).getTime();
-    }
-
-    // "2024/01"
-    if (parts.length >= 2 && /^\d{4}$/.test(parts[0]) && /^\d{1,2}$/.test(parts[1])) {
-      const y = parseInt(parts[0], 10);
-      const m = parseInt(parts[1], 10);
-      if (m >= 1 && m <= 12) return new Date(y, m - 1, 1).getTime();
-    }
-
-    // "2024"
-    if (/^\d{4}$/.test(parts[0])) {
-      return new Date(parseInt(parts[0], 10), 0, 1).getTime();
-    }
-
-    const t = Date.parse(s);
-    return Number.isNaN(t) ? 0 : t;
-  }
-
-  // Stable sort + tie-breaker on start date
-  return jobs
-    .map((j, idx) => ({ j, idx }))
-    .sort((A, B) => {
-      const aEnd = toTime(A.j.end);
-      const bEnd = toTime(B.j.end);
-      if (bEnd !== aEnd) return bEnd - aEnd;
-
-      const aStart = toTime(A.j.start);
-      const bStart = toTime(B.j.start);
-      if (bStart !== aStart) return bStart - aStart;
-
-      return A.idx - B.idx;
-    })
-    .map(x => x.j);
+    return endB - endA;
+  });
 }
 
-    const parts = x.toLowerCase().split(/[\/ ]+/).filter(Boolean);
-
-    // "jan 2024"
-    if (parts.length >= 2 && monthMap[parts[0]] && /^\d{4}$/.test(parts[1])) {
-      return new Date(parseInt(parts[1], 10), monthMap[parts[0]] - 1, 1).getTime();
-    }
-
-    // "01/2024"
-    if (parts.length >= 2 && /^\d{1,2}$/.test(parts[0]) && /^\d{4}$/.test(parts[1])) {
-      const m = parseInt(parts[0], 10);
-      const y = parseInt(parts[1], 10);
-      if (m >= 1 && m <= 12) return new Date(y, m - 1, 1).getTime();
-    }
-
-    // "2024/01"
-    if (parts.length >= 2 && /^\d{4}$/.test(parts[0]) && /^\d{1,2}$/.test(parts[1])) {
-      const y = parseInt(parts[0], 10);
-      const m = parseInt(parts[1], 10);
-      if (m >= 1 && m <= 12) return new Date(y, m - 1, 1).getTime();
-    }
-
-    // "2024"
-    if (/^\d{4}$/.test(parts[0])) {
-      return new Date(parseInt(parts[0], 10), 0, 1).getTime();
-    }
-
-    // Last resort
-    const t = Date.parse(s);
-    return Number.isNaN(t) ? 0 : t;
-  }
-
-  // Stable sort + tie-breaker on startDate
-  return education
-    .map((e, idx) => ({ e, idx }))
-    .sort((A, B) => {
-      const aEnd = toTime(A.e.endDate);
-      const bEnd = toTime(B.e.endDate);
-      if (bEnd !== aEnd) return bEnd - aEnd;
-
-      const aStart = toTime(A.e.startDate);
-      const bStart = toTime(B.e.startDate);
-      if (bStart !== aStart) return bStart - aStart;
-
-      return A.idx - B.idx;
-    })
-    .map(x => x.e);
-}
 /* ===========================
    PROGRAM BLOCK EXTRACTOR
 =========================== */
