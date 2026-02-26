@@ -5,46 +5,57 @@
   <title>NCST Resume Builder – Certifications & Skills</title>
   <link rel="stylesheet" href="style.css">
 
-  <style>
-    .page-title {
-      text-align: center;
-      color: #0b3c6d;
-      margin-bottom: 10px;
-      font-size: 28px;
-    }
+ <style>
+  .page-title {
+    text-align: center;
+    color: #0b3c6d;
+    margin-bottom: 10px;
+    font-size: 28px;
+  }
 
-    .instructions {
-      text-align: center;
-      color: #333;
-      margin-bottom: 25px;
-      font-size: 16px;
-    }
+  .instructions {
+    text-align: center;
+    color: #333;
+    margin-bottom: 25px;
+    font-size: 16px;
+  }
 
-    .system {
-      color: #0b3c6d;
-      font-weight: 600;
-      margin-top: 25px;
-      margin-bottom: 8px;
-    }
+  .system {
+    color: #0b3c6d;
+    font-weight: 600;
+    margin-top: 25px;
+    margin-bottom: 8px;
+  }
 
-    .program-box {
-      background: #f1f6fb;
-      border: 1px solid #c9d9ea;
-      padding: 12px;
-      margin-bottom: 20px;
-      font-weight: bold;
-    }
+  .program-box {
+    background: #f1f6fb;
+    border: 1px solid #c9d9ea;
+    padding: 12px;
+    margin-bottom: 20px;
+    font-weight: bold;
+  }
 
-    .row {
-      display: flex;
-      margin: 6px 0;
-    }
+  .row {
+    display: flex;
+    margin: 6px 0;
+  }
 
-    .row input[type="text"] {
-      flex: 1;
-      padding: 6px;
-    }
-  </style>
+  .row input[type="text"] {
+    flex: 1;
+    padding: 6px;
+  }
+
+  /* NEW TWO COLUMN LAYOUT */
+  .two-col {
+    display: flex;
+    gap: 40px;
+    align-items: flex-start;
+  }
+
+  .two-col > div {
+    flex: 1;
+  }
+</style>
 </head>
 <body>
 
@@ -60,15 +71,23 @@
 
   <div id="programDisplay" class="program-box"></div>
 
-  <!-- CERTIFICATIONS -->
-  <div class="system">Certifications</div>
-  <div id="programCerts"></div>
-  <div id="customCerts"></div>
+ <div class="two-col">
 
-  <!-- SKILLS -->
-  <div class="system">Skills</div>
-  <div id="programSkills"></div>
-  <div id="customSkills"></div>
+  <div>
+    <!-- CERTIFICATIONS -->
+    <div class="system">Certifications</div>
+    <div id="programCerts"></div>
+    <div id="customCerts"></div>
+  </div>
+
+  <div>
+    <!-- SKILLS -->
+    <div class="system">Skills</div>
+    <div id="programSkills"></div>
+    <div id="customSkills"></div>
+  </div>
+
+</div>
 
   <br>
 
