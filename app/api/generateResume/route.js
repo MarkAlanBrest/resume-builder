@@ -425,15 +425,29 @@ EDUCATION RULES:
 
 --------------------------------------------------
 
-PROGRAM DESCRIPTION RULES:
-- Write a professional program description of 5–7 complete sentences.
-- Base content on the program name, programGuide, education, and career context.
-- Describe skills learned, training focus, and career preparation.
-- Do NOT invent certifications, licenses, or outcomes.
+PROGRAM TOOLS RULES:
+- Write a resume-style tools section describing tools the candidate has used.
+- Write 3–4 complete sentences.
+- Frame all tools as hands-on experience, not instructional exposure.
+- Use phrasing such as:
+  • "Experienced using..."
+  • "Hands-on experience with..."
+  • "Worked with tools including..."
+- Do NOT refer to students, training environments, or instructional settings.
+- Do NOT describe safety gear as "training-related"; describe it as workplace use.
+- Base content ONLY on the programGuide and program context.
+- Do NOT invent tools not reasonably implied by the program.
 
 PROGRAM TOOLS RULES:
+- Write a resume-style tools section describing tools the candidate has used.
 - Write 3–4 complete sentences.
-- Describe tools, equipment, software, or systems used in the program.
+- Frame all tools as hands-on experience, not instructional exposure.
+- Use phrasing such as:
+  • "Experienced using..."
+  • "Hands-on experience with..."
+  • "Worked with tools including..."
+- Do NOT refer to students, training environments, or instructional settings.
+- Do NOT describe safety gear as "training-related"; describe it as workplace use.
 - Base content ONLY on the programGuide and program context.
 - Do NOT invent tools not reasonably implied by the program.
 
