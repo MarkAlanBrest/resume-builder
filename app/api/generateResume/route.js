@@ -384,7 +384,8 @@ LANGUAGE & STYLE RULES:
 - Do NOT refer to "student", "learner", or "trainee".
 - Avoid filler phrases and buzzwords.
 - Do not repeat the same idea across sections.
-
+- ALWAYS correct spelling and obvious typographical errors
+  in ALL sections, even when rewriting is otherwise restricted.
 
 FORMATTING RULES:
 - Return plain text only.
