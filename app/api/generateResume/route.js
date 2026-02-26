@@ -105,7 +105,10 @@ function expandFallback(text, title) {
 
   // Rotate sentence structure so bullets don’t all look alike
   const pick = patterns[Math.floor(Math.random() * patterns.length)];
-  return pick(normalized);
+  return pick(normalized).replace(
+  title,
+  titleCaseSafe(title)
+);
 }
 
 /* ===========================
