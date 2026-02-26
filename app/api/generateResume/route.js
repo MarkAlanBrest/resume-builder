@@ -198,11 +198,12 @@ export async function POST(req) {
 
     workExperience: workExperience.map(j => {
       const tasksArr = Array.isArray(j.tasks) ? j.tasks.map(clean) : [];
-      const t1 = clean(j.task1 || tasksArr[0] || "");
-      const t2 = clean(j.task2 || tasksArr[1] || "");
-      const t3 = clean(j.task3 || tasksArr[2] || "");
-      const t4 = clean(j.task4 || tasksArr[3] || "");
-      const t5 = clean(j.task5 || tasksArr[4] || "");
+      const t1 = clean(tasksArr[0] || j.task1 || "");
+      const t2 = clean(tasksArr[1] || j.task2 || "");
+      const t3 = clean(tasksArr[2] || j.task3 || "");
+      const t4 = clean(tasksArr[3] || j.task4 || "");
+      const t5 = clean(tasksArr[4] || j.task5 || "");
+
 
       return {
         employer: clean(j.employer),
