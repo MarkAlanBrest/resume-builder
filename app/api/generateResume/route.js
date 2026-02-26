@@ -19,6 +19,14 @@ const openai = new OpenAI({
 /* ===========================
    HELPERS
 =========================== */
+
+function normalizeEmployer(text) {
+  if (!text) return "";
+
+  return titleCaseSafe(text)
+    .replace(/\bScholl\b/i, "School")
+    .replace(/\bOf\b/g, "of");
+}
 function clean(v) {
   if (v === undefined || v === null) return "";
   return String(v)
@@ -523,8 +531,8 @@ if (Array.isArray(polished.education)) {
     workExperience: baseData.workExperience.map((base, i) => {
   const ai = polished.workExperience?.[i] || {};
   return {
-  employer: titleCaseSafe(clean(ai.employer ?? base.employer)),
-employerCity: clean(ai.employerCity ?? base.employerCity),
+ employer: normalizeEmployer(ai.employer ?? base.employer),
+employerCity: titleCaseSafe(clean(ai.employerCity ?? base.employerCity)),
 employerState: clean(ai.employerState ?? base.employerState),
 title: titleCaseSafe(clean(ai.title ?? base.title)),
 start: formatDateToText(clean(ai.start ?? base.start)),
