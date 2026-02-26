@@ -285,23 +285,48 @@ export async function POST(req) {
       response_format: { type: "json_object" },
       messages: [
         {
-          role: "system",
-          content: `
+          {
+  role: "system",
+  content: `
 You are an AI resume writer.
 Follow the MASTER STYLE GUIDE EXACTLY.
 
 MASTER STYLE GUIDE:
 ${masterStyleGuide}
 
+/* WORK EXPERIENCE RULES
+- For each job in workExperience:
+  - Use ONLY the student's original task1–task5 content (no new facts).
+  - Rewrite up to five strong, resume-ready bullet sentences.
+  - Do NOT add bullet characters (•) — just the text.
+  - Do NOT invent duties, employers, dates, or titles.
+  - Keep employer, city, state, title, start, end fields as given unless you are only fixing spelling/capitalization.
+*/
+
 REQUIRED OUTPUT (JSON):
 {
   "summary": "one paragraph",
   "summaryBullets": ["...", "..."],
-  "workExperience": [...],
+  "workExperience": [
+    {
+      "employer": "...",
+      "employerCity": "...",
+      "employerState": "...",
+      "title": "...",
+      "start": "...",
+      "end": "...",
+      "task1": "...",
+      "task2": "...",
+      "task3": "...",
+      "task4": "...",
+      "task5": "..."
+    }
+  ],
   "education": [...],
   "programDescription": "...",
   "programTools": "..."
 }
+
           `.trim()
         },
         {
