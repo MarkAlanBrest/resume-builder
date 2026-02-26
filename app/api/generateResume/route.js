@@ -90,19 +90,22 @@ function expandFallback(text, title) {
 
   const cleaned = clean(text);
 
-  const verbMap = [
-    { test: /teach|taught|instruct/i, out: "Delivered instruction in" },
-    { test: /manage|managed/i, out: "Managed and organized" },
-    { test: /budget|ordering|inventory/i, out: "Oversaw budgeting and ordering for" },
-    { test: /build|construct|install/i, out: "Performed hands-on work involving" },
-    { test: /repair|diagnos/i, out: "Performed repair and diagnostic work related to" },
-    { test: /safety/i, out: "Maintained safety standards while working with" }
+  // Remove duplicated leading verbs (prevents "managed managed", "taught taught")
+  const normalized = cleaned.replace(
+    /^(managed|manage|taught|teach|created|create|performed|handled)\s+/i,
+    ""
+  );
+
+  const patterns = [
+    t => `Provided instruction related to ${t} while maintaining professional standards in the ${title} role.`,
+    t => `Oversaw and coordinated ${t} as part of daily responsibilities in the ${title} role.`,
+    t => `Supported ${t} through effective organization and professional communication in the ${title} role.`,
+    t => `Contributed to ${t} while demonstrating reliability and professionalism in the ${title} role.`
   ];
 
-  const match = verbMap.find(v => v.test.test(cleaned));
-  const opener = match ? match.out : "Performed responsibilities related to";
-
-  return `${opener} ${cleaned}, demonstrating professionalism and reliability in the ${title} role.`;
+  // Rotate sentence structure so bullets don’t all look alike
+  const pick = patterns[Math.floor(Math.random() * patterns.length)];
+  return pick(normalized);
 }
 
 /* ===========================
