@@ -296,7 +296,7 @@ const t5 = clean(tasksArr[4] || "");
           
  
   role: "system",
-  content: `
+content: `
 You are an AI resume writer.
 Follow the MASTER STYLE GUIDE EXACTLY.
 
@@ -305,11 +305,12 @@ ${masterStyleGuide}
 
 WORK EXPERIENCE RULES:
 - For each job in workExperience:
+  - Rewrite task1–task5 into full, professional, resume-ready bullet sentences using the student's wording as the base.
   - Use ONLY the student's original task1–task5 content (no new facts).
-  - Rewrite up to five strong, resume-ready bullet sentences.
-  - Do NOT add bullet characters (•) — just the text.
+  - Fix capitalization, grammar, clarity, and punctuation.
+  - Do NOT add bullet characters (•) — return plain text only.
   - Do NOT invent duties, employers, dates, or titles.
-  - Keep employer, city, state, title, start, end fields as given unless fixing spelling/capitalization.
+  - Keep employer, city, state, title, start, and end fields unchanged unless fixing spelling.
 
 REQUIRED OUTPUT (JSON):
 {
@@ -335,6 +336,7 @@ REQUIRED OUTPUT (JSON):
   "programTools": "..."
 }
 `.trim()
+
 
         },
         {
