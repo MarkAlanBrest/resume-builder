@@ -405,7 +405,8 @@ WORK EXPERIENCE RULES:
 EDUCATION RULES:
 - Education fields are factual.
 - Fix punctuation, capitalization, and spacing ONLY.
-- Do NOT rewrite, expand, summarize, or add content.
+- Do NOT rewrite, summarize, or add any education content.
+- GPA formatting is allowed (example: "Achieved a 3.8 GPA").
 - Do NOT change dates, school names, or program names.
 - Notes may be cleaned for punctuation only.
 
