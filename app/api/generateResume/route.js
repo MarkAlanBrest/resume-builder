@@ -71,6 +71,41 @@ function splitLines(text) {
 }
 
 /* ===========================
+   🔽 ADDED SORT HELPERS (ONLY ADDITION)
+=========================== */
+function sortJobsNewestFirst(jobs) {
+  return [...jobs].sort((a, b) => {
+    const endA =
+      !a.end || String(a.end).toLowerCase() === "present"
+        ? new Date("9999-12-31")
+        : new Date(a.end);
+
+    const endB =
+      !b.end || String(b.end).toLowerCase() === "present"
+        ? new Date("9999-12-31")
+        : new Date(b.end);
+
+    return endB - endA;
+  });
+}
+
+function sortEducationNewestFirst(education) {
+  return [...education].sort((a, b) => {
+    const endA =
+      !a.endDate || String(a.endDate).toLowerCase() === "present"
+        ? new Date("9999-12-31")
+        : new Date(a.endDate);
+
+    const endB =
+      !b.endDate || String(b.endDate).toLowerCase() === "present"
+        ? new Date("9999-12-31")
+        : new Date(b.endDate);
+
+    return endB - endA;
+  });
+}
+
+/* ===========================
    PROGRAM BLOCK EXTRACTOR
 =========================== */
 function extractProgramBlock(guide, programName) {
@@ -136,8 +171,15 @@ export async function POST(req) {
   const body = await req.json();
 
   const s = body.student || {};
-  const workExperience = Array.isArray(body.workExperience) ? body.workExperience : [];
-  const education = Array.isArray(body.education) ? body.education : [];
+
+  /* 🔽 CHANGED: apply sorting ONCE, immediately */
+  const workExperience = sortJobsNewestFirst(
+    Array.isArray(body.workExperience) ? body.workExperience : []
+  );
+
+  const education = sortEducationNewestFirst(
+    Array.isArray(body.education) ? body.education : []
+  );
 
   const allCertsTextRaw = clean(body.allCerts || "");
   const allSkillsTextRaw = clean(body.allSkills || "");
@@ -177,20 +219,19 @@ export async function POST(req) {
       };
     }),
 
-  education: education.map(e => ({
-  school: clean(e.school),
-  program: clean(e.program),
-  eduCity: clean(e.city),
-  eduState: clean(e.state),
-  startDate: formatDateToText(clean(e.startDate)),
-  endDate: formatDateToText(clean(e.endDate)),
-  notes: clean(e.notes),
-})),
+    education: education.map(e => ({
+      school: clean(e.school),
+      program: clean(e.program),
+      eduCity: clean(e.city),
+      eduState: clean(e.state),
+      startDate: formatDateToText(clean(e.startDate)),
+      endDate: formatDateToText(clean(e.endDate)),
+      notes: clean(e.notes),
+    })),
 
-
-    
-
-    hasWorkExperience: workExperience.some(j => clean(j.employer) || clean(j.title)),
+    hasWorkExperience: workExperience.some(
+      j => clean(j.employer) || clean(j.title)
+    ),
     hasEducation: education.length > 0,
 
     careerContext,
@@ -201,10 +242,16 @@ export async function POST(req) {
   const programGuide = extractProgramBlock(masterStyleGuide, programName);
 
   /* ===========================
-     CERTS / SKILLS (MOVED UP)
+     CERTS / SKILLS
 =========================== */
-  const certArray = await polishList(splitLines(allCertsTextRaw), "certifications");
-  const skillArray = await polishList(splitLines(allSkillsTextRaw), "skills");
+  const certArray = await polishList(
+    splitLines(allCertsTextRaw),
+    "certifications"
+  );
+  const skillArray = await polishList(
+    splitLines(allSkillsTextRaw),
+    "skills"
+  );
 
   /* ===========================
      AI POLISH
@@ -224,13 +271,10 @@ export async function POST(req) {
         graduationDate: baseData.graduationDate,
       },
       careerContext: baseData.careerContext,
-
-      // new inputs for program description + richer summary
       program: programName,
       programGuide,
       skills: skillArray,
       certifications: certArray,
-
       workExperience: baseData.workExperience,
       education: baseData.education
     };
@@ -255,76 +299,9 @@ REQUIRED OUTPUT (JSON):
   "summaryBullets": ["...", "..."],
   "workExperience": [...],
   "education": [...],
-  "programDescription": "5–7 sentence paragraph describing what the student studied, using program style guide and skills. Must not use the student's name, pronouns, or hypothetical language (no 'students may', 'students have', etc.).",
-  "programTools": "3–5 sentence paragraph describing the tools and equipment the student used in the program. Must not use the student's name, pronouns, or hypothetical language (no 'students may', 'students have', etc.)."
+  "programDescription": "...",
+  "programTools": "..."
 }
-
-
-
-PROFESSIONAL SUMMARY RULES (STRICT):
-- Build "summary" and "summaryBullets" using ONLY careerContext
-- summary = 4–6 complete sentences
-- No filler
-
-SUMMARY BULLETS:
-- 4–6 bullets
-- 16–28 words each
-- No bullet symbols
-
-WORK EXPERIENCE RULES:
-- Rewrite each non-empty task into a strong resume bullet (16–28 words)
-- No bullet symbols
-- Never remove employerCity or employerState
-- Normalize employerCity to Proper Case
-- Normalize employerState to UPPERCASE
-
-TASK FIELD RULES (CRITICAL):
-- Each job contains fields task1, task2, task3, task4, task5
-- These fields contain the student’s raw job duties
-- Rewrite each non-empty task field into a 12–22 word professional resume bullet
-- Return rewritten bullets in the SAME fields: task1, task2, task3, task4, task5
-- Never return empty strings; if a task cannot be rewritten, return the original text cleaned
-- Do NOT add new tasks or remove tasks
-
-EDUCATION RULES:
-- Clean and normalize school/program
-- Keep dates clean
-
-PROGRAM DESCRIPTION RULES:
-- Use programGuide as the primary source for what the student studied
-- Write a 5–7 sentence paragraph
-- Use the student's skills and certifications when relevant
-- Focus on what the student learned and practiced
-- Use an employer-focused tone
-- No filler or school marketing language
-
-PROGRAM DESCRIPTION STYLE RULES (CRITICAL):
-- Do NOT use the student's name
-- Do NOT use pronouns (no he, she, they)
-- Write in resume style, not narrative style
-- Use concise, employer-focused language
-- Use third-person implied voice (no “I”, no “Mark”)
-- Begin with a strong statement of training focus
-- Describe skills and hands-on experience directly
-- Avoid phrases like “completed a comprehensive program”
-- Avoid biography tone or storytelling
-- Do NOT mention certifications in the program description
-
-PROGRAM TOOLS RULES:
-- Use the Program‑Specific Tools section from programGuide
-- Write a 3–5 sentence paragraph
-- Do NOT use the student's name
-- Do NOT use pronouns (no he, she, they)
-- Write in resume style, not narrative style
-- Focus on tools, equipment, and diagnostic devices the student used
-- No filler, no marketing language
-- No certifications
-
-
-
-
-
-
           `.trim()
         },
         {
@@ -339,13 +316,13 @@ PROGRAM TOOLS RULES:
     console.error("AI polish failed:", e);
   }
 
-  const summaryBullets = Array.isArray(polished.summaryBullets)
+    const summaryBullets = Array.isArray(polished.summaryBullets)
     ? polished.summaryBullets.map(clean).filter(Boolean)
     : [];
 
   const finalData = {
     ...baseData,
-    programTools: clean(polished.programTools || ""),   
+    programTools: clean(polished.programTools || ""),
     professionalSummary: limit(clean(polished.summary || ""), 600),
     programDescription: clean(polished.programDescription || ""),
 
@@ -386,7 +363,6 @@ PROGRAM TOOLS RULES:
       };
     }),
 
-    
     hasProgramCerts: certArray.length > 0,
     cert1: certArray[0] || "",
     cert2: certArray[1] || "",
