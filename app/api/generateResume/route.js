@@ -98,25 +98,25 @@ function expandFallback(text, title) {
 
   const cleaned = clean(text);
 
-  // Remove duplicated leading verbs (prevents "managed managed", "taught taught")
-  const normalized = cleaned.replace(
+  // very small, safe typo corrections
+  const fixed = cleaned
+    .replace(/\btaugght\b/gi, "taught")
+    .replace(/\blessosn\b/gi, "lessons")
+    .replace(/\bclassromo\b/gi, "classroom");
+
+  const normalized = fixed.replace(
     /^(managed|manage|taught|teach|created|create|performed|handled)\s+/i,
     ""
   );
 
   const patterns = [
-    t => `Provided instruction related to ${t} while maintaining professional standards in the ${title} role.`,
-    t => `Oversaw and coordinated ${t} as part of daily responsibilities in the ${title} role.`,
-    t => `Supported ${t} through effective organization and professional communication in the ${title} role.`,
-    t => `Contributed to ${t} while demonstrating reliability and professionalism in the ${title} role.`
+    t => `Provided instruction related to ${t} while maintaining professional standards in the ${titleCaseSafe(title)} role.`,
+    t => `Oversaw and coordinated ${t} as part of daily responsibilities in the ${titleCaseSafe(title)} role.`,
+    t => `Contributed to ${t} while demonstrating reliability and professionalism in the ${titleCaseSafe(title)} role.`
   ];
 
-  // Rotate sentence structure so bullets don’t all look alike
   const pick = patterns[Math.floor(Math.random() * patterns.length)];
-  return pick(normalized).replace(
-  title,
-  titleCaseSafe(title)
-);
+  return pick(normalized);
 }
 
 /* ===========================
