@@ -362,15 +362,18 @@ TENSE RULES:
 
 WORK EXPERIENCE RULES:
 - For each job in workExperience:
-  - Rewrite task1–task5 into full, professional, resume-ready sentences.
-  - Use the student’s wording as the base, but you MAY add minimal neutral context
-    (object, audience, outcome) to form complete sentences.
-  - Do NOT invent duties, employers, dates, or titles.
-  - Fix grammar, capitalization, clarity, and punctuation.
+  - Rewrite task1–task5 into ONE clear, professional, resume-ready sentence EACH.
+  - Each sentence MUST be 12–20 words.
+  - Each sentence MUST include:
+    • a clear action (what was done)
+    • an object or responsibility (what it was done to)
+    • context or outcome when appropriate
+  - Use the student’s wording as the base and EXPAND it into a complete sentence.
+  - Do NOT invent duties, employers, dates, tools, or experience.
+  - Fix grammar, capitalization, clarity, and punctuation only.
   - Do NOT add bullet characters.
   - Keep employer, city, state, title, start, and end fields unchanged
     unless correcting spelling.
-  - Each task must be a complete sentence (minimum 8 words).
 
 --------------------------------------------------
 
