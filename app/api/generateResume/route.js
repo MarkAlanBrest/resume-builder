@@ -543,25 +543,11 @@ employerState: clean(ai.employerState ?? base.employerState),
 title: titleCaseSafe(clean(ai.title ?? base.title)),
 start: formatDateToText(clean(ai.start ?? base.start)),
 end: formatDateToText(clean(ai.end ?? base.end)),
-task1: ai.task1
-  ? limit(clean(ai.task1), 300)
-  : expandFallback(base.task1, base.title),
-
-task2: ai.task2
-  ? limit(clean(ai.task2), 300)
-  : expandFallback(base.task2, base.title),
-
-task3: ai.task3
-  ? limit(clean(ai.task3), 300)
-  : expandFallback(base.task3, base.title),
-
-task4: ai.task4
-  ? limit(clean(ai.task4), 300)
-  : expandFallback(base.task4, base.title),
-
-task5: ai.task5
-  ? limit(clean(ai.task5), 300)
-  : expandFallback(base.task5, base.title),
+task1: limit(clean(ai.task1 || base.task1), 300),
+task2: limit(clean(ai.task2 || base.task2), 300),
+task3: limit(clean(ai.task3 || base.task3), 300),
+task4: limit(clean(ai.task4 || base.task4), 300),
+task5: limit(clean(ai.task5 || base.task5), 300),
   };
 }),
 
