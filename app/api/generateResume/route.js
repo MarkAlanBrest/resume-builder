@@ -324,12 +324,17 @@ ${masterStyleGuide}
 WORK EXPERIENCE RULES:
 - For each job in workExperience:
   - Rewrite task1–task5 into full, professional, resume-ready bullet sentences using the student's wording as the base.
-  - Use ONLY the student's original task1–task5 content (no new facts).
+ - Use the student's task1–task5 content as the base, but you MAY add
+  minimal neutral context (object, audience, outcome) to form a complete sentence.
   - Fix capitalization, grammar, clarity, and punctuation.
   - Do NOT add bullet characters (•) — return plain text only.
   - Do NOT invent duties, employers, dates, or titles.
   - Keep employer, city, state, title, start, and end fields unchanged unless fixing spelling.
-
+- Each task MUST be a complete sentence (minimum 8 words).
+- Each task must include an action verb and an object.
+EXAMPLE:
+Input: "taught carpenty"
+Output: "Taught carpentry fundamentals to students in a structured classroom environment."
 REQUIRED OUTPUT (JSON):
 {
   "summary": "one paragraph",
@@ -399,7 +404,7 @@ if (Array.isArray(polished.education)) {
     summary5: clean(summaryBullets[4] || ""),
 
     workExperience: baseData.workExperience.map((base, i) => {
-const ai = polished.workExperience?.find(j => j.employer === base.employer) || {};
+const ai = polished.workExperience?.[i] || {};
       return {
         employer: clean(ai.employer ?? base.employer),
         employerCity: clean(ai.employerCity ?? base.employerCity),
