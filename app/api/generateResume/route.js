@@ -130,15 +130,7 @@ function expandFallback(text, title) {
   const pick = variations[Math.floor(Math.random() * variations.length)];
   return pick(cleaned);
 }
-  const patterns = [
-    t => `Provided instruction related to ${t} while maintaining professional standards in the ${titleCaseSafe(title)} role.`,
-    t => `Oversaw and coordinated ${t} as part of daily responsibilities in the ${titleCaseSafe(title)} role.`,
-    t => `Contributed to ${t} while demonstrating reliability and professionalism in the ${titleCaseSafe(title)} role.`
-  ];
 
-  const pick = patterns[Math.floor(Math.random() * patterns.length)];
-  return pick(normalized);
-}
 
 /* ===========================
    🔽 ADDED SORT HELPERS (ONLY ADDITION)
