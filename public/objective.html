@@ -37,7 +37,8 @@
   ></textarea>
 
   <div class="system">
-    Select up to <strong>5</strong> personal qualities that describe you best.
+  Select at least <strong>3</strong> or more personal qualities that describe you best.
+</div>
   </div>
 
   <div class="qual-list">
@@ -148,6 +149,14 @@ function goBack() {
 }
 
 function goNext() {
+
+  const checked = document.querySelectorAll(".qual:checked").length;
+
+  if (checked < 3) {
+    alert("Please select at least 3 personal qualities.");
+    return;
+  }
+
   saveOnly();
   window.location.href = "work.html";
 }
