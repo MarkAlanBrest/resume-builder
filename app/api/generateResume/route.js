@@ -434,7 +434,7 @@ OBJECTIVES RULES:
 --------------------------------------------------
 
 PROFESSIONAL SUMMARY RULES:
-- Write ONE concise paragraph (3–4 complete sentences).
+- Write ONE concise paragraph (5–7 complete sentences).
 - Write in third person only.
 - The summary MUST be primarily based on the Objectives input.
 - Use work experience, education, and skills only to SUPPORT the objectives.
@@ -443,10 +443,14 @@ PROFESSIONAL SUMMARY RULES:
 - Use present tense for current skills and career focus.
 
 SUMMARY BULLETS RULES:
-- Write 3–5 concise bullet statements.
-- Bullets MUST be derived from the Objectives input.
-- Each bullet must be one complete sentence.
-- Bullets should reflect career goals, skills focus, or job intent.
+- Write 3–5 professional, resume-ready bullet statements.
+- Each bullet MUST be one complete sentence of 12–18 words.
+- Bullets MUST be derived from the Objectives input WHEN PROVIDED.
+- If Objectives are missing, brief, or generic, infer intent from
+  education, program, and work experience instead.
+- Expand basic traits into employer-facing statements.
+- Bullets should reflect career goals, skills focus, safety awareness,
+  or job intent.
 - Do NOT repeat paragraph sentences word-for-word.
 - Do NOT include bullet characters or numbering.
 
