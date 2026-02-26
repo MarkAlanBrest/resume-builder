@@ -90,7 +90,7 @@ function splitLines(text) {
 
 
 function looksWeak(text) {
-  return !text || text.split(" ").length < 4;
+  return !text || String(text).trim() === "";
 }
 
 function expandFallback(text, title) {
