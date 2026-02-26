@@ -413,6 +413,7 @@ WORK EXPERIENCE RULES:
     unless correcting spelling.
   - NEVER return empty task fields.
   - If input task text exists, you MUST rewrite it into a complete sentence.
+  - Do NOT refer to students, learners, or education outcomes; describe duties in employer-facing, professional terms.
 --------------------------------------------------
 
 EDUCATION RULES:
