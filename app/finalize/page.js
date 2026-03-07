@@ -8,7 +8,12 @@ const templates = [
   { id: "Template", label: "Template 1 (Classic)" },
   { id: "TemplateA", label: "Template 2 (Modern)" },
   { id: "TemplateB", label: "Template 3 (Compact)" },
-  { id: "TemplateC", label: "Template 4 (Creative)" }
+  { id: "TemplateC", label: "Template 4 (Creative)" },
+
+  { id: "TemplateD", label: "Coming Soon" },
+  { id: "TemplateE", label: "Coming Soon" },
+  { id: "TemplateF", label: "Coming Soon" },
+  { id: "TemplateG", label: "Coming Soon" }
 ];
 
 // Basic cleanup helpers
@@ -118,27 +123,29 @@ export default function FinalizePage() {
         display: "flex",
         justifyContent: "center",
         alignItems: "center",
-        background: "#f4f6f8"
+        background: "linear-gradient(to bottom right, #cbd5e1, #64748b)"
       }}
     >
       <div
         style={{
-          width: "720px",
+          width: "900px",
           background: "#fff",
           padding: "40px",
-          borderRadius: "8px",
-          boxShadow: "0 4px 12px rgba(0,0,0,0.1)",
+          borderRadius: "12px",
+          boxShadow: "0 10px 25px rgba(0,0,0,0.15)",
           textAlign: "center"
         }}
       >
-        <h1 style={{ marginBottom: "10px" }}>Finalize Resume</h1>
+        <h1 style={{ marginBottom: "10px", color: "#1e3a8a" }}>
+          Finalize Resume
+        </h1>
         <p>Select a resume layout below.</p>
 
         <div
           style={{
             display: "grid",
-            gridTemplateColumns: "repeat(2, 1fr)",
-            gap: "15px",
+            gridTemplateColumns: "repeat(4, 1fr)",
+            gap: "18px",
             margin: "30px 0"
           }}
         >
@@ -147,19 +154,19 @@ export default function FinalizePage() {
               key={t.id}
               onClick={() => !loading && setSelectedTemplate(t.id)}
               style={{
-                height: "120px",
+                height: "180px",
                 border:
                   selectedTemplate === t.id
-                    ? "3px solid #0b3c6d"
-                    : "2px dashed #aaa",
-                borderRadius: "6px",
+                    ? "3px solid #1e3a8a"
+                    : "2px dashed #94a3b8",
+                borderRadius: "8px",
                 cursor: loading ? "not-allowed" : "pointer",
                 display: "flex",
                 alignItems: "center",
                 justifyContent: "center",
                 fontWeight: "bold",
                 background:
-                  selectedTemplate === t.id ? "#e6f0ff" : "#fafafa",
+                  selectedTemplate === t.id ? "#e2e8f0" : "#f8fafc",
                 userSelect: "none"
               }}
             >
@@ -187,16 +194,15 @@ export default function FinalizePage() {
             padding: "14px 28px",
             fontSize: "16px",
             cursor: confirmed && !loading ? "pointer" : "not-allowed",
-            background: loading ? "#999" : "#0b3c6d",
+            background: loading ? "#94a3b8" : "#1e3a8a",
             color: "white",
             border: "none",
-            borderRadius: "4px"
+            borderRadius: "6px"
           }}
         >
           {loading ? "Resume being generated…" : "Download Resume"}
         </button>
 
-        {/* ONLY YOU SEE THIS */}
         {SHOW_TEST_BUTTON && (
           <button
             onClick={generateTestResume}
@@ -205,10 +211,10 @@ export default function FinalizePage() {
               marginTop: "12px",
               padding: "10px 22px",
               fontSize: "14px",
-              background: "#eee",
-              color: "#333",
-              border: "1px solid #aaa",
-              borderRadius: "4px",
+              background: "#e2e8f0",
+              color: "#1e3a8a",
+              border: "1px solid #94a3b8",
+              borderRadius: "6px",
               cursor: loading ? "not-allowed" : "pointer"
             }}
           >
