@@ -239,9 +239,74 @@ export async function OPTIONS() {
   });
 }
 
-
 export async function POST(req) {
   const body = await req.json();
+
+  // If client already has AI result, skip AI and just render template
+  if (body.finalData) {
+    const templatePath = path.join(
+      process.cwd(),
+      "public",
+      "templates",
+      `${body.TEMPLATE}.docx`
+    );
+
+    const content = fs.readFileSync(templatePath, "binary");
+    const zip = new PizZip(content);
+
+    const doc = new Docxtemplater(zip, {
+      paragraphLoop: true,
+      linebreaks: true,
+      delimiters: { start: "{", end: "}" },
+    });
+
+    doc.setData(body.finalData);
+    doc.render();
+
+    const buffer = doc.getZip().generate({
+      type: "nodebuffer",
+      compression: "DEFLATE",
+    });
+
+    return new Response(new Uint8Array(buffer), {
+      status: 200,
+      headers: {
+        "Content-Type":
+          "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
+        "Content-Disposition": "attachment; filename=resume.docx",
+        "Content-Length": buffer.length.toString(),
+      },
+    });
+  }
+
+  // AI path continues below this line (your existing code)
+    const doc = new Docxtemplater(zip, {
+      paragraphLoop: true,
+      linebreaks: true,
+      delimiters: { start: "{", end: "}" },
+    });
+
+    doc.setData(body.finalData);
+    doc.render();
+
+    const buffer = doc.getZip().generate({
+      type: "nodebuffer",
+      compression: "DEFLATE",
+    });
+
+    return new Response(new Uint8Array(buffer), {
+      status: 200,
+      headers: {
+        "Content-Type":
+          "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
+        "Content-Disposition": "attachment; filename=resume.docx",
+        "Content-Length": buffer.length.toString(),
+      },
+    });
+  }
+  // ---- END SKIP AI ----
+
+
 
   if (!body.TEMPLATE) {
   return new Response("Missing TEMPLATE value", { status: 400 });
@@ -552,20 +617,15 @@ REQUIRED OUTPUT (JSON):
 
 let raw = completion.choices[0].message.content || "";
 
-// 🔥 STRIP MARKDOWN CODE FENCES IF PRESENT
-raw = raw
-  .replace(/```json/g, "")
-  .replace(/```/g, "")
-  .trim();
 
+// 🔥 STRIP MARKDOWN CODE FENCES
+raw = raw.replace(/```json/g, "").replace(/```/g, "").trim();
 
 try {
   polished = JSON.parse(raw);
-} catch (err) {
-  console.error("JSON PARSE FAILED");
-  console.error(raw);
+} catch {
+  polished = {};
 }
-
 
 if (Array.isArray(polished.workExperience)) {
   polished.workExperience = sortJobsNewestFirst(polished.workExperience);
@@ -579,129 +639,100 @@ if (Array.isArray(polished.education)) {
   console.error("AI polish failed:", e);
 }
 
+/* BUILD FINAL DATA */
 
-  
+const summaryBullets = Array.isArray(polished.summaryBullets)
+  ? polished.summaryBullets.map(clean).filter(Boolean)
+  : [];
 
-  const summaryBullets = Array.isArray(polished.summaryBullets)
-    ? polished.summaryBullets.map(clean).filter(Boolean)
-    : [];
+const finalData = {
+  ...baseData,
 
-  const finalData = {
-    ...baseData,
-    programTools: clean(polished.programTools || ""),
-    professionalSummary: limit(clean(polished.summary || ""), 600),
-    programDescription: clean(polished.programDescription || ""),
+  programTools: clean(polished.programTools || ""),
+  professionalSummary: limit(clean(polished.summary || ""), 600),
+  programDescription: clean(polished.programDescription || ""),
 
-    summary1: clean(summaryBullets[0] || ""),
-    summary2: clean(summaryBullets[1] || ""),
-    summary3: clean(summaryBullets[2] || ""),
-    summary4: clean(summaryBullets[3] || ""),
-    summary5: clean(summaryBullets[4] || ""),
+  summary1: clean(summaryBullets[0] || ""),
+  summary2: clean(summaryBullets[1] || ""),
+  summary3: clean(summaryBullets[2] || ""),
+  summary4: clean(summaryBullets[3] || ""),
+  summary5: clean(summaryBullets[4] || ""),
 
-    workExperience: baseData.workExperience.map((base, i) => {
-  const ai = polished.workExperience?.[i] || {};
-  return {
- employer: normalizeEmployer(ai.employer ?? base.employer),
-employerCity: titleCaseSafe(clean(ai.employerCity ?? base.employerCity)),
-employerState: clean(ai.employerState ?? base.employerState),
-title: titleCaseSafe(clean(ai.title ?? base.title)),
-start: formatDateToText(clean(ai.start ?? base.start)),
-end: formatDateToText(clean(ai.end ?? base.end)),
+  workExperience: baseData.workExperience.map((base, i) => {
+    const ai = polished.workExperience?.[i] || {};
 
-task1: isWeakTask(ai.task1, base.task1)
-  ? expandFallback(base.task1, base.title)
-  : limit(clean(ai.task1), 300),
+    return {
+      employer: normalizeEmployer(ai.employer ?? base.employer),
+      employerCity: titleCaseSafe(clean(ai.employerCity ?? base.employerCity)),
+      employerState: clean(ai.employerState ?? base.employerState),
+      title: titleCaseSafe(clean(ai.title ?? base.title)),
+      start: formatDateToText(clean(ai.start ?? base.start)),
+      end: formatDateToText(clean(ai.end ?? base.end)),
 
-task2: isWeakTask(ai.task2, base.task2)
-  ? expandFallback(base.task2, base.title)
-  : limit(clean(ai.task2), 300),
+      task1: isWeakTask(ai.task1, base.task1)
+        ? expandFallback(base.task1, base.title)
+        : limit(clean(ai.task1), 300),
 
-task3: isWeakTask(ai.task3, base.task3)
-  ? expandFallback(base.task3, base.title)
-  : limit(clean(ai.task3), 300),
+      task2: isWeakTask(ai.task2, base.task2)
+        ? expandFallback(base.task2, base.title)
+        : limit(clean(ai.task2), 300),
 
-task4: isWeakTask(ai.task4, base.task4)
-  ? expandFallback(base.task4, base.title)
-  : limit(clean(ai.task4), 300),
+      task3: isWeakTask(ai.task3, base.task3)
+        ? expandFallback(base.task3, base.title)
+        : limit(clean(ai.task3), 300),
 
-task5: isWeakTask(ai.task5, base.task5)
-  ? expandFallback(base.task5, base.title)
-  : limit(clean(ai.task5), 300),
+      task4: isWeakTask(ai.task4, base.task4)
+        ? expandFallback(base.task4, base.title)
+        : limit(clean(ai.task4), 300),
 
-  };
-}), 
+      task5: isWeakTask(ai.task5, base.task5)
+        ? expandFallback(base.task5, base.title)
+        : limit(clean(ai.task5), 300),
+    };
+  }),
 
-    education: (polished.education || baseData.education).map((e, i) => {
-      const base = baseData.education[i] || {};
-      return {
-        school: clean(e.school ?? base.school),
-        program: clean(e.program ?? base.program),
-        eduCity: clean(e.eduCity ?? base.eduCity),
-        eduState: clean(e.eduState ?? base.eduState),
-        startDate: clean(e.startDate ?? base.startDate),
-        endDate: clean(e.endDate ?? base.endDate),
-        notes: limit(clean(e.notes ?? base.notes), 400),
-      };
-    }),
+  education: (polished.education || baseData.education).map((e, i) => {
+    const base = baseData.education[i] || {};
 
-    hasProgramCerts: certArray.length > 0,
-    cert1: certArray[0] || "",
-    cert2: certArray[1] || "",
-    cert3: certArray[2] || "",
-    cert4: certArray[3] || "",
-    cert5: certArray[4] || "",
-    cert6: certArray[5] || "",
-    cert7: certArray[6] || "",
-    cert8: certArray[7] || "",
-    cert9: certArray[8] || "",
-    cert10: certArray[9] || "",
+    return {
+      school: clean(e.school ?? base.school),
+      program: clean(e.program ?? base.program),
+      eduCity: clean(e.eduCity ?? base.eduCity),
+      eduState: clean(e.eduState ?? base.eduState),
+      startDate: clean(e.startDate ?? base.startDate),
+      endDate: clean(e.endDate ?? base.endDate),
+      notes: limit(clean(e.notes ?? base.notes), 400),
+    };
+  }),
 
-    hasExtraSkills: skillArray.length > 0,
-    skill1: skillArray[0] || "",
-    skill2: skillArray[1] || "",
-    skill3: skillArray[2] || "",
-    skill4: skillArray[3] || "",
-    skill5: skillArray[4] || "",
-    skill6: skillArray[5] || "",
-    skill7: skillArray[6] || "",
-    skill8: skillArray[7] || "",
-    skill9: skillArray[8] || "",
-    skill10: skillArray[9] || "",
-  };
+  hasProgramCerts: certArray.length > 0,
+  cert1: certArray[0] || "",
+  cert2: certArray[1] || "",
+  cert3: certArray[2] || "",
+  cert4: certArray[3] || "",
+  cert5: certArray[4] || "",
+  cert6: certArray[5] || "",
+  cert7: certArray[6] || "",
+  cert8: certArray[7] || "",
+  cert9: certArray[8] || "",
+  cert10: certArray[9] || "",
 
-  
+  hasExtraSkills: skillArray.length > 0,
+  skill1: skillArray[0] || "",
+  skill2: skillArray[1] || "",
+  skill3: skillArray[2] || "",
+  skill4: skillArray[3] || "",
+  skill5: skillArray[4] || "",
+  skill6: skillArray[5] || "",
+  skill7: skillArray[6] || "",
+  skill8: skillArray[7] || "",
+  skill9: skillArray[8] || "",
+  skill10: skillArray[9] || "",
+};
 
-  const templatePath = path.join(
-    process.cwd(),
-    "public",
-    "templates",
-    `${body.TEMPLATE}.docx`
-  );
+/* RETURN JSON TO FRONTEND (AI ONLY RUNS HERE) */
 
-  const content = fs.readFileSync(templatePath, "binary");
-  const zip = new PizZip(content);
-
-  const doc = new Docxtemplater(zip, {
-    paragraphLoop: true,
-    linebreaks: true,
-    delimiters: { start: "{", end: "}" },
-  });
-
-  doc.setData(finalData);
-  doc.render();
-
-  const buffer = doc.getZip().generate({
-    type: "nodebuffer",
-    compression: "DEFLATE",
-  });
-
-  return new Response(new Uint8Array(buffer), {
-    status: 200,
-    headers: {
-      "Content-Type":
-        "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
-      "Content-Disposition": "attachment; filename=resume.docx",
-      "Content-Length": buffer.length.toString(),
-    },
-  });
-}
+return new Response(JSON.stringify({ finalData }), {
+  status: 200,
+  headers: { "Content-Type": "application/json" },
+});
