@@ -1,5 +1,5 @@
 "use client";
-import { useState, useEffect } from "react";
+import { useState } from "react";
 
 const SHOW_TEST_BUTTON =
   process.env.NEXT_PUBLIC_SHOW_TEST_BUTTON === "true";
@@ -35,13 +35,7 @@ export default function FinalizePage() {
   const [confirmed, setConfirmed] = useState(false);
   const [loading, setLoading] = useState(false);
   const [generated, setGenerated] = useState(false);
-
-  useEffect(() => {
-    if (typeof window !== "undefined") {
-      const saved = sessionStorage.getItem("resumeAI");
-      if (saved) setGenerated(true);
-    }
-  }, []);
+  const [aiResume, setAiResume] = useState(null);   // <-- stored AI result
 
   async function generateResumeContent() {
     if (loading) return;
@@ -101,9 +95,9 @@ export default function FinalizePage() {
 
       const aiData = await res.json();
 
-      sessionStorage.setItem("resumeAI", JSON.stringify(aiData));
-
+      setAiResume(aiData);     // store AI result in variable
       setGenerated(true);
+
     } catch (e) {
       alert("Resume generation failed");
       console.error(e);
@@ -113,19 +107,17 @@ export default function FinalizePage() {
   }
 
   async function downloadTemplate(templateId) {
-    if (!generated || !confirmed || loading) return;
+    if (!generated || !confirmed || loading || !aiResume) return;
 
     setLoading(true);
 
     try {
-      const aiData = JSON.parse(sessionStorage.getItem("resumeAI") || "{}");
-
       const res = await fetch("/api/generateResume", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           TEMPLATE: templateId,
-          data: aiData
+          data: aiResume
         })
       });
 
@@ -145,6 +137,7 @@ export default function FinalizePage() {
       a.remove();
 
       window.URL.revokeObjectURL(url);
+
     } catch (e) {
       alert("Resume generation failed");
       console.error(e);
