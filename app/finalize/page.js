@@ -86,7 +86,11 @@ export default function FinalizePage() {
       const res = await fetch("/api/generateResume",{
         method:"POST",
         headers:{ "Content-Type":"application/json" },
-        body: JSON.stringify(payload)
+        body: JSON.stringify({
+  TEMPLATE: "TemplateA",
+  ...payload
+})
+
       });
 
       if(!res.ok){
