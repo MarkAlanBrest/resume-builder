@@ -243,6 +243,10 @@ export async function OPTIONS() {
 export async function POST(req) {
   const body = await req.json();
 
+  if (!body.TEMPLATE) {
+  return new Response("Missing TEMPLATE value", { status: 400 });
+}
+
   const s = body.student || {};
 
   /* 🔽 CHANGED: apply sorting ONCE, immediately */
