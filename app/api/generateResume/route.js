@@ -113,21 +113,34 @@ function expandFallback(text, title) {
   const cleaned = clean(text)
     .replace(/\bresponsibilities?\b/gi, "")
     .replace(/\bclassroom\b/gi, "instruction")
-    .replace(/\blessons?\b/gi, "lesson plans")
+    .replace(/\blessons?\b/gi, "lesson planning")
+    .replace(/\bstudents?\b/gi, "participants")
     .trim();
 
   const role = titleCaseSafe(title);
 
-  const templates = [
-    t => `Performed ${t} duties while maintaining organization, efficiency, and professional standards in the ${role} role.`,
-    t => `Managed ${t} activities while ensuring consistent workflow, safety awareness, and operational expectations.`,
-    t => `Handled ${t} responsibilities while supporting daily operations and maintaining workplace standards.`,
-    t => `Completed ${t} tasks while contributing to productivity and maintaining professional work quality.`,
+  const verbs = [
+    "Performed",
+    "Managed",
+    "Handled",
+    "Coordinated",
+    "Completed",
+    "Oversaw",
+    "Supported",
+    "Executed"
   ];
 
-  const pick = templates[Math.floor(Math.random() * templates.length)];
+  const endings = [
+    `while maintaining organization, efficiency, and professional standards in the ${role} role.`,
+    `while ensuring consistent workflow, productivity, and operational expectations.`,
+    `while supporting daily operations and maintaining quality work standards.`,
+    `while contributing to team productivity and maintaining workplace professionalism.`,
+  ];
 
-  return pick(cleaned);
+  const verb = verbs[Math.floor(Math.random() * verbs.length)];
+  const ending = endings[Math.floor(Math.random() * endings.length)];
+
+  return `${verb} ${cleaned} ${ending}`;
 }
 
 /* ===========================
