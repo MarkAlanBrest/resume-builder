@@ -95,8 +95,6 @@ export default function FinalizePage() {
         return;
       }
 
-      /* STORE AI RESULT */
-
       const result = await res.json();
 
       document.getElementById("aiResumeData").value =
@@ -213,26 +211,52 @@ export default function FinalizePage() {
           {generated ? "Resume Content Ready ✓" : "Generate Resume"}
         </button>
 
+        {/* YELLOW WARNING BOX */}
+
         <div style={{
-          border:"1px solid #cbd5e1",
+          border:"2px solid #facc15",
           borderRadius:"8px",
           padding:"18px",
           marginBottom:"30px",
           textAlign:"left",
-          background:"#f8fafc"
+          background:"#fef9c3"
         }}>
-          <label>
+
+          <div style={{
+            fontWeight:"bold",
+            color:"#92400e",
+            marginBottom:"10px",
+            fontSize:"16px"
+          }}>
+            ⚠ Important: Review Before Using
+          </div>
+
+          <p style={{
+            marginBottom:"12px",
+            fontSize:"14px",
+            color:"#78350f",
+            lineHeight:"1.5"
+          }}>
+            This resume was generated using AI. You must carefully review,
+            edit, and approve all content before using it. Do not assume the
+            information is correct. Verify dates, employers, skills, and all
+            details to ensure the resume is accurate and professional.
+          </p>
+
+          <label style={{fontWeight:"bold",color:"#78350f"}}>
             <input
               type="checkbox"
               checked={confirmed}
               onChange={(e)=>setConfirmed(e.target.checked)}
-              style={{marginRight:"8px"}}
+              style={{
+                marginRight:"10px",
+                transform:"scale(1.3)",
+                accentColor:"#eab308"
+              }}
             />
-            I confirm that I have reviewed the information entered and
-            understand that I am responsible for verifying the accuracy
-            of all information included in my resume before submitting
-            it to employers.
+            I understand that I must review and edit this resume before using it.
           </label>
+
         </div>
 
         <div style={{
@@ -265,18 +289,18 @@ export default function FinalizePage() {
                 }}
               >
                 <div style={{textAlign:"center"}}>
-  <img
-    src={`/templates/preview/${t.id}.png`}
-    style={{
-      width:"100%",
-      height:"260px",
-      objectFit:"cover",
-      borderRadius:"6px",
-      marginBottom:"10px"
-    }}
-  />
-  <div>{t.label}</div>
-</div>
+                  <img
+                    src={`/templates/preview/${t.id}.png`}
+                    style={{
+                      width:"100%",
+                      height:"260px",
+                      objectFit:"cover",
+                      borderRadius:"6px",
+                      marginBottom:"10px"
+                    }}
+                  />
+                  <div>{t.label}</div>
+                </div>
               </div>
             );
           })}
