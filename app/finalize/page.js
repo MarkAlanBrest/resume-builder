@@ -83,7 +83,7 @@ export default function FinalizePage() {
 
       /* CALL AI ROUTE ONLY ONCE */
 
-      const res = await fetch("/api/generateResumeAI",{
+      const res = await fetch("/api/generateResume",{
         method:"POST",
         headers:{ "Content-Type":"application/json" },
         body: JSON.stringify(payload)
