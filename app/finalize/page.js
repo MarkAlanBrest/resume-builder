@@ -16,7 +16,6 @@ const templates = [
   { id: "TemplateG", label: "Coming Soon" }
 ];
 
-// Basic cleanup helpers
 function cleanText(v) {
   if (!v) return "";
   return String(v).trim();
@@ -34,15 +33,20 @@ function upper(v) {
 }
 
 export default function FinalizePage() {
-  const [selectedTemplate, setSelectedTemplate] = useState("Template");
+
   const [confirmed, setConfirmed] = useState(false);
   const [loading, setLoading] = useState(false);
+  const [generated, setGenerated] = useState(
+    sessionStorage.getItem("resumeContentReady") === "true"
+  );
 
-  async function generateResume(templateOverride) {
-    if ((!confirmed && !templateOverride) || loading) return;
+  async function generateResumeContent() {
+
+    if (loading) return;
     setLoading(true);
 
     try {
+
       const d = JSON.parse(localStorage.getItem("resumeData")) || {};
 
       const cleanedEducation = (d.education || []).map((e) => ({
@@ -56,7 +60,7 @@ export default function FinalizePage() {
       }));
 
       const payload = {
-        TEMPLATE: templateOverride || selectedTemplate,
+        TEMPLATE: "Template",
 
         student: {
           name: cleanText(d.name),
@@ -96,14 +100,13 @@ export default function FinalizePage() {
       }
 
       const blob = await res.blob();
-      const url = window.URL.createObjectURL(blob);
-      const a = document.createElement("a");
-      a.href = url;
-      a.download = "resume.docx";
-      document.body.appendChild(a);
-      a.click();
-      a.remove();
-      window.URL.revokeObjectURL(url);
+      const arrayBuffer = await blob.arrayBuffer();
+
+      sessionStorage.setItem("resumeDoc", JSON.stringify(Array.from(new Uint8Array(arrayBuffer))));
+      sessionStorage.setItem("resumeContentReady", "true");
+
+      setGenerated(true);
+
     } catch (e) {
       alert("Resume generation failed");
       console.error(e);
@@ -112,8 +115,30 @@ export default function FinalizePage() {
     }
   }
 
+  function downloadTemplate(templateId) {
+
+    if (!generated || !confirmed) return;
+
+    const stored = sessionStorage.getItem("resumeDoc");
+    if (!stored) return;
+
+    const bytes = new Uint8Array(JSON.parse(stored));
+    const blob = new Blob([bytes], { type: "application/vnd.openxmlformats-officedocument.wordprocessingml.document" });
+
+    const url = window.URL.createObjectURL(blob);
+
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = "resume.docx";
+    document.body.appendChild(a);
+    a.click();
+    a.remove();
+
+    window.URL.revokeObjectURL(url);
+  }
+
   function generateTestResume() {
-    generateResume("TemplateD");
+    downloadTemplate("TemplateD");
   }
 
   return (
@@ -128,7 +153,7 @@ export default function FinalizePage() {
     >
       <div
         style={{
-          width: "900px",
+          width: "1000px",
           background: "#fff",
           padding: "40px",
           borderRadius: "12px",
@@ -136,95 +161,110 @@ export default function FinalizePage() {
           textAlign: "center"
         }}
       >
+
         <h1 style={{ marginBottom: "10px", color: "#1e3a8a" }}>
-          Finalize Resume
+          Generate Your Resume
         </h1>
-        <p>Select a resume layout below.</p>
+
+        <button
+          onClick={generateResumeContent}
+          disabled={loading || generated}
+          style={{
+            marginBottom: "25px",
+            padding: "14px 32px",
+            fontSize: "16px",
+            background: generated ? "#16a34a" : "#1e3a8a",
+            color: "white",
+            border: "none",
+            borderRadius: "6px",
+            cursor: loading || generated ? "not-allowed" : "pointer"
+          }}
+        >
+          {generated ? "Resume Content Ready ✓" : "Generate Resume Content"}
+        </button>
 
         <div
           style={{
             display: "grid",
             gridTemplateColumns: "repeat(4, 1fr)",
-            gap: "18px",
-            margin: "30px 0"
+            gap: "22px",
+            margin: "25px 0"
           }}
         >
-          {templates.map((t) => (
-            <div
-              key={t.id}
-              onClick={() => !loading && setSelectedTemplate(t.id)}
-              style={{
-                height: "180px",
-                border:
-                  selectedTemplate === t.id
-                    ? "3px solid #1e3a8a"
-                    : "2px dashed #94a3b8",
-                borderRadius: "8px",
-                cursor: loading ? "not-allowed" : "pointer",
-                display: "flex",
-                alignItems: "center",
-                justifyContent: "center",
-                fontWeight: "bold",
-                background:
-                  selectedTemplate === t.id ? "#e2e8f0" : "#f8fafc",
-                userSelect: "none"
-              }}
-            >
-              {t.label}
-            </div>
-          ))}
+          {templates.map((t) => {
+
+            const locked = !generated;
+
+            return (
+              <div
+                key={t.id}
+                onClick={() => !locked && downloadTemplate(t.id)}
+                style={{
+                  height: "200px",
+                  border: "2px solid #cbd5f5",
+                  borderRadius: "10px",
+                  background: locked ? "#e2e8f0" : "#f8fafc",
+                  opacity: locked ? 0.4 : 1,
+                  cursor: locked ? "not-allowed" : "pointer",
+                  display: "flex",
+                  alignItems: "center",
+                  justifyContent: "center",
+                  fontWeight: "bold",
+                  fontSize: "15px",
+                  boxShadow: "0 4px 10px rgba(0,0,0,0.08)"
+                }}
+              >
+                {t.label}
+              </div>
+            );
+          })}
         </div>
 
-        <label style={{ display: "block", marginBottom: "20px" }}>
-          <input
-            type="checkbox"
-            checked={confirmed}
-            onChange={(e) => setConfirmed(e.target.checked)}
-            style={{ marginRight: "8px" }}
-            disabled={loading}
-          />
-          Students must agree to review their resume. They are responsible for
-          the accuracy and final content of the document.
-        </label>
-
-        <button
-          onClick={() => generateResume()}
-          disabled={!confirmed || loading}
+        <div
           style={{
-            padding: "14px 28px",
-            fontSize: "16px",
-            cursor: confirmed && !loading ? "pointer" : "not-allowed",
-            background: loading ? "#94a3b8" : "#1e3a8a",
-            color: "white",
-            border: "none",
-            borderRadius: "6px"
+            border: "1px solid #cbd5e1",
+            borderRadius: "8px",
+            padding: "18px",
+            marginTop: "20px",
+            textAlign: "left",
+            background: "#f8fafc"
           }}
         >
-          {loading ? "Resume being generated…" : "Download Resume"}
-        </button>
+          <label>
+            <input
+              type="checkbox"
+              checked={confirmed}
+              onChange={(e) => setConfirmed(e.target.checked)}
+              style={{ marginRight: "8px" }}
+            />
+
+            I confirm that I have reviewed the information entered and
+            understand that I am responsible for verifying the accuracy
+            of all information included in my resume before submitting it
+            to employers.
+          </label>
+        </div>
 
         {SHOW_TEST_BUTTON && (
           <button
             onClick={generateTestResume}
-            disabled={loading}
             style={{
-              marginTop: "12px",
+              marginTop: "18px",
               padding: "10px 22px",
               fontSize: "14px",
               background: "#e2e8f0",
               color: "#1e3a8a",
               border: "1px solid #94a3b8",
-              borderRadius: "6px",
-              cursor: loading ? "not-allowed" : "pointer"
+              borderRadius: "6px"
             }}
           >
-            Test Resume (TemplateD)
+            Test Resume
           </button>
         )}
 
         {loading && (
           <p style={{ color: "red", fontSize: "20px", marginTop: "15px" }}>
-            Resume being generated…
+            Generating resume content…
           </p>
         )}
       </div>
