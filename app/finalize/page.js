@@ -98,7 +98,6 @@ export default function FinalizePage() {
         return;
       }
 
-      const aiData = await res.json();
 
       /* STORE EVERYTHING IN HIDDEN BOX */
 
