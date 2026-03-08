@@ -95,8 +95,7 @@ export default function FinalizePage() {
 
       if(!res.ok){
         alert("AI generation failed");
-        return;
-      }
+        return;document.getElementById("aiResumeData").value = "";      }
 
 
       /* STORE EVERYTHING IN HIDDEN BOX */
