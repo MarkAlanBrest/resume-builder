@@ -111,6 +111,8 @@ function expandFallback(text, title) {
   if (!text) return "";
 
   const cleaned = clean(text)
+    // remove common leading verbs so we don't duplicate them
+.replace(/^(taught|teach|managed|manage|created|create|performed|perform|handled|handle|coordinated|coordinate|executed|execute|installed|repair(ed)?|operated)\s+/i, "")
     .replace(/\bresponsibilities?\b/gi, "")
     .replace(/\bclassroom\b/gi, "instruction")
     .replace(/\blessons?\b/gi, "lesson planning")
@@ -126,8 +128,7 @@ function expandFallback(text, title) {
     "Coordinated",
     "Completed",
     "Oversaw",
-    "Supported",
-    "Executed"
+    "Supported"
   ];
 
   const endings = [
