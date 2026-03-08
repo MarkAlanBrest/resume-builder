@@ -35,7 +35,7 @@ export default function FinalizePage() {
   const [confirmed, setConfirmed] = useState(false);
   const [loading, setLoading] = useState(false);
   const [generated, setGenerated] = useState(false);
-  const [aiResume, setAiResume] = useState(null);   // <-- stored AI result
+  const [aiResume, setAiResume] = useState(null);
 
   async function generateResumeContent() {
     if (loading) return;
@@ -85,17 +85,20 @@ export default function FinalizePage() {
       const res = await fetch("/api/generateResume", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(payload)
+        body: JSON.stringify({
+          TEMPLATE: "TemplateA",
+          ...payload
+        })
       });
 
       if (!res.ok) {
-        alert("AI resume generation failed");
+        alert("Resume generation failed");
         return;
       }
 
-      const aiData = await res.json();
+      const blob = await res.blob();
 
-      setAiResume(aiData);     // store AI result in variable
+      setAiResume(blob);
       setGenerated(true);
 
     } catch (e) {
@@ -107,17 +110,19 @@ export default function FinalizePage() {
   }
 
   async function downloadTemplate(templateId) {
-    if (!generated || !confirmed || loading || !aiResume) return;
+    if (!generated || !confirmed || loading) return;
 
     setLoading(true);
 
     try {
+      const d = JSON.parse(localStorage.getItem("resumeData")) || {};
+
       const res = await fetch("/api/generateResume", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           TEMPLATE: templateId,
-          data: aiResume
+          ...d
         })
       });
 
