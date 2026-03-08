@@ -128,18 +128,17 @@ document.getElementById("aiResumeData").value =
     try{
 
       const stored =
-        document.getElementById("aiResumeData").value;
+  document.getElementById("aiResumeData").value;
 
-      const aiData = JSON.parse(stored || "{}");
+const res = await fetch("/api/generateResume",{
+  method:"POST",
+  headers:{ "Content-Type":"application/json" },
+  body: JSON.stringify({
+    TEMPLATE: templateId,
+    finalData: JSON.parse(stored)
+  })
+});
 
-      const res = await fetch("/api/generateResume",{
-        method:"POST",
-        headers:{ "Content-Type":"application/json" },
-        body: JSON.stringify({
-          TEMPLATE: templateId,
-          ...aiData
-        })
-      });
 
       if(!res.ok){
         alert("Resume generation failed");
