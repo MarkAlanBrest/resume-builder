@@ -9,11 +9,10 @@ const templates = [
   { id: "TemplateA", label: "Template 2 (Modern)" },
   { id: "TemplateB", label: "Template 3 (Compact)" },
   { id: "TemplateC", label: "Template 4 (Creative)" },
-
-  { id: "TemplateD", label: "Coming Soon" },
-  { id: "TemplateE", label: "Coming Soon" },
-  { id: "TemplateF", label: "Coming Soon" },
-  { id: "TemplateG", label: "Coming Soon" }
+  { id: "TemplateD", label: "Template 5" },
+  { id: "TemplateE", label: "Template 6" },
+  { id: "TemplateF", label: "Template 7" },
+  { id: "TemplateG", label: "Template 8" }
 ];
 
 function cleanText(v) {
@@ -136,7 +135,7 @@ export default function FinalizePage() {
 
     const a = document.createElement("a");
     a.href = url;
-    a.download = "resume.docx";
+    a.download = `resume-${templateId}.docx`;
     document.body.appendChild(a);
     a.click();
     a.remove();
@@ -176,7 +175,7 @@ export default function FinalizePage() {
           onClick={generateResumeContent}
           disabled={loading || generated}
           style={{
-            marginBottom: "25px",
+            marginBottom: "20px",
             padding: "14px 32px",
             fontSize: "16px",
             background: generated ? "#16a34a" : "#1e3a8a",
@@ -189,48 +188,14 @@ export default function FinalizePage() {
           {generated ? "Resume Content Ready ✓" : "Generate Resume"}
         </button>
 
-        <div
-          style={{
-            display: "grid",
-            gridTemplateColumns: "repeat(4, 1fr)",
-            gap: "22px",
-            margin: "25px 0"
-          }}
-        >
-          {templates.map((t) => {
-            const locked = !generated;
-
-            return (
-              <div
-                key={t.id}
-                onClick={() => !locked && downloadTemplate(t.id)}
-                style={{
-                  height: "200px",
-                  border: "2px solid #cbd5f5",
-                  borderRadius: "10px",
-                  background: locked ? "#e2e8f0" : "#f8fafc",
-                  opacity: locked ? 0.4 : 1,
-                  cursor: locked ? "not-allowed" : "pointer",
-                  display: "flex",
-                  alignItems: "center",
-                  justifyContent: "center",
-                  fontWeight: "bold",
-                  fontSize: "15px",
-                  boxShadow: "0 4px 10px rgba(0,0,0,0.08)"
-                }}
-              >
-                {t.label}
-              </div>
-            );
-          })}
-        </div>
+        {/* Agreement moved here */}
 
         <div
           style={{
             border: "1px solid #cbd5e1",
             borderRadius: "8px",
             padding: "18px",
-            marginTop: "20px",
+            marginBottom: "30px",
             textAlign: "left",
             background: "#f8fafc"
           }}
@@ -250,11 +215,47 @@ export default function FinalizePage() {
           </label>
         </div>
 
+        <div
+          style={{
+            display: "grid",
+            gridTemplateColumns: "repeat(4, 1fr)",
+            gap: "24px"
+          }}
+        >
+          {templates.map((t) => {
+            const locked = !generated;
+
+            return (
+              <div
+                key={t.id}
+                onClick={() => !locked && downloadTemplate(t.id)}
+                style={{
+                  width: "100%",
+                  height: "320px",
+                  border: "2px solid #cbd5f5",
+                  borderRadius: "10px",
+                  background: locked ? "#e2e8f0" : "#f8fafc",
+                  opacity: locked ? 0.4 : 1,
+                  cursor: locked ? "not-allowed" : "pointer",
+                  display: "flex",
+                  alignItems: "center",
+                  justifyContent: "center",
+                  fontWeight: "bold",
+                  fontSize: "15px",
+                  boxShadow: "0 4px 10px rgba(0,0,0,0.08)"
+                }}
+              >
+                {t.label}
+              </div>
+            );
+          })}
+        </div>
+
         {SHOW_TEST_BUTTON && (
           <button
             onClick={generateTestResume}
             style={{
-              marginTop: "18px",
+              marginTop: "20px",
               padding: "10px 22px",
               fontSize: "14px",
               background: "#e2e8f0",
