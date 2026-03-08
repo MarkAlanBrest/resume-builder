@@ -708,3 +708,4 @@ return new Response(JSON.stringify({ finalData }), {
   status: 200,
   headers: { "Content-Type": "application/json" },
 });
+}
