@@ -229,6 +229,17 @@ ${JSON.stringify(safeList, null, 2)}
 /* ===========================
    API HANDLER
 =========================== */
+
+export async function OPTIONS() {
+  return new Response(null, {
+    status: 200,
+    headers: {
+      Allow: "POST, OPTIONS",
+    },
+  });
+}
+
+
 export async function POST(req) {
   const body = await req.json();
 
