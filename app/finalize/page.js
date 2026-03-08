@@ -93,15 +93,18 @@ export default function FinalizePage() {
 
       });
 
-      if(!res.ok){
-        alert("AI generation failed");
-        return;document.getElementById("aiResumeData").value = "";      }
+    if (!res.ok) {
+  alert("AI generation failed");
+  return;
+}
 
+/* STORE EVERYTHING IN HIDDEN BOX */
 
-      /* STORE EVERYTHING IN HIDDEN BOX */
+const aiData = await res.json();
 
-      document.getElementById("aiResumeData").value =
-        JSON.stringify(aiData);
+document.getElementById("aiResumeData").value =
+  JSON.stringify(aiData);
+  
 
       setGenerated(true);
 
