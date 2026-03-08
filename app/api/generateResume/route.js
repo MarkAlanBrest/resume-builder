@@ -478,23 +478,19 @@ TENSE RULES:
 WORK EXPERIENCE RULES:
 - For each job in workExperience:
   - Rewrite task1–task5 into ONE clear, professional, resume-ready sentence EACH.
-  - Each sentence MUST be 12–20 words.
-  - Each sentence MUST include:
-    • a clear action (what was done)
-    • an object or responsibility (what it was done to)
-    • context or outcome when appropriate
-  - Use the student’s wording as the base and EXPAND it into a complete sentence.
-  - Do NOT invent duties, employers, dates, tools, or experience.
-  - Fix spelling, grammar, capitalization, clarity, and punctuation.
-  - Do NOT add bullet characters.
-  - Keep employer, city, state, title, start, and end fields unchanged
-    unless correcting spelling.
-  - NEVER return empty task fields.
-  - If input task text exists, you MUST rewrite it into a complete sentence.
-  - Do NOT refer to students, learners, or education outcomes; describe duties in employer-facing, professional terms.
+  - Sentences should typically be 10–18 words.
+  - Start each sentence with a strong action verb whenever possible.
+  - Use the student’s wording as the base and expand it into a natural professional sentence.
+  - Clearly describe what was done and the responsibility involved.
+  - Improve grammar, clarity, capitalization, and punctuation.
+  - Avoid generic phrases such as "executed responsibilities" or "performed duties".
+  - Prefer specific verbs such as installed, repaired, operated, assembled, maintained, instructed, fabricated, coordinated, or managed.
+  - Do NOT invent duties, employers, tools, certifications, dates, or experience not present in the input.
+  - Do NOT add bullet characters or numbering.
+  - Keep employer, city, state, title, start, and end fields unchanged unless correcting spelling.
+  - NEVER return empty task fields. If task text exists, rewrite it into a complete sentence.
+  - Do NOT refer to students, learners, or education outcomes; describe duties in employer-facing professional terms.
   - Do NOT use the words "student", "students", "learning", or "learners" in work experience tasks.
-
---------------------------------------------------
 
 EDUCATION RULES:
 - Education fields are factual.
