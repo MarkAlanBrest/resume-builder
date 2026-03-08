@@ -5,14 +5,14 @@ const SHOW_TEST_BUTTON =
   process.env.NEXT_PUBLIC_SHOW_TEST_BUTTON === "true";
 
 const templates = [
-  { id: "Template", label: "Template 1 (Classic)" },
-  { id: "TemplateA", label: "Template 2 (Modern)" },
-  { id: "TemplateB", label: "Template 3 (Compact)" },
-  { id: "TemplateC", label: "Template 4 (Creative)" },
-  { id: "TemplateD", label: "Template 5" },
-  { id: "TemplateE", label: "Template 6" },
-  { id: "TemplateF", label: "Template 7" },
-  { id: "TemplateG", label: "Template 8" }
+  { id: "TemplateA", label: "Template 1 (Classic)" },
+  { id: "TemplateB", label: "Template 2 (Modern)" },
+  { id: "TemplateC", label: "Template 3 (Compact)" },
+  { id: "TemplateD", label: "Template 4 (Creative)" },
+  { id: "TemplateE", label: "Template 5" },
+  { id: "TemplateF", label: "Template 6" },
+  { id: "TemplateG", label: "Template 7" },
+  { id: "TemplateH", label: "Template 8" }
 ];
 
 function cleanText(v) {
@@ -45,10 +45,33 @@ export default function FinalizePage() {
 
   async function generateResumeContent() {
     if (loading) return;
+
     setLoading(true);
 
     try {
       const d = JSON.parse(localStorage.getItem("resumeData")) || {};
+
+      sessionStorage.setItem("resumeStoredData", JSON.stringify(d));
+      sessionStorage.setItem("resumeContentReady", "true");
+
+      setGenerated(true);
+    } catch (e) {
+      alert("Resume generation failed");
+      console.error(e);
+    } finally {
+      setLoading(false);
+    }
+  }
+
+  async function downloadTemplate(templateId) {
+    if (!generated || !confirmed || loading) return;
+
+    setLoading(true);
+
+    try {
+      const d = JSON.parse(
+        sessionStorage.getItem("resumeStoredData") || "{}"
+      );
 
       const cleanedEducation = (d.education || []).map((e) => ({
         school: cleanText(e.school),
@@ -61,7 +84,7 @@ export default function FinalizePage() {
       }));
 
       const payload = {
-        TEMPLATE: "Template",
+        TEMPLATE: templateId,
 
         student: {
           name: cleanText(d.name),
@@ -101,16 +124,16 @@ export default function FinalizePage() {
       }
 
       const blob = await res.blob();
-      const buffer = await blob.arrayBuffer();
+      const url = window.URL.createObjectURL(blob);
 
-      sessionStorage.setItem(
-        "resumeDoc",
-        JSON.stringify(Array.from(new Uint8Array(buffer)))
-      );
+      const a = document.createElement("a");
+      a.href = url;
+      a.download = `resume-${templateId}.docx`;
+      document.body.appendChild(a);
+      a.click();
+      a.remove();
 
-      sessionStorage.setItem("resumeContentReady", "true");
-
-      setGenerated(true);
+      window.URL.revokeObjectURL(url);
     } catch (e) {
       alert("Resume generation failed");
       console.error(e);
@@ -119,32 +142,8 @@ export default function FinalizePage() {
     }
   }
 
-  function downloadTemplate(templateId) {
-    if (!generated || !confirmed) return;
-
-    const stored = sessionStorage.getItem("resumeDoc");
-    if (!stored) return;
-
-    const bytes = new Uint8Array(JSON.parse(stored));
-
-    const blob = new Blob([bytes], {
-      type: "application/vnd.openxmlformats-officedocument.wordprocessingml.document"
-    });
-
-    const url = window.URL.createObjectURL(blob);
-
-    const a = document.createElement("a");
-    a.href = url;
-    a.download = `resume-${templateId}.docx`;
-    document.body.appendChild(a);
-    a.click();
-    a.remove();
-
-    window.URL.revokeObjectURL(url);
-  }
-
   function generateTestResume() {
-    downloadTemplate("TemplateD");
+    downloadTemplate("TemplateA");
   }
 
   return (
@@ -188,8 +187,6 @@ export default function FinalizePage() {
           {generated ? "Resume Content Ready ✓" : "Generate Resume"}
         </button>
 
-        {/* Agreement moved here */}
-
         <div
           style={{
             border: "1px solid #cbd5e1",
@@ -208,10 +205,10 @@ export default function FinalizePage() {
               style={{ marginRight: "8px" }}
             />
 
-            I confirm that I have reviewed the information entered and I
-            understand that I am responsible for verifying the accuracy of
-            all information included in my resume before submitting it to
-            employers.
+            I confirm that I have reviewed the information entered and
+            understand that I am responsible for verifying the accuracy
+            of all information included in my resume before submitting
+            it to employers.
           </label>
         </div>
 
@@ -231,7 +228,7 @@ export default function FinalizePage() {
                 onClick={() => !locked && downloadTemplate(t.id)}
                 style={{
                   width: "100%",
-                  height: "320px",
+                  height: "340px",
                   border: "2px solid #cbd5f5",
                   borderRadius: "10px",
                   background: locked ? "#e2e8f0" : "#f8fafc",
