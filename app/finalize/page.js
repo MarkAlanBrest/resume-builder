@@ -81,30 +81,30 @@ export default function FinalizePage() {
         }
       };
 
-      /* CALL AI ROUTE ONLY ONCE */
+      /* RUN AI ONCE */
 
       const res = await fetch("/api/generateResume",{
         method:"POST",
         headers:{ "Content-Type":"application/json" },
         body: JSON.stringify({
-  TEMPLATE: "TemplateA",
-  ...payload
-})
-
+          TEMPLATE:"TemplateA",
+          ...payload
+        })
       });
 
-    if (!res.ok) {
-  alert("AI generation failed");
-  return;
-}
+      if(!res.ok){
+        alert("AI generation failed");
+        return;
+      }
 
-/* STORE EVERYTHING IN HIDDEN BOX */
+      /* STORE EVERYTHING */
 
-const aiData = payload;
+      const storedData = {
+        ...payload
+      };
 
-document.getElementById("aiResumeData").value =
-  JSON.stringify(aiData);
-
+      document.getElementById("aiResumeData").value =
+        JSON.stringify(storedData);
 
       setGenerated(true);
 
@@ -128,17 +128,18 @@ document.getElementById("aiResumeData").value =
     try{
 
       const stored =
-  document.getElementById("aiResumeData").value;
+        document.getElementById("aiResumeData").value;
 
-const res = await fetch("/api/generateResume",{
-  method:"POST",
-  headers:{ "Content-Type":"application/json" },
-  body: JSON.stringify({
-    TEMPLATE: templateId,
-    finalData: JSON.parse(stored)
-  })
-});
+      const data = JSON.parse(stored || "{}");
 
+      const res = await fetch("/api/generateResume",{
+        method:"POST",
+        headers:{ "Content-Type":"application/json" },
+        body: JSON.stringify({
+          TEMPLATE: templateId,
+          ...data
+        })
+      });
 
       if(!res.ok){
         alert("Resume generation failed");
@@ -179,12 +180,7 @@ const res = await fetch("/api/generateResume",{
       background:"linear-gradient(to bottom right,#cbd5e1,#64748b)"
     }}>
 
-      {/* HIDDEN STORAGE FOR ALL AI CONTENT */}
-
-      <textarea
-        id="aiResumeData"
-        style={{display:"none"}}
-      />
+      <textarea id="aiResumeData" style={{display:"none"}} />
 
       <div style={{
         width:"1000px",
@@ -215,8 +211,7 @@ const res = await fetch("/api/generateResume",{
             background: generated ? "#16a34a" : "#1e3a8a",
             color:"white",
             border:"none",
-            borderRadius:"6px",
-            cursor: loading || generated ? "not-allowed" : "pointer"
+            borderRadius:"6px"
           }}
         >
           {generated ? "Resume Content Ready ✓" : "Generate Resume"}
