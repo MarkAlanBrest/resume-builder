@@ -264,7 +264,19 @@ export default function FinalizePage() {
                   boxShadow:"0 4px 10px rgba(0,0,0,0.08)"
                 }}
               >
-                {t.label}
+                <div style={{textAlign:"center"}}>
+  <img
+    src={`/templates/preview/${t.id}.png`}
+    style={{
+      width:"100%",
+      height:"260px",
+      objectFit:"cover",
+      borderRadius:"6px",
+      marginBottom:"10px"
+    }}
+  />
+  <div>{t.label}</div>
+</div>
               </div>
             );
           })}
