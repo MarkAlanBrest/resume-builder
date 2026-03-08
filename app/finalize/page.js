@@ -100,11 +100,11 @@ export default function FinalizePage() {
 
 /* STORE EVERYTHING IN HIDDEN BOX */
 
-const aiData = await res.json();
+const aiData = payload;
 
 document.getElementById("aiResumeData").value =
   JSON.stringify(aiData);
-  
+
 
       setGenerated(true);
 
