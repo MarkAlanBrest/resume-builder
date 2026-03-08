@@ -111,26 +111,24 @@ function expandFallback(text, title) {
   if (!text) return "";
 
   const cleaned = clean(text)
-    .replace(/^(managed|manage|created|create|taught|teach|performed|handled)\s+/i, "")
-    .replace(/\bmaanged\b/gi, "managed")
-    .replace(/\blessonss?\b/gi, "lessons")
-    .replace(/\bcarpentryy\b/gi, "carpentry")
-    .replace(/\bclassroomm?\b/gi, "classroom");
+    .replace(/\bresponsibilities?\b/gi, "")
+    .replace(/\bclassroom\b/gi, "instruction")
+    .replace(/\blessons?\b/gi, "lesson plans")
+    .trim();
 
   const role = titleCaseSafe(title);
 
-  const variations = [
-    t => `Delivered ${t} responsibilities while maintaining operational standards in the ${role} role.`,
-    t => `Managed and executed ${t} functions to support daily performance expectations within the ${role} role.`,
-    t => `Directed ${t} activities with attention to efficiency, organization, and professional standards.`,
-    t => `Performed ${t} duties while ensuring compliance with established procedures and workplace expectations.`,
-    t => `Executed ${t} responsibilities with consistent accountability and professional oversight.`
+  const templates = [
+    t => `Performed ${t} duties while maintaining organization, efficiency, and professional standards in the ${role} role.`,
+    t => `Managed ${t} activities while ensuring consistent workflow, safety awareness, and operational expectations.`,
+    t => `Handled ${t} responsibilities while supporting daily operations and maintaining workplace standards.`,
+    t => `Completed ${t} tasks while contributing to productivity and maintaining professional work quality.`,
   ];
 
-  const pick = variations[Math.floor(Math.random() * variations.length)];
+  const pick = templates[Math.floor(Math.random() * templates.length)];
+
   return pick(cleaned);
 }
-
 
 /* ===========================
    🔽 ADDED SORT HELPERS (ONLY ADDITION)
