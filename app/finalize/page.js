@@ -81,8 +81,6 @@ export default function FinalizePage() {
         }
       };
 
-      /* RUN AI ONCE */
-
       const res = await fetch("/api/generateResume",{
         method:"POST",
         headers:{ "Content-Type":"application/json" },
@@ -97,14 +95,12 @@ export default function FinalizePage() {
         return;
       }
 
-      /* STORE EVERYTHING */
+      /* STORE AI RESULT */
 
-      const storedData = {
-        ...payload
-      };
+      const result = await res.json();
 
       document.getElementById("aiResumeData").value =
-        JSON.stringify(storedData);
+        JSON.stringify(result.finalData);
 
       setGenerated(true);
 
@@ -130,14 +126,14 @@ export default function FinalizePage() {
       const stored =
         document.getElementById("aiResumeData").value;
 
-      const data = JSON.parse(stored || "{}");
+      const finalData = JSON.parse(stored || "{}");
 
       const res = await fetch("/api/generateResume",{
         method:"POST",
         headers:{ "Content-Type":"application/json" },
         body: JSON.stringify({
           TEMPLATE: templateId,
-          ...data
+          finalData: finalData
         })
       });
 
