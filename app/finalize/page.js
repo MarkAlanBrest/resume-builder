@@ -38,8 +38,8 @@ export default function FinalizePage() {
 
   useEffect(() => {
     if (typeof window !== "undefined") {
-      const saved = sessionStorage.getItem("resumeContentReady");
-      if (saved === "true") setGenerated(true);
+      const saved = sessionStorage.getItem("resumeAI");
+      if (saved) setGenerated(true);
     }
   }, []);
 
@@ -50,28 +50,6 @@ export default function FinalizePage() {
 
     try {
       const d = JSON.parse(localStorage.getItem("resumeData")) || {};
-
-      sessionStorage.setItem("resumeStoredData", JSON.stringify(d));
-      sessionStorage.setItem("resumeContentReady", "true");
-
-      setGenerated(true);
-    } catch (e) {
-      alert("Resume generation failed");
-      console.error(e);
-    } finally {
-      setLoading(false);
-    }
-  }
-
-  async function downloadTemplate(templateId) {
-    if (!generated || !confirmed || loading) return;
-
-    setLoading(true);
-
-    try {
-      const d = JSON.parse(
-        sessionStorage.getItem("resumeStoredData") || "{}"
-      );
 
       const cleanedEducation = (d.education || []).map((e) => ({
         school: cleanText(e.school),
@@ -84,8 +62,6 @@ export default function FinalizePage() {
       }));
 
       const payload = {
-        TEMPLATE: templateId,
-
         student: {
           name: cleanText(d.name),
           email: cleanText(d.email),
@@ -112,10 +88,45 @@ export default function FinalizePage() {
         }
       };
 
-      const res = await fetch("/api/generateResume", {
+      const res = await fetch("/api/generateResumeAI", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(payload)
+      });
+
+      if (!res.ok) {
+        alert("AI resume generation failed");
+        return;
+      }
+
+      const aiData = await res.json();
+
+      sessionStorage.setItem("resumeAI", JSON.stringify(aiData));
+
+      setGenerated(true);
+    } catch (e) {
+      alert("Resume generation failed");
+      console.error(e);
+    } finally {
+      setLoading(false);
+    }
+  }
+
+  async function downloadTemplate(templateId) {
+    if (!generated || !confirmed || loading) return;
+
+    setLoading(true);
+
+    try {
+      const aiData = JSON.parse(sessionStorage.getItem("resumeAI") || "{}");
+
+      const res = await fetch("/api/generateResume", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          TEMPLATE: templateId,
+          data: aiData
+        })
       });
 
       if (!res.ok) {
@@ -142,10 +153,6 @@ export default function FinalizePage() {
     }
   }
 
-  function generateTestResume() {
-    downloadTemplate("TemplateA");
-  }
-
   return (
     <div
       style={{
@@ -169,6 +176,12 @@ export default function FinalizePage() {
         <h1 style={{ marginBottom: "10px", color: "#1e3a8a" }}>
           Finalize Resume
         </h1>
+
+        {loading && (
+          <p style={{ color: "red", fontSize: "20px", marginBottom: "15px" }}>
+            Resume being generated…
+          </p>
+        )}
 
         <button
           onClick={generateResumeContent}
@@ -247,29 +260,6 @@ export default function FinalizePage() {
             );
           })}
         </div>
-
-        {SHOW_TEST_BUTTON && (
-          <button
-            onClick={generateTestResume}
-            style={{
-              marginTop: "20px",
-              padding: "10px 22px",
-              fontSize: "14px",
-              background: "#e2e8f0",
-              color: "#1e3a8a",
-              border: "1px solid #94a3b8",
-              borderRadius: "6px"
-            }}
-          >
-            Test Resume
-          </button>
-        )}
-
-        {loading && (
-          <p style={{ color: "red", fontSize: "20px", marginTop: "15px" }}>
-            Resume being generated…
-          </p>
-        )}
       </div>
     </div>
   );
