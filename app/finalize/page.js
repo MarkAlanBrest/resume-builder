@@ -1,9 +1,6 @@
 "use client";
 import { useState } from "react";
 
-const SHOW_TEST_BUTTON =
-  process.env.NEXT_PUBLIC_SHOW_TEST_BUTTON === "true";
-
 const templates = [
   { id: "TemplateA", label: "Template 1 (Classic)" },
   { id: "TemplateB", label: "Template 2 (Modern)" },
@@ -32,20 +29,22 @@ function upper(v) {
 }
 
 export default function FinalizePage() {
-  const [confirmed, setConfirmed] = useState(false);
-  const [loading, setLoading] = useState(false);
-  const [generated, setGenerated] = useState(false);
-  const [aiResume, setAiResume] = useState(null);
 
-  async function generateResumeContent() {
-    if (loading) return;
+  const [confirmed,setConfirmed] = useState(false);
+  const [loading,setLoading] = useState(false);
+  const [generated,setGenerated] = useState(false);
+
+  async function generateResumeContent(){
+
+    if(loading) return;
 
     setLoading(true);
 
-    try {
+    try{
+
       const d = JSON.parse(localStorage.getItem("resumeData")) || {};
 
-      const cleanedEducation = (d.education || []).map((e) => ({
+      const cleanedEducation = (d.education || []).map((e)=>({
         school: cleanText(e.school),
         program: cleanText(e.program),
         city: capitalizeFirst(e.city),
@@ -56,7 +55,7 @@ export default function FinalizePage() {
       }));
 
       const payload = {
-        student: {
+        student:{
           name: cleanText(d.name),
           email: cleanText(d.email),
           phone: cleanText(d.phone),
@@ -75,63 +74,75 @@ export default function FinalizePage() {
         allCerts: cleanText(d.allCerts),
         allSkills: cleanText(d.allSkills),
 
-        careerContext: {
+        careerContext:{
           objectives: cleanText(d.objectives),
           jobTarget: cleanText(d.jobTarget),
           notes: cleanText(d.notes)
         }
       };
 
-      const res = await fetch("/api/generateResume", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          TEMPLATE: "TemplateA",
-          ...payload
-        })
+      /* CALL AI ROUTE ONLY ONCE */
+
+      const res = await fetch("/api/generateResumeAI",{
+        method:"POST",
+        headers:{ "Content-Type":"application/json" },
+        body: JSON.stringify(payload)
       });
 
-      if (!res.ok) {
-        alert("Resume generation failed");
+      if(!res.ok){
+        alert("AI generation failed");
         return;
       }
 
-      const blob = await res.blob();
+      const aiData = await res.json();
 
-      setAiResume(blob);
+      /* STORE EVERYTHING IN HIDDEN BOX */
+
+      document.getElementById("aiResumeData").value =
+        JSON.stringify(aiData);
+
       setGenerated(true);
 
-    } catch (e) {
-      alert("Resume generation failed");
+    }
+    catch(e){
       console.error(e);
-    } finally {
+      alert("Resume generation failed");
+    }
+    finally{
       setLoading(false);
     }
+
   }
 
-  async function downloadTemplate(templateId) {
-    if (!generated || !confirmed || loading) return;
+  async function downloadTemplate(templateId){
+
+    if(!generated || !confirmed || loading) return;
 
     setLoading(true);
 
-    try {
-      const d = JSON.parse(localStorage.getItem("resumeData")) || {};
+    try{
 
-      const res = await fetch("/api/generateResume", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
+      const stored =
+        document.getElementById("aiResumeData").value;
+
+      const aiData = JSON.parse(stored || "{}");
+
+      const res = await fetch("/api/generateResume",{
+        method:"POST",
+        headers:{ "Content-Type":"application/json" },
         body: JSON.stringify({
           TEMPLATE: templateId,
-          ...d
+          ...aiData
         })
       });
 
-      if (!res.ok) {
+      if(!res.ok){
         alert("Resume generation failed");
         return;
       }
 
       const blob = await res.blob();
+
       const url = window.URL.createObjectURL(blob);
 
       const a = document.createElement("a");
@@ -143,40 +154,49 @@ export default function FinalizePage() {
 
       window.URL.revokeObjectURL(url);
 
-    } catch (e) {
-      alert("Resume generation failed");
+    }
+    catch(e){
       console.error(e);
-    } finally {
+      alert("Resume generation failed");
+    }
+    finally{
       setLoading(false);
     }
+
   }
 
   return (
-    <div
-      style={{
-        minHeight: "100vh",
-        display: "flex",
-        justifyContent: "center",
-        alignItems: "center",
-        background: "linear-gradient(to bottom right, #cbd5e1, #64748b)"
-      }}
-    >
-      <div
-        style={{
-          width: "1000px",
-          background: "#fff",
-          padding: "40px",
-          borderRadius: "12px",
-          boxShadow: "0 10px 25px rgba(0,0,0,0.15)",
-          textAlign: "center"
-        }}
-      >
-        <h1 style={{ marginBottom: "10px", color: "#1e3a8a" }}>
+
+    <div style={{
+      minHeight:"100vh",
+      display:"flex",
+      justifyContent:"center",
+      alignItems:"center",
+      background:"linear-gradient(to bottom right,#cbd5e1,#64748b)"
+    }}>
+
+      {/* HIDDEN STORAGE FOR ALL AI CONTENT */}
+
+      <textarea
+        id="aiResumeData"
+        style={{display:"none"}}
+      />
+
+      <div style={{
+        width:"1000px",
+        background:"#fff",
+        padding:"40px",
+        borderRadius:"12px",
+        boxShadow:"0 10px 25px rgba(0,0,0,0.15)",
+        textAlign:"center"
+      }}>
+
+        <h1 style={{marginBottom:"10px",color:"#1e3a8a"}}>
           Finalize Resume
         </h1>
 
         {loading && (
-          <p style={{ color: "red", fontSize: "20px", marginBottom: "15px" }}>
+          <p style={{color:"red",fontSize:"20px",marginBottom:"15px"}}>
             Resume being generated…
           </p>
         )}
@@ -185,37 +205,34 @@ export default function FinalizePage() {
           onClick={generateResumeContent}
           disabled={loading || generated}
           style={{
-            marginBottom: "20px",
-            padding: "14px 32px",
-            fontSize: "16px",
+            marginBottom:"20px",
+            padding:"14px 32px",
+            fontSize:"16px",
             background: generated ? "#16a34a" : "#1e3a8a",
-            color: "white",
-            border: "none",
-            borderRadius: "6px",
+            color:"white",
+            border:"none",
+            borderRadius:"6px",
             cursor: loading || generated ? "not-allowed" : "pointer"
           }}
         >
           {generated ? "Resume Content Ready ✓" : "Generate Resume"}
         </button>
 
-        <div
-          style={{
-            border: "1px solid #cbd5e1",
-            borderRadius: "8px",
-            padding: "18px",
-            marginBottom: "30px",
-            textAlign: "left",
-            background: "#f8fafc"
-          }}
-        >
+        <div style={{
+          border:"1px solid #cbd5e1",
+          borderRadius:"8px",
+          padding:"18px",
+          marginBottom:"30px",
+          textAlign:"left",
+          background:"#f8fafc"
+        }}>
           <label>
             <input
               type="checkbox"
               checked={confirmed}
-              onChange={(e) => setConfirmed(e.target.checked)}
-              style={{ marginRight: "8px" }}
+              onChange={(e)=>setConfirmed(e.target.checked)}
+              style={{marginRight:"8px"}}
             />
-
             I confirm that I have reviewed the information entered and
             understand that I am responsible for verifying the accuracy
             of all information included in my resume before submitting
@@ -223,34 +240,33 @@ export default function FinalizePage() {
           </label>
         </div>
 
-        <div
-          style={{
-            display: "grid",
-            gridTemplateColumns: "repeat(4, 1fr)",
-            gap: "24px"
-          }}
-        >
-          {templates.map((t) => {
+        <div style={{
+          display:"grid",
+          gridTemplateColumns:"repeat(4,1fr)",
+          gap:"24px"
+        }}>
+          {templates.map((t)=>{
+
             const locked = !generated;
 
             return (
               <div
                 key={t.id}
-                onClick={() => !locked && downloadTemplate(t.id)}
+                onClick={()=>!locked && downloadTemplate(t.id)}
                 style={{
-                  width: "100%",
-                  height: "340px",
-                  border: "2px solid #cbd5f5",
-                  borderRadius: "10px",
+                  width:"100%",
+                  height:"340px",
+                  border:"2px solid #cbd5f5",
+                  borderRadius:"10px",
                   background: locked ? "#e2e8f0" : "#f8fafc",
                   opacity: locked ? 0.4 : 1,
                   cursor: locked ? "not-allowed" : "pointer",
-                  display: "flex",
-                  alignItems: "center",
-                  justifyContent: "center",
-                  fontWeight: "bold",
-                  fontSize: "15px",
-                  boxShadow: "0 4px 10px rgba(0,0,0,0.08)"
+                  display:"flex",
+                  alignItems:"center",
+                  justifyContent:"center",
+                  fontWeight:"bold",
+                  fontSize:"15px",
+                  boxShadow:"0 4px 10px rgba(0,0,0,0.08)"
                 }}
               >
                 {t.label}
@@ -258,6 +274,7 @@ export default function FinalizePage() {
             );
           })}
         </div>
+
       </div>
     </div>
   );
