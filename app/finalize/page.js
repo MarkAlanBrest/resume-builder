@@ -1,5 +1,5 @@
 "use client";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 
 const SHOW_TEST_BUTTON =
   process.env.NEXT_PUBLIC_SHOW_TEST_BUTTON === "true";
@@ -33,20 +33,22 @@ function upper(v) {
 }
 
 export default function FinalizePage() {
-
   const [confirmed, setConfirmed] = useState(false);
   const [loading, setLoading] = useState(false);
-  const [generated, setGenerated] = useState(
-    sessionStorage.getItem("resumeContentReady") === "true"
-  );
+  const [generated, setGenerated] = useState(false);
+
+  useEffect(() => {
+    if (typeof window !== "undefined") {
+      const saved = sessionStorage.getItem("resumeContentReady");
+      if (saved === "true") setGenerated(true);
+    }
+  }, []);
 
   async function generateResumeContent() {
-
     if (loading) return;
     setLoading(true);
 
     try {
-
       const d = JSON.parse(localStorage.getItem("resumeData")) || {};
 
       const cleanedEducation = (d.education || []).map((e) => ({
@@ -100,13 +102,16 @@ export default function FinalizePage() {
       }
 
       const blob = await res.blob();
-      const arrayBuffer = await blob.arrayBuffer();
+      const buffer = await blob.arrayBuffer();
 
-      sessionStorage.setItem("resumeDoc", JSON.stringify(Array.from(new Uint8Array(arrayBuffer))));
+      sessionStorage.setItem(
+        "resumeDoc",
+        JSON.stringify(Array.from(new Uint8Array(buffer)))
+      );
+
       sessionStorage.setItem("resumeContentReady", "true");
 
       setGenerated(true);
-
     } catch (e) {
       alert("Resume generation failed");
       console.error(e);
@@ -116,14 +121,16 @@ export default function FinalizePage() {
   }
 
   function downloadTemplate(templateId) {
-
     if (!generated || !confirmed) return;
 
     const stored = sessionStorage.getItem("resumeDoc");
     if (!stored) return;
 
     const bytes = new Uint8Array(JSON.parse(stored));
-    const blob = new Blob([bytes], { type: "application/vnd.openxmlformats-officedocument.wordprocessingml.document" });
+
+    const blob = new Blob([bytes], {
+      type: "application/vnd.openxmlformats-officedocument.wordprocessingml.document"
+    });
 
     const url = window.URL.createObjectURL(blob);
 
@@ -161,9 +168,8 @@ export default function FinalizePage() {
           textAlign: "center"
         }}
       >
-
         <h1 style={{ marginBottom: "10px", color: "#1e3a8a" }}>
-          Generate Your Resume
+          Finalize Resume
         </h1>
 
         <button
@@ -180,7 +186,7 @@ export default function FinalizePage() {
             cursor: loading || generated ? "not-allowed" : "pointer"
           }}
         >
-          {generated ? "Resume Content Ready ✓" : "Generate Resume Content"}
+          {generated ? "Resume Content Ready ✓" : "Generate Resume"}
         </button>
 
         <div
@@ -192,7 +198,6 @@ export default function FinalizePage() {
           }}
         >
           {templates.map((t) => {
-
             const locked = !generated;
 
             return (
@@ -238,10 +243,10 @@ export default function FinalizePage() {
               style={{ marginRight: "8px" }}
             />
 
-            I confirm that I have reviewed the information entered and
-            understand that I am responsible for verifying the accuracy
-            of all information included in my resume before submitting it
-            to employers.
+            I confirm that I have reviewed the information entered and I
+            understand that I am responsible for verifying the accuracy of
+            all information included in my resume before submitting it to
+            employers.
           </label>
         </div>
 
@@ -264,7 +269,7 @@ export default function FinalizePage() {
 
         {loading && (
           <p style={{ color: "red", fontSize: "20px", marginTop: "15px" }}>
-            Generating resume content…
+            Resume being generated…
           </p>
         )}
       </div>
