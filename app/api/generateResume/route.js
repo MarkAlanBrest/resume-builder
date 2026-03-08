@@ -240,10 +240,12 @@ export async function OPTIONS() {
 }
 
 export async function POST(req) {
+
   const body = await req.json();
 
-  // If client already has AI result, skip AI and just render template
+  // SKIP AI when frontend already has finalData
   if (body.finalData) {
+
     const templatePath = path.join(
       process.cwd(),
       "public",
@@ -279,42 +281,12 @@ export async function POST(req) {
     });
   }
 
-  // AI path continues below this line (your existing code)
-    const doc = new Docxtemplater(zip, {
-      paragraphLoop: true,
-      linebreaks: true,
-      delimiters: { start: "{", end: "}" },
-    });
-
-    doc.setData(body.finalData);
-    doc.render();
-
-    const buffer = doc.getZip().generate({
-      type: "nodebuffer",
-      compression: "DEFLATE",
-    });
-
-    return new Response(new Uint8Array(buffer), {
-      status: 200,
-      headers: {
-        "Content-Type":
-          "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
-        "Content-Disposition": "attachment; filename=resume.docx",
-        "Content-Length": buffer.length.toString(),
-      },
-    });
-  }
-  // ---- END SKIP AI ----
-
-
-
   if (!body.TEMPLATE) {
-  return new Response("Missing TEMPLATE value", { status: 400 });
-}
+    return new Response("Missing TEMPLATE value", { status: 400 });
+  }
 
   const s = body.student || {};
 
-  /* 🔽 CHANGED: apply sorting ONCE, immediately */
   const workExperience = sortJobsNewestFirst(
     Array.isArray(body.workExperience) ? body.workExperience : []
   );
