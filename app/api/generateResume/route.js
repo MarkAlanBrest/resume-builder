@@ -249,8 +249,8 @@ export async function POST(req) {
       `${body.TEMPLATE}.docx`
     );
 
-    const content = fs.readFileSync(templatePath, "binary");
-    const zip = new PizZip(content);
+    const content = fs.readFileSync(templatePath);
+const zip = new PizZip(content);
 
     const doc = new Docxtemplater(zip, {
       paragraphLoop: true,
