@@ -474,6 +474,7 @@ objectives: body.careerContext?.objectives || "",
     : []
 };
 
+console.log("🔥 AI CALL STARTING — TASKS SENT:", aiInput.workExperience);
 
     const completion = await openai.chat.completions.create({
       model: "gpt-4o",
@@ -629,6 +630,7 @@ REQUIRED OUTPUT (JSON):
 
 let raw = completion.choices[0].message.content || "";
 
+console.log("🔥 AI RAW OUTPUT:", raw);
 
 // 🔥 STRIP MARKDOWN CODE FENCES
 raw = raw.replace(/```json/g, "").replace(/```/g, "").trim();
