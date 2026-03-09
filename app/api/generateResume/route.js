@@ -444,7 +444,8 @@ workExperience: baseData.workExperience.map(j => ({
   },
   careerContext: baseData.careerContext,
 
-  objectives: body.objectives || "", // 👈 ADD THIS LINE
+ objectives: body.careerContext?.objectives || "",
+
 
   program: programName,
   programGuide,
