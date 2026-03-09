@@ -309,13 +309,22 @@ export async function POST(req) {
     workExperience: workExperience.map(j => {
       
       
+function fixTypos(t){
+  return clean(t)
+    .replace(/\btuaghr\b/gi,"taught")
+    .replace(/\btaight\b/gi,"taught")
+    .replace(/\blassons?\b/gi,"lessons")
+    .replace(/\bconstruciton\b/gi,"construction")
+    .replace(/\bmanages?\b/gi,"managed");
+}
+
 const rawTasks = [
   j.task1,
   j.task2,
   j.task3,
   j.task4,
   j.task5
-].map(clean).filter(Boolean);
+].map(fixTypos).filter(Boolean);
 
 const tasksArr =
   Array.isArray(j.tasks) && j.tasks.length > 0
