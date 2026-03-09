@@ -420,7 +420,7 @@ workExperience: baseData.workExperience.map(j => ({
 
     const completion = await openai.chat.completions.create({
       model: "gpt-4o",
-      temperature: 0.4,
+      temperature: 0.1,
       response_format: { type: "json_object" },
       messages: [
         {
@@ -459,32 +459,29 @@ TENSE RULES:
 
 --------------------------------------------------
 
-WORK EXPERIENCE RULES:
+WORK EXPERIENCE RULES
 
-For each job in workExperience:
+For each job duty (task1–task5):
 
-• Rewrite task1–task5 into ONE professional resume bullet EACH.
+Step 1 — Understand the work performed.
+Identify:
+• the main task
+• the environment or subject
+• any tools, systems, or topics involved
 
-• ALWAYS fully rewrite the sentence into professional resume language.
-  Do NOT lightly edit the original sentence.
+Step 2 — Write a professional resume sentence using that information.
 
-• Correct ALL spelling, grammar, capitalization, and punctuation.
-• Sentences MUST be between 18–28 words and contain meaningful detail.
-• Every sentence MUST begin with a strong action verb such as:
-  Installed, Repaired, Built, Fabricated, Managed, Supervised,
-  Coordinated, Operated, Assembled, Instructed, or Maintained.
-• Expand the student’s wording into a clear description of the
-  responsibility, tools used, environment, or work performed.
-• NEVER return the sentence exactly as written.
-• Avoid short or generic statements such as:
-  "managed classroom", "taught classes", or "created lessons".
-• Do NOT invent duties, tools, employers, certifications, or experience.
-• Correct spelling, capitalization, and formatting in employer, city, state, title, start, and end fields when necessary.
-• Do NOT change the meaning, employer name, job title, or dates unless correcting obvious spelling or formatting errors.
-• Do NOT include bullet characters or numbering.
-• NEVER return empty task fields.
-• If the role involves teaching or instruction, it is acceptable
-  to refer to students or trainees.
+Requirements:
+
+• Completely rewrite the sentence. Never lightly edit the original text.
+• Correct all spelling and grammar errors.
+• Sentences must be 18–26 words.
+• Start with a strong action verb.
+• Expand vague input into a clear professional description.
+• Preserve the original meaning.
+• Do not invent duties or tools that were not implied by the input.
+• Teaching roles may reference students or trainees.
+• Do not include bullet characters or numbering.
 
 
 EDUCATION RULES:
@@ -550,17 +547,15 @@ PROFESSIONAL SUMMARY RULES:
 - Do NOT exaggerate experience or invent credentials.
 - Use present tense for current skills and career focus.
 
-SUMMARY BULLETS RULES:
-- Write 3–5 professional, resume-ready bullet statements.
-- Each bullet MUST be one complete sentence of 12–18 words.
-- Bullets MUST be derived from the Objectives input WHEN PROVIDED.
-- If Objectives are missing, brief, or generic, infer intent from
-  education, program, and work experience instead.
-- Expand basic traits into employer-facing statements.
-- Bullets should reflect career goals, skills focus, safety awareness,
-  or job intent.
-- Do NOT repeat paragraph sentences word-for-word.
-- Do NOT include bullet characters or numbering.
+SUMMARY BULLETS RULES
+
+• Write 3–5 professional resume bullet statements.
+• Each bullet must describe a job skill, technical ability, tool usage, or work responsibility.
+• Do NOT write generic traits such as punctual, reliable, hardworking, team player, or motivated.
+• Start each sentence with an action verb.
+• Sentences must be 16–22 words.
+• Focus on job skills, safety practices, tools, construction tasks, mechanical work, or shop responsibilities.
+• Do not include bullet characters or numbering.
 
 --------------------------------------------------
 
