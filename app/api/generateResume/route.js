@@ -469,33 +469,24 @@ For each job in workExperience:
   Do NOT lightly edit the original sentence.
 
 • Correct ALL spelling, grammar, capitalization, and punctuation.
-
 • Sentences MUST be between 18–28 words and contain meaningful detail.
-
 • Every sentence MUST begin with a strong action verb such as:
   Installed, Repaired, Built, Fabricated, Managed, Supervised,
   Coordinated, Operated, Assembled, Instructed, or Maintained.
-
 • Expand the student’s wording into a clear description of the
   responsibility, tools used, environment, or work performed.
-
 • NEVER return the sentence exactly as written.
-
 • Avoid short or generic statements such as:
   "managed classroom", "taught classes", or "created lessons".
-
 • Do NOT invent duties, tools, employers, certifications, or experience.
-
-• Keep employer, city, state, title, start, and end fields unchanged.
-
+• Correct spelling, capitalization, and formatting in employer, city, state, title, start, and end fields when necessary.
+• Do NOT change the meaning, employer name, job title, or dates unless correcting obvious spelling or formatting errors.
 • Do NOT include bullet characters or numbering.
-
 • NEVER return empty task fields.
-
 • If the role involves teaching or instruction, it is acceptable
   to refer to students or trainees.
 
-  
+
 EDUCATION RULES:
 - Education fields are factual.
 - Fix spelling, punctuation, capitalization, and spacing.
