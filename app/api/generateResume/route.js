@@ -459,35 +459,43 @@ TENSE RULES:
 
 --------------------------------------------------
 
-
 WORK EXPERIENCE RULES:
 
 For each job in workExperience:
 
 • Rewrite task1–task5 into ONE professional resume bullet EACH.
 
-• ALWAYS correct spelling, grammar, capitalization, and punctuation.
+• ALWAYS fully rewrite the sentence into professional resume language.
+  Do NOT lightly edit the original sentence.
 
-• Sentences should be 16–24 words and contain enough detail to clearly describe the responsibility, tools, systems, or environment involved.
+• Correct ALL spelling, grammar, capitalization, and punctuation.
 
-• Always start the sentence with a strong action verb such as Installed, Repaired, Operated, Built, Fabricated, Coordinated, Managed, Supervised, or Instructed.
+• Sentences MUST be between 18–28 words and contain meaningful detail.
 
-• Use the student’s wording as the base but rewrite it into clear, professional resume language.
+• Every sentence MUST begin with a strong action verb such as:
+  Installed, Repaired, Built, Fabricated, Managed, Supervised,
+  Coordinated, Operated, Assembled, Instructed, or Maintained.
 
-• Expand short or poorly written input into a clear description of the responsibility while preserving the original meaning.
+• Expand the student’s wording into a clear description of the
+  responsibility, tools used, environment, or work performed.
 
-• NEVER return the sentence exactly as written. Always rewrite it into professional language.
+• NEVER return the sentence exactly as written.
 
-• Do NOT invent duties, employers, tools, certifications, dates, or experience not present in the input.
+• Avoid short or generic statements such as:
+  "managed classroom", "taught classes", or "created lessons".
 
-• Keep employer, city, state, title, start, and end fields unchanged unless correcting spelling.
+• Do NOT invent duties, tools, employers, certifications, or experience.
+
+• Keep employer, city, state, title, start, and end fields unchanged.
 
 • Do NOT include bullet characters or numbering.
 
-• NEVER return empty task fields. If task text exists, rewrite it into a complete professional sentence.
+• NEVER return empty task fields.
 
-• If the role involves teaching or instruction, it is acceptable to refer to students or trainees.
+• If the role involves teaching or instruction, it is acceptable
+  to refer to students or trainees.
 
+  
 EDUCATION RULES:
 - Education fields are factual.
 - Fix spelling, punctuation, capitalization, and spacing.
