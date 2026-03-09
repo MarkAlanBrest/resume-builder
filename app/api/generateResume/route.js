@@ -36,6 +36,27 @@ function clean(v) {
     .trim();
 }
 
+function sanitizeAllStrings(v) {
+  if (Array.isArray(v)) {
+    return v.map(sanitizeAllStrings);
+  }
+  if (v && typeof v === "object") {
+    return Object.fromEntries(
+      Object.entries(v).map(([k, val]) => [k, sanitizeAllStrings(val)])
+    );
+  }
+  if (typeof v === "string") {
+    return v
+      .replace(/[\u2018\u2019]/g, "'")     // curly apostrophes
+      .replace(/[\u201C\u201D]/g, '"')     // curly quotes
+      .replace(/\u00A0/g, " ")             // non-breaking spaces
+      .replace(/[\u200B-\u200F]/g, "")     // zero-width chars
+      .replace(/[^\x09\x0A\x0D\x20-\x7E]/g, ""); // invalid XML
+  }
+  return v;
+}
+
+
 function titleCaseSafe(v) {
   if (!v) return "";
   return String(v)
@@ -258,8 +279,12 @@ const zip = new PizZip(content);
       linebreaks: true,
       delimiters: { start: "{", end: "}" },
     });
-console.log(JSON.stringify(body.finalData, null, 2));
-    doc.setData(body.finalData);
+const safeData = sanitizeAllStrings(body.finalData);
+console.log(JSON.stringify(safeData, null, 2));
+doc.setData(safeData);
+
+
+
     doc.render();
 
     const buffer = doc.getZip().generate({
@@ -683,7 +708,11 @@ workExperience: baseData.workExperience.map((base, i) => {
 
 /* RETURN JSON TO FRONTEND (AI ONLY RUNS HERE) */
 
-return new Response(JSON.stringify({ finalData }), {
+
+  const safeFinalData = sanitizeAllStrings(finalData);
+
+return new Response(JSON.stringify({ finalData: safeFinalData }), {
+
   status: 200,
   headers: { "Content-Type": "application/json" },
 });
