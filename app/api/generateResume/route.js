@@ -444,7 +444,7 @@ workExperience: baseData.workExperience.map(j => ({
   },
   careerContext: baseData.careerContext,
 
- objectives: body.careerContext?.objectives || "",
+objectives: body.careerContext?.objectives || "",
 
 
   program: programName,
@@ -487,8 +487,8 @@ workExperience: baseData.workExperience.map(j => ({
 content: `
 You are an AI resume writer.
 
-MASTER STYLE GUIDE:
-${masterStyleGuide}
+MASTER STYLE GUIDE: Follow the programGuide only.
+
 
 GLOBAL RULES:
 - Do not return empty or partial sections.
