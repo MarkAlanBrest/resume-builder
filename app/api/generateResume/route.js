@@ -659,6 +659,18 @@ const summaryBullets = Array.isArray(polished.summaryBullets)
   ? polished.summaryBullets.map(clean).filter(Boolean)
   : [];
 
+function safeTask(aiTask, baseTask, title) {
+  const cleanedAI = clean(aiTask);
+  const cleanedBase = clean(baseTask);
+
+  if (cleanedAI && cleanedAI.split(" ").length >= 10) {
+    return limit(cleanedAI, 300);
+  }
+
+  return limit(expandFallback(cleanedBase, title), 300);
+}
+
+
 const finalData = {
   ...baseData,
 
@@ -683,11 +695,12 @@ workExperience: baseData.workExperience.map((base, i) => {
     start: formatDateToText(clean(ai.start ?? base.start)),
     end: formatDateToText(clean(ai.end ?? base.end)),
 
-    task1: limit(clean(ai.task1 ?? base.task1), 300),
-    task2: limit(clean(ai.task2 ?? base.task2), 300),
-    task3: limit(clean(ai.task3 ?? base.task3), 300),
-    task4: limit(clean(ai.task4 ?? base.task4), 300),
-    task5: limit(clean(ai.task5 ?? base.task5), 300),
+ task1: safeTask(ai.task1, base.task1, base.title),
+task2: safeTask(ai.task2, base.task2, base.title),
+task3: safeTask(ai.task3, base.task3, base.title),
+task4: safeTask(ai.task4, base.task4, base.title),
+task5: safeTask(ai.task5, base.task5, base.title),
+
   };
 }),
 
