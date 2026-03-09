@@ -622,20 +622,24 @@ const finalData = {
   summary4: clean(summaryBullets[3] || ""),
   summary5: clean(summaryBullets[4] || ""),
 
-workExperience: (polished.workExperience || baseData.workExperience).map((j) => ({
-  employer: normalizeEmployer(j.employer),
-  employerCity: titleCaseSafe(clean(j.employerCity)),
-  employerState: clean(j.employerState),
-  title: titleCaseSafe(clean(j.title)),
-  start: formatDateToText(clean(j.start)),
-  end: formatDateToText(clean(j.end)),
+workExperience: baseData.workExperience.map((base, i) => {
+  const ai = polished.workExperience?.[i];
 
-  task1: limit(clean(j.task1), 300),
-  task2: limit(clean(j.task2), 300),
-  task3: limit(clean(j.task3), 300),
-  task4: limit(clean(j.task4), 300),
-  task5: limit(clean(j.task5), 300),
-})),
+  return {
+    employer: normalizeEmployer(ai?.employer ?? base.employer),
+    employerCity: titleCaseSafe(clean(ai?.employerCity ?? base.employerCity)),
+    employerState: clean(ai?.employerState ?? base.employerState),
+    title: titleCaseSafe(clean(ai?.title ?? base.title)),
+    start: formatDateToText(clean(ai?.start ?? base.start)),
+    end: formatDateToText(clean(ai?.end ?? base.end)),
+
+    task1: limit(clean(ai?.task1 ?? base.task1), 300),
+    task2: limit(clean(ai?.task2 ?? base.task2), 300),
+    task3: limit(clean(ai?.task3 ?? base.task3), 300),
+    task4: limit(clean(ai?.task4 ?? base.task4), 300),
+    task5: limit(clean(ai?.task5 ?? base.task5), 300),
+  };
+}),
 
   education: (polished.education || baseData.education).map((e, i) => {
     const base = baseData.education[i] || {};
