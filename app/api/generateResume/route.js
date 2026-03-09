@@ -452,8 +452,7 @@ workExperience: baseData.workExperience.map(j => ({
   certifications: certArray,
   workExperience: baseData.workExperience,
   education: baseData.education
-  summaryBullets: body.summaryBullets || [],
-
+  
 };
 
     const completion = await openai.chat.completions.create({
