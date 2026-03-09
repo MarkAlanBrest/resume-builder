@@ -54,7 +54,7 @@ function formatPhone(phone) {
 function limit(text, max = 3500) {
   if (!text) return "";
   if (text.length <= max) return text;
-  return text.slice(0, max) + "…";
+  return text.slice(0, max) + "...";
 }
 
 function formatDateToText(dateStr) {
@@ -257,7 +257,7 @@ export async function POST(req) {
       linebreaks: true,
       delimiters: { start: "{", end: "}" },
     });
-
+console.log(JSON.stringify(body.finalData, null, 2));
     doc.setData(body.finalData);
     doc.render();
 
