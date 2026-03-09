@@ -131,6 +131,7 @@ function isWeakTask(text, base) {
 
 function expandFallback(text, title) {
  return cleaned.replace(/^./, c => c.toUpperCase()).replace(/\.$/, "") + ".";
+
 }
 
 /* ===========================
@@ -473,6 +474,7 @@ You are an AI resume writer.
 
 MASTER STYLE GUIDE: Follow the programGuide only.
 
+
 GLOBAL RULES:
 - Do not return empty or partial sections.
 
@@ -508,7 +510,6 @@ Requirements:
 • Expand vague input into a clear, resume-quality professional sentence.
 • Sentences should usually contain 12–20 words.
 • Preserve the original meaning of the duty.
-• You ARE allowed to add reasonable, job-appropriate detail, context, and purpose to strengthen the bullet point. Added detail must be realistic and implied by the role, not fabricated.
 • Do NOT invent duties, tools, or experience that were not implied by the input.
 • Teaching roles may reference students or classroom instruction when appropriate.
 • Do NOT include bullet characters or numbering.
@@ -530,6 +531,7 @@ EDUCATION RULES
 - Do NOT invent honors, awards, or achievements not present in the input.
 
 --------------------------------------------------
+
 
 PROGRAM DESCRIPTION RULES:
 - Write a resume-style program description describing the candidate’s completed training.
