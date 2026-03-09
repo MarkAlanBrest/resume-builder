@@ -349,8 +349,13 @@ const rawTasks = [
   j.task2,
   j.task3,
   j.task4,
-  j.task5
+  j.task5,
+
+  // ⭐ ADD THESE TWO LINES
+  ...(Array.isArray(j.bullets) ? j.bullets : []),
+  ...(Array.isArray(j.duties) ? j.duties : [])
 ].map(fixTypos).filter(Boolean);
+
 
 const tasksArr =
   Array.isArray(j.tasks) && j.tasks.length > 0
