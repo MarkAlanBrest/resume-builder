@@ -135,19 +135,17 @@ function expandFallback(text, title) {
   const cleaned = clean(text)
     .replace(/\btaight\b/gi, "taught")
     .replace(/\bmaanged\b/gi, "managed")
-    .replace(/\bresponsibilities?\b/gi, "")
-    .replace(/\bclassroom\b/gi, "instruction")
-    .replace(/\blessons?\b/gi, "lesson planning")
-    .replace(/\bstudents?\b/gi, "participants")
     .trim();
 
   if (!cleaned) return "";
 
-  // capitalize first letter and ensure period
-  const sentence =
-    cleaned.charAt(0).toUpperCase() + cleaned.slice(1).replace(/\.$/, "") + ".";
-
-  return sentence;
+  // Strong fallback expansion
+  return (
+    cleaned
+      .replace(/^./, c => c.toUpperCase())
+      .replace(/\.$/, "") +
+    " to support daily operations, maintain safety, and contribute to a productive learning environment."
+  );
 }
 
 /* ===========================
