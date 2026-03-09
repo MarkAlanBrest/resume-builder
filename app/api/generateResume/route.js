@@ -499,26 +499,25 @@ TENSE RULES:
 
 WORK EXPERIENCE RULES
 
-Each job duty (task1–task5) is a short, user-entered description of a responsibility.  
-These are NOT formatted bullets. They are raw inputs that must be expanded into full resume-quality sentences.
-
-Rewrite each duty into a complete, professional resume sentence.
+Each job duty (task1–task5) is a short description of a responsibility.  
+Rewrite each one into a full, professional resume sentence.
 
 Requirements:
 
-• Completely rewrite the sentence. Do NOT lightly edit the original text.
+• Fully rewrite the sentence. Do NOT lightly edit the original text.
 • Correct all spelling and grammar errors.
-• Start the sentence with a strong action verb.
-• Expand vague or minimal input into a clear, detailed, resume-quality sentence.
-• Sentences should usually contain 12–20 words.
-• Preserve the general intent of the duty, but you ARE allowed to add realistic, job‑appropriate detail, context, and purpose even if the student did not explicitly mention it.
-• You may expand the task by describing how it was done, why it mattered, what tools or skills were used, and what responsibility it supported.
+• Start with a strong action verb.
+• Expand the input into a clear, detailed, resume-quality sentence.
+• Sentences should usually contain 14–22 words.
+• Preserve the general intent, but you ARE allowed to add realistic, job‑appropriate detail, context, and purpose even if not stated.
 • Added detail must be reasonable for the role and must not contradict the input.
-• Teaching roles may reference students, instruction, safety, classroom management, or hands-on learning when appropriate.
+• You may describe how the task was performed, why it mattered, what tools or skills were used, and what responsibility it supported.
+• Teaching roles may reference students, instruction, safety, classroom management, or hands-on learning.
 • Do NOT include bullet characters or numbering.
-• Do NOT copy the original wording. Rewrite it so it sounds employer-ready.
-• Each rewritten duty must be unique in structure, verbs, and phrasing.
+• Do NOT copy the original wording.
+• Each rewritten duty must use different verbs, structure, and phrasing.
 • Avoid repeating the same sentence pattern or ending across duties.
+
 
 --------------------------------------------------
 
