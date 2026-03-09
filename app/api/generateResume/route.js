@@ -510,7 +510,7 @@ Requirements:
 • Correct all spelling and grammar errors.
 • Start the sentence with a strong action verb.
 • Expand vague or minimal input into a clear, detailed, resume-quality sentence.
-• Sentences should usually contain 14–22 words.
+• Sentences should usually contain 12–20 words.
 • Preserve the general intent of the duty, but you ARE allowed to add realistic, job‑appropriate detail, context, and purpose even if the student did not explicitly mention it.
 • You may expand the task by describing how it was done, why it mattered, what tools or skills were used, and what responsibility it supported.
 • Added detail must be reasonable for the role and must not contradict the input.
@@ -650,7 +650,7 @@ function safeTask(aiTask, baseTask, title) {
   const cleanedAI = clean(aiTask);
   const cleanedBase = clean(baseTask);
  
-  if (cleanedAI && cleanedAI.split(" ").length >= 6) {
+  if (cleanedAI && cleanedAI.split(" ").length >= 10) {
     return limit(cleanedAI, 300);
   }
 
