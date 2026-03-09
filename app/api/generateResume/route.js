@@ -451,9 +451,20 @@ workExperience: baseData.workExperience.map(j => ({
   skills: skillArray,
   certifications: certArray,
   workExperience: baseData.workExperience,
-  education: baseData.education
-  
+  education: baseData.education,
+
+  // ⭐ ADD THIS — SAFE VERSION
+  summaryBullets: body.summary1 || body.summary2 || body.summary3 || body.summary4 || body.summary5
+    ? [
+        body.summary1 || "",
+        body.summary2 || "",
+        body.summary3 || "",
+        body.summary4 || "",
+        body.summary5 || ""
+      ].filter(Boolean)
+    : []
 };
+
 
     const completion = await openai.chat.completions.create({
       model: "gpt-4o",
