@@ -202,9 +202,33 @@ function validateBullets(){
 }
 
 /* ==========================
+   CLEAR FORM (FIX)
+========================== */
+function clearJobForm(){
+  const fields = [
+    "employer","employerCity","employerState","title",
+    "startDate","endDate",
+    "task1","task2","task3","task4","task5"
+  ];
+
+  fields.forEach(id => {
+    document.getElementById(id).value = "";
+  });
+
+  for(let i=1;i<=5;i++){
+    const help = document.getElementById(`task${i}Help`);
+    help.style.display = "none";
+    help.textContent = "";
+  }
+
+  document.getElementById("saveBtn").disabled = true;
+}
+
+/* ==========================
    JOB FORM
 ========================== */
 function showJobForm(){
+  clearJobForm();   // ← FIX APPLIED HERE
   jobForm.style.display="block";
 }
 
