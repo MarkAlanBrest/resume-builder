@@ -29,8 +29,9 @@ function normalizeEmployer(text) {
 }
 function clean(v) {
   if (v === undefined || v === null) return "";
+
   return String(v)
-    .replace(/[\u0000-\u001F\u007F]/g, " ")
+    .replace(/[^\x09\x0A\x0D\x20-\x7E]/g, "") // remove invalid XML chars
     .replace(/\s+/g, " ")
     .trim();
 }
