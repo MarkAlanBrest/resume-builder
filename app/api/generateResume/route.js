@@ -650,7 +650,7 @@ function safeTask(aiTask, baseTask, title) {
   const cleanedAI = clean(aiTask);
   const cleanedBase = clean(baseTask);
  
-  if (cleanedAI && cleanedAI.split(" ").length >= 10) {
+  if (cleanedAI && cleanedAI.split(" ").length >= 6) {
     return limit(cleanedAI, 300);
   }
 
