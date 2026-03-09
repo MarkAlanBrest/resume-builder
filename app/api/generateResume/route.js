@@ -499,25 +499,26 @@ TENSE RULES:
 
 WORK EXPERIENCE RULES
 
-For each job duty (task1–task5):
+Each job duty (task1–task5) is a short, user-entered description of a responsibility.  
+These are NOT formatted bullets. They are raw inputs that must be expanded into full resume-quality sentences.
 
-Rewrite the duty into a professional resume sentence.
+Rewrite each duty into a complete, professional resume sentence.
 
 Requirements:
 
 • Completely rewrite the sentence. Do NOT lightly edit the original text.
 • Correct all spelling and grammar errors.
 • Start the sentence with a strong action verb.
-• Expand vague input into a clear, resume-quality professional sentence.
+• Expand vague or minimal input into a clear, detailed, resume-quality sentence.
 • Sentences should usually contain 12–20 words.
-• Preserve the core intent of the duty, but you ARE allowed to add realistic, job‑appropriate detail, context, and purpose to strengthen the bullet.
+• Preserve the general intent of the duty, but you ARE allowed to add realistic, job‑appropriate detail, context, and purpose even if the student did not explicitly mention it.
+• You may expand the task by describing how it was done, why it mattered, what tools or skills were used, and what responsibility it supported.
 • Added detail must be reasonable for the role and must not contradict the input.
-• Teaching roles may reference students or classroom instruction when appropriate.
+• Teaching roles may reference students, instruction, safety, classroom management, or hands-on learning when appropriate.
 • Do NOT include bullet characters or numbering.
 • Do NOT copy the original wording. Rewrite it so it sounds employer-ready.
-• Good resume bullets describe what was done, what area or topic was involved, and the responsibility or purpose.
-• Ensure each bullet point is distinct and varied in wording; avoid repeating the same verbs, phrases, or sentence structure across duties.
-• Each duty must be written as a unique sentence with different wording, verbs, and structure; avoid repeating phrases or sentence endings across bullets.
+• Each rewritten duty must be unique in structure, verbs, and phrasing.
+• Avoid repeating the same sentence pattern or ending across duties.
 
 --------------------------------------------------
 
@@ -598,6 +599,7 @@ REQUIRED OUTPUT (JSON):
   "programDescription": "...",
   "programTools": "..."
 }
+
 
 
 `.trim()
