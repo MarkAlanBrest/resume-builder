@@ -6,28 +6,41 @@
 <link rel="stylesheet" href="style.css">
 
 <style>
+
 .page-title{
 text-align:center;
 color:#0b3c6d;
 margin-bottom:30px;
 font-size:28px;
 }
+
 .system{
 color:#0b3c6d;
 font-weight:600;
 margin-top:10px;
 }
+
 .entry-card{
 border:1px solid #ccc;
 padding:12px;
 margin-bottom:12px;
 background:#f9f9f9;
 }
+
 input{
 width:100%;
-margin-bottom:10px;
+margin-bottom:8px;
 padding:6px;
 }
+
+.help{
+color:#b91c1c;
+font-weight:bold;
+font-size:13px;
+margin-bottom:10px;
+display:none;
+}
+
 </style>
 </head>
 
@@ -68,16 +81,25 @@ Describe your job duties in complete phrases (3–5 required).
 <br>
 <small>
 <strong style="color:#0b3c6d;">
-Example: Installed and repaired residential electrical wiring systems.
+Example: Installed and repaired residential electrical wiring systems in new construction homes.
 </strong>
 </small>
 </div>
 
-<input id="task1" placeholder="Duty 1 (required)">
-<input id="task2" placeholder="Duty 2 (required)">
-<input id="task3" placeholder="Duty 3 (required)">
-<input id="task4" placeholder="Duty 4 (optional)">
-<input id="task5" placeholder="Duty 5 (optional)">
+<input id="task1" placeholder="Duty 1 (required)" oninput="validateDuty('task1')">
+<div id="task1Help" class="help"></div>
+
+<input id="task2" placeholder="Duty 2 (required)" oninput="validateDuty('task2')">
+<div id="task2Help" class="help"></div>
+
+<input id="task3" placeholder="Duty 3 (required)" oninput="validateDuty('task3')">
+<div id="task3Help" class="help"></div>
+
+<input id="task4" placeholder="Duty 4 (optional)" oninput="validateDuty('task4')">
+<div id="task4Help" class="help"></div>
+
+<input id="task5" placeholder="Duty 5 (optional)" oninput="validateDuty('task5')">
+<div id="task5Help" class="help"></div>
 
 <button onclick="saveJob()">Save Entry</button>
 <button onclick="cancel()">Cancel</button>
@@ -127,6 +149,37 @@ if(v.toLowerCase()==="present") return true;
 return /^(0[1-9]|1[0-2])\/\d{4}$/.test(v);
 }
 
+function validateDuty(id){
+
+const input=document.getElementById(id);
+const help=document.getElementById(id+"Help");
+
+const text=input.value.trim();
+
+if(!text){
+help.style.display="none";
+return true;
+}
+
+const words=text.split(/\s+/).filter(Boolean);
+
+if(words.length<8){
+
+help.style.display="block";
+
+help.innerHTML=
+"Resume bullets must contain <strong>at least 8 words</strong> so the system can generate strong resume statements.<br>" +
+"Example: <em>Installed and repaired residential electrical wiring systems in new construction homes.</em>";
+
+return false;
+
+}
+
+help.style.display="none";
+return true;
+
+}
+
 function saveJob(){
 
 if(!employer.value.trim()){
@@ -149,35 +202,18 @@ alert("End date must be MM/YYYY or Present.");
 return;
 }
 
-/* Required duties */
-const requiredTasks=[
-task1.value.trim(),
-task2.value.trim(),
-task3.value.trim()
-];
-
-for(let t of requiredTasks){
-
-if(!t){
-alert("At least 3 duties are required.");
+if(!validateDuty("task1") || !validateDuty("task2") || !validateDuty("task3")){
+alert("Please correct the highlighted duty descriptions.");
 return;
 }
 
-if(wordCount(t)<8){
-alert("Duties 1–3 must contain at least 8 words.");
+if(task4.value.trim() && !validateDuty("task4")){
+alert("Please correct Duty 4.");
 return;
 }
 
-}
-
-/* Optional duties */
-if(task4.value.trim() && wordCount(task4.value)<8){
-alert("Duty 4 must contain at least 8 words or be left blank.");
-return;
-}
-
-if(task5.value.trim() && wordCount(task5.value)<8){
-alert("Duty 5 must contain at least 8 words or be left blank.");
+if(task5.value.trim() && !validateDuty("task5")){
+alert("Please correct Duty 5.");
 return;
 }
 
@@ -198,8 +234,6 @@ task5:task5.value.trim()
 const d=getData();
 d.workExperience.push(job);
 setData(d);
-
-/* Clear form */
 
 employer.value=
 employerCity.value=
@@ -245,12 +279,10 @@ ${j.task5 ? "• "+j.task5+"<br>" : ""}
 }
 
 function deleteJob(i){
-
 const d=getData();
 d.workExperience.splice(i,1);
 setData(d);
 renderJobs();
-
 }
 
 function goBack(){
