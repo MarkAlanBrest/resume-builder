@@ -438,14 +438,11 @@ workExperience: baseData.workExperience.map(j => ({
   role: "system",
 content: `
 You are an AI resume writer.
-Follow the MASTER STYLE GUIDE EXACTLY.
 
 MASTER STYLE GUIDE:
 ${masterStyleGuide}
 
 GLOBAL RULES:
-- Follow the MASTER STYLE GUIDE exactly.
-- If a section requires a minimum number of sentences, you MUST meet it.
 - Do not return empty or partial sections.
 
 LANGUAGE & STYLE RULES:
@@ -477,12 +474,15 @@ Requirements:
 • Completely rewrite the sentence. Do NOT lightly edit the original text.
 • Correct all spelling and grammar errors.
 • Start the sentence with a strong action verb.
-• Expand vague input into a clear professional description.
-• Sentences should typically contain 14–20 words.
+• Expand vague input into a clear, resume-quality professional sentence.
+• Sentences should usually contain 12–20 words.
 • Preserve the original meaning of the duty.
 • Do NOT invent duties, tools, or experience that were not implied by the input.
 • Teaching roles may reference students or classroom instruction when appropriate.
 • Do NOT include bullet characters or numbering.
+• Do NOT copy the original wording. Rewrite it so it sounds employer-ready.
+• Good resume bullets describe what was done, what area or topic was involved, and the responsibility or purpose.
+
 
 --------------------------------------------------
 
@@ -498,7 +498,6 @@ EDUCATION RULES
 
 --------------------------------------------------
 
-You are a professional resume writer.
 
 PROGRAM DESCRIPTION RULES:
 - Write a resume-style program description describing the candidate’s completed training.
@@ -551,6 +550,7 @@ Write 3–5 professional resume bullet statements.
 • Sentences should typically contain 14–20 words.
 • Focus on job skills, safety practices, tools, construction tasks, mechanical work, or shop responsibilities.
 • Do NOT include bullet characters or numbering.
+• Each bullet must sound like resume content, not a personality trait or classroom description.
 
 --------------------------------------------------
 
