@@ -242,10 +242,26 @@ function stripBullet(t){
 
 function saveJob(){
 
-  if(!employer.value.trim()) return alert("Employer or Branch is required.");
-  if(!title.value.trim()) return alert("Job Title / Military Role is required.");
-  if(!validDate(startDate.value.trim())) return alert("Invalid start date.");
-  if(!validDate(endDate.value.trim())) return alert("Invalid end date.");
+  if(!employer.value.trim()){
+  highlightField("employer");
+  return alert("Employer or Branch is required.");
+}
+
+if(!title.value.trim()){
+  highlightField("title");
+  return alert("Job Title / Military Role is required.");
+}
+
+if(!validDate(startDate.value.trim())){
+  highlightField("startDate");
+  return alert("Invalid start date.");
+}
+
+if(!validDate(endDate.value.trim())){
+  highlightField("endDate");
+  return alert("Invalid end date.");
+}
+
 
   const job={
     employer:employer.value.trim(),
@@ -308,6 +324,16 @@ function goBack(){
 function goNext(){
   window.location.href="certifications.html";
 }
+function highlightField(id){
+  const el = document.getElementById(id);
+  el.classList.add("highlight");
+
+  // Remove highlight after a few seconds so it doesn't stay forever
+  setTimeout(() => {
+    el.classList.remove("highlight");
+  }, 2500);
+}
+
 </script>
 
 </body>

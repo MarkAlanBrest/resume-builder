@@ -110,3 +110,8 @@ input[type="checkbox"] {
   width: auto;
   max-width: 20px;
 }
+
+.highlight {
+  background-color: #ffb3b3 !important; /* bright red/pink */
+  border: 2px solid #ff0000 !important;
+}
