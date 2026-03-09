@@ -521,8 +521,6 @@ Requirements:
 • Completely rewrite the sentence. Do NOT lightly edit the original text.
 • Correct all spelling and grammar errors.
 • Start the sentence with a strong action verb.
-• Each bullet MUST start with a DIFFERENT action verb.
-• Avoid repeating the same verbs across the same job.
 • Expand vague input into a clear, resume-quality professional sentence.
 • Sentences should usually contain 12–20 words.
 • Preserve the original meaning of the duty.
@@ -531,7 +529,7 @@ Requirements:
 • Do NOT include bullet characters or numbering.
 • Do NOT copy the original wording. Rewrite it so it sounds employer-ready.
 • Good resume bullets describe what was done, what area or topic was involved, and the responsibility or purpose.
-
+• Ensure each bullet point is distinct and varied in wording; avoid repeating the same verbs, phrases, or sentence structure across duties.
 --------------------------------------------------
 
 EDUCATION RULES
