@@ -662,7 +662,7 @@ const summaryBullets = Array.isArray(polished.summaryBullets)
 function safeTask(aiTask, baseTask, title) {
   const cleanedAI = clean(aiTask);
   const cleanedBase = clean(baseTask);
-
+ 
   if (cleanedAI && cleanedAI.split(" ").length >= 10) {
     return limit(cleanedAI, 300);
   }
