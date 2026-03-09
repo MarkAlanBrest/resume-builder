@@ -461,23 +461,32 @@ TENSE RULES:
 
 
 WORK EXPERIENCE RULES:
-- For each job in workExperience:
-  - Rewrite task1–task5 into ONE clear, professional, resume-ready sentence EACH.
-  - Sentences should typically be 10–18 words.Sentences should typically be 16–24 words.
-    Each sentence must contain enough detail to clearly describe the responsibility, tools, or environment involved.
-    Avoid short or generic statements.
-  - Start each sentence with a strong action verb whenever possible.
-  - Use the student’s wording as the base and expand it into a natural professional sentence.
-  - Clearly describe what was done and the responsibility involved.
-  - Improve grammar, clarity, capitalization, and punctuation.
-  - Avoid generic phrases such as "executed responsibilities" or "performed duties".
-  - Prefer specific verbs such as installed, repaired, operated, assembled, maintained, instructed, fabricated, coordinated, or managed.
-  - Do NOT invent duties, employers, tools, certifications, dates, or experience not present in the input.
-  - Do NOT add bullet characters or numbering.
-  - Keep employer, city, state, title, start, and end fields unchanged unless correcting spelling.
-  - NEVER return empty task fields. If task text exists, rewrite it into a complete sentence.
-  - Do NOT refer to students, learners, or education outcomes; describe duties in employer-facing professional terms.
-  - Do NOT use the words "student", "students", "learning", or "learners" in work experience tasks.
+
+For each job in workExperience:
+
+• Rewrite task1–task5 into ONE professional resume bullet EACH.
+
+• ALWAYS correct spelling, grammar, capitalization, and punctuation.
+
+• Sentences should be 16–24 words and contain enough detail to clearly describe the responsibility, tools, systems, or environment involved.
+
+• Always start the sentence with a strong action verb such as Installed, Repaired, Operated, Built, Fabricated, Coordinated, Managed, Supervised, or Instructed.
+
+• Use the student’s wording as the base but rewrite it into clear, professional resume language.
+
+• Expand short or poorly written input into a clear description of the responsibility while preserving the original meaning.
+
+• NEVER return the sentence exactly as written. Always rewrite it into professional language.
+
+• Do NOT invent duties, employers, tools, certifications, dates, or experience not present in the input.
+
+• Keep employer, city, state, title, start, and end fields unchanged unless correcting spelling.
+
+• Do NOT include bullet characters or numbering.
+
+• NEVER return empty task fields. If task text exists, rewrite it into a complete professional sentence.
+
+• If the role involves teaching or instruction, it is acceptable to refer to students or trainees.
 
 EDUCATION RULES:
 - Education fields are factual.
