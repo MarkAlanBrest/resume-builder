@@ -130,9 +130,11 @@ function isWeakTask(text, base) {
 }
 
 function expandFallback(text, title) {
- return cleaned.replace(/^./, c => c.toUpperCase()).replace(/\.$/, "") + ".";
-
-}
+  const cleaned = clean(text || "");
+  if (!cleaned) return "";
+  return cleaned.replace(/^./, c => c.toUpperCase()).replace(/\.$/, "") + ".";
+} 
+  
 
 /* ===========================
    🔽 ADDED SORT HELPERS (ONLY ADDITION)
