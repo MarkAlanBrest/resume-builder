@@ -111,37 +111,21 @@ function expandFallback(text, title) {
   if (!text) return "";
 
   const cleaned = clean(text)
-    // remove common leading verbs so we don't duplicate them
-.replace(/^(taught|teach|managed|manage|created|create|performed|perform|handled|handle|coordinated|coordinate|executed|execute|installed|repair(ed)?|operated)\s+/i, "")
+    .replace(/\btaight\b/gi, "taught")
+    .replace(/\bmaanged\b/gi, "managed")
     .replace(/\bresponsibilities?\b/gi, "")
     .replace(/\bclassroom\b/gi, "instruction")
     .replace(/\blessons?\b/gi, "lesson planning")
     .replace(/\bstudents?\b/gi, "participants")
     .trim();
 
-  const role = titleCaseSafe(title);
+  if (!cleaned) return "";
 
-  const verbs = [
-    "Performed",
-    "Managed",
-    "Handled",
-    "Coordinated",
-    "Completed",
-    "Oversaw",
-    "Supported"
-  ];
+  // capitalize first letter and ensure period
+  const sentence =
+    cleaned.charAt(0).toUpperCase() + cleaned.slice(1).replace(/\.$/, "") + ".";
 
-  const endings = [
-    `while maintaining organization, efficiency, and professional standards in the ${role} role.`,
-    `while ensuring consistent workflow, productivity, and operational expectations.`,
-    `while supporting daily operations and maintaining quality work standards.`,
-    `while contributing to team productivity and maintaining workplace professionalism.`,
-  ];
-
-  const verb = verbs[Math.floor(Math.random() * verbs.length)];
-  const ending = endings[Math.floor(Math.random() * endings.length)];
-
-  return `${verb} ${cleaned} ${ending}`;
+  return sentence;
 }
 
 /* ===========================
@@ -650,8 +634,8 @@ const finalData = {
       end: formatDateToText(clean(ai.end ?? base.end)),
 
       task1: isWeakTask(ai.task1, base.task1)
-        ? expandFallback(base.task1, base.title)
-        : limit(clean(ai.task1), 300),
+  ? expandFallback(base.task1, base.title)
+  : limit(clean(ai.task1), 300),
 
       task2: isWeakTask(ai.task2, base.task2)
         ? expandFallback(base.task2, base.title)
