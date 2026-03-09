@@ -530,6 +530,8 @@ Requirements:
 • Do NOT copy the original wording. Rewrite it so it sounds employer-ready.
 • Good resume bullets describe what was done, what area or topic was involved, and the responsibility or purpose.
 • Ensure each bullet point is distinct and varied in wording; avoid repeating the same verbs, phrases, or sentence structure across duties.
+• Each duty must be written as a unique sentence with different wording, verbs, and structure; avoid repeating phrases or sentence endings across bullets.
+
 --------------------------------------------------
 
 EDUCATION RULES
