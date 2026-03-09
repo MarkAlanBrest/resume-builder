@@ -77,29 +77,14 @@ Enter <strong>all work and military experience</strong> here.
 <input id="endDate">
 
 <div class="system">
-Describe your job duties in complete phrases (3–5 required).
-<br>
-<small>
-<strong style="color:#0b3c6d;">
-Example: Installed and repaired residential electrical wiring systems in new construction homes.
-</strong>
-</small>
+Describe your job duties in complete phrases (3–5 recommended).
 </div>
 
-<input id="task1" placeholder="Duty 1 (required)" oninput="validateDuty('task1')">
-<div id="task1Help" class="help"></div>
-
-<input id="task2" placeholder="Duty 2 (required)" oninput="validateDuty('task2')">
-<div id="task2Help" class="help"></div>
-
-<input id="task3" placeholder="Duty 3 (required)" oninput="validateDuty('task3')">
-<div id="task3Help" class="help"></div>
-
-<input id="task4" placeholder="Duty 4 (optional)" oninput="validateDuty('task4')">
-<div id="task4Help" class="help"></div>
-
-<input id="task5" placeholder="Duty 5 (optional)" oninput="validateDuty('task5')">
-<div id="task5Help" class="help"></div>
+<input id="task1" placeholder="Duty 1">
+<input id="task2" placeholder="Duty 2">
+<input id="task3" placeholder="Duty 3">
+<input id="task4" placeholder="Duty 4 (optional)">
+<input id="task5" placeholder="Duty 5 (optional)">
 
 <button onclick="saveJob()">Save Entry</button>
 <button onclick="cancel()">Cancel</button>
@@ -139,45 +124,14 @@ function cancel(){
 jobForm.style.display="none";
 }
 
-function wordCount(text){
-return text.trim().split(/\s+/).filter(Boolean).length;
-}
-
 function validDate(v){
 if(!v) return false;
 if(v.toLowerCase()==="present") return true;
 return /^(0[1-9]|1[0-2])\/\d{4}$/.test(v);
 }
 
-function validateDuty(id){
-
-const input=document.getElementById(id);
-const help=document.getElementById(id+"Help");
-
-const text=input.value.trim();
-
-if(!text){
-help.style.display="none";
-return true;
-}
-
-const words=text.split(/\s+/).filter(Boolean);
-
-if(words.length<8){
-
-help.style.display="block";
-
-help.innerHTML=
-"Resume bullets must contain <strong>at least 8 words</strong> so the system can generate strong resume statements.<br>" +
-"Example: <em>Installed and repaired residential electrical wiring systems in new construction homes.</em>";
-
-return false;
-
-}
-
-help.style.display="none";
-return true;
-
+function stripBullet(t){
+return t.replace(/^•\s*/, "").trim();
 }
 
 function saveJob(){
@@ -202,21 +156,6 @@ alert("End date must be MM/YYYY or Present.");
 return;
 }
 
-if(!validateDuty("task1") || !validateDuty("task2") || !validateDuty("task3")){
-alert("Please correct the highlighted duty descriptions.");
-return;
-}
-
-if(task4.value.trim() && !validateDuty("task4")){
-alert("Please correct Duty 4.");
-return;
-}
-
-if(task5.value.trim() && !validateDuty("task5")){
-alert("Please correct Duty 5.");
-return;
-}
-
 const job={
 employer:employer.value.trim(),
 employerCity:employerCity.value.trim(),
@@ -224,11 +163,11 @@ employerState:employerState.value.trim().toUpperCase().slice(0,2),
 title:title.value.trim(),
 start:startDate.value.trim(),
 end:endDate.value.trim(),
-task1:task1.value.trim(),
-task2:task2.value.trim(),
-task3:task3.value.trim(),
-task4:task4.value.trim(),
-task5:task5.value.trim()
+task1:stripBullet(task1.value.trim()),
+task2:stripBullet(task2.value.trim()),
+task3:stripBullet(task3.value.trim()),
+task4:stripBullet(task4.value.trim()),
+task5:stripBullet(task5.value.trim())
 };
 
 const d=getData();
