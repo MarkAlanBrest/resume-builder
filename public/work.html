@@ -3,50 +3,61 @@
 <head>
 <meta charset="UTF-8">
 <title>Work & Military Experience</title>
-<link rel="stylesheet" href="style.css">
 
 <style>
-
-.page-title{
-text-align:center;
-color:#0b3c6d;
-margin-bottom:30px;
-font-size:28px;
+body {
+  font-family: Arial, sans-serif;
+  padding: 20px;
 }
 
-.system{
-color:#0b3c6d;
-font-weight:600;
-margin-top:10px;
+.page-title {
+  text-align: center;
+  color: #0b3c6d;
+  margin-bottom: 30px;
+  font-size: 28px;
 }
 
-.entry-card{
-border:1px solid #ccc;
-padding:12px;
-margin-bottom:12px;
-background:#f9f9f9;
+.system {
+  color: #0b3c6d;
+  font-weight: 600;
+  margin-top: 10px;
 }
 
-input{
-width:100%;
-margin-bottom:8px;
-padding:6px;
+.entry-card {
+  border: 1px solid #ccc;
+  padding: 12px;
+  margin-bottom: 12px;
+  background: #f9f9f9;
 }
 
-.help{
-color:#b91c1c;
-font-weight:bold;
-font-size:13px;
-margin-bottom:10px;
-display:none;
+input {
+  width: 100%;
+  margin-bottom: 8px;
+  padding: 6px;
 }
 
+.help {
+  color: #b91c1c;
+  font-weight: bold;
+  font-size: 13px;
+  margin-bottom: 10px;
+  display: none;
+}
+
+.valid {
+  color: green;
+  font-weight: bold;
+  font-size: 13px;
+}
+
+button {
+  padding: 8px 14px;
+  margin-top: 10px;
+}
 </style>
 </head>
 
 <body>
-
-<div class="chat">
 
 <h1 class="page-title">NCST’s Resume Builder</h1>
 
@@ -56,38 +67,38 @@ Enter <strong>all work and military experience</strong> here.
 
 <button onclick="showJobForm()">Add Work or Military Experience</button>
 
-<div id="jobForm" style="display:none;">
+<div id="jobForm" style="display:none; margin-top:20px;">
 
-<div class="system">Employer / Branch</div>
-<input id="employer">
+  <div class="system">Employer / Branch</div>
+  <input id="employer">
 
-<div class="system">City</div>
-<input id="employerCity">
+  <div class="system">City</div>
+  <input id="employerCity">
 
-<div class="system">State</div>
-<input id="employerState">
+  <div class="system">State</div>
+  <input id="employerState">
 
-<div class="system">Job Title / Military Role</div>
-<input id="title">
+  <div class="system">Job Title / Military Role</div>
+  <input id="title">
 
-<div class="system">Start date (MM/YYYY)</div>
-<input id="startDate">
+  <div class="system">Start date (M/YYYY or MM/YYYY)</div>
+  <input id="startDate">
 
-<div class="system">End date (MM/YYYY or Present)</div>
-<input id="endDate">
+  <div class="system">End date (M/YYYY, MM/YYYY, or Present)</div>
+  <input id="endDate">
 
-<div class="system">
-Describe your job duties in complete phrases (3–5 recommended).
-</div>
+  <div class="system" style="margin-top:20px;">
+    <strong>Write 3–5 strong bullet points.</strong><br>
+    Each bullet must:<br>
+    • Start with an action verb<br>
+    • Be at least <strong>7 words</strong><br>
+    • Describe what you did and why it mattered<br>
+  </div>
 
-<input id="task1" placeholder="Duty 1">
-<input id="task2" placeholder="Duty 2">
-<input id="task3" placeholder="Duty 3">
-<input id="task4" placeholder="Duty 4 (optional)">
-<input id="task5" placeholder="Duty 5 (optional)">
+  <div id="bulletArea"></div>
 
-<button onclick="saveJob()">Save Entry</button>
-<button onclick="cancel()">Cancel</button>
+  <button id="saveBtn" onclick="saveJob()" disabled>Save Entry</button>
+  <button onclick="cancel()">Cancel</button>
 
 </div>
 
@@ -97,143 +108,185 @@ Describe your job duties in complete phrases (3–5 recommended).
 <button onclick="goBack()">Back</button>
 <button onclick="goNext()">Next</button>
 
-</div>
-
 <script>
-
-function getData(){
-return JSON.parse(localStorage.getItem("resumeData"))||{};
+/* ==========================
+   DATA HELPERS
+========================== */
+function getData() {
+  return JSON.parse(localStorage.getItem("resumeData")) || {};
 }
 
-function setData(d){
-localStorage.setItem("resumeData",JSON.stringify(d));
+function setData(d) {
+  localStorage.setItem("resumeData", JSON.stringify(d));
 }
 
-window.onload=function(){
-const d=getData();
-d.workExperience ||= [];
-setData(d);
-renderJobs();
+window.onload = function () {
+  const d = getData();
+  d.workExperience ||= [];
+  setData(d);
+  renderJobs();
+  buildBulletInputs();
 };
 
-function showJobForm(){
-jobForm.style.display="block";
+/* ==========================
+   DATE VALIDATION
+========================== */
+function validDate(v) {
+  if (!v) return false;
+  if (v.toLowerCase() === "present") return true;
+  return /^(0?[1-9]|1[0-2])\/\d{4}$/i.test(v);
 }
 
-function cancel(){
-jobForm.style.display="none";
+/* ==========================
+   BULLET INPUTS
+========================== */
+const verbs = [
+  "managed","taught","created","installed","operated","maintained","organized",
+  "supervised","assisted","supported","constructed","repaired","assembled",
+  "trained","coordinated","prepared","inspected","monitored","cleaned"
+];
+
+function buildBulletInputs() {
+  const area = document.getElementById("bulletArea");
+  area.innerHTML = "";
+
+  for (let i = 1; i <= 5; i++) {
+    area.innerHTML += `
+      <input id="task${i}" placeholder="Duty ${i}">
+      <div id="task${i}Help" class="help"></div>
+    `;
+  }
+
+  for (let i = 1; i <= 5; i++) {
+    document.getElementById(`task${i}`).addEventListener("input", validateBullets);
+  }
 }
 
-function validDate(v){
-if(!v) return false;
-if(v.toLowerCase()==="present") return true;
-return /^(0[1-9]|1[0-2])\/\d{4}$/.test(v);
+/* ==========================
+   BULLET VALIDATION
+========================== */
+function validateBullets() {
+  let validCount = 0;
+
+  for (let i = 1; i <= 5; i++) {
+    const input = document.getElementById(`task${i}`);
+    const help = document.getElementById(`task${i}Help`);
+    const text = input.value.trim();
+
+    if (!text) {
+      help.style.display = "none";
+      continue;
+    }
+
+    const words = text.split(/\s+/).length;
+    const firstWord = text.split(/\s+/)[0].toLowerCase();
+
+    let msg = "";
+
+    if (!verbs.includes(firstWord)) {
+      msg = "Bullet must start with an action verb.";
+    } else if (words < 7) {
+      msg = `You need ${7 - words} more words.`;
+    }
+
+    if (msg) {
+      help.style.display = "block";
+      help.className = "help";
+      help.textContent = msg;
+    } else {
+      help.style.display = "block";
+      help.className = "valid";
+      help.textContent = "Looks good ✔";
+      validCount++;
+    }
+  }
+
+  const saveBtn = document.getElementById("saveBtn");
+  saveBtn.disabled = validCount < 3;
 }
 
-function stripBullet(t){
-return t.replace(/^•\s*/, "").trim();
+/* ==========================
+   JOB FORM
+========================== */
+function showJobForm() {
+  jobForm.style.display = "block";
 }
 
-function saveJob(){
-
-if(!employer.value.trim()){
-alert("Employer or Branch is required.");
-return;
+function cancel() {
+  jobForm.style.display = "none";
 }
 
-if(!title.value.trim()){
-alert("Job Title / Military Role is required.");
-return;
+function stripBullet(t) {
+  return t.replace(/^•\s*/, "").trim();
 }
 
-if(!validDate(startDate.value.trim())){
-alert("Start date must be in MM/YYYY format.");
-return;
+function saveJob() {
+  if (!employer.value.trim()) return alert("Employer or Branch is required.");
+  if (!title.value.trim()) return alert("Job Title / Military Role is required.");
+  if (!validDate(startDate.value.trim())) return alert("Invalid start date.");
+  if (!validDate(endDate.value.trim())) return alert("Invalid end date.");
+
+  const job = {
+    employer: employer.value.trim(),
+    employerCity: employerCity.value.trim(),
+    employerState: employerState.value.trim().toUpperCase().slice(0, 2),
+    title: title.value.trim(),
+    start: startDate.value.trim(),
+    end: endDate.value.trim(),
+    task1: stripBullet(task1.value.trim()),
+    task2: stripBullet(task2.value.trim()),
+    task3: stripBullet(task3.value.trim()),
+    task4: stripBullet(task4.value.trim()),
+    task5: stripBullet(task5.value.trim())
+  };
+
+  const d = getData();
+  d.workExperience.push(job);
+  setData(d);
+
+  jobForm.style.display = "none";
+  renderJobs();
 }
 
-if(!validDate(endDate.value.trim())){
-alert("End date must be MM/YYYY or Present.");
-return;
+/* ==========================
+   RENDER JOB LIST
+========================== */
+function renderJobs() {
+  const d = getData();
+  jobList.innerHTML = "";
+
+  d.workExperience.forEach((j, i) => {
+    jobList.innerHTML += `
+      <div class="entry-card">
+        <strong>${j.title}</strong> – ${j.employer}
+        (${j.employerCity}, ${j.employerState})<br>
+        ${j.start} – ${j.end}<br><br>
+        ${j.task1 ? j.task1 + "<br>" : ""}
+        ${j.task2 ? j.task2 + "<br>" : ""}
+        ${j.task3 ? j.task3 + "<br>" : ""}
+        ${j.task4 ? j.task4 + "<br>" : ""}
+        ${j.task5 ? j.task5 + "<br>" : ""}
+        <br>
+        <button onclick="deleteJob(${i})">Delete</button>
+      </div>
+    `;
+  });
 }
 
-const job={
-employer:employer.value.trim(),
-employerCity:employerCity.value.trim(),
-employerState:employerState.value.trim().toUpperCase().slice(0,2),
-title:title.value.trim(),
-start:startDate.value.trim(),
-end:endDate.value.trim(),
-task1:stripBullet(task1.value.trim()),
-task2:stripBullet(task2.value.trim()),
-task3:stripBullet(task3.value.trim()),
-task4:stripBullet(task4.value.trim()),
-task5:stripBullet(task5.value.trim())
-};
-
-const d=getData();
-d.workExperience.push(job);
-setData(d);
-
-employer.value=
-employerCity.value=
-employerState.value=
-title.value=
-startDate.value=
-endDate.value=
-task1.value=
-task2.value=
-task3.value=
-task4.value=
-task5.value="";
-
-jobForm.style.display="none";
-renderJobs();
-
+function deleteJob(i) {
+  const d = getData();
+  d.workExperience.splice(i, 1);
+  setData(d);
+  renderJobs();
 }
 
-function renderJobs(){
-
-const d=getData();
-jobList.innerHTML="";
-
-d.workExperience.forEach((j,i)=>{
-
-jobList.innerHTML+=`
-<div class="entry-card">
-<strong>${j.title}</strong> – ${j.employer}
-(${j.employerCity}, ${j.employerState})<br>
-${j.start} – ${j.end}<br><br>
-${j.task1 ? j.task1+"<br>" : ""}
-${j.task2 ? j.task2+"<br>" : ""}
-${j.task3 ? j.task3+"<br>" : ""}
-${j.task4 ? j.task4+"<br>" : ""}
-${j.task5 ? j.task5+"<br>" : ""}
-
-
-<br>
-<button onclick="deleteJob(${i})">Delete</button>
-</div>
-`;
-
-});
-
+function goBack() {
+  window.location.href = "objective.html";
 }
 
-function deleteJob(i){
-const d=getData();
-d.workExperience.splice(i,1);
-setData(d);
-renderJobs();
+function goNext() {
+  window.location.href = "certifications.html";
 }
-
-function goBack(){
-window.location.href="objective.html";
-}
-
-function goNext(){
-window.location.href="certifications.html";
-}
-
 </script>
 
 </body>
