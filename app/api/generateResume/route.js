@@ -146,7 +146,7 @@ function sortJobsNewestFirst(jobs) {
 
     const endB =
       !b.end || String(b.end).toLowerCase() === "present"
-        ? new Date("9999-12-31")
+        ? new Date("9999-12-31") 
         : new Date(b.end);
 
     return endB - endA;
