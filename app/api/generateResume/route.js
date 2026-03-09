@@ -518,8 +518,9 @@ Requirements:
 • Start with a strong action verb.
 • Expand the input into a clear, detailed, resume-quality sentence.
 • Sentences must contain 16–24 words.
-• You ARE allowed to add realistic, job‑appropriate detail, context, tools, responsibilities, and purpose even if not stated.
-• You may describe how the task was performed, why it mattered, what tools or skills were used, and what it supported.
+• You ARE allowed to add realistic, job‑appropriate detail, tools, safety practices, shop responsibilities, and hands‑on context even if not stated.
+• Emphasize construction tasks, tool use, measurements, safety procedures, demonstrations, and practical skill development.
+• Teaching roles may reference demonstrations, guided practice, tool handling, safety instruction, and shop management.
 • Added detail must be plausible for the role.
 • Do NOT include bullet characters or numbering.
 • Do NOT copy the original wording.
