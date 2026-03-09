@@ -203,11 +203,12 @@ jobList.innerHTML+=`
 <strong>${j.title}</strong> – ${j.employer}
 (${j.employerCity}, ${j.employerState})<br>
 ${j.start} – ${j.end}<br><br>
-${j.task1 ? "• "+j.task1+"<br>" : ""}
-${j.task2 ? "• "+j.task2+"<br>" : ""}
-${j.task3 ? "• "+j.task3+"<br>" : ""}
-${j.task4 ? "• "+j.task4+"<br>" : ""}
-${j.task5 ? "• "+j.task5+"<br>" : ""}
+${j.task1 ? j.task1+"<br>" : ""}
+${j.task2 ? j.task2+"<br>" : ""}
+${j.task3 ? j.task3+"<br>" : ""}
+${j.task4 ? j.task4+"<br>" : ""}
+${j.task5 ? j.task5+"<br>" : ""}
+
 <br>
 <button onclick="deleteJob(${i})">Delete</button>
 </div>
