@@ -357,19 +357,14 @@ const rawTasks = [
 ].map(fixTypos).filter(Boolean);
 
 
-const tasksArr =
-  Array.isArray(j.tasks) && j.tasks.length > 0
-    ? j.tasks.map(clean).filter(Boolean)
-    : rawTasks;
+const tasksArr = rawTasks;
+
 
 const t1 = tasksArr[0] || "";
 const t2 = tasksArr[1] || "";
 const t3 = tasksArr[2] || "";
 const t4 = tasksArr[3] || "";
 const t5 = tasksArr[4] || "";
-
-
-
 
       return {
         employer: clean(j.employer),
