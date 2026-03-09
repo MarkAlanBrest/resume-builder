@@ -463,7 +463,9 @@ TENSE RULES:
 WORK EXPERIENCE RULES:
 - For each job in workExperience:
   - Rewrite task1–task5 into ONE clear, professional, resume-ready sentence EACH.
-  - Sentences should typically be 10–18 words.
+  - Sentences should typically be 10–18 words.Sentences should typically be 16–24 words.
+    Each sentence must contain enough detail to clearly describe the responsibility, tools, or environment involved.
+    Avoid short or generic statements.
   - Start each sentence with a strong action verb whenever possible.
   - Use the student’s wording as the base and expand it into a natural professional sentence.
   - Clearly describe what was done and the responsibility involved.
