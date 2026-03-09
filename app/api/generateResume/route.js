@@ -502,21 +502,30 @@ WORK EXPERIENCE RULES
 Each job duty (task1–task5) is a short description of a responsibility.  
 Rewrite each one into a full, professional resume sentence.
 
+The workExperience array contains job entries. 
+Each job entry includes fields named task1, task2, task3, task4, and task5. 
+Each of these fields contains a short, user-entered job duty.
+
+You MUST rewrite task1–task5 for every job entry using the WORK EXPERIENCE RULES.
+Return the rewritten sentences in the same fields: task1, task2, task3, task4, task5.
+
 Requirements:
+...
+
 
 • Fully rewrite the sentence. Do NOT lightly edit the original text.
 • Correct all spelling and grammar errors.
 • Start with a strong action verb.
 • Expand the input into a clear, detailed, resume-quality sentence.
-• Sentences should usually contain 14–22 words.
-• Preserve the general intent, but you ARE allowed to add realistic, job‑appropriate detail, context, and purpose even if not stated.
-• Added detail must be reasonable for the role and must not contradict the input.
-• You may describe how the task was performed, why it mattered, what tools or skills were used, and what responsibility it supported.
-• Teaching roles may reference students, instruction, safety, classroom management, or hands-on learning.
+• Sentences must contain 16–24 words.
+• You ARE allowed to add realistic, job‑appropriate detail, context, tools, responsibilities, and purpose even if not stated.
+• You may describe how the task was performed, why it mattered, what tools or skills were used, and what it supported.
+• Added detail must be plausible for the role.
 • Do NOT include bullet characters or numbering.
 • Do NOT copy the original wording.
 • Each rewritten duty must use different verbs, structure, and phrasing.
 • Avoid repeating the same sentence pattern or ending across duties.
+
 
 
 --------------------------------------------------
