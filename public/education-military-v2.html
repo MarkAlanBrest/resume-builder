@@ -278,7 +278,7 @@ function renderEducation() {
     div.innerHTML = `
       <strong>${edu.program}</strong><br>
       ${edu.school} — ${edu.city}, ${edu.state}<br>
-      ${edu.startDate} – ${eduEndDate}<br>
+      ${edu.startDate} – ${edu.endDate}<br>   
       ${edu.notes ? edu.notes + "<br>" : ""}
       <button onclick="deleteEducation(${i})">Delete</button>
     `;
