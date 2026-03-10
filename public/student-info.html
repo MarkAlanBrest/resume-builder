@@ -1,143 +1,207 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <title>Student Information</title>
-  <link rel="stylesheet" href="style.css">
+<meta charset="UTF-8">
+<title>Student Information</title>
+<link rel="stylesheet" href="style.css">
 
-  <style>
-    .page-title {
-      text-align: center;
-      color: #0b3c6d; /* dark professional blue */
-      margin-bottom: 30px;
-      font-size: 28px;
-    }
+<style>
 
-    .system {
-      color: #0b3c6d; /* darker blue for labels */
-      font-weight: 600;
-    }
-  </style>
+.page-title{
+  text-align:center;
+  color:#0b3c6d;
+  margin-bottom:30px;
+  font-size:28px;
+}
+
+.system{
+  color:#0b3c6d;
+  font-weight:600;
+  margin-top:15px;
+}
+
+/* GRID LAYOUT */
+.form-row{
+  display:grid;
+  grid-template-columns:1fr 1fr;
+  gap:15px;
+  margin-bottom:10px;
+}
+
+.form-row-3{
+  display:grid;
+  grid-template-columns:2fr 1fr 1fr;
+  gap:15px;
+  margin-bottom:10px;
+}
+
+input, select{
+  width:100%;
+  padding:8px;
+  margin-top:4px;
+}
+
+</style>
 </head>
+
 <body>
 
 <div class="chat">
 
-  <!-- PAGE TITLE -->
-  <h1 class="page-title">NCST’s Resume Builder</h1>
+<h1 class="page-title">NCST’s Resume Builder</h1>
 
-  <div class="system">What is your full name?</div>
-  <input id="name" placeholder="Full Name">
+<div class="system">What is your full name?</div>
+<input id="name" placeholder="Full Name">
 
-  <div class="system">What is your professional email?</div>
-  <input id="email" placeholder="name@email.com">
+<!-- EMAIL + PHONE -->
+<div class="form-row">
 
-  <div class="system">What is your primary phone number?</div>
-  <input id="phone" placeholder="555-555-5555">
-
-  <div class="system">Street address</div>
-  <input id="address" placeholder="123 Main Street">
-
-  <div class="system">City</div>
-  <input id="city" placeholder="New Castle">
-
-  <div class="system">State</div>
-  <input id="state" placeholder="PA" maxlength="2">
-
-  <div class="system">ZIP Code</div>
-  <input id="zip" placeholder="16101">
-
-  <div class="system">Select your program</div>
-  <select id="programCampus">
-    <option value="">-- Select --</option>
-    <option>Automotive Technology — Main Campus (New Castle, PA)</option>
-    <option>Building Technology — Main Campus (New Castle, PA)</option>
-    <option>Combination Welding — Main Campus (New Castle, PA)</option>
-    <option>Combination Welding — East Liverpool Campus (East Liverpool, OH)</option>
-    <option>Commercial Truck Driving (Class A CDL) — Satellite Campus (Pulaski, PA)</option>
-    <option>Diesel & Heavy Equipment Repair Technology — Satellite Campus (Pulaski, PA)</option>
-    <option>Electrical Technology — Main Campus (New Castle, PA)</option>
-    <option>Electrical & Industrial Maintenance — East Liverpool Campus (East Liverpool, OH)</option>
-    <option>Heavy Equipment Operations with CDL — Satellite Campus (Pulaski, PA)</option>
-    <option>Industrial Electro-Mechanical Technology — Main Campus (New Castle, PA)</option>
-    <option>Machinist & CNC Manufacturing — Satellite Campus (Pulaski, PA)</option>
-    <option>Motorcycle & Power Equipment Technology — Satellite Campus (Pulaski, PA)</option>
-    <option>Refrigeration & A/C Technology — Main Campus (New Castle, PA)</option>
-    <option>Refrigeration & Climate Control — East Liverpool Campus (East Liverpool, OH)</option>
-  </select>
-
-  <div style="display:none;">
-  <div class="system">Expected graduation date (MM/YYYY)</div>
-  <input id="grad" placeholder="05/2026">
+<div>
+<div class="system">Professional Email</div>
+<input id="email" placeholder="name@email.com">
 </div>
 
-  <br><br>
+<div>
+<div class="system">Phone Number</div>
+<input id="phone" placeholder="555-555-5555">
+</div>
 
-  <button type="button" onclick="goBack()">Back</button>
-  <button type="button" onclick="goNext()">Next</button>
+</div>
+
+<div class="system">Street Address</div>
+<input id="address" placeholder="123 Main Street">
+
+<!-- CITY STATE ZIP -->
+<div class="form-row-3">
+
+<div>
+<div class="system">City</div>
+<input id="city" placeholder="New Castle">
+</div>
+
+<div>
+<div class="system">State</div>
+<select id="state">
+<option value="">Select</option>
+<option>AL</option><option>AK</option><option>AZ</option><option>AR</option>
+<option>CA</option><option>CO</option><option>CT</option><option>DE</option>
+<option>FL</option><option>GA</option><option>HI</option><option>ID</option>
+<option>IL</option><option>IN</option><option>IA</option><option>KS</option>
+<option>KY</option><option>LA</option><option>ME</option><option>MD</option>
+<option>MA</option><option>MI</option><option>MN</option><option>MS</option>
+<option>MO</option><option>MT</option><option>NE</option><option>NV</option>
+<option>NH</option><option>NJ</option><option>NM</option><option>NY</option>
+<option>NC</option><option>ND</option><option>OH</option><option>OK</option>
+<option>OR</option><option>PA</option><option>RI</option><option>SC</option>
+<option>SD</option><option>TN</option><option>TX</option><option>UT</option>
+<option>VT</option><option>VA</option><option>WA</option><option>WV</option>
+<option>WI</option><option>WY</option>
+</select>
+</div>
+
+<div>
+<div class="system">ZIP</div>
+<input id="zip" placeholder="16101">
+</div>
+
+</div>
+
+<div class="system">Select your program</div>
+<select id="programCampus">
+<option value="">-- Select --</option>
+<option>Automotive Technology — Main Campus (New Castle, PA)</option>
+<option>Building Technology — Main Campus (New Castle, PA)</option>
+<option>Combination Welding — Main Campus (New Castle, PA)</option>
+<option>Combination Welding — East Liverpool Campus (East Liverpool, OH)</option>
+<option>Commercial Truck Driving (Class A CDL) — Satellite Campus (Pulaski, PA)</option>
+<option>Diesel & Heavy Equipment Repair Technology — Satellite Campus (Pulaski, PA)</option>
+<option>Electrical Technology — Main Campus (New Castle, PA)</option>
+<option>Electrical & Industrial Maintenance — East Liverpool Campus (East Liverpool, OH)</option>
+<option>Heavy Equipment Operations with CDL — Satellite Campus (Pulaski, PA)</option>
+<option>Industrial Electro-Mechanical Technology — Main Campus (New Castle, PA)</option>
+<option>Machinist & CNC Manufacturing — Satellite Campus (Pulaski, PA)</option>
+<option>Motorcycle & Power Equipment Technology — Satellite Campus (Pulaski, PA)</option>
+<option>Refrigeration & A/C Technology — Main Campus (New Castle, PA)</option>
+<option>Refrigeration & Climate Control — East Liverpool Campus (East Liverpool, OH)</option>
+</select>
+
+<div style="display:none;">
+<div class="system">Expected graduation date</div>
+<input id="grad" placeholder="05/2026">
+</div>
+
+<br><br>
+
+<button type="button" onclick="goBack()">Back</button>
+<button type="button" onclick="goNext()">Next</button>
 
 </div>
 
 <script>
-function getData() {
-  return JSON.parse(localStorage.getItem("resumeData")) || {};
+
+/* KEEPING YOUR EXISTING JS */
+
+function getData(){
+return JSON.parse(localStorage.getItem("resumeData")) || {};
 }
 
-function setData(data) {
-  localStorage.setItem("resumeData", JSON.stringify(data));
+function setData(data){
+localStorage.setItem("resumeData", JSON.stringify(data));
 }
 
-window.onload = function () {
-  const data = getData();
-  document.getElementById("name").value = data.name || "";
-  document.getElementById("email").value = data.email || "";
-  document.getElementById("phone").value = data.phone || "";
-  document.getElementById("address").value = data.address || "";
-  document.getElementById("city").value = data.city || "";
-  document.getElementById("state").value = data.state || "";
-  document.getElementById("zip").value = data.zip || "";
-  document.getElementById("programCampus").value = data.programCampus || "";
-  document.getElementById("grad").value = data.grad || "";
+window.onload=function(){
+const data=getData();
+document.getElementById("name").value=data.name||"";
+document.getElementById("email").value=data.email||"";
+document.getElementById("phone").value=data.phone||"";
+document.getElementById("address").value=data.address||"";
+document.getElementById("city").value=data.city||"";
+document.getElementById("state").value=data.state||"";
+document.getElementById("zip").value=data.zip||"";
+document.getElementById("programCampus").value=data.programCampus||"";
+document.getElementById("grad").value=data.grad||"";
 };
 
-function saveOnly() {
-  const data = getData();
-  data.name = document.getElementById("name").value.trim();
-  data.email = document.getElementById("email").value.trim();
-  data.phone = document.getElementById("phone").value.trim();
-  data.address = document.getElementById("address").value.trim();
-  data.city = document.getElementById("city").value.trim();
-  data.state = document.getElementById("state").value.trim().toUpperCase();
-  data.zip = document.getElementById("zip").value.trim();
-  data.programCampus = document.getElementById("programCampus").value;
-  data.grad = document.getElementById("grad").value.trim();
-  setData(data);
+function saveOnly(){
+const data=getData();
+data.name=document.getElementById("name").value.trim();
+data.email=document.getElementById("email").value.trim();
+data.phone=document.getElementById("phone").value.trim();
+data.address=document.getElementById("address").value.trim();
+data.city=document.getElementById("city").value.trim();
+data.state=document.getElementById("state").value.trim().toUpperCase();
+data.zip=document.getElementById("zip").value.trim();
+data.programCampus=document.getElementById("programCampus").value;
+data.grad=document.getElementById("grad").value.trim();
+setData(data);
 }
 
-function goBack() {
-  window.location.href = "index.html";
+function goBack(){
+window.location.href="index.html";
 }
 
-function goNext() {
-  const name = document.getElementById("name").value.trim();
-  const email = document.getElementById("email").value.trim();
-  const phone = document.getElementById("phone").value.trim();
-  const address = document.getElementById("address").value.trim();
-  const city = document.getElementById("city").value.trim();
-  const state = document.getElementById("state").value.trim();
-  const zip = document.getElementById("zip").value.trim();
-  const programCampus = document.getElementById("programCampus").value;
-  const grad = document.getElementById("grad").value.trim();
+function goNext(){
 
-  if (!name) { alert("Full name is required."); return; }
-  if (!email || !email.includes("@")) { alert("Valid professional email required."); return; }
-  if (!phone) { alert("Phone number is required."); return; }
-  if (!address || !city || !state || !zip) { alert("Complete address is required."); return; }
-  if (!programCampus) { alert("Please select a program."); return; }
+const name=document.getElementById("name").value.trim();
+const email=document.getElementById("email").value.trim();
+const phone=document.getElementById("phone").value.trim();
+const address=document.getElementById("address").value.trim();
+const city=document.getElementById("city").value.trim();
+const state=document.getElementById("state").value.trim();
+const zip=document.getElementById("zip").value.trim();
+const programCampus=document.getElementById("programCampus").value;
 
-  saveOnly();
-  window.location.href = "objective.html";
+if(!name){alert("Full name is required.");return;}
+if(!email||!email.includes("@")){alert("Valid professional email required.");return;}
+if(!phone){alert("Phone number is required.");return;}
+if(!address||!city||!state||!zip){alert("Complete address is required.");return;}
+if(!programCampus){alert("Please select a program.");return;}
+
+saveOnly();
+window.location.href="objective.html";
+
 }
+
 </script>
 
 </body>
