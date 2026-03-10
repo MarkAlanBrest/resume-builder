@@ -1,333 +1,336 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <title>Education</title>
-  <link rel="stylesheet" href="style.css">
+<meta charset="UTF-8">
+<title>Education</title>
+<link rel="stylesheet" href="style.css">
 
-  <style>
-    .page-title {
-      text-align: center;
-      color: #0b3c6d;
-      margin-bottom: 20px;
-      font-size: 28px;
-    }
+<style>
 
-    .system {
-      color: #0b3c6d;
-      font-weight: 600;
-    }
+.page-title{
+  text-align:center;
+  color:#0b3c6d;
+  margin-bottom:20px;
+  font-size:28px;
+}
 
-    .info-box {
-      background: #f1f6fb;
-      border: 1px solid #c9d9ea;
-      padding: 12px;
-      margin-bottom: 25px;
-    }
+.system{
+  color:#0b3c6d;
+  font-weight:600;
+}
 
-    .entry-card {
-      border: 1px solid #ccc;
-      padding: 12px;
-      margin-bottom: 12px;
-      background: #f9f9f9;
-    }
+.info-box{
+  background:#f1f6fb;
+  border:1px solid #c9d9ea;
+  padding:12px;
+  margin-bottom:25px;
+}
 
-    .action-row {
-      display: flex;
-      gap: 15px;
-      margin-bottom: 20px;
-    }
+.entry-card{
+  border:1px solid #ccc;
+  padding:12px;
+  margin-bottom:12px;
+  background:#f9f9f9;
+}
 
-    .action-btn {
-      flex: 1;
-      padding: 14px;
-      font-size: 16px;
-      cursor: pointer;
-    }
-  </style>
+.action-row{
+  display:flex;
+  gap:15px;
+  margin-bottom:20px;
+}
+
+.action-btn{
+  flex:1;
+  padding:14px;
+  font-size:16px;
+  cursor:pointer;
+}
+
+/* NEW GRID LAYOUT */
+
+.form-row{
+  display:grid;
+  grid-template-columns:1fr 1fr;
+  gap:15px;
+  margin-bottom:10px;
+}
+
+input,select,textarea{
+  width:100%;
+  padding:6px;
+  margin-bottom:10px;
+}
+
+textarea{
+  min-height:80px;
+}
+
+</style>
 </head>
+
 <body>
 
 <div class="chat">
 
-  <h1 class="page-title">NCST’s Resume Builder</h1>
+<h1 class="page-title">NCST’s Resume Builder</h1>
 
-  <div class="info-box">
-    <strong>Important:</strong><br>
-    Be sure to list <strong>New Castle School of Trades</strong> as one of your schools.
-    <br><br>
-    Enter <strong>all schools or training programs</strong> you have attended by clicking
-    the <strong>“Add School / Institution”</strong> button below.
-    <br><br>
-    Add each school <strong>one at a time</strong>. You can include high school, trade school,
-    colleges, or other training programs.
-  </div>
+<div class="info-box">
+<strong>Important:</strong><br>
+Be sure to list <strong>New Castle School of Trades</strong> as one of your schools.
+<br><br>
+Enter <strong>all schools or training programs</strong> you have attended by clicking
+the <strong>“Add School / Institution”</strong> button below.
+<br><br>
+Add each school <strong>one at a time</strong>. You can include high school, trade school,
+colleges, or other training programs.
+</div>
 
-  <div id="actionButtons" class="action-row">
-    <button class="action-btn" onclick="showEducationForm()">Add School / Institution</button>
-  </div>
+<div id="actionButtons" class="action-row">
+<button class="action-btn" onclick="showEducationForm()">Add School / Institution</button>
+</div>
 
-  <!-- ============================
-       EDUCATION FORM
-  ============================= -->
-  <div id="educationForm" style="display:none;">
+<div id="educationForm" style="display:none;">
 
-    <!-- Auto-Fill Button -->
-    <button
-      id="autoFillNCSTBtn"
-      class="action-btn"
-      style="display:none; margin-bottom:15px;"
-      onclick="autoFillNCST()"
-    >
-      Auto‑Fill NCST Education
-    </button>
+<button
+id="autoFillNCSTBtn"
+class="action-btn"
+style="display:none;margin-bottom:15px;"
+onclick="autoFillNCST()"
+>
+Auto-Fill NCST Education
+</button>
 
-    <div class="system">School or Institution Name</div>
-    <input id="schoolName">
+<div class="system">School or Institution Name</div>
+<input id="schoolName">
 
-    <div class="system">Program / Degree / Certificate</div>
-    <input id="programName">
+<div class="system">Program / Degree / Certificate</div>
+<input id="programName">
 
-    <div class="system">School City</div>
-    <input id="schoolCity">
+<div class="form-row">
 
-    <div class="system">School State</div>
-    <input id="schoolState">
+<div>
+<div class="system">School City</div>
+<input id="schoolCity">
+</div>
 
-    <div class="system">Start Date (MM/YYYY)</div>
-    <input id="eduStartDate">
+<div>
+<div class="system">School State</div>
+<select id="schoolState">
+<option value="">Select</option>
+<option>AL</option><option>AK</option><option>AZ</option><option>AR</option>
+<option>CA</option><option>CO</option><option>CT</option><option>DE</option>
+<option>FL</option><option>GA</option><option>HI</option><option>ID</option>
+<option>IL</option><option>IN</option><option>IA</option><option>KS</option>
+<option>KY</option><option>LA</option><option>ME</option><option>MD</option>
+<option>MA</option><option>MI</option><option>MN</option><option>MS</option>
+<option>MO</option><option>MT</option><option>NE</option><option>NV</option>
+<option>NH</option><option>NJ</option><option>NM</option><option>NY</option>
+<option>NC</option><option>ND</option><option>OH</option><option>OK</option>
+<option>OR</option><option>PA</option><option>RI</option><option>SC</option>
+<option>SD</option><option>TN</option><option>TX</option><option>UT</option>
+<option>VT</option><option>VA</option><option>WA</option><option>WV</option>
+<option>WI</option><option>WY</option>
+</select>
+</div>
 
-    <div class="system">End Date (MM/YYYY or Expected)</div>
-    <input id="eduEndDate">
+</div>
 
-    <div class="system">
-      Notes (optional)<br>
-      <span style="font-weight: normal; font-size: 14px;">
-        If you achieved 90% or better attendance or a GPA of 3.00 or higher, we recommend listing it here along with any awards or accomplishments earned during school.
-      </span>
-    </div>
-    <textarea id="eduNotes"></textarea>
+<div class="form-row">
 
-    <button onclick="saveEducation()">Save Education</button>
-    <button onclick="cancelForm()">Cancel</button>
+<div>
+<div class="system">Start Date (MM/YYYY)</div>
+<input id="eduStartDate">
+</div>
 
-  </div>
+<div>
+<div class="system">End Date (MM/YYYY or Expected)</div>
+<input id="eduEndDate">
+</div>
 
-  <div id="educationList"></div>
+</div>
 
-  <br>
+<div class="system">
+Notes (optional)<br>
+<span style="font-weight:normal;font-size:14px;">
+If you achieved 90% or better attendance or a GPA of 3.00 or higher, we recommend listing it here along with any awards or accomplishments earned during school.
+</span>
+</div>
 
-  <button onclick="goBack()">Back</button>
-  <button onclick="goNext()">Next</button>
+<textarea id="eduNotes"></textarea>
+
+<button onclick="saveEducation()">Save Education</button>
+<button onclick="cancelForm()">Cancel</button>
+
+</div>
+
+<div id="educationList"></div>
+
+<br>
+
+<button onclick="goBack()">Back</button>
+<button onclick="goNext()">Next</button>
 
 </div>
 
 <script>
-/* ============================
-   LOCAL STORAGE HELPERS
-============================ */
-function getData() {
-  return JSON.parse(localStorage.getItem("resumeData")) || {};
-}
-function setData(data) {
-  localStorage.setItem("resumeData", JSON.stringify(data));
+
+/* LOCAL STORAGE HELPERS */
+
+function getData(){
+return JSON.parse(localStorage.getItem("resumeData"))||{};
 }
 
-/* ============================
-   PROGRAM → DEGREE + CITY/STATE
-============================ */
-const PROGRAM_INFO = {
-  "Automotive Technology — Main Campus (New Castle, PA)": {
-    program: "Automotive Technology — Associate in Specialized Technology Degree",
-    city: "New Castle",
-    state: "PA"
-  },
-  "Building Technology — Main Campus (New Castle, PA)": {
-    program: "Building Technology — Diploma",
-    city: "New Castle",
-    state: "PA"
-  },
-  "Combination Welding — Main Campus (New Castle, PA)": {
-    program: "Combination Welding — Diploma",
-    city: "New Castle",
-    state: "PA"
-  },
-  "Combination Welding — East Liverpool Campus (East Liverpool, OH)": {
-    program: "Combination Welding — Diploma",
-    city: "East Liverpool",
-    state: "OH"
-  },
-  "Commercial Truck Driving (Class A CDL) — Satellite Campus (Pulaski, PA)": {
-    program: "Commercial Truck Driving (Class A CDL) — Diploma",
-    city: "Pulaski",
-    state: "PA"
-  },
-  "Diesel & Heavy Equipment Repair Technology — Satellite Campus (Pulaski, PA)": {
-    program: "Diesel & Heavy Equipment Repair Technology — Associate in Specialized Technology Degree",
-    city: "Pulaski",
-    state: "PA"
-  },
-  "Electrical Technology — Main Campus (New Castle, PA)": {
-    program: "Electrical Technology — Associate in Specialized Technology Degree",
-    city: "New Castle",
-    state: "PA"
-  },
-  "Electrical & Industrial Maintenance — East Liverpool Campus (East Liverpool, OH)": {
-    program: "Electrical & Industrial Maintenance — Diploma",
-    city: "East Liverpool",
-    state: "OH"
-  },
-  "Heavy Equipment Operations with CDL — Satellite Campus (Pulaski, PA)": {
-    program: "Heavy Equipment Operations with CDL — Diploma",
-    city: "Pulaski",
-    state: "PA"
-  },
-  "Industrial Electro-Mechanical Technology — Main Campus (New Castle, PA)": {
-    program: "Industrial Electro-Mechanical Technology — Associate in Specialized Technology Degree",
-    city: "New Castle",
-    state: "PA"
-  },
-  "Machinist & CNC Manufacturing — Satellite Campus (Pulaski, PA)": {
-    program: "Machinist & CNC Manufacturing — Diploma",
-    city: "Pulaski",
-    state: "PA"
-  },
-  "Motorcycle & Power Equipment Technology — Satellite Campus (Pulaski, PA)": {
-    program: "Motorcycle & Power Equipment Technology — Diploma",
-    city: "Pulaski",
-    state: "PA"
-  },
-  "Refrigeration & A/C Technology — Main Campus (New Castle, PA)": {
-    program: "Refrigeration & A/C Technology — Associate in Specialized Technology Degree",
-    city: "New Castle",
-    state: "PA"
-  },
-  "Refrigeration & Climate Control — East Liverpool Campus (East Liverpool, OH)": {
-    program: "Refrigeration & Climate Control — Diploma",
-    city: "East Liverpool",
-    state: "OH"
-  }
+function setData(data){
+localStorage.setItem("resumeData",JSON.stringify(data));
+}
+
+/* PROGRAM DATA */
+
+const PROGRAM_INFO={
+"Automotive Technology — Main Campus (New Castle, PA)":{program:"Automotive Technology — Associate in Specialized Technology Degree",city:"New Castle",state:"PA"},
+"Building Technology — Main Campus (New Castle, PA)":{program:"Building Technology — Diploma",city:"New Castle",state:"PA"},
+"Combination Welding — Main Campus (New Castle, PA)":{program:"Combination Welding — Diploma",city:"New Castle",state:"PA"},
+"Combination Welding — East Liverpool Campus (East Liverpool, OH)":{program:"Combination Welding — Diploma",city:"East Liverpool",state:"OH"},
+"Commercial Truck Driving (Class A CDL) — Satellite Campus (Pulaski, PA)":{program:"Commercial Truck Driving (Class A CDL) — Diploma",city:"Pulaski",state:"PA"},
+"Diesel & Heavy Equipment Repair Technology — Satellite Campus (Pulaski, PA)":{program:"Diesel & Heavy Equipment Repair Technology — Associate in Specialized Technology Degree",city:"Pulaski",state:"PA"},
+"Electrical Technology — Main Campus (New Castle, PA)":{program:"Electrical Technology — Associate in Specialized Technology Degree",city:"New Castle",state:"PA"},
+"Electrical & Industrial Maintenance — East Liverpool Campus (East Liverpool, OH)":{program:"Electrical & Industrial Maintenance — Diploma",city:"East Liverpool",state:"OH"},
+"Heavy Equipment Operations with CDL — Satellite Campus (Pulaski, PA)":{program:"Heavy Equipment Operations with CDL — Diploma",city:"Pulaski",state:"PA"},
+"Industrial Electro-Mechanical Technology — Main Campus (New Castle, PA)":{program:"Industrial Electro-Mechanical Technology — Associate in Specialized Technology Degree",city:"New Castle",state:"PA"},
+"Machinist & CNC Manufacturing — Satellite Campus (Pulaski, PA)":{program:"Machinist & CNC Manufacturing — Diploma",city:"Pulaski",state:"PA"},
+"Motorcycle & Power Equipment Technology — Satellite Campus (Pulaski, PA)":{program:"Motorcycle & Power Equipment Technology — Diploma",city:"Pulaski",state:"PA"},
+"Refrigeration & A/C Technology — Main Campus (New Castle, PA)":{program:"Refrigeration & A/C Technology — Associate in Specialized Technology Degree",city:"New Castle",state:"PA"},
+"Refrigeration & Climate Control — East Liverpool Campus (East Liverpool, OH)":{program:"Refrigeration & Climate Control — Diploma",city:"East Liverpool",state:"OH"}
 };
 
-/* ============================
-   INITIAL LOAD
-============================ */
-window.onload = function () {
-  const data = getData();
-  data.education ||= [];
-  setData(data);
-  renderEducation();
+/* INITIAL LOAD */
+
+window.onload=function(){
+const data=getData();
+data.education ||= [];
+setData(data);
+renderEducation();
 };
 
-/* ============================
-   SHOW / HIDE FORM
-============================ */
-function showEducationForm() {
-  educationForm.style.display = "block";
-  actionButtons.style.display = "none";
-  autoFillNCSTBtn.style.display = "inline-block";
+/* FORM CONTROL */
+
+function showEducationForm(){
+educationForm.style.display="block";
+actionButtons.style.display="none";
+autoFillNCSTBtn.style.display="inline-block";
 }
 
-function cancelForm() {
-  educationForm.style.display = "none";
-  actionButtons.style.display = "flex";
-  autoFillNCSTBtn.style.display = "none";
+function cancelForm(){
+educationForm.style.display="none";
+actionButtons.style.display="flex";
+autoFillNCSTBtn.style.display="none";
 }
 
-/* ============================
-   SAVE EDUCATION ENTRY
-============================ */
-function saveEducation() {
-  const entry = {
-    school: schoolName.value.trim(),
-    program: programName.value.trim(),
-    city: schoolCity.value.trim(),
-    state: schoolState.value.trim(),
-    startDate: eduStartDate.value.trim(),
-    endDate: eduEndDate.value.trim(),
-    notes: eduNotes.value.trim()
-  };
+/* SAVE */
 
-  if (!entry.school || !entry.program || !entry.city || !entry.state || !entry.startDate || !entry.endDate) {
-    alert("Please complete all required education fields, including city and state.");
-    return;
-  }
+function saveEducation(){
 
-  const data = getData();
-  data.education.push(entry);
-  setData(data);
+const entry={
+school:schoolName.value.trim(),
+program:programName.value.trim(),
+city:schoolCity.value.trim(),
+state:schoolState.value.trim(),
+startDate:eduStartDate.value.trim(),
+endDate:eduEndDate.value.trim(),
+notes:eduNotes.value.trim()
+};
 
-  schoolName.value = programName.value =
-    schoolCity.value = schoolState.value =
-    eduStartDate.value = eduEndDate.value = eduNotes.value = "";
-
-  cancelForm();
-  renderEducation();
+if(!entry.school||!entry.program||!entry.city||!entry.state||!entry.startDate||!entry.endDate){
+alert("Please complete all required education fields, including city and state.");
+return;
 }
 
-/* ============================
-   RENDER EDUCATION LIST
-============================ */
-function renderEducation() {
-  const data = getData();
-  educationList.innerHTML = "";
+const data=getData();
+data.education.push(entry);
+setData(data);
 
-  data.education.forEach((edu, i) => {
-    const div = document.createElement("div");
-    div.className = "entry-card";
-    div.innerHTML = `
-      <strong>${edu.program}</strong><br>
-      ${edu.school} — ${edu.city}, ${edu.state}<br>
-      ${edu.startDate} – ${edu.endDate}<br>   
-      ${edu.notes ? edu.notes + "<br>" : ""}
-      <button onclick="deleteEducation(${i})">Delete</button>
-    `;
-    educationList.appendChild(div);
-  });
+schoolName.value="";
+programName.value="";
+schoolCity.value="";
+schoolState.value="";
+eduStartDate.value="";
+eduEndDate.value="";
+eduNotes.value="";
+
+cancelForm();
+renderEducation();
+
 }
 
-function deleteEducation(i) {
-  const data = getData();
-  data.education.splice(i, 1);
-  setData(data);
-  renderEducation();
+/* RENDER */
+
+function renderEducation(){
+
+const data=getData();
+educationList.innerHTML="";
+
+data.education.forEach((edu,i)=>{
+
+const div=document.createElement("div");
+div.className="entry-card";
+
+div.innerHTML=`
+<strong>${edu.program}</strong><br>
+${edu.school} — ${edu.city}, ${edu.state}<br>
+${edu.startDate} – ${edu.endDate}<br>
+${edu.notes ? edu.notes+"<br>" : ""}
+<button onclick="deleteEducation(${i})">Delete</button>
+`;
+
+educationList.appendChild(div);
+
+});
+
 }
 
-/* ============================
-   AUTO-FILL NCST (NO SAVE)
-============================ */
-function autoFillNCST() {
-  const data = getData() || {};
-  const student = data.student || {};
-
-  const programKey =
-    student.programCampus ||
-    student.program ||
-    data.programCampus ||
-    data.program ||
-    "";
-
-  const info = PROGRAM_INFO[programKey] || {};
-
-  schoolName.value = "New Castle School of Trades";
-  programName.value = info.program || "";
-  schoolCity.value = info.city || "";
-  schoolState.value = info.state || "";
-  eduStartDate.value = "";
-  eduEndDate.value = student.graduationDate || data.graduationDate || "";
-  eduNotes.value = "";
+function deleteEducation(i){
+const data=getData();
+data.education.splice(i,1);
+setData(data);
+renderEducation();
 }
 
-/* ============================
-   NAVIGATION
-============================ */
-function goBack() {
-  window.location.href = "certifications.html";
+/* AUTO FILL */
+
+function autoFillNCST(){
+
+const data=getData()||{};
+const student=data.student||{};
+
+const programKey=
+student.programCampus||
+student.program||
+data.programCampus||
+data.program||
+"";
+
+const info=PROGRAM_INFO[programKey]||{};
+
+schoolName.value="New Castle School of Trades";
+programName.value=info.program||"";
+schoolCity.value=info.city||"";
+schoolState.value=info.state||"";
+eduStartDate.value="";
+eduEndDate.value=student.graduationDate||data.graduationDate||"";
+eduNotes.value="";
+
 }
 
-function goNext() {
-  window.location.href = "/finalize";
+/* NAV */
+
+function goBack(){
+window.location.href="certifications.html";
 }
+
+function goNext(){
+window.location.href="/finalize";
+}
+
 </script>
 
 </body>
