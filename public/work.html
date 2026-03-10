@@ -26,10 +26,17 @@
   background:#f9f9f9;
 }
 
-input{
+input, select{
   width:100%;
   margin-bottom:8px;
   padding:6px;
+}
+
+.form-row{
+  display:grid;
+  grid-template-columns:1fr 1fr;
+  gap:15px;
+  margin-bottom:10px;
 }
 
 .help{
@@ -62,51 +69,80 @@ Enter <strong>all work and military experience</strong> here.
 
 <div id="jobForm" style="display:none;">
 
-  <div class="system">Employer / Branch</div>
-  <input id="employer">
+<div class="system">Employer / Branch</div>
+<input id="employer">
 
-  <div class="system">City</div>
-  <input id="employerCity">
+<div class="form-row">
 
-  <div class="system">State</div>
-  <input id="employerState">
+<div>
+<div class="system">City</div>
+<input id="employerCity">
+</div>
 
-  <div class="system">Job Title / Military Role</div>
-  <input id="title">
+<div>
+<div class="system">State</div>
+<select id="employerState">
+<option value="">Select</option>
+<option>AL</option><option>AK</option><option>AZ</option><option>AR</option>
+<option>CA</option><option>CO</option><option>CT</option><option>DE</option>
+<option>FL</option><option>GA</option><option>HI</option><option>ID</option>
+<option>IL</option><option>IN</option><option>IA</option><option>KS</option>
+<option>KY</option><option>LA</option><option>ME</option><option>MD</option>
+<option>MA</option><option>MI</option><option>MN</option><option>MS</option>
+<option>MO</option><option>MT</option><option>NE</option><option>NV</option>
+<option>NH</option><option>NJ</option><option>NM</option><option>NY</option>
+<option>NC</option><option>ND</option><option>OH</option><option>OK</option>
+<option>OR</option><option>PA</option><option>RI</option><option>SC</option>
+<option>SD</option><option>TN</option><option>TX</option><option>UT</option>
+<option>VT</option><option>VA</option><option>WA</option><option>WV</option>
+<option>WI</option><option>WY</option>
+</select>
+</div>
 
-  <div class="system">Start date (M/YYYY or MM/YYYY)</div>
-  <input id="startDate">
+</div>
 
-  <div class="system">End date (M/YYYY, MM/YYYY, or Present)</div>
-  <input id="endDate">
+<div class="system">Job Title / Military Role</div>
+<input id="title">
 
-  <!-- NEW INSTRUCTIONS (Option B) -->
-  <div class="system" style="margin-top:20px; margin-bottom:10px;">
-    <strong>Write 3–5 strong bullet points.</strong><br>
-    Each bullet must:<br>
-    • Start with an action verb<br>
-    • Be at least <strong>7 words</strong><br>
-    • Describe what you did and why it mattered<br>
-  </div>
+<div class="form-row">
 
-  <!-- BULLET INPUTS -->
-  <input id="task1" placeholder="Duty 1">
-  <div id="task1Help" class="help"></div>
+<div>
+<div class="system">Start date (M/YYYY or MM/YYYY)</div>
+<input id="startDate">
+</div>
 
-  <input id="task2" placeholder="Duty 2">
-  <div id="task2Help" class="help"></div>
+<div>
+<div class="system">End date (M/YYYY, MM/YYYY, or Present)</div>
+<input id="endDate">
+</div>
 
-  <input id="task3" placeholder="Duty 3">
-  <div id="task3Help" class="help"></div>
+</div>
 
-  <input id="task4" placeholder="Duty 4 (optional)">
-  <div id="task4Help" class="help"></div>
+<div class="system" style="margin-top:20px; margin-bottom:10px;">
+<strong>Write 3–5 strong bullet points.</strong><br>
+Each bullet must:<br>
+• Start with an action verb<br>
+• Be at least <strong>7 words</strong><br>
+• Describe what you did and why it mattered
+</div>
 
-  <input id="task5" placeholder="Duty 5 (optional)">
-  <div id="task5Help" class="help"></div>
+<input id="task1" placeholder="Duty 1">
+<div id="task1Help" class="help"></div>
 
-  <button id="saveBtn" onclick="saveJob()" disabled>Save Entry</button>
-  <button onclick="cancel()">Cancel</button>
+<input id="task2" placeholder="Duty 2">
+<div id="task2Help" class="help"></div>
+
+<input id="task3" placeholder="Duty 3">
+<div id="task3Help" class="help"></div>
+
+<input id="task4" placeholder="Duty 4 (optional)">
+<div id="task4Help" class="help"></div>
+
+<input id="task5" placeholder="Duty 5 (optional)">
+<div id="task5Help" class="help"></div>
+
+<button id="saveBtn" onclick="saveJob()" disabled>Save Entry</button>
+<button onclick="cancel()">Cancel</button>
 
 </div>
 
@@ -119,219 +155,225 @@ Enter <strong>all work and military experience</strong> here.
 </div>
 
 <script>
-/* ==========================
-   DATA HELPERS
-========================== */
+
+/* DATA HELPERS */
+
 function getData(){
-  return JSON.parse(localStorage.getItem("resumeData"))||{};
+return JSON.parse(localStorage.getItem("resumeData"))||{};
 }
 
 function setData(d){
-  localStorage.setItem("resumeData",JSON.stringify(d));
+localStorage.setItem("resumeData",JSON.stringify(d));
 }
 
 window.onload=function(){
-  const d=getData();
-  d.workExperience ||= [];
-  setData(d);
-  renderJobs();
-  attachBulletListeners();
+const d=getData();
+d.workExperience ||= [];
+setData(d);
+renderJobs();
+attachBulletListeners();
 };
 
-/* ==========================
-   DATE VALIDATION
-========================== */
+/* DATE VALIDATION */
+
 function validDate(v){
-  if(!v) return false;
-  if(v.toLowerCase()==="present") return true;
-  return /^(0?[1-9]|1[0-2])\/\d{4}$/i.test(v);
+if(!v) return false;
+if(v.toLowerCase()==="present") return true;
+return /^(0?[1-9]|1[0-2])\/\d{4}$/i.test(v);
 }
 
-/* ==========================
-   BULLET VALIDATION
-========================== */
-const verbs = [
-  "managed","taught","created","installed","operated","maintained","organized",
-  "supervised","assisted","supported","constructed","repaired","assembled",
-  "trained","coordinated","prepared","inspected","monitored","cleaned"
+/* BULLET VALIDATION */
+
+const verbs=[
+"managed","taught","created","installed","operated","maintained","organized",
+"supervised","assisted","supported","constructed","repaired","assembled",
+"trained","coordinated","prepared","inspected","monitored","cleaned"
 ];
 
 function attachBulletListeners(){
-  for(let i=1;i<=5;i++){
-    document.getElementById(`task${i}`).addEventListener("input", validateBullets);
-  }
+for(let i=1;i<=5;i++){
+document.getElementById(`task${i}`).addEventListener("input",validateBullets);
+}
 }
 
 function validateBullets(){
-  let validCount = 0;
 
-  for(let i=1;i<=5;i++){
-    const input = document.getElementById(`task${i}`);
-    const help = document.getElementById(`task${i}Help`);
-    const text = input.value.trim();
+let validCount=0;
 
-    if(!text){
-      help.style.display="none";
-      continue;
-    }
+for(let i=1;i<=5;i++){
 
-    const words = text.split(/\s+/).length;
-    const firstWord = text.split(/\s+/)[0].toLowerCase();
+const input=document.getElementById(`task${i}`);
+const help=document.getElementById(`task${i}Help`);
+const text=input.value.trim();
 
-    let msg = "";
-
-    if(!verbs.includes(firstWord)){
-      msg = "Bullet must start with an action verb.";
-    } else if(words < 7){
-      msg = `You need ${7 - words} more words.`;
-    }
-
-    if(msg){
-      help.style.display="block";
-      help.className="help";
-      help.textContent=msg;
-    } else {
-      help.style.display="block";
-      help.className="valid";
-      help.textContent="Looks good ✔";
-      validCount++;
-    }
-  }
-
-  document.getElementById("saveBtn").disabled = validCount < 3;
+if(!text){
+help.style.display="none";
+continue;
 }
 
-/* ==========================
-   CLEAR FORM (FIX)
-========================== */
+const words=text.split(/\s+/).length;
+const firstWord=text.split(/\s+/)[0].toLowerCase();
+
+let msg="";
+
+if(!verbs.includes(firstWord)){
+msg="Bullet must start with an action verb.";
+}
+else if(words<7){
+msg=`You need ${7-words} more words.`;
+}
+
+if(msg){
+help.style.display="block";
+help.className="help";
+help.textContent=msg;
+}
+else{
+help.style.display="block";
+help.className="valid";
+help.textContent="Looks good ✔";
+validCount++;
+}
+
+}
+
+document.getElementById("saveBtn").disabled=validCount<3;
+
+}
+
+/* CLEAR FORM */
+
 function clearJobForm(){
-  const fields = [
-    "employer","employerCity","employerState","title",
-    "startDate","endDate",
-    "task1","task2","task3","task4","task5"
-  ];
 
-  fields.forEach(id => {
-    document.getElementById(id).value = "";
-  });
+const fields=[
+"employer","employerCity","employerState","title",
+"startDate","endDate",
+"task1","task2","task3","task4","task5"
+];
 
-  for(let i=1;i<=5;i++){
-    const help = document.getElementById(`task${i}Help`);
-    help.style.display = "none";
-    help.textContent = "";
-  }
+fields.forEach(id=>{
+document.getElementById(id).value="";
+});
 
-  document.getElementById("saveBtn").disabled = true;
+for(let i=1;i<=5;i++){
+const help=document.getElementById(`task${i}Help`);
+help.style.display="none";
+help.textContent="";
 }
 
-/* ==========================
-   JOB FORM
-========================== */
+document.getElementById("saveBtn").disabled=true;
+
+}
+
+/* JOB FORM */
+
 function showJobForm(){
-  clearJobForm();   // ← FIX APPLIED HERE
-  jobForm.style.display="block";
+clearJobForm();
+jobForm.style.display="block";
 }
 
 function cancel(){
-  jobForm.style.display="none";
+jobForm.style.display="none";
 }
 
 function stripBullet(t){
-  return t.replace(/^•\s*/, "").trim();
+return t.replace(/^•\s*/,"").trim();
 }
 
 function saveJob(){
 
-  if(!employer.value.trim()){
-  highlightField("employer");
-  return alert("Employer or Branch is required.");
+if(!employer.value.trim()){
+highlightField("employer");
+return alert("Employer or Branch is required.");
 }
 
 if(!title.value.trim()){
-  highlightField("title");
-  return alert("Job Title / Military Role is required.");
+highlightField("title");
+return alert("Job Title / Military Role is required.");
 }
 
 if(!validDate(startDate.value.trim())){
-  highlightField("startDate");
-  return alert("Invalid start date.");
+highlightField("startDate");
+return alert("Invalid start date.");
 }
 
 if(!validDate(endDate.value.trim())){
-  highlightField("endDate");
-  return alert("Invalid end date.");
+highlightField("endDate");
+return alert("Invalid end date.");
 }
 
+const job={
+employer:employer.value.trim(),
+employerCity:employerCity.value.trim(),
+employerState:employerState.value.trim().toUpperCase().slice(0,2),
+title:title.value.trim(),
+start:startDate.value.trim(),
+end:endDate.value.trim(),
+task1:stripBullet(task1.value.trim()),
+task2:stripBullet(task2.value.trim()),
+task3:stripBullet(task3.value.trim()),
+task4:stripBullet(task4.value.trim()),
+task5:stripBullet(task5.value.trim())
+};
 
-  const job={
-    employer:employer.value.trim(),
-    employerCity:employerCity.value.trim(),
-    employerState:employerState.value.trim().toUpperCase().slice(0,2),
-    title:title.value.trim(),
-    start:startDate.value.trim(),
-    end:endDate.value.trim(),
-    task1:stripBullet(task1.value.trim()),
-    task2:stripBullet(task2.value.trim()),
-    task3:stripBullet(task3.value.trim()),
-    task4:stripBullet(task4.value.trim()),
-    task5:stripBullet(task5.value.trim())
-  };
+const d=getData();
+d.workExperience.push(job);
+setData(d);
 
-  const d=getData();
-  d.workExperience.push(job);
-  setData(d);
-
-  jobForm.style.display="none";
-  renderJobs();
+jobForm.style.display="none";
+renderJobs();
 }
 
-/* ==========================
-   RENDER JOB LIST
-========================== */
+/* RENDER JOBS */
+
 function renderJobs(){
-  const d=getData();
-  jobList.innerHTML="";
 
-  d.workExperience.forEach((j,i)=>{
-    jobList.innerHTML+=`
-      <div class="entry-card">
-        <strong>${j.title}</strong> – ${j.employer}
-        (${j.employerCity}, ${j.employerState})<br>
-        ${j.start} – ${j.end}<br><br>
-        ${j.task1 ? j.task1+"<br>" : ""}
-        ${j.task2 ? j.task2+"<br>" : ""}
-        ${j.task3 ? j.task3+"<br>" : ""}
-        ${j.task4 ? j.task4+"<br>" : ""}
-        ${j.task5 ? j.task5+"<br>" : ""}
-        <br>
-        <button onclick="deleteJob(${i})">Delete</button>
-      </div>
-    `;
-  });
+const d=getData();
+jobList.innerHTML="";
+
+d.workExperience.forEach((j,i)=>{
+
+jobList.innerHTML+=`
+<div class="entry-card">
+<strong>${j.title}</strong> – ${j.employer}
+(${j.employerCity}, ${j.employerState})<br>
+${j.start} – ${j.end}<br><br>
+${j.task1 ? j.task1+"<br>" : ""}
+${j.task2 ? j.task2+"<br>" : ""}
+${j.task3 ? j.task3+"<br>" : ""}
+${j.task4 ? j.task4+"<br>" : ""}
+${j.task5 ? j.task5+"<br>" : ""}
+<br>
+<button onclick="deleteJob(${i})">Delete</button>
+</div>
+`;
+
+});
+
 }
 
 function deleteJob(i){
-  const d=getData();
-  d.workExperience.splice(i,1);
-  setData(d);
-  renderJobs();
+const d=getData();
+d.workExperience.splice(i,1);
+setData(d);
+renderJobs();
 }
 
 function goBack(){
-  window.location.href="objective.html";
+window.location.href="objective.html";
 }
 
 function goNext(){
-  window.location.href="certifications.html";
+window.location.href="certifications.html";
 }
-function highlightField(id){
-  const el = document.getElementById(id);
-  el.classList.add("highlight");
 
-  // Remove highlight after a few seconds so it doesn't stay forever
-  setTimeout(() => {
-    el.classList.remove("highlight");
-  }, 100000);
+function highlightField(id){
+const el=document.getElementById(id);
+el.classList.add("highlight");
+
+setTimeout(()=>{
+el.classList.remove("highlight");
+},100000);
 }
 
 </script>
