@@ -119,12 +119,18 @@ Enter <strong>all work and military experience</strong> here.
 </div>
 
 <div class="system" style="margin-top:20px; margin-bottom:10px;">
+
+
 <strong>Write 3–5 strong bullet points.</strong><br>
 Each bullet must:<br>
-• Start with an action verb<br>
 • Be at least <strong>7 words</strong><br>
 • Describe what you did and why it mattered
+• Start with strong action verbs such as: 
+  • Installed, Operated, Maintained, Built, Repaired, Assembled,
+  • Supervised, Assisted, Coordinated, Trained, Managed, 
 </div>
+
+
 
 <input id="task1" placeholder="Duty 1">
 <div id="task1Help" class="help"></div>
@@ -184,62 +190,67 @@ return /^(0?[1-9]|1[0-2])\/\d{4}$/i.test(v);
 
 /* BULLET VALIDATION */
 
-const verbs=[
-"managed","taught","created","installed","operated","maintained","organized",
-"supervised","assisted","supported","constructed","repaired","assembled",
-"trained","coordinated","prepared","inspected","monitored","cleaned"
-];
+
+
+
+
+
 
 function attachBulletListeners(){
 for(let i=1;i<=5;i++){
 document.getElementById(`task${i}`).addEventListener("input",validateBullets);
 }
+
+
 }
+
 
 function validateBullets(){
 
-let validCount=0;
+let validCount = 0;
 
-for(let i=1;i<=5;i++){
+for(let i = 1; i <= 5; i++){
 
-const input=document.getElementById(`task${i}`);
-const help=document.getElementById(`task${i}Help`);
-const text=input.value.trim();
+  const input = document.getElementById(`task${i}`);
+  const help = document.getElementById(`task${i}Help`);
+  const text = input.value.trim();
 
-if(!text){
-help.style.display="none";
-continue;
-}
+  if(!text){
+    help.style.display = "none";
+    continue;
+  }
 
-const words=text.split(/\s+/).length;
-const firstWord=text.split(/\s+/)[0].toLowerCase();
+  const words = text.split(/\s+/).length;
 
-let msg="";
+  let msg = "";
 
-if(!verbs.includes(firstWord)){
-msg="Bullet must start with an action verb.";
-}
-else if(words<7){
-msg=`You need ${7-words} more words.`;
-}
+  if(words < 7){
+    msg = `You need ${7 - words} more word${7 - words === 1 ? "" : "s"}.`;
+  }
 
-if(msg){
-help.style.display="block";
-help.className="help";
-help.textContent=msg;
-}
-else{
-help.style.display="block";
-help.className="valid";
-help.textContent="Looks good ✔";
-validCount++;
-}
+  if(msg){
+    help.style.display = "block";
+    help.className = "help";
+    help.textContent = msg;
+  }
+  else{
+    help.style.display = "block";
+    help.className = "valid";
+    help.textContent = "Looks good ✔";
+    validCount++;
+  }
 
 }
 
-document.getElementById("saveBtn").disabled=validCount<3;
+document.getElementById("saveBtn").disabled = validCount < 3;
 
 }
+
+
+
+
+
+
 
 /* CLEAR FORM */
 
