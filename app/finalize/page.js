@@ -314,20 +314,35 @@ export default function FinalizePage() {
     transition:"all 0.2s ease"
   }}
 >
-                <div style={{textAlign:"center"}}>
-                  <img
-                    src={`/templates/preview/${t.id}.png`}
-                    style={{
-                      width:"100%",
-                      height:"260px",
-                      objectFit:"cover",
-                      borderRadius:"6px",
-                      marginBottom:"10px"
-                    }}
-                  />
-                  <div>{t.label}</div>
-                </div>
-              </div>
+              <div style={{textAlign:"center"}}>
+
+  <img
+    src={`/templates/preview/${t.id}.png`}
+    style={{
+      width:"100%",
+      height:"260px",
+      objectFit:"cover",
+      borderRadius:"6px",
+      marginBottom:"10px"
+    }}
+  />
+
+  <div style={{fontWeight:"bold"}}>
+    {t.label}
+  </div>
+
+  {/* 👇 THIS IS YOUR DESCRIPTION */}
+  <div style={{
+    fontSize:"13px",
+    color:"#475569",
+    marginTop:"4px",
+    padding:"0 6px"
+  }}>
+    {t.desc}
+  </div>
+
+</div>
+            </div>
             );
           })}
         </div>
