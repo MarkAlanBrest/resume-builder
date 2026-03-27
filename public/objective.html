@@ -149,15 +149,31 @@ function goNext() {
   const notes = document.getElementById("notes").value.trim();
   const jobTarget = document.getElementById("jobTarget").value.trim();
 
-  const combinedText =
-    qualities.join(" ") + " " + notes + " " + jobTarget;
+  const textContent = notes + " " + jobTarget;
+  const textLength = textContent.length;
+  const count = qualities.length;
 
-  // ✅ RULE:
-  // Pass if enough text OR at least 3 checkboxes
-  if (combinedText.length < 50 && qualities.length < 3) {
-    alert("Please add more detail or select at least 3 personal qualities.");
+  // ✅ SLIDING SCALE LOGIC
+  let valid = false;
+
+  if (count >= 3) {
+    valid = true;
+  } else if (count === 2 && textLength >= 20) {
+    valid = true;
+  } else if (count === 1 && textLength >= 40) {
+    valid = true;
+  } else if (count === 0 && textLength >= 60) {
+    valid = true;
+  }
+
+  if (!valid) {
+    alert("Add more detail or select additional qualities.");
     return;
   }
+
+  saveOnly();
+  window.location.href = "work.html";
+}
 
 
   saveOnly();
