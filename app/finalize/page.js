@@ -2,14 +2,23 @@
 import { useState } from "react";
 
 const templates = [
-  { id: "TemplateA", label: "Template 1 (Classic)" },
-  { id: "TemplateB", label: "Template 2 (Modern)" },
-  { id: "TemplateC", label: "Template 3 (Compact)" },
-  { id: "TemplateD", label: "Template 4 (Creative)" },
-  { id: "TemplateE", label: "Template 5" },
-  { id: "TemplateF", label: "Template 6" },
-  { id: "TemplateG", label: "Template 7" },
-  { id: "TemplateH", label: "Template 8" }
+  { id: "TemplateA", label: "Classic", desc: "Best for first-time resumes and entry-level jobs" },
+  { id: "TemplateB", label: "Modern", desc: "Clean layout for students with some experience" },
+  { id: "TemplateC", label: "Compact", desc: "Great for short resumes or limited experience" },
+  { id: "TemplateD", label: "Creative", desc: "Good for standing out in hands-on or trade jobs" },
+  { id: "TemplateE", label: "Professional", desc: "Strong choice for most job applications" },
+  { id: "TemplateF", label: "Structured", desc: "Organized layout for multiple jobs" },
+  { id: "TemplateG", label: "Skills Focused", desc: "Highlights skills over job history" },
+  { id: "TemplateH", label: "Bold", desc: "Good for confident applicants with experience" },
+
+  { id: "TemplateI", label: "Entry Simple", desc: "Perfect for students with no work history" },
+  { id: "TemplateJ", label: "Work Ready", desc: "Great for students entering the workforce" },
+  { id: "TemplateK", label: "Trade Focus", desc: "Designed for trade and technical careers" },
+  { id: "TemplateL", label: "Clean Edge", desc: "Simple and professional for any job" },
+  { id: "TemplateM", label: "Experience Plus", desc: "Best for multiple jobs or longer history" },
+  { id: "TemplateN", label: "Minimal", desc: "Keeps it simple and easy to read" },
+  { id: "TemplateO", label: "Student Pro", desc: "Balanced layout for school + work experience" },
+  { id: "TemplateP", label: "Showcase", desc: "Highlights strengths and key achievements" }
 ];
 
 function cleanText(v) {
@@ -33,6 +42,10 @@ export default function FinalizePage() {
   const [confirmed,setConfirmed] = useState(false);
   const [loading,setLoading] = useState(false);
   const [generated,setGenerated] = useState(false);
+
+  const shuffledTemplates = [...templates].sort(() => Math.random() - 0.5);
+
+  
 
   async function generateResumeContent(){
 
@@ -264,30 +277,43 @@ export default function FinalizePage() {
           gridTemplateColumns:"repeat(4,1fr)",
           gap:"24px"
         }}>
-          {templates.map((t)=>{
-
+{shuffledTemplates.map((t)=>{
             const locked = !generated;
 
             return (
-              <div
-                key={t.id}
-                onClick={()=>!locked && downloadTemplate(t.id)}
-                style={{
-                  width:"100%",
-                  height:"340px",
-                  border:"2px solid #cbd5f5",
-                  borderRadius:"10px",
-                  background: locked ? "#e2e8f0" : "#f8fafc",
-                  opacity: locked ? 0.4 : 1,
-                  cursor: locked ? "not-allowed" : "pointer",
-                  display:"flex",
-                  alignItems:"center",
-                  justifyContent:"center",
-                  fontWeight:"bold",
-                  fontSize:"15px",
-                  boxShadow:"0 4px 10px rgba(0,0,0,0.08)"
-                }}
-              >
+          <div
+  key={t.id}
+  onClick={()=>!locked && downloadTemplate(t.id)}
+
+  onMouseEnter={(e)=>{
+    if(!locked){
+      e.currentTarget.style.transform = "scale(1.03)";
+      e.currentTarget.style.boxShadow = "0 10px 25px rgba(0,0,0,0.15)";
+    }
+  }}
+
+  onMouseLeave={(e)=>{
+    e.currentTarget.style.transform = "scale(1)";
+    e.currentTarget.style.boxShadow = "0 4px 10px rgba(0,0,0,0.08)";
+  }}
+
+  style={{
+    width:"100%",
+    height:"340px",
+    border:"2px solid #cbd5f5",
+    borderRadius:"12px",
+    background: locked ? "#e2e8f0" : "#f8fafc",
+    opacity: locked ? 0.4 : 1,
+    cursor: locked ? "not-allowed" : "pointer",
+    display:"flex",
+    alignItems:"center",
+    justifyContent:"center",
+    fontWeight:"bold",
+    fontSize:"15px",
+    boxShadow:"0 4px 10px rgba(0,0,0,0.08)",
+    transition:"all 0.2s ease"
+  }}
+>
                 <div style={{textAlign:"center"}}>
                   <img
                     src={`/templates/preview/${t.id}.png`}
