@@ -16,6 +16,7 @@
     .system {
       color: #0b3c6d;
       font-weight: 600;
+      margin-bottom: 10px;
     }
   </style>
 </head>
@@ -25,10 +26,13 @@
 
   <h1 class="page-title">NCST’s Resume Builder</h1>
 
+  <p style="text-align:center; font-size:14px; color:#475569; margin-bottom:20px;">
+    Provide enough information so we can build your resume.  
+    You can select qualities, write about yourself, or both.
+  </p>
+
   <div class="system">
-    Optional: What type of job are you interested in after graduation?
-    <br><br>
-    <small>This helps tailor your resume.</small>
+    Job Goal (recommended)
   </div>
 
   <textarea
@@ -37,7 +41,9 @@
   ></textarea>
 
   <div class="system">
-    Select qualities and/or describe yourself so we can build a strong resume.  </div>
+    Select qualities and/or describe yourself below.  
+    You must either select qualities OR write about yourself.
+  </div>
 
   <div class="qual-list">
 
@@ -84,7 +90,7 @@
   </div>
 
   <div class="system">
-    Optional: Anything else an employer should know about you?
+    Tell us about yourself (work ethic, strengths, attitude)
   </div>
 
   <textarea
@@ -153,7 +159,6 @@ function goNext() {
   const textLength = textContent.length;
   const count = qualities.length;
 
-  // ✅ SLIDING SCALE LOGIC
   let valid = false;
 
   if (count >= 3) {
@@ -171,18 +176,9 @@ function goNext() {
     return;
   }
 
- 
-
   saveOnly();
   window.location.href = "work.html";
 }
-
-
-  saveOnly();
-  window.location.href = "work.html";
-}
-
-
 </script>
 
 </body>
