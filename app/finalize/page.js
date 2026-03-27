@@ -1,5 +1,4 @@
 "use client";
-import { useState } from "react";
 import { useState, useEffect } from "react";
 const templates = [
   { id: "TemplateA", label: "Classic", desc: "Best for first-time resumes and entry-level jobs" },
@@ -49,7 +48,7 @@ export default function FinalizePage() {
   useEffect(() => {
   const shuffled = [...templates].sort(() => Math.random() - 0.5);
   setShuffledTemplates(shuffled);
-  
+
 }, []);
 
   async function generateResumeContent(){
