@@ -149,15 +149,16 @@ function goNext() {
   const notes = document.getElementById("notes").value.trim();
   const jobTarget = document.getElementById("jobTarget").value.trim();
 
-  // 🔥 COMBINE ALL INPUT
   const combinedText =
     qualities.join(" ") + " " + notes + " " + jobTarget;
 
-  // ✅ MINIMUM CONTENT CHECK
-  if (combinedText.length < 60) {
-    alert("Please provide a little more detail about yourself so we can build a strong resume.");
+  // ✅ RULE:
+  // Pass if enough text OR at least 3 checkboxes
+  if (combinedText.length < 50 && qualities.length < 3) {
+    alert("Please add more detail or select at least 3 personal qualities.");
     return;
   }
+
 
   saveOnly();
   window.location.href = "work.html";
