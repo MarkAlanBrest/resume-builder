@@ -37,8 +37,7 @@
   ></textarea>
 
   <div class="system">
-    Select at least <strong>3</strong> or more personal qualities that describe you best.
-  </div>
+    Select qualities and/or describe yourself so we can build a strong resume.  </div>
 
   <div class="qual-list">
 
@@ -143,16 +142,28 @@ function goBack() {
 }
 
 function goNext() {
-  const checked = document.querySelectorAll(".qual:checked").length;
+  const qualities = Array.from(
+    document.querySelectorAll(".qual:checked")
+  ).map(cb => cb.value);
 
-  if (checked < 3) {
-    alert("Please select at least 3 personal qualities.");
+  const notes = document.getElementById("notes").value.trim();
+  const jobTarget = document.getElementById("jobTarget").value.trim();
+
+  // 🔥 COMBINE ALL INPUT
+  const combinedText =
+    qualities.join(" ") + " " + notes + " " + jobTarget;
+
+  // ✅ MINIMUM CONTENT CHECK
+  if (combinedText.length < 60) {
+    alert("Please provide a little more detail about yourself so we can build a strong resume.");
     return;
   }
 
   saveOnly();
   window.location.href = "work.html";
 }
+
+
 </script>
 
 </body>
