@@ -6,142 +6,52 @@
   <link rel="stylesheet" href="style.css">
 
   <style>
-    body {
-      font-family: Inter, Arial, sans-serif;
-      background: linear-gradient(to bottom right, #e2e8f0, #cbd5f5);
-      padding: 30px;
-      color: #1e293b;
-    }
-
-    .chat {
-      max-width: 700px;
-      margin: auto;
-      background: white;
-      padding: 28px;
-      border-radius: 18px;
-      box-shadow: 0 10px 30px rgba(0,0,0,0.15);
-    }
-
     .page-title {
       text-align: center;
       color: #0b3c6d;
-      margin-bottom: 10px;
-      font-size: 30px;
-    }
-
-    .sub-text {
-      text-align:center;
-      font-size:14px;
-      color:#475569;
-      margin-bottom:25px;
+      margin-bottom: 20px;
+      font-size: 28px;
     }
 
     .system {
       color: #0b3c6d;
       font-weight: 600;
-      margin: 18px 0 8px;
-    }
-
-    textarea {
-      width: 100%;
-      min-height: 80px;
-      padding: 10px;
-      border-radius: 10px;
-      border: 1px solid #cbd5e1;
       margin-bottom: 10px;
-      font-size: 14px;
+      margin-top: 15px;
     }
-
-    .qual-list {
-      background: #f8fafc;
-      border-radius: 12px;
-      padding: 12px;
-      border: 1px solid #e2e8f0;
-    }
-
-    .check-row {
-      display: flex;
-      align-items: center;
-      margin-bottom: 6px;
-    }
-
-    .check-row input {
-      margin-right: 8px;
-    }
-
-    .btn-row {
-      display: flex;
-      justify-content: space-between;
-      margin-top: 20px;
-    }
-
-    button {
-      background: #1e3a8a;
-      color: white;
-      padding: 10px 18px;
-      border: none;
-      border-radius: 10px;
-      cursor: pointer;
-      font-weight: 600;
-    }
-
-    button:hover {
-      background: #172554;
-    }
-
-    .guide-box {
-      background: linear-gradient(135deg, #1e3a8a, #0f172a);
-      color: white;
-      padding: 16px;
-      border-radius: 14px;
-      margin-bottom: 18px;
-      font-size: 14px;
-    }
-
-    .guide-box div {
-      margin-bottom: 4px;
-    }
-
-    .tip {
-      font-size: 12px;
-      opacity: 0.8;
-      margin-top: 8px;
-    }
-
   </style>
 </head>
 <body>
 
 <div class="chat">
 
-  <h1 class="page-title">NCST Resume Builder</h1>
+  <h1 class="page-title">NCST’s Resume Builder</h1>
 
-  <p class="sub-text">
-    Provide enough information so we can build a strong resume for you.<br>
-    You can select qualities, write about yourself, or both.
+  <!-- UPDATED DIRECTIONS -->
+  <p style="text-align:center; font-size:14px; color:#475569; margin-bottom:20px;">
+    Provide enough information so we can build your resume.<br><br>
+
+    <strong>Writing Guidance</strong><br>
+    ✅ 3 boxes: No extra writing needed<br>
+    📝 2 boxes: Add a short sentence (~20+ characters)<br>
+    ✏️ 1 box: Add a few sentences (~40+ characters)<br>
+    📄 0 boxes: Add a solid paragraph (~60+ characters)<br><br>
+
+    <em>Tip: Fewer boxes = more detailed writing expected.</em>
   </p>
 
-  <!-- JOB TARGET -->
-  <div class="system">Job Goal (recommended)</div>
+  <div class="system">
+    Job Goal (recommended)
+  </div>
 
   <textarea
     id="jobTarget"
     placeholder="Example: Entry-level welding position in a fabrication or industrial setting"
   ></textarea>
 
-  <!-- GUIDANCE BOX -->
-  <div class="guide-box">
-    <div><strong>Writing Guidance</strong></div>
-    <div>✅ 3 boxes: No extra writing needed</div>
-    <div>📝 2 boxes: Add a short sentence (~20+ characters)</div>
-    <div>✏️ 1 box: Add a few sentences (~40+ characters)</div>
-    <div>📄 0 boxes: Add a solid paragraph (~60+ characters)</div>
-    <div class="tip">Tip: Fewer boxes = more detailed writing expected.</div>
-  </div>
-
-  <!-- QUALITIES -->
   <div class="system">
-    Select qualities and/or describe yourself below
+    Select qualities and/or describe yourself below.  
+    You must either select qualities OR write about yourself.
   </div>
 
   <div class="qual-list">
@@ -188,7 +98,6 @@
 
   </div>
 
-  <!-- NOTES -->
   <div class="system">
     Tell us about yourself (work ethic, strengths, attitude)
   </div>
@@ -198,11 +107,10 @@
     placeholder="Example: dependable, motivated, eager to learn, strong work ethic"
   ></textarea>
 
-  <!-- BUTTONS -->
-  <div class="btn-row">
-    <button type="button" onclick="goBack()">Back</button>
-    <button type="button" onclick="goNext()">Next</button>
-  </div>
+  <br>
+
+  <button type="button" onclick="goBack()">Back</button>
+  <button type="button" onclick="goNext()">Next</button>
 
 </div>
 
@@ -262,13 +170,24 @@ function goNext() {
 
   let valid = false;
 
-  if (count >= 3) valid = true;
-  else if (count === 2 && textLength >= 20) valid = true;
-  else if (count === 1 && textLength >= 40) valid = true;
-  else if (count === 0 && textLength >= 60) valid = true;
+  if (count >= 3) {
+    valid = true;
+  } else if (count === 2 && textLength >= 20) {
+    valid = true;
+  } else if (count === 1 && textLength >= 40) {
+    valid = true;
+  } else if (count === 0 && textLength >= 60) {
+    valid = true;
+  }
 
   if (!valid) {
-    alert("Add more detail based on your selections — fewer boxes require more writing.");
+    alert(
+      "Add more detail based on your selections:\n\n" +
+      "3 boxes → no writing needed\n" +
+      "2 boxes → add a short sentence (~20+ characters)\n" +
+      "1 box → add a few sentences (~40+ characters)\n" +
+      "0 boxes → add a paragraph (~60+ characters)"
+    );
     return;
   }
 
