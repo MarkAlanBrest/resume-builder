@@ -576,11 +576,22 @@ OBJECTIVES RULES:
 --------------------------------------------------
 
 PROFESSIONAL SUMMARY RULES:
-- Write ONE concise paragraph (5–7 complete sentences).
+- Write ONE concise professional summary (3–4 sentences max).
 - Write in third person only.
 - Base the summary primarily on the Objectives input.
-- Use work experience, education, and skills to support the objectives.
+- Support with relevant work experience, education, and technical skills.
+
+STYLE REQUIREMENTS:
+- Use direct, specific, resume-quality language.
+- Focus on skills, tools, equipment, and hands-on experience.
+- Avoid generic phrases such as "dedicated", "hardworking", "team player", or "motivated".
+- Avoid repeating the same idea in multiple sentences.
+- Keep sentences tight, clear, and impactful.
+
+CONSTRAINTS:
 - Do NOT exaggerate experience or invent credentials.
+- Do NOT add information not present in the input.
+- Do NOT include filler or unnecessary wording.
 
 --------------------------------------------------
 
@@ -671,7 +682,7 @@ const finalData = {
   ...baseData,
 
   programTools: clean(polished.programTools || ""),
-  professionalSummary: limit(clean(polished.summary || ""), 600),
+  professionalSummary: limit(clean(polished.summary || ""), 1200),
   programDescription: clean(polished.programDescription || ""),
 
   summary1: clean(summaryBullets[0] || ""),
