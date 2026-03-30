@@ -577,7 +577,8 @@ OBJECTIVES RULES:
 
 PROFESSIONAL SUMMARY RULES:
 - Write ONE concise professional summary (3–4 sentences max).
-- Write in third person only.
+- Do NOT use first person ("I") or third person names (no "he/she" or the person's name).
+- Write in implied first person (standard resume style with no subject).
 - Base the summary primarily on the Objectives input.
 - Support with relevant work experience, education, and technical skills.
 
