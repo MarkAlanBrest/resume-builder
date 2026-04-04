@@ -10,14 +10,6 @@ const templates = [
   { id: "TemplateG", label: "Skills Focused", desc: "Highlights skills over job history" },
   { id: "TemplateH", label: "Bold", desc: "Good for confident applicants with experience" },
 
-  { id: "TemplateI", label: "Entry Simple", desc: "Perfect for students with no work history" },
-  { id: "TemplateJ", label: "Work Ready", desc: "Great for students entering the workforce" },
-  { id: "TemplateK", label: "Trade Focus", desc: "Designed for trade and technical careers" },
-  { id: "TemplateL", label: "Clean Edge", desc: "Simple and professional for any job" },
-  { id: "TemplateM", label: "Experience Plus", desc: "Best for multiple jobs or longer history" },
-  { id: "TemplateN", label: "Minimal", desc: "Keeps it simple and easy to read" },
-  { id: "TemplateO", label: "Student Pro", desc: "Balanced layout for school + work experience" },
-  { id: "TemplateP", label: "Showcase", desc: "Highlights strengths and key achievements" }
 ];
 
 function cleanText(v) {
