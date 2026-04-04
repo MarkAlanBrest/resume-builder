@@ -1,14 +1,14 @@
 "use client";
 import { useState, useEffect } from "react";
 const templates = [
-  { id: "TemplateA", label: "Classic", desc: "Best for first-time resumes and entry-level jobs" },
-  { id: "TemplateB", label: "Modern", desc: "Clean layout for students with some experience" },
-  { id: "TemplateC", label: "Compact", desc: "Great for short resumes or limited experience" },
-  { id: "TemplateD", label: "Creative", desc: "Good for standing out in hands-on or trade jobs" },
-  { id: "TemplateE", label: "Professional", desc: "Strong choice for most job applications" },
-  { id: "TemplateF", label: "Structured", desc: "Organized layout for multiple jobs" },
-  { id: "TemplateG", label: "Skills Focused", desc: "Highlights skills over job history" },
-  { id: "TemplateH", label: "Bold", desc: "Good for confident applicants with experience" },
+  { id: "TemplateA", label: "Classic", desc: "........" },
+  { id: "TemplateB", label: "Modern", desc: "........"},
+  { id: "TemplateC", label: "Compact", desc: "........" },
+  { id: "TemplateD", label: "Creative", desc: "........" },
+  { id: "TemplateE", label: "Professional", desc: "........" },
+  { id: "TemplateF", label: "Modern", desc: "........" },
+  { id: "TemplateG", label: "Skills", desc: "........" },
+  { id: "TemplateH", label: "Bold", desc: "........" },
 
 ];
 
