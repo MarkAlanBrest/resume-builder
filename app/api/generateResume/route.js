@@ -174,13 +174,31 @@ function sortEducationNewestFirst(education) {
 /* ===========================
    PROGRAM BLOCK EXTRACTOR
 =========================== */
+function normalizeProgramKey(value) {
+  return String(value || "")
+    .replace(/[^\x09\x0A\x0D\x20-\x7E]/g, "")
+    .replace(/\s+/g, " ")
+    .trim()
+    .toLowerCase();
+}
+
 function extractProgramBlock(guide, programName) {
   if (!guide || !programName) return "";
   const marker = `===== PROGRAM: ${programName} =====`;
   const start = guide.indexOf(marker);
-  if (start === -1) return "";
-  const next = guide.indexOf("===== PROGRAM:", start + marker.length);
-  return guide.slice(start, next === -1 ? guide.length : next).trim();
+  if (start !== -1) {
+    const next = guide.indexOf("===== PROGRAM:", start + marker.length);
+    return guide.slice(start, next === -1 ? guide.length : next).trim();
+  }
+
+  const target = normalizeProgramKey(programName);
+  const markers = [...guide.matchAll(/===== PROGRAM: ([\s\S]*?) =====/g)];
+  const match = markers.find(m => normalizeProgramKey(m[1]) === target);
+  if (!match) return "";
+
+  const fallbackStart = match.index;
+  const fallbackNext = guide.indexOf("===== PROGRAM:", fallbackStart + match[0].length);
+  return guide.slice(fallbackStart, fallbackNext === -1 ? guide.length : fallbackNext).trim();
 }
 
 /* ===========================
@@ -385,8 +403,8 @@ const t5 = tasksArr[4] || "";
     careerContext,
   };
 
-  // derive program name + block from masterStyleGuide
-  const programName = baseData.education?.[0]?.program || "";
+  // Derive the guide from the raw selected program first; clean() removes em dashes used in style-guide markers.
+  const programName = String(s.programCampus || body.education?.[0]?.program || "").trim();
   const programGuide = extractProgramBlock(masterStyleGuide, programName);
 
   /* ===========================

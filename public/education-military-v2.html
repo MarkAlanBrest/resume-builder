@@ -72,14 +72,14 @@ textarea{
 
 <div class="chat">
 
-<h1 class="page-title">NCST’s Resume Builder</h1>
+<h1 class="page-title">Resume Builder</h1>
 
 <div class="info-box">
 <strong>Important:</strong><br>
-Be sure to list <strong>New Castle School of Trades</strong> as one of your schools.
+Be sure to list your current school or training program as one of your schools.
 <br><br>
 Enter <strong>all schools or training programs</strong> you have attended by clicking
-the <strong>“Add School / Institution”</strong> button below.
+the <strong>"Add School / Institution"</strong> button below.
 <br><br>
 Add each school <strong>one at a time</strong>. You can include high school, trade school,
 colleges, or other training programs.
@@ -92,12 +92,12 @@ colleges, or other training programs.
 <div id="educationForm" style="display:none;">
 
 <button
-id="autoFillNCSTBtn"
+id="autoFillProgramBtn"
 class="action-btn"
 style="display:none;margin-bottom:15px;"
-onclick="autoFillNCST()"
+onclick="autoFillSelectedProgram()"
 >
-Auto-Fill NCST Education
+Auto-Fill Selected Program
 </button>
 
 <div class="system">School or Institution Name</div>
@@ -270,6 +270,48 @@ const PROGRAM_INFO = {
   program: "Refrigeration & Climate Control — Diploma",
   city: "East Liverpool",
   state: "OH"
+},
+
+"Building Construction Technology — Certificate in Building Construction Technology": {
+  school: "North American Trade Schools",
+  program: "Building Construction Technology — Certificate in Building Construction Technology",
+  city: "Baltimore",
+  state: "MD"
+},
+
+"Combination Welding — Certificate in Combination Welding": {
+  school: "North American Trade Schools",
+  program: "Combination Welding — Certificate in Combination Welding",
+  city: "Baltimore",
+  state: "MD"
+},
+
+"Electrical Technology — Certificate in Electrical Technology": {
+  school: "North American Trade Schools",
+  program: "Electrical Technology — Certificate in Electrical Technology",
+  city: "Baltimore",
+  state: "MD"
+},
+
+"HVAC (HRVAC) Technology — Certificate in HVAC Technology": {
+  school: "North American Trade Schools",
+  program: "HVAC (HRVAC) Technology — Certificate in HVAC Technology",
+  city: "Baltimore",
+  state: "MD"
+},
+
+"Diesel Technology — Certificate in Diesel Technology": {
+  school: "North American Trade Schools",
+  program: "Diesel Technology — Certificate in Diesel Technology",
+  city: "Baltimore",
+  state: "MD"
+},
+
+"Commercial Truck Driving — Certificate in Commercial Truck Driving + CDL License": {
+  school: "North American Trade Schools",
+  program: "Commercial Truck Driving — Certificate in Commercial Truck Driving + CDL License",
+  city: "Baltimore",
+  state: "MD"
 }
 
 };
@@ -288,13 +330,13 @@ renderEducation();
 function showEducationForm(){
 educationForm.style.display="block";
 actionButtons.style.display="none";
-autoFillNCSTBtn.style.display="inline-block";
+autoFillProgramBtn.style.display="inline-block";
 }
 
 function cancelForm(){
 educationForm.style.display="none";
 actionButtons.style.display="flex";
-autoFillNCSTBtn.style.display="none";
+autoFillProgramBtn.style.display="none";
 }
 
 /* SAVE */
@@ -368,7 +410,11 @@ renderEducation();
 
 /* AUTO FILL */
 
-function autoFillNCST(){
+function getDefaultSchoolName(data){
+return data.campus==="baltimore" ? "North American Trade Schools" : "New Castle School of Trades";
+}
+
+function autoFillSelectedProgram(){
 
 const data=getData()||{};
 const student=data.student||{};
@@ -382,7 +428,7 @@ data.program||
 
 const info=PROGRAM_INFO[programKey]||{};
 
-schoolName.value="New Castle School of Trades";
+schoolName.value=info.school||getDefaultSchoolName(data);
 programName.value=info.program||"";
 schoolCity.value=info.city||"";
 schoolState.value=info.state||"";
