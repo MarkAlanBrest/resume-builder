@@ -106,23 +106,18 @@ input, select{
 
 </div>
 
-<div class="system">Select your program</div>
+<div class="system">Select Your Campus/Location</div>
+<select id="campus" onchange="updatePrograms()">
+<option value="">-- Select Campus --</option>
+<option value="main">Main Campus (New Castle, PA)</option>
+<option value="east">East Liverpool Campus (East Liverpool, OH)</option>
+<option value="satellite">Satellite Campus (Pulaski, PA)</option>
+<option value="baltimore">North American Trade Schools (Baltimore, MD)</option>
+</select>
+
+<div class="system">Select Your Program</div>
 <select id="programCampus">
-<option value="">-- Select --</option>
-<option>Automotive Technology — Main Campus (New Castle, PA)</option>
-<option>Building Technology — Main Campus (New Castle, PA)</option>
-<option>Combination Welding — Main Campus (New Castle, PA)</option>
-<option>Combination Welding — East Liverpool Campus (East Liverpool, OH)</option>
-<option>Commercial Truck Driving (Class A CDL) — Satellite Campus (Pulaski, PA)</option>
-<option>Diesel & Heavy Equipment Repair Technology — Satellite Campus (Pulaski, PA)</option>
-<option>Electrical Technology — Main Campus (New Castle, PA)</option>
-<option>Electrical & Industrial Maintenance — East Liverpool Campus (East Liverpool, OH)</option>
-<option>Heavy Equipment Operations with CDL — Satellite Campus (Pulaski, PA)</option>
-<option>Industrial Electro-Mechanical Technology — Main Campus (New Castle, PA)</option>
-<option>Machinist & CNC Manufacturing — Satellite Campus (Pulaski, PA)</option>
-<option>Motorcycle & Power Equipment Technology — Satellite Campus (Pulaski, PA)</option>
-<option>Refrigeration & A/C Technology — Main Campus (New Castle, PA)</option>
-<option>Refrigeration & Climate Control — East Liverpool Campus (East Liverpool, OH)</option>
+<option value="">-- Select Program --</option>
 </select>
 
 <div style="display:none;">
@@ -158,6 +153,76 @@ document.getElementById("address").value=data.address||"";
 document.getElementById("city").value=data.city||"";
 document.getElementById("state").value=data.state||"";
 document.getElementById("zip").value=data.zip||"";
+document.getElementById("campus").value=data.campus||"";
+document.getElementById("programCampus").value=data.programCampus||"";
+document.getElementById("grad").value=data.grad||"";
+
+// Trigger program dropdown update based on saved campus
+if(data.campus){
+updatePrograms();
+}
+};
+
+function updatePrograms(){
+const campus=document.getElementById("campus").value;
+const programSelect=document.getElementById("programCampus");
+
+const programs={
+main:[
+"Automotive Technology — Main Campus (New Castle, PA)",
+"Building Technology — Main Campus (New Castle, PA)",
+"Combination Welding — Main Campus (New Castle, PA)",
+"Electrical Technology — Main Campus (New Castle, PA)",
+"Industrial Electro-Mechanical Technology — Main Campus (New Castle, PA)",
+"Refrigeration & A/C Technology — Main Campus (New Castle, PA)"
+],
+east:[
+"Combination Welding — East Liverpool Campus (East Liverpool, OH)",
+"Electrical & Industrial Maintenance — East Liverpool Campus (East Liverpool, OH)",
+"Refrigeration & Climate Control — East Liverpool Campus (East Liverpool, OH)"
+],
+satellite:[
+"Commercial Truck Driving (Class A CDL) — Satellite Campus (Pulaski, PA)",
+"Diesel & Heavy Equipment Repair Technology — Satellite Campus (Pulaski, PA)",
+"Heavy Equipment Operations with CDL — Satellite Campus (Pulaski, PA)",
+"Machinist & CNC Manufacturing — Satellite Campus (Pulaski, PA)",
+"Motorcycle & Power Equipment Technology — Satellite Campus (Pulaski, PA)"
+],
+baltimore:[
+"Building Construction Technology — Certificate in Building Construction Technology",
+"Combination Welding — Certificate in Combination Welding",
+"Electrical Technology — Certificate in Electrical Technology",
+"HVAC (HRVAC) Technology — Certificate in HVAC Technology",
+"Diesel Technology — Certificate in Diesel Technology",
+"Commercial Truck Driving — Certificate in Commercial Truck Driving + CDL License"
+]
+};
+
+programSelect.innerHTML='<option value="">-- Select Program --</option>';
+
+if(campus && programs[campus]){
+programs[campus].forEach(function(p){
+const opt=document.createElement("option");
+opt.value=p;
+opt.textContent=p;
+programSelect.appendChild(opt);
+});
+}
+
+// Restore previously saved selection
+const data=getData();
+if(data.programCampus){
+programSelect.value=data.programCampus;
+}
+}
+const data=getData();
+document.getElementById("name").value=data.name||"";
+document.getElementById("email").value=data.email||"";
+document.getElementById("phone").value=data.phone||"";
+document.getElementById("address").value=data.address||"";
+document.getElementById("city").value=data.city||"";
+document.getElementById("state").value=data.state||"";
+document.getElementById("zip").value=data.zip||"";
 document.getElementById("programCampus").value=data.programCampus||"";
 document.getElementById("grad").value=data.grad||"";
 };
@@ -171,6 +236,7 @@ data.address=document.getElementById("address").value.trim();
 data.city=document.getElementById("city").value.trim();
 data.state=document.getElementById("state").value.trim().toUpperCase();
 data.zip=document.getElementById("zip").value.trim();
+data.campus=document.getElementById("campus").value;
 data.programCampus=document.getElementById("programCampus").value;
 data.grad=document.getElementById("grad").value.trim();
 setData(data);
@@ -189,12 +255,14 @@ const address=document.getElementById("address").value.trim();
 const city=document.getElementById("city").value.trim();
 const state=document.getElementById("state").value.trim();
 const zip=document.getElementById("zip").value.trim();
+const campus=document.getElementById("campus").value;
 const programCampus=document.getElementById("programCampus").value;
 
 if(!name){alert("Full name is required.");return;}
 if(!email||!email.includes("@")){alert("Valid professional email required.");return;}
 if(!phone){alert("Phone number is required.");return;}
 if(!address||!city||!state||!zip){alert("Complete address is required.");return;}
+if(!campus){alert("Please select a campus.");return;}
 if(!programCampus){alert("Please select a program.");return;}
 
 saveOnly();
