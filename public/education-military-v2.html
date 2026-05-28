@@ -33,6 +33,15 @@
   background:#f9f9f9;
 }
 
+.validation-message{
+  display:none;
+  border:1px solid #c96b6b;
+  background:#fff3f3;
+  color:#8a1f1f;
+  padding:10px;
+  margin-bottom:12px;
+}
+
 .action-row{
   display:flex;
   gap:15px;
@@ -161,6 +170,10 @@ If you achieved 90% or better attendance or a GPA of 3.00 or higher, we recommen
 <button onclick="saveEducation()">Save Education</button>
 <button onclick="cancelForm()">Cancel</button>
 
+</div>
+
+<div id="educationRequiredMessage" class="validation-message">
+At a mininum, you need to add your educaiton you are currently earning for the program you are in
 </div>
 
 <div id="educationList"></div>
@@ -328,6 +341,7 @@ renderEducation();
 /* FORM CONTROL */
 
 function showEducationForm(){
+educationRequiredMessage.style.display="none";
 educationForm.style.display="block";
 actionButtons.style.display="none";
 autoFillProgramBtn.style.display="inline-block";
@@ -381,6 +395,7 @@ function renderEducation(){
 
 const data=getData();
 educationList.innerHTML="";
+educationRequiredMessage.style.display=(data.education||[]).length ? "none" : educationRequiredMessage.style.display;
 
 data.education.forEach((edu,i)=>{
 
@@ -445,6 +460,12 @@ window.location.href="certifications.html";
 }
 
 function goNext(){
+const data=getData();
+if(!data.education||data.education.length===0){
+educationRequiredMessage.style.display="block";
+educationRequiredMessage.scrollIntoView({behavior:"smooth",block:"center"});
+return;
+}
 window.location.href="/finalize";
 }
 
