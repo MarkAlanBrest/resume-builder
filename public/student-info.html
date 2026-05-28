@@ -69,7 +69,7 @@ input, select{
 </div>
 
 <div class="system">Street Address</div>
-<input id="address" placeholder="123 Main Street">
+<input id="address" placeholder="123 Main Street" onblur="formatAddressInput()">
 
 <!-- CITY STATE ZIP -->
 <div class="form-row-3">
@@ -216,12 +216,65 @@ programSelect.value=data.programCampus;
 }
 }
 
+function formatAddress(value){
+const suffixes={
+"rd":"Rd.","road":"Road",
+"st":"St.","street":"Street",
+"ave":"Ave.","avenue":"Avenue",
+"blvd":"Blvd.","boulevard":"Boulevard",
+"dr":"Dr.","drive":"Drive",
+"ln":"Ln.","lane":"Lane",
+"ct":"Ct.","court":"Court",
+"cir":"Cir.","circle":"Circle",
+"pl":"Pl.","place":"Place",
+"ter":"Ter.","terrace":"Terrace",
+"hwy":"Hwy.","highway":"Highway",
+"pkwy":"Pkwy.","parkway":"Parkway",
+"trl":"Trl.","trail":"Trail",
+"way":"Way"
+};
+
+const directions={
+"n":"N","s":"S","e":"E","w":"W",
+"ne":"NE","nw":"NW","se":"SE","sw":"SW"
+};
+
+const unitWords={
+"apt":"Apt.","apartment":"Apartment",
+"unit":"Unit",
+"ste":"Ste.","suite":"Suite",
+"fl":"Fl.","floor":"Floor"
+};
+
+return value.trim().replace(/\S+/g,function(word){
+const match=word.match(/^([A-Za-z]+)([.,#]*)$/);
+if(!match){return word;}
+
+const letters=match[1];
+const punctuation=match[2];
+const trailingPunctuation=punctuation.replace(/\./g,"");
+const key=letters.toLowerCase().replace(/\.$/,"");
+
+if(suffixes[key]){return suffixes[key]+trailingPunctuation;}
+if(directions[key]){return directions[key]+punctuation;}
+if(unitWords[key]){return unitWords[key]+trailingPunctuation;}
+
+return letters.charAt(0).toUpperCase()+letters.slice(1).toLowerCase()+punctuation;
+});
+}
+
+function formatAddressInput(){
+const addressInput=document.getElementById("address");
+addressInput.value=formatAddress(addressInput.value);
+}
+
 function saveOnly(){
 const data=getData();
 data.name=document.getElementById("name").value.trim();
 data.email=document.getElementById("email").value.trim();
 data.phone=document.getElementById("phone").value.trim();
-data.address=document.getElementById("address").value.trim();
+data.address=formatAddress(document.getElementById("address").value);
+document.getElementById("address").value=data.address;
 data.city=document.getElementById("city").value.trim();
 data.state=document.getElementById("state").value.trim().toUpperCase();
 data.zip=document.getElementById("zip").value.trim();
