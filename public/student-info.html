@@ -51,7 +51,7 @@ input, select{
 <!-- Title removed -->
 
 <div class="system">What is your full name?</div>
-<input id="name" placeholder="Full Name">
+<input id="name" placeholder="Full Name" onblur="formatNameInput()">
 
 <!-- EMAIL + PHONE -->
 <div class="form-row">
@@ -76,7 +76,7 @@ input, select{
 
 <div>
 <div class="system">City</div>
-<input id="city" placeholder="New Castle">
+<input id="city" placeholder="New Castle" onblur="formatCityInput()">
 </div>
 
 <div>
@@ -263,6 +263,34 @@ return letters.charAt(0).toUpperCase()+letters.slice(1).toLowerCase()+punctuatio
 });
 }
 
+function titleCaseWords(value){
+return value.trim().replace(/\S+/g,function(word){
+return word
+.toLowerCase()
+.replace(/(^|[-'])([a-z])/g,function(match,prefix,letter){
+return prefix+letter.toUpperCase();
+});
+});
+}
+
+function formatName(value){
+return titleCaseWords(value);
+}
+
+function formatCity(value){
+return titleCaseWords(value);
+}
+
+function formatNameInput(){
+const nameInput=document.getElementById("name");
+nameInput.value=formatName(nameInput.value);
+}
+
+function formatCityInput(){
+const cityInput=document.getElementById("city");
+cityInput.value=formatCity(cityInput.value);
+}
+
 function formatAddressInput(){
 const addressInput=document.getElementById("address");
 addressInput.value=formatAddress(addressInput.value);
@@ -270,12 +298,14 @@ addressInput.value=formatAddress(addressInput.value);
 
 function saveOnly(){
 const data=getData();
-data.name=document.getElementById("name").value.trim();
+data.name=formatName(document.getElementById("name").value);
+document.getElementById("name").value=data.name;
 data.email=document.getElementById("email").value.trim();
 data.phone=document.getElementById("phone").value.trim();
 data.address=formatAddress(document.getElementById("address").value);
 document.getElementById("address").value=data.address;
-data.city=document.getElementById("city").value.trim();
+data.city=formatCity(document.getElementById("city").value);
+document.getElementById("city").value=data.city;
 data.state=document.getElementById("state").value.trim().toUpperCase();
 data.zip=document.getElementById("zip").value.trim();
 data.campus=document.getElementById("campus").value;
