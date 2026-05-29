@@ -156,7 +156,7 @@ Each bullet must:<br>
 
 <br>
 <button onclick="goBack()">Back</button>
-<button onclick="goNext()">Next</button>
+<button id="nextBtn" onclick="goNext()">Next</button>
 
 </div>
 
@@ -178,6 +178,7 @@ d.workExperience ||= [];
 setData(d);
 renderJobs();
 attachBulletListeners();
+updateNextButton();
 };
 
 /* DATE VALIDATION */
@@ -281,10 +282,12 @@ document.getElementById("saveBtn").disabled=true;
 function showJobForm(){
 clearJobForm();
 jobForm.style.display="block";
+updateNextButton();
 }
 
 function cancel(){
 jobForm.style.display="none";
+updateNextButton();
 }
 
 function stripBullet(t){
@@ -332,6 +335,7 @@ d.workExperience.push(job);
 setData(d);
 
 jobForm.style.display="none";
+updateNextButton();
 renderJobs();
 }
 
@@ -375,7 +379,17 @@ window.location.href="objective.html";
 }
 
 function goNext(){
+if(jobForm.style.display==="block"){
+return alert("Please save or cancel the open work experience entry before continuing.");
+}
 window.location.href="certifications.html";
+}
+
+function updateNextButton(){
+const formOpen=jobForm.style.display==="block";
+nextBtn.disabled=formOpen;
+nextBtn.style.opacity=formOpen ? "0.5" : "1";
+nextBtn.style.cursor=formOpen ? "not-allowed" : "pointer";
 }
 
 function highlightField(id){
