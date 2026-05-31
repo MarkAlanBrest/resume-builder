@@ -81,6 +81,8 @@ function limit(text, max = 3500) {
 
 function formatDateToText(dateStr) {
   if (!dateStr) return "";
+  if (String(dateStr).trim().toLowerCase() === "present") return "Present";
+
   const cleaned = clean(dateStr).replace(/-/g, "/").trim();
   const parts = cleaned.split("/");
   if (parts.length < 2) return clean(dateStr);
@@ -134,6 +136,10 @@ function expandFallback(text, title) {
   if (!cleaned) return "";
   return cleaned.replace(/^./, c => c.toUpperCase()).replace(/\.$/, "") + ".";
 } 
+
+function isCurrentJob(job) {
+  return String(job?.end || "").trim().toLowerCase() === "present";
+}
   
 
 /* ===========================
@@ -344,8 +350,7 @@ function fixTypos(t){
     .replace(/\btuaghr\b/gi,"taught")
     .replace(/\btaight\b/gi,"taught")
     .replace(/\blassons?\b/gi,"lessons")
-    .replace(/\bconstruciton\b/gi,"construction")
-    .replace(/\bmanages?\b/gi,"managed");
+    .replace(/\bconstruciton\b/gi,"construction");
 }
 
 const rawTasks = [
@@ -377,6 +382,10 @@ const t5 = tasksArr[4] || "";
         title: clean(j.title),
         start: formatDateToText(clean(j.start)),
         end: formatDateToText(clean(j.end)),
+        isCurrent: isCurrentJob(j),
+        tenseInstruction: isCurrentJob(j)
+          ? "Use present tense for ongoing responsibilities in this job."
+          : "Use past tense for this completed job.",
         task1: t1,
         task2: t2,
         task3: t3,
@@ -510,7 +519,10 @@ FORMATTING RULES:
 - Do NOT include headings inside fields.
 
 TENSE RULES:
-- Work experience uses past tense unless the end date is Present.
+- Work experience uses past tense unless the job entry has end date "Present" or isCurrent true.
+- For current jobs, use present-tense action verbs for ongoing responsibilities, such as Manage, Operate, Maintain, Build, Coordinate, Train, Assist, Install, Repair, or Supervise.
+- For completed jobs, use past-tense action verbs, such as Managed, Operated, Maintained, Built, Coordinated, Trained, Assisted, Installed, Repaired, or Supervised.
+- Do not convert current-job verbs like Manage, Maintains, Operate, or Coordinates into past tense.
 - Professional summary, objectives, program description, and tools use present tense.
 
 --------------------------------------------------
@@ -523,9 +535,11 @@ Rewrite each one into a full, professional resume sentence.
 The workExperience array contains job entries. 
 Each job entry includes fields named task1, task2, task3, task4, and task5. 
 Each of these fields contains a short, user-entered job duty.
+Each job entry also includes isCurrent and tenseInstruction. You MUST follow these fields when choosing verb tense.
 
 You MUST rewrite task1–task5 for every job entry using the WORK EXPERIENCE RULES.
 Return the rewritten sentences in the same fields: task1, task2, task3, task4, task5.
+Return workExperience in the exact same order as provided.
 
 Requirements:
 ...
@@ -665,10 +679,6 @@ try {
   polished = JSON.parse(raw);
 } catch {
   polished = {};
-}
-
-if (Array.isArray(polished.workExperience)) {
-  polished.workExperience = sortJobsNewestFirst(polished.workExperience);
 }
 
 if (Array.isArray(polished.education)) {
