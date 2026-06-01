@@ -144,18 +144,9 @@ Auto-Fill Selected Program
 
 </div>
 
-<div class="form-row">
-
-<div>
-<div class="system">Start Date (MM/YYYY)</div>
-<input id="eduStartDate" placeholder="MM/YYYY">
-</div>
-
 <div>
 <div class="system">End Date (MM/YYYY or Expected)</div>
 <input id="eduEndDate">
-</div>
-
 </div>
 
 <div class="system">
@@ -362,7 +353,6 @@ school:schoolName.value.trim(),
 program:programName.value.trim(),
 city:schoolCity.value.trim(),
 state:schoolState.value.trim(),
-startDate:eduStartDate.value.trim(),
 endDate:eduEndDate.value.trim(),
 notes:eduNotes.value.trim()
 };
@@ -380,7 +370,6 @@ schoolName.value="";
 programName.value="";
 schoolCity.value="";
 schoolState.value="";
-eduStartDate.value="";
 eduEndDate.value="";
 eduNotes.value="";
 
@@ -405,7 +394,7 @@ div.className="entry-card";
 div.innerHTML=`
 <strong>${edu.program}</strong><br>
 ${edu.school} — ${edu.city}, ${edu.state}<br>
-${edu.startDate ? edu.startDate+" – " : ""}${edu.endDate}<br>
+${edu.endDate}<br>
 ${edu.notes ? edu.notes+"<br>" : ""}
 <button onclick="deleteEducation(${i})">Delete</button>
 `;
@@ -447,7 +436,6 @@ schoolName.value=info.school||getDefaultSchoolName(data);
 programName.value=info.program||"";
 schoolCity.value=info.city||"";
 schoolState.value=info.state||"";
-eduStartDate.value="";
 eduEndDate.value=student.graduationDate||data.graduationDate||"";
 eduNotes.value="";
 
