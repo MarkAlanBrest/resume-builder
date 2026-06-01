@@ -33,6 +33,15 @@
   background:#f9f9f9;
 }
 
+.education-highlights{
+  margin:8px 0 0 18px;
+  padding:0;
+}
+
+.education-highlights li{
+  margin-bottom:4px;
+}
+
 .validation-message{
   display:none;
   border:1px solid #c96b6b;
@@ -150,13 +159,13 @@ Auto-Fill Selected Program
 </div>
 
 <div class="system">
-Notes (optional)<br>
+Education Highlights (optional)<br>
 <span style="font-weight:normal;font-size:14px;">
-If you achieved 90% or better attendance or a GPA of 3.00 or higher, we recommend listing it here along with any awards or accomplishments earned during school.
+List GPA, attendance, honors, awards, or achievements you want shown on your resume. Put each item on its own line.
 </span>
 </div>
 
-<textarea id="eduNotes"></textarea>
+<textarea id="eduNotes" placeholder="Example: 3.5 GPA&#10;Perfect attendance&#10;Student of the Month"></textarea>
 
 <button onclick="saveEducation()">Save Education</button>
 <button onclick="cancelForm()">Cancel</button>
@@ -380,6 +389,28 @@ renderEducation();
 
 /* RENDER */
 
+function escapeHtml(value){
+return String(value||"")
+.replaceAll("&","&amp;")
+.replaceAll("<","&lt;")
+.replaceAll(">","&gt;")
+.replaceAll('"',"&quot;")
+.replaceAll("'","&#039;");
+}
+
+function formatEducationHighlights(notes){
+const items=String(notes||"")
+.split(/\r?\n/)
+.map(item=>item.trim())
+.filter(Boolean);
+
+if(!items.length){
+return "";
+}
+
+return `<ul class="education-highlights">${items.map(item=>`<li>${escapeHtml(item)}</li>`).join("")}</ul>`;
+}
+
 function renderEducation(){
 
 const data=getData();
@@ -392,10 +423,10 @@ const div=document.createElement("div");
 div.className="entry-card";
 
 div.innerHTML=`
-<strong>${edu.program}</strong><br>
-${edu.school} — ${edu.city}, ${edu.state}<br>
-${edu.endDate}<br>
-${edu.notes ? edu.notes+"<br>" : ""}
+<strong>${escapeHtml(edu.program)}</strong><br>
+${escapeHtml(edu.school)} — ${escapeHtml(edu.city)}, ${escapeHtml(edu.state)}<br>
+${escapeHtml(edu.endDate)}<br>
+${formatEducationHighlights(edu.notes)}
 <button onclick="deleteEducation(${i})">Delete</button>
 `;
 
