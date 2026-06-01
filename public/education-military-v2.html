@@ -148,7 +148,7 @@ Auto-Fill Selected Program
 
 <div>
 <div class="system">Start Date (MM/YYYY)</div>
-<input id="eduStartDate">
+<input id="eduStartDate" placeholder="MM/YYYY">
 </div>
 
 <div>
@@ -367,8 +367,8 @@ endDate:eduEndDate.value.trim(),
 notes:eduNotes.value.trim()
 };
 
-if(!entry.school||!entry.program||!entry.city||!entry.state||!entry.startDate||!entry.endDate){
-alert("Please complete all required education fields, including city and state.");
+if(!entry.school||!entry.program||!entry.city||!entry.state||!entry.endDate){
+alert("Please complete all required education fields, including city, state, and end date.");
 return;
 }
 
@@ -405,7 +405,7 @@ div.className="entry-card";
 div.innerHTML=`
 <strong>${edu.program}</strong><br>
 ${edu.school} — ${edu.city}, ${edu.state}<br>
-${edu.startDate} – ${edu.endDate}<br>
+${edu.startDate ? edu.startDate+" – " : ""}${edu.endDate}<br>
 ${edu.notes ? edu.notes+"<br>" : ""}
 <button onclick="deleteEducation(${i})">Delete</button>
 `;
