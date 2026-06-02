@@ -147,9 +147,10 @@ function isCurrentJob(job) {
 =========================== */
 function dateSortValue(dateStr, presentValue = 999912) {
   const value = String(dateStr || "").trim().toLowerCase();
-  if (!value || value === "present") return presentValue;
+  if (!value) return 0;
+  if (/\b(present|current|expected)\b/.test(value)) return presentValue;
 
-  const match = value.match(/^(0?[1-9]|1[0-2])\s*[/-]\s*(\d{4})$/);
+  const match = value.match(/\b(0?[1-9]|1[0-2])\s*[/-]\s*(\d{4})\b/);
   if (!match) return 0;
 
   const month = Number(match[1]);

@@ -197,6 +197,28 @@ function setData(data){
 localStorage.setItem("resumeData",JSON.stringify(data));
 }
 
+function dateSortValue(dateStr, presentValue = 999912){
+const value=String(dateStr||"").trim().toLowerCase();
+if(!value) return 0;
+if(/\b(present|current|expected)\b/.test(value)) return presentValue;
+
+const match=value.match(/\b(0?[1-9]|1[0-2])\s*[/-]\s*(\d{4})\b/);
+if(!match) return 0;
+
+return Number(match[2])*100+Number(match[1]);
+}
+
+function sortEducationNewestFirst(education){
+return [...(education||[])].sort((a,b)=>{
+return dateSortValue(b.endDate)-dateSortValue(a.endDate);
+});
+}
+
+function normalizeEducationOrder(data){
+data.education=sortEducationNewestFirst(data.education);
+return data;
+}
+
 /* PROGRAM DATA */
  
 const PROGRAM_INFO = {
@@ -334,7 +356,7 @@ const PROGRAM_INFO = {
 window.onload=function(){
 const data=getData();
 data.education ||= [];
-setData(data);
+setData(normalizeEducationOrder(data));
 renderEducation();
 };
 
@@ -373,7 +395,7 @@ return;
 
 const data=getData();
 data.education.push(entry);
-setData(data);
+setData(normalizeEducationOrder(data));
 
 schoolName.value="";
 programName.value="";
@@ -439,7 +461,7 @@ educationList.appendChild(div);
 function deleteEducation(i){
 const data=getData();
 data.education.splice(i,1);
-setData(data);
+setData(normalizeEducationOrder(data));
 renderEducation();
 }
 
