@@ -145,35 +145,33 @@ function isCurrentJob(job) {
 /* ===========================
    🔽 ADDED SORT HELPERS (ONLY ADDITION)
 =========================== */
+function dateSortValue(dateStr, presentValue = 999912) {
+  const value = String(dateStr || "").trim().toLowerCase();
+  if (!value || value === "present") return presentValue;
+
+  const match = value.match(/^(0?[1-9]|1[0-2])\s*[/-]\s*(\d{4})$/);
+  if (!match) return 0;
+
+  const month = Number(match[1]);
+  const year = Number(match[2]);
+  return year * 100 + month;
+}
+
 function sortJobsNewestFirst(jobs) {
   return [...jobs].sort((a, b) => {
-    const endA =
-      !a.end || String(a.end).toLowerCase() === "present"
-        ? new Date("9999-12-31")
-        : new Date(a.end);
+    const endDiff = dateSortValue(b.end) - dateSortValue(a.end);
+    if (endDiff !== 0) return endDiff;
 
-    const endB =
-      !b.end || String(b.end).toLowerCase() === "present"
-        ? new Date("9999-12-31") 
-        : new Date(b.end);
-
-    return endB - endA;
+    return dateSortValue(b.start, 0) - dateSortValue(a.start, 0);
   });
 }
 
 function sortEducationNewestFirst(education) {
   return [...education].sort((a, b) => {
-    const endA =
-      !a.endDate || String(a.endDate).toLowerCase() === "present"
-        ? new Date("9999-12-31")
-        : new Date(a.endDate);
+    const endDiff = dateSortValue(b.endDate) - dateSortValue(a.endDate);
+    if (endDiff !== 0) return endDiff;
 
-    const endB =
-      !b.endDate || String(b.endDate).toLowerCase() === "present"
-        ? new Date("9999-12-31")
-        : new Date(b.endDate);
-
-    return endB - endA;
+    return dateSortValue(b.startDate, 0) - dateSortValue(a.startDate, 0);
   });
 }
 
