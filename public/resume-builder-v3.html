@@ -1250,10 +1250,15 @@ function campusLoc(campus) {
   return {city:'',state:''};
 }
 
+function campusSchoolName(campus) {
+  if (campus.includes('Baltimore')) return 'North American Trade Schools';
+  return 'New Castle School of Trades';
+}
+
 function renderEduForm(prefill) {
   const p = resumeData.personal;
   const pf = prefill || (resumeData.education.length===0 && p.program ? {
-    school:p.campus?p.campus.split('—')[0].trim():'',
+    school:p.campus?campusSchoolName(p.campus):'',
     degree:'Vocational Certificate',
     fieldOfStudy:p.program||'',
     city:campusLoc(p.campus||'').city,
