@@ -18,11 +18,11 @@
 }
 html,body{height:100%;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;background:#64748b}
 
-/* â”€â”€ App Shell â”€â”€ */
+/* ── App Shell ── */
 .app{display:flex;flex-direction:column;height:100vh;max-width:1200px;margin:0 auto;box-shadow:0 0 60px rgba(0,0,0,.3)}
 .app-body{flex:1;display:flex;overflow:hidden}
 
-/* â”€â”€ Header â”€â”€ */
+/* ── Header ── */
 .app-header{flex-shrink:0;height:60px;background:var(--slate-900);display:flex;align-items:center;justify-content:space-between;padding:0 18px;gap:12px}
 .header-brand{display:flex;align-items:center;gap:9px;white-space:nowrap}
 .header-brand span{font-size:20px}
@@ -40,7 +40,7 @@ html,body{height:100%;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Ro
 .chat-toggle-btn{background:rgba(255,255,255,.1);border:1px solid rgba(255,255,255,.2);color:var(--white);padding:6px 12px;border-radius:6px;font-size:12px;cursor:pointer;font-family:inherit;white-space:nowrap}
 .chat-toggle-btn:hover{background:rgba(255,255,255,.18)}
 
-/* â”€â”€ Left Nav â”€â”€ */
+/* ── Left Nav ── */
 .left-nav{width:var(--nav-w);flex-shrink:0;background:var(--white);border-right:1px solid var(--slate-200);overflow-y:auto;display:flex;flex-direction:column;padding:16px 0}
 .nav-heading{font-size:10px;font-weight:700;color:var(--slate-400);text-transform:uppercase;letter-spacing:.8px;padding:0 14px 10px}
 .nav-item{display:flex;align-items:center;gap:8px;padding:8px 14px;cursor:pointer;transition:background .15s;position:relative}
@@ -58,7 +58,7 @@ html,body{height:100%;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Ro
 .nav-check{margin-left:auto;font-size:11px;color:var(--green-600);font-weight:700;display:none}
 .nav-item.done .nav-check{display:block}
 
-/* â”€â”€ Center Panel â”€â”€ */
+/* ── Center Panel ── */
 .center-panel{flex:1;overflow-y:auto;background:var(--slate-100)}
 .center-panel::-webkit-scrollbar{width:6px}
 .center-panel::-webkit-scrollbar-track{background:var(--slate-200)}
@@ -71,13 +71,13 @@ html,body{height:100%;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Ro
 .section-hdr-title{font-size:20px;font-weight:700;color:var(--slate-900)}
 .section-hdr-sub{font-size:13px;color:var(--slate-500);margin-top:2px}
 
-/* â”€â”€ Form Card â”€â”€ */
+/* ── Form Card ── */
 .form-card{background:var(--white);border-radius:12px;box-shadow:0 1px 8px rgba(0,0,0,.08);overflow:hidden;margin-bottom:16px}
 .form-card-hdr{background:var(--blue-900);color:var(--white);padding:12px 18px;font-size:14px;font-weight:700;display:flex;align-items:center;gap:8px}
 .form-card-body{padding:18px 18px 6px}
 .form-card-footer{padding:12px 18px 14px;display:flex;justify-content:flex-end;gap:8px;background:var(--slate-50);border-top:1px solid var(--slate-100)}
 
-/* â”€â”€ Form Fields â”€â”€ */
+/* ── Form Fields ── */
 .f-row{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:12px}
 .f-row.single{grid-template-columns:1fr}
 .f-row.triple{grid-template-columns:2fr 1fr 1fr}
@@ -91,13 +91,13 @@ html,body{height:100%;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Ro
 .f-group.has-error input,.f-group.has-error select,.f-group.has-error textarea{border-color:var(--red-600)}
 .f-group.has-error .f-err{display:block}
 
-/* â”€â”€ Date Pair â”€â”€ */
+/* ── Date Pair ── */
 .date-pair{display:grid;grid-template-columns:1.6fr 1fr;gap:8px}
 .date-pair input,.date-pair select{border:1.5px solid var(--slate-200);border-radius:7px;padding:9px 11px;font-size:14px;color:var(--slate-900);background:var(--slate-50);outline:none;width:100%;font-family:inherit;margin:0;transition:border-color .18s}
 .date-pair input:focus,.date-pair select:focus{border-color:var(--blue-700);background:var(--white)}
 .date-pair select:disabled,.date-pair input:disabled{opacity:.45}
 
-/* â”€â”€ Check Grid â”€â”€ */
+/* ── Check Grid ── */
 .check-grid{display:grid;grid-template-columns:1fr 1fr;gap:6px 12px;margin-top:4px}
 .check-opt{display:flex;align-items:center;gap:7px;font-size:13px;color:var(--slate-700);cursor:pointer;padding:5px 8px;border-radius:6px;border:1.5px solid var(--slate-200);background:var(--slate-50);transition:border-color .15s;user-select:none}
 .check-opt:hover{border-color:var(--blue-700);background:var(--blue-50)}
@@ -105,7 +105,7 @@ html,body{height:100%;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Ro
 .check-opt-inline{display:flex;align-items:center;gap:6px;font-size:12px;font-weight:500;margin-top:6px;cursor:pointer}
 .check-opt-inline input{accent-color:var(--blue-700)}
 
-/* â”€â”€ Buttons â”€â”€ */
+/* ── Buttons ── */
 .btn{padding:9px 20px;border-radius:7px;font-size:14px;font-weight:600;border:none;cursor:pointer;transition:all .15s;font-family:inherit;line-height:1}
 .btn-primary{background:var(--blue-900);color:var(--white)}
 .btn-primary:hover{background:var(--blue-800);transform:translateY(-1px);box-shadow:0 4px 14px rgba(30,58,138,.28)}
@@ -116,7 +116,7 @@ html,body{height:100%;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Ro
 .btn-confirm:hover{background:var(--green-700);transform:translateY(-1px)}
 .btn-lg{padding:12px 28px;font-size:15px}
 
-/* â”€â”€ Approval Card â”€â”€ */
+/* ── Approval Card ── */
 .approval-card{background:var(--white);border-radius:12px;box-shadow:0 1px 8px rgba(0,0,0,.08);overflow:hidden;margin-bottom:16px}
 .approval-hdr{background:var(--green-600);color:var(--white);padding:12px 18px;font-size:14px;font-weight:700;display:flex;align-items:center;gap:8px}
 .approval-body{padding:6px 18px 2px}
@@ -126,27 +126,27 @@ html,body{height:100%;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Ro
 .a-value{font-size:14px;color:var(--slate-800)}
 .approval-footer{padding:12px 18px 14px;display:flex;justify-content:flex-end;gap:8px;background:var(--slate-50);border-top:1px solid var(--slate-100)}
 
-/* â”€â”€ Bullet list â”€â”€ */
+/* ── Bullet list ── */
 .bullet-list{list-style:none;padding:0;margin:0}
 .bullet-list li{display:flex;gap:8px;padding:5px 0;font-size:14px;color:var(--slate-800);line-height:1.5;border-bottom:1px solid var(--slate-100)}
 .bullet-list li:last-child{border-bottom:none}
-.bullet-list li::before{content:'â€¢';color:var(--blue-700);font-weight:700;flex-shrink:0}
+.bullet-list li::before{content:'•';color:var(--blue-700);font-weight:700;flex-shrink:0}
 
-/* â”€â”€ Done card â”€â”€ */
+/* ── Done card ── */
 .done-card{background:var(--white);border-radius:12px;box-shadow:0 1px 8px rgba(0,0,0,.08);padding:28px 24px;text-align:center;margin-bottom:16px}
 .done-icon{font-size:40px;display:block;margin-bottom:12px}
 .done-title{font-size:18px;font-weight:700;color:var(--slate-900);margin-bottom:6px}
 .done-sub{font-size:14px;color:var(--slate-500);margin-bottom:20px}
 .done-actions{display:flex;gap:10px;justify-content:center;flex-wrap:wrap}
 
-/* â”€â”€ Welcome screen â”€â”€ */
+/* ── Welcome screen ── */
 .welcome-card{background:var(--white);border-radius:12px;box-shadow:0 1px 8px rgba(0,0,0,.08);padding:36px 28px;text-align:center;margin-bottom:16px}
 .welcome-icon{font-size:48px;display:block;margin-bottom:16px}
 .welcome-title{font-size:22px;font-weight:700;color:var(--slate-900);margin-bottom:8px}
 .welcome-sub{font-size:14px;color:var(--slate-500);line-height:1.6;margin-bottom:24px}
 .welcome-actions{display:flex;gap:12px;justify-content:center;flex-wrap:wrap}
 
-/* â”€â”€ Upload â”€â”€ */
+/* ── Upload ── */
 .upload-drop{border:2px dashed var(--slate-300);border-radius:8px;padding:28px 20px;text-align:center;cursor:pointer;transition:border-color .2s,background .2s;margin-bottom:12px}
 .upload-drop:hover,.upload-drop.drag-over{border-color:var(--blue-700);background:var(--blue-50)}
 .upload-drop .drop-icon{font-size:30px;display:block;margin-bottom:8px}
@@ -154,13 +154,13 @@ html,body{height:100%;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Ro
 .upload-drop .drop-sub{font-size:12px;color:var(--slate-400);margin-top:4px}
 .upload-selected{display:flex;align-items:center;gap:10px;padding:10px 14px;background:var(--blue-50);border:1.5px solid var(--blue-100);border-radius:7px;margin-bottom:12px;font-size:13px;color:var(--blue-700);font-weight:600}
 
-/* â”€â”€ Inline actions â”€â”€ */
+/* ── Inline actions ── */
 .inline-actions{display:flex;gap:10px;flex-wrap:wrap;margin-top:4px}
 
-/* â”€â”€ Prefill banner â”€â”€ */
+/* ── Prefill banner ── */
 .prefill-banner{background:var(--blue-50);border:1.5px solid var(--blue-100);border-radius:7px;padding:9px 12px;margin-bottom:12px;font-size:13px;color:var(--blue-700)}
 
-/* â”€â”€ Template Configurator â”€â”€ */
+/* ── Template Configurator ── */
 .style-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-bottom:4px}
 .style-btn{border:2.5px solid var(--slate-200);border-radius:8px;background:var(--white);cursor:pointer;overflow:hidden;text-align:center;transition:border-color .15s,box-shadow .15s;padding:0}
 .style-btn:hover{border-color:var(--slate-400)}
@@ -173,7 +173,7 @@ html,body{height:100%;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Ro
 .color-swatch:hover{transform:scale(1.12)}
 .color-swatch.sel{border-color:var(--slate-900);transform:scale(1.15)}
 
-/* â”€â”€ Right Panel (AI Chat) â”€â”€ */
+/* ── Right Panel (AI Chat) ── */
 .right-panel{width:var(--chat-w);flex-shrink:0;display:flex;flex-direction:column;background:var(--slate-50);border-left:1px solid var(--slate-200);transition:width .25s ease;overflow:hidden}
 .right-panel.collapsed{width:46px}
 .rp-header{height:48px;flex-shrink:0;background:var(--white);border-bottom:1px solid var(--slate-200);display:flex;align-items:center;justify-content:space-between;padding:0 12px;gap:8px}
@@ -207,7 +207,7 @@ html,body{height:100%;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Ro
 .chat-send:disabled{background:var(--slate-300);cursor:not-allowed}
 .chat-send svg{width:15px;height:15px;fill:var(--white);margin-left:1px}
 
-/* â”€â”€ Responsive â”€â”€ */
+/* ── Responsive ── */
 @media(max-width:900px){:root{--chat-w:260px}}
 @media(max-width:700px){.right-panel{width:0!important}.left-nav{width:44px}.nav-label,.nav-check,.nav-heading{display:none}.nav-item{justify-content:center;padding:8px 0}}
 @media(max-width:480px){:root{--nav-w:44px}}
@@ -219,16 +219,16 @@ html,body{height:100%;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Ro
 <!-- Header -->
 <header class="app-header">
   <div class="header-brand">
-    <span>âœ¨</span>
+    <span>✨</span>
     <span class="header-title">Resume Builder</span>
     <span class="header-badge">AI v3</span>
   </div>
   <div class="api-key-area" id="apiKeyArea">
-    <input type="password" id="apiKeyInput" placeholder="Paste API keyâ€¦" onkeydown="if(event.key==='Enter')activateKey()">
+    <input type="password" id="apiKeyInput" placeholder="Paste API key…" onkeydown="if(event.key==='Enter')activateKey()">
     <button class="btn-activate" onclick="activateKey()">Activate</button>
   </div>
   <div class="key-ready" id="keyReady"><span class="key-dot"></span>AI Connected</div>
-  <button class="chat-toggle-btn" onclick="toggleChat()">ðŸ’¬ AI Chat</button>
+  <button class="chat-toggle-btn" onclick="toggleChat()">💬 AI Chat</button>
 </header>
 
 <div class="app-body">
@@ -248,13 +248,13 @@ html,body{height:100%;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Ro
   <!-- Right AI Chat Panel -->
   <aside class="right-panel" id="rightPanel">
     <div class="rp-header">
-      <span class="rp-title">ðŸ’¬ AI Assistant</span>
-      <button class="rp-toggle" onclick="toggleChat()" title="Collapse">â—€</button>
+      <span class="rp-title">💬 AI Assistant</span>
+      <button class="rp-toggle" onclick="toggleChat()" title="Collapse">◀</button>
     </div>
     <div class="chat-messages" id="chatMessages"></div>
     <div class="chat-input-area">
       <div class="chat-input-row">
-        <textarea id="chatInput" class="chat-input" placeholder="Ask a questionâ€¦" rows="1"
+        <textarea id="chatInput" class="chat-input" placeholder="Ask a question…" rows="1"
           onkeydown="handleChatKey(event)" oninput="autoResizeChat(this)" disabled></textarea>
         <button class="chat-send" id="chatSendBtn" onclick="sendChat()" disabled>
           <svg viewBox="0 0 24 24"><path d="M2.01 21L23 12 2.01 3 2 10l15 2-15 2z"/></svg>
@@ -267,20 +267,20 @@ html,body{height:100%;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Ro
 </div><!-- /.app -->
 
 <script>
-// â”€â”€ API Key â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
-const HARDCODED_KEY = ''; // paste your key here â€” do not commit
+// ── API Key ──────────────────────────────────────
+const HARDCODED_KEY = ''; // paste your key here — do not commit
 
-// â”€â”€ Campus Data â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+// ── Campus Data ──────────────────────────────────
 const CAMPUSES = {
-  "Main Campus â€” New Castle, PA":["Automotive Technology","Building Technology","Combination Welding","Electrical Technology","Industrial Electro-Mechanical Technology","Refrigeration and AC Technology"],
-  "East Liverpool Campus â€” East Liverpool, OH":["Combination Welding","Electrical and Industrial Maintenance","Refrigeration and Climate Control"],
-  "Satellite Campus â€” Pulaski, PA":["Commercial Truck Driving CDL","Diesel and Heavy Equipment Repair Technology","Heavy Equipment Operations with CDL","Machinist and CNC Manufacturing","Motorcycle and Power Equipment Technology"],
-  "North American Trade Schools â€” Baltimore, MD":["Building Construction Technology","Combination Welding","Electrical Technology","HVAC Technology","Diesel Technology","Commercial Truck Driving with CDL License"]
+  "Main Campus — New Castle, PA":["Automotive Technology","Building Technology","Combination Welding","Electrical Technology","Industrial Electro-Mechanical Technology","Refrigeration and AC Technology"],
+  "East Liverpool Campus — East Liverpool, OH":["Combination Welding","Electrical and Industrial Maintenance","Refrigeration and Climate Control"],
+  "Satellite Campus — Pulaski, PA":["Commercial Truck Driving CDL","Diesel and Heavy Equipment Repair Technology","Heavy Equipment Operations with CDL","Machinist and CNC Manufacturing","Motorcycle and Power Equipment Technology"],
+  "North American Trade Schools — Baltimore, MD":["Building Construction Technology","Combination Welding","Electrical Technology","HVAC Technology","Diesel Technology","Commercial Truck Driving with CDL License"]
 };
 
 const MONTHS = ['January','February','March','April','May','June','July','August','September','October','November','December'];
 
-// â”€â”€ Color Schemes â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+// ── Color Schemes ────────────────────────────────
 const COLOR_SCHEMES = {
   navy:    {label:'Navy',    hex:'#1e3a8a',accent:'1e3a8a',sideText:'FFFFFF'},
   green:   {label:'Forest',  hex:'#14532d',accent:'14532d',sideText:'FFFFFF'},
@@ -289,29 +289,29 @@ const COLOR_SCHEMES = {
   charcoal:{label:'Charcoal',hex:'#1c1c1c',accent:'1c1c1c',sideText:'EEEEEE'},
 };
 
-// â”€â”€ Sections â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+// ── Sections ─────────────────────────────────────
 const SECTIONS = [
-  {key:'personal',      label:'Personal Info',   icon:'ðŸ‘¤'},
-  {key:'career',        label:'Career Profile',  icon:'ðŸŽ¯'},
-  {key:'work',          label:'Work Experience', icon:'ðŸ’¼'},
-  {key:'education',     label:'Education',       icon:'ðŸŽ“'},
-  {key:'certifications',label:'Certifications',  icon:'ðŸ“œ'},
-  {key:'skills',        label:'Skills',          icon:'âš¡'},
-  {key:'template',      label:'Build Resume',    icon:'ðŸ“„'},
+  {key:'personal',      label:'Personal Info',   icon:'👤'},
+  {key:'career',        label:'Career Profile',  icon:'🎯'},
+  {key:'work',          label:'Work Experience', icon:'💼'},
+  {key:'education',     label:'Education',       icon:'🎓'},
+  {key:'certifications',label:'Certifications',  icon:'📜'},
+  {key:'skills',        label:'Skills',          icon:'⚡'},
+  {key:'template',      label:'Build Resume',    icon:'📄'},
 ];
 
-// â”€â”€ AI Section Tips â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+// ── AI Section Tips ───────────────────────────────
 const TIPS = {
-  personal:`Fill in your contact information carefully â€” this is how employers reach you. Make sure your email looks professional and your phone number is correct. Select your campus and program from the dropdowns.`,
+  personal:`Fill in your contact information carefully — this is how employers reach you. Make sure your email looks professional and your phone number is correct. Select your campus and program from the dropdowns.`,
   career:`Be specific about the type of job and employer you're targeting. Examples: "I want to work as an automotive technician at a dealership doing diagnostics and hands-on repairs." "I am looking for an entry-level HVAC position where I can install, maintain, and troubleshoot residential systems." "I want a welding job in manufacturing or construction where I can use MIG/TIG skills and read blueprints." Pick up to 3 qualities that describe you as a worker.`,
-  work:`When describing your duties, just write naturally â€” don't worry about formatting. Mention specific tools, equipment, tasks, and anything you're proud of. I'll convert it into professional bullet points for you.`,
+  work:`When describing your duties, just write naturally — don't worry about formatting. Mention specific tools, equipment, tasks, and anything you're proud of. I'll convert it into professional bullet points for you.`,
   education:`Your trade program has been pre-filled below. Confirm the details and add your graduation year. Then add your high school diploma or any other education you have.`,
-  certifications:`Include anything relevant â€” OSHA cards, EPA licenses, CDL, welding certifications, manufacturer training, first aid. Certifications stand out in the trades and show employers you're ready to work.`,
-  skills:`Write out every skill you have â€” tools, equipment, software, techniques, even things that seem obvious. Don't filter yourself. I'll clean it up, remove duplicates, and organize it professionally.`,
+  certifications:`Include anything relevant — OSHA cards, EPA licenses, CDL, welding certifications, manufacturer training, first aid. Certifications stand out in the trades and show employers you're ready to work.`,
+  skills:`Write out every skill you have — tools, equipment, software, techniques, even things that seem obvious. Don't filter yourself. I'll clean it up, remove duplicates, and organize it professionally.`,
   template:`Pick the style and color that matches the field you're entering. Classic and Executive are safe for any employer. Modern works well for technical roles. Bold makes a strong first impression.`,
 };
 
-// â”€â”€ State â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+// ── State ────────────────────────────────────────
 let apiKey = '';
 let currentSection = null;
 let chatHistory = [];
@@ -331,7 +331,7 @@ let selectedStyle = 'classic';
 let selectedColor = 'navy';
 let selectedResumeFile = null;
 
-// â”€â”€ API Key â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+// ── API Key ───────────────────────────────────────
 function activateKey() {
   const inp = document.getElementById('apiKeyInput');
   const key = inp.value.trim();
@@ -351,14 +351,14 @@ function shakeEl(el) {
   el.addEventListener('animationend', () => el.style.animation = '', {once:true});
 }
 
-// â”€â”€ App Start â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+// ── App Start ─────────────────────────────────────
 function startApp() {
   renderLeftNav();
   showCenter('welcome');
   addAIMsg(`Welcome! I'm your AI resume assistant. I'll guide you through each section and answer any questions you have. Click **Start Fresh** to begin, or upload an existing resume to get started faster.`);
 }
 
-// â”€â”€ Left Nav â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+// ── Left Nav ──────────────────────────────────────
 function renderLeftNav() {
   const nav = document.getElementById('leftNav');
   nav.innerHTML = '<div class="nav-heading">Sections</div>' +
@@ -368,7 +368,7 @@ function renderLeftNav() {
       return `<div class="nav-item ${ac}" onclick="navClick('${s.key}')">
         <div class="nav-icon">${s.icon}</div>
         <span class="nav-label">${s.label}</span>
-        <span class="nav-check">âœ“</span>
+        <span class="nav-check">✓</span>
       </div>`;
     }).join('');
 }
@@ -382,7 +382,7 @@ function setStatus(key, status) {
   renderLeftNav();
 }
 
-// â”€â”€ Center Panel Router â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+// ── Center Panel Router ───────────────────────────
 function showCenter(view, data) {
   const el = document.getElementById('centerInner');
   const views = {
@@ -422,10 +422,10 @@ function showSection(key) {
   else if (key === 'template') { showCenter('template'); sendTip('template'); }
 }
 
-// â”€â”€ Welcome â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+// ── Welcome ───────────────────────────────────────
 function renderWelcome() {
   return `<div class="welcome-card">
-    <span class="welcome-icon">ðŸŽ“</span>
+    <span class="welcome-icon">🎓</span>
     <div class="welcome-title">Build Your Professional Resume</div>
     <div class="welcome-sub">I'll guide you through each section. Fill out the forms in this panel, ask me questions in the chat, and I'll generate a polished resume when you're done.</div>
     <div class="welcome-actions">
@@ -439,13 +439,13 @@ function startFresh() {
   showSection('personal');
 }
 
-// â”€â”€ Upload â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+// ── Upload ────────────────────────────────────────
 function renderUpload() {
-  return `<div class="section-hdr"><div class="section-hdr-icon">ðŸ“„</div><div><div class="section-hdr-title">Load Existing Resume</div><div class="section-hdr-sub">PDF, Word (.docx), or plain text (.txt)</div></div></div>
+  return `<div class="section-hdr"><div class="section-hdr-icon">📄</div><div><div class="section-hdr-title">Load Existing Resume</div><div class="section-hdr-sub">PDF, Word (.docx), or plain text (.txt)</div></div></div>
   <div class="form-card">
     <div class="form-card-body" style="padding-bottom:18px">
       <div class="upload-drop" id="uploadDrop" ondragover="event.preventDefault();this.classList.add('drag-over')" ondragleave="this.classList.remove('drag-over')" ondrop="handleDrop(event)" onclick="document.getElementById('resumeFileInput').click()">
-        <span class="drop-icon">â¬†ï¸</span>
+        <span class="drop-icon">⬆️</span>
         <div class="drop-lbl">Click to browse or drag and drop</div>
         <div class="drop-sub">Supports PDF, Word (.docx), or plain text (.txt)</div>
       </div>
@@ -454,7 +454,7 @@ function renderUpload() {
     </div>
     <div class="form-card-footer">
       <button class="btn btn-ghost" onclick="showCenter('welcome')">Cancel</button>
-      <button class="btn btn-primary" id="extractBtn" onclick="extractResume()" disabled style="opacity:.45">Extract & Continue â†’</button>
+      <button class="btn btn-primary" id="extractBtn" onclick="extractResume()" disabled style="opacity:.45">Extract & Continue →</button>
     </div>
   </div>`;
 }
@@ -469,7 +469,7 @@ function setUploadFile(file) {
   selectedResumeFile = file;
   const sel = document.getElementById('uploadSelected');
   sel.style.display = 'flex'; sel.className = 'upload-selected';
-  sel.innerHTML = `<span>ðŸ“Ž</span><span>${escHtml(file.name)}</span><span style="margin-left:auto;font-weight:400;color:var(--slate-500)">${(file.size/1024).toFixed(0)} KB</span>`;
+  sel.innerHTML = `<span>📎</span><span>${escHtml(file.name)}</span><span style="margin-left:auto;font-weight:400;color:var(--slate-500)">${(file.size/1024).toFixed(0)} KB</span>`;
   const btn = document.getElementById('extractBtn');
   btn.disabled = false; btn.style.opacity = '1';
 }
@@ -477,8 +477,8 @@ function setUploadFile(file) {
 async function extractResume() {
   if (!selectedResumeFile) return;
   const btn = document.getElementById('extractBtn');
-  btn.disabled = true; btn.textContent = 'Extractingâ€¦';
-  addAIMsg('Extracting your resume information â€” one momentâ€¦');
+  btn.disabled = true; btn.textContent = 'Extracting…';
+  addAIMsg('Extracting your resume information — one moment…');
   showChatTyping();
   try {
     const ext = selectedResumeFile.name.split('.').pop().toLowerCase();
@@ -494,12 +494,12 @@ async function extractResume() {
     if (parsed.certifications?.length) resumeData.certifications = parsed.certifications;
     if (parsed.skills?.length) resumeData.skills = parsed.skills;
     const p = resumeData.personal;
-    addAIMsg(`Got it! I found your info for ${p.firstName || ''} ${p.lastName || ''}. I've pre-filled the forms below â€” just review and confirm each section.`);
+    addAIMsg(`Got it! I found your info for ${p.firstName || ''} ${p.lastName || ''}. I've pre-filled the forms below — just review and confirm each section.`);
     showSection('personal');
   } catch(err) {
     hideChatTyping();
     addAIMsg('I had trouble reading that file. Try a different format, or start fresh.');
-    btn.disabled = false; btn.textContent = 'Extract & Continue â†’'; btn.style.opacity = '1';
+    btn.disabled = false; btn.textContent = 'Extract & Continue →'; btn.style.opacity = '1';
   }
 }
 
@@ -517,14 +517,14 @@ async function parseResume(text, useDoc, b64) {
   return JSON.parse(raw.replace(/^```(?:json)?\s*/i,'').replace(/\s*```$/,''));
 }
 
-// â”€â”€ Personal Info â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+// ── Personal Info ─────────────────────────────────
 function renderPersonalForm() {
   const p = resumeData.personal;
   const campusOpts = Object.keys(CAMPUSES).map(c=>`<option value="${escHtml(c)}" ${p.campus===c?'selected':''}>${escHtml(c)}</option>`).join('');
-  return `<div class="section-hdr"><div class="section-hdr-icon">ðŸ‘¤</div><div><div class="section-hdr-title">Personal Information</div><div class="section-hdr-sub">Contact details and program</div></div></div>
-  ${p.firstName?`<div class="prefill-banner">â„¹ï¸ Pre-filled from uploaded resume â€” confirm or update.</div>`:''}
+  return `<div class="section-hdr"><div class="section-hdr-icon">👤</div><div><div class="section-hdr-title">Personal Information</div><div class="section-hdr-sub">Contact details and program</div></div></div>
+  ${p.firstName?`<div class="prefill-banner">ℹ️ Pre-filled from uploaded resume — confirm or update.</div>`:''}
   <div class="form-card">
-    <div class="form-card-hdr">ðŸ“‹ Contact Information</div>
+    <div class="form-card-hdr">📋 Contact Information</div>
     <div class="form-card-body">
       <div class="f-row">
         <div class="f-group" id="fg-fn"><label>First Name *</label><input id="fn" value="${escHtml(p.firstName||'')}" placeholder="First name"><span class="f-err">Required</span></div>
@@ -541,12 +541,12 @@ function renderPersonalForm() {
         <div class="f-group" id="fg-zip"><label>ZIP *</label><input id="pzip" value="${escHtml(p.zip||'')}" placeholder="00000" maxlength="5" inputmode="numeric" oninput="fmtZip(this)"><span class="f-err">Required</span></div>
       </div>
       <div class="f-row">
-        <div class="f-group" id="fg-campus"><label>Campus *</label><select id="campusSel" onchange="updatePrograms()">${'<option value="">â€” Select Campus â€”</option>'+campusOpts}</select><span class="f-err">Required</span></div>
-        <div class="f-group" id="fg-prog"><label>Program *</label><select id="progSel" disabled><option value="">â€” Select Campus First â€”</option></select><span class="f-err">Required</span></div>
+        <div class="f-group" id="fg-campus"><label>Campus *</label><select id="campusSel" onchange="updatePrograms()">${'<option value="">— Select Campus —</option>'+campusOpts}</select><span class="f-err">Required</span></div>
+        <div class="f-group" id="fg-prog"><label>Program *</label><select id="progSel" disabled><option value="">— Select Campus First —</option></select><span class="f-err">Required</span></div>
       </div>
     </div>
     <div class="form-card-footer">
-      <button class="btn btn-primary" onclick="submitPersonal()">Continue â†’</button>
+      <button class="btn btn-primary" onclick="submitPersonal()">Continue →</button>
     </div>
   </div>`;
 }
@@ -557,9 +557,9 @@ function updatePrograms() {
   ps.innerHTML = '';
   const p = resumeData.personal;
   if (campus && CAMPUSES[campus]) {
-    ps.innerHTML = '<option value="">â€” Select Program â€”</option>' + CAMPUSES[campus].map(prog=>`<option value="${escHtml(prog)}" ${p.program===prog?'selected':''}>${escHtml(prog)}</option>`).join('');
+    ps.innerHTML = '<option value="">— Select Program —</option>' + CAMPUSES[campus].map(prog=>`<option value="${escHtml(prog)}" ${p.program===prog?'selected':''}>${escHtml(prog)}</option>`).join('');
     ps.disabled = false;
-  } else { ps.innerHTML = '<option value="">â€” Select Campus First â€”</option>'; ps.disabled = true; }
+  } else { ps.innerHTML = '<option value="">— Select Campus First —</option>'; ps.disabled = true; }
 }
 
 async function submitPersonal() {
@@ -590,7 +590,7 @@ async function submitPersonal() {
   } catch(e) {
     addAIMsg('I could not complete the spelling and address review. Please check your connection or API key, then try Continue again.');
   } finally {
-    if (btn && currentSection === 'personal') { btn.disabled = false; btn.textContent = 'Continue â†’'; }
+    if (btn && currentSection === 'personal') { btn.disabled = false; btn.textContent = 'Continue →'; }
   }
 }
 
@@ -686,7 +686,7 @@ function fmtPhone(el) {
   el.value = d;
 }
 
-// â”€â”€ Career Profile â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+// ── Career Profile ────────────────────────────────
 const PERSONAL_FIELD_GROUPS = {firstName:'fg-fn',lastName:'fg-ln',email:'fg-em',phone:'fg-ph',address:'fg-addr',city:'fg-city',state:'fg-state',zip:'fg-zip',campus:'fg-campus',program:'fg-prog'};
 const US_STATES = new Set(['AL','AK','AZ','AR','CA','CO','CT','DE','FL','GA','HI','ID','IL','IN','IA','KS','KY','LA','ME','MD','MA','MI','MN','MS','MO','MT','NE','NV','NH','NJ','NM','NY','NC','ND','OH','OK','OR','PA','RI','SC','SD','TN','TX','UT','VT','VA','WA','WV','WI','WY','DC']);
 const UNPRO_EMAIL_WORDS = ['420','69','666','adult','babe','beer','blaze','booze','booty','bossbabe','crazy','drunk','gangsta','gamer','hot','killa','killer','lazy','lit','party','playa','pothead','princess','sexy','smoke','stoner','thug','weed','xxx'];
@@ -777,9 +777,9 @@ const QUALITIES = ['Reliable','Detail-oriented','Hard worker','Fast learner','Se
 function renderCareerForm() {
   const c = resumeData.careerContext;
   const qBoxes = QUALITIES.map(q=>`<label class="check-opt"><input type="checkbox" name="qual" value="${q}" onchange="limitQuals(this)" ${(c.qualities||[]).includes(q)?'checked':''}><span>${q}</span></label>`).join('');
-  return `<div class="section-hdr"><div class="section-hdr-icon">ðŸŽ¯</div><div><div class="section-hdr-title">Career Profile</div><div class="section-hdr-sub">Used to write your resume objective</div></div></div>
+  return `<div class="section-hdr"><div class="section-hdr-icon">🎯</div><div><div class="section-hdr-title">Career Profile</div><div class="section-hdr-sub">Used to write your resume objective</div></div></div>
   <div class="form-card">
-    <div class="form-card-hdr">ðŸŽ¯ Career Goals</div>
+    <div class="form-card-hdr">🎯 Career Goals</div>
     <div class="form-card-body">
       <div class="f-row single">
         <div class="f-group" id="fg-ws"><label>What type of work are you looking for? *</label>
@@ -787,7 +787,7 @@ function renderCareerForm() {
           <span class="f-err">Please describe the type of work you're looking for.</span></div>
       </div>
       <div class="f-row single">
-        <div class="f-group" id="fg-quals"><label>Top Work Qualities â€” pick up to 3 *</label>
+        <div class="f-group" id="fg-quals"><label>Top Work Qualities — pick up to 3 *</label>
           <div class="check-grid">${qBoxes}</div>
           <span class="f-err">Select at least one quality.</span></div>
       </div>
@@ -797,7 +797,7 @@ function renderCareerForm() {
       </div>
     </div>
     <div class="form-card-footer">
-      <button class="btn btn-primary" onclick="submitCareer()">Continue â†’</button>
+      <button class="btn btn-primary" onclick="submitCareer()">Continue →</button>
     </div>
   </div>`;
 }
@@ -828,7 +828,7 @@ async function submitCareer() {
   } catch(e) {
     addAIMsg('I could not complete the career profile spelling and professionalism review. Please check your connection or API key, then try Continue again.');
   } finally {
-    if (btn && currentSection === 'career') { btn.disabled = false; btn.textContent = 'Continue â†’'; }
+    if (btn && currentSection === 'career') { btn.disabled = false; btn.textContent = 'Continue →'; }
   }
 }
 
@@ -889,9 +889,9 @@ function isProfessionalCareerText(value, minLen) {
 
 function renderCareerApproval() {
   const c = resumeData.careerContext;
-  return `<div class="section-hdr"><div class="section-hdr-icon">ðŸŽ¯</div><div><div class="section-hdr-title">Career Profile</div><div class="section-hdr-sub">Review before generating objective</div></div></div>
+  return `<div class="section-hdr"><div class="section-hdr-icon">🎯</div><div><div class="section-hdr-title">Career Profile</div><div class="section-hdr-sub">Review before generating objective</div></div></div>
   <div class="approval-card">
-    <div class="approval-hdr">âœ“ Career Profile â€” Review</div>
+    <div class="approval-hdr">✓ Career Profile — Review</div>
     <div class="approval-body">
       <div class="a-row"><span class="a-label">Looking For</span><span class="a-value">${escHtml(c.workSearch)}</span></div>
       <div class="a-row"><span class="a-label">Qualities</span><span class="a-value">${escHtml(c.qualities.join(', '))}</span></div>
@@ -899,38 +899,38 @@ function renderCareerApproval() {
     </div>
     <div class="approval-footer">
       <button class="btn btn-ghost" onclick="showSection('career')">Edit</button>
-      <button class="btn btn-primary" onclick="generateObjective()">Generate Objective â†’</button>
+      <button class="btn btn-primary" onclick="generateObjective()">Generate Objective →</button>
     </div>
   </div>`;
 }
 
 async function generateObjective() {
   const ci = document.getElementById('centerInner');
-  ci.innerHTML = `<div style="text-align:center;padding:60px 20px;color:var(--slate-500)"><div style="font-size:32px;margin-bottom:12px">âœï¸</div>Writing your resume objectiveâ€¦</div>`;
+  ci.innerHTML = `<div style="text-align:center;padding:60px 20px;color:var(--slate-500)"><div style="font-size:32px;margin-bottom:12px">✍️</div>Writing your resume objective…</div>`;
   const p = resumeData.personal, c = resumeData.careerContext;
-  const sys = `Write a 2â€“3 sentence resume objective for a trade school student. Student: ${p.firstName} ${p.lastName}, studying ${p.program}. Looking for: ${c.workSearch}. Qualities: ${c.qualities.join(', ')}. Context: ${c.standout||'none'}. Plain text only, no labels. Professional and direct. Do not use "dynamic" or "passionate".`;
+  const sys = `Write a 2–3 sentence resume objective for a trade school student. Student: ${p.firstName} ${p.lastName}, studying ${p.program}. Looking for: ${c.workSearch}. Qualities: ${c.qualities.join(', ')}. Context: ${c.standout||'none'}. Plain text only, no labels. Professional and direct. Do not use "dynamic" or "passionate".`;
   try {
     const obj = await callClaude(sys,[{role:'user',content:'Write the resume objective.'}]);
     resumeData.careerContext.objective = obj.trim();
     showCenter('objectiveApproval');
   } catch(e) {
-    addAIMsg('Had trouble connecting â€” try again.');
+    addAIMsg('Had trouble connecting — try again.');
     showCenter('careerApproval');
   }
 }
 
 function renderObjectiveApproval() {
   const obj = resumeData.careerContext.objective || '';
-  return `<div class="section-hdr"><div class="section-hdr-icon">ðŸŽ¯</div><div><div class="section-hdr-title">Resume Objective</div><div class="section-hdr-sub">This goes at the top of your resume</div></div></div>
+  return `<div class="section-hdr"><div class="section-hdr-icon">🎯</div><div><div class="section-hdr-title">Resume Objective</div><div class="section-hdr-sub">This goes at the top of your resume</div></div></div>
   <div class="approval-card">
-    <div class="approval-hdr">âœ“ Objective â€” Review</div>
+    <div class="approval-hdr">✓ Objective — Review</div>
     <div class="approval-body">
       <div class="a-row" style="display:block;padding:12px 0"><span class="a-value" style="font-size:15px;line-height:1.65">${escHtml(obj)}</span></div>
     </div>
     <div class="approval-footer">
       <button class="btn btn-ghost" onclick="generateObjective()">Rewrite</button>
       <button class="btn btn-ghost" onclick="showSection('career')">Edit Profile</button>
-      <button class="btn btn-confirm" onclick="confirmObjective()">Looks Good âœ“</button>
+      <button class="btn btn-confirm" onclick="confirmObjective()">Looks Good ✓</button>
     </div>
   </div>`;
 }
@@ -941,23 +941,23 @@ function confirmObjective() {
   showSection('work');
 }
 
-// â”€â”€ Work Experience â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+// ── Work Experience ───────────────────────────────
 function renderWorkForm() {
   const p = resumeData.personal;
   const jobs = resumeData.workExperience;
   const monthOpts = MONTHS.map(m=>`<option value="${m}">${m}</option>`).join('');
   const savedList = jobs.length ? `<div class="form-card" style="margin-bottom:16px">
-    <div class="form-card-hdr">ðŸ’¼ Saved Positions (${jobs.length})</div>
+    <div class="form-card-hdr">💼 Saved Positions (${jobs.length})</div>
     <div class="form-card-body" style="padding-bottom:14px">
       ${jobs.map((j,i)=>`<div style="display:flex;justify-content:space-between;align-items:center;padding:8px 0;border-bottom:1px solid var(--slate-100)">
-        <div><div style="font-size:14px;font-weight:600">${escHtml(j.jobTitle)} at ${escHtml(j.employer)}</div><div style="font-size:12px;color:var(--slate-500)">${j.startMonth} ${j.startYear} â€“ ${j.current?'Present':`${j.endMonth} ${j.endYear}`}</div></div>
+        <div><div style="font-size:14px;font-weight:600">${escHtml(j.jobTitle)} at ${escHtml(j.employer)}</div><div style="font-size:12px;color:var(--slate-500)">${j.startMonth} ${j.startYear} – ${j.current?'Present':`${j.endMonth} ${j.endYear}`}</div></div>
       </div>`).join('')}
     </div>
   </div>` : '';
-  return `<div class="section-hdr"><div class="section-hdr-icon">ðŸ’¼</div><div><div class="section-hdr-title">Work Experience</div><div class="section-hdr-sub">${jobs.length?jobs.length+' position(s) saved â€” add another or continue':'Add your work history'}</div></div></div>
+  return `<div class="section-hdr"><div class="section-hdr-icon">💼</div><div><div class="section-hdr-title">Work Experience</div><div class="section-hdr-sub">${jobs.length?jobs.length+' position(s) saved — add another or continue':'Add your work history'}</div></div></div>
   ${savedList}
   <div class="form-card">
-    <div class="form-card-hdr">ðŸ’¼ ${jobs.length?'Add Another Position':'Position Details'}</div>
+    <div class="form-card-hdr">💼 ${jobs.length?'Add Another Position':'Position Details'}</div>
     <div class="form-card-body">
       <div class="f-row"><div class="f-group" id="fg-emp"><label>Employer *</label><input id="empName" placeholder="Company name"><span class="f-err">Required</span></div><div class="f-group" id="fg-jt"><label>Job Title *</label><input id="jobTitle" placeholder="Your position"><span class="f-err">Required</span></div></div>
       <div class="f-row triple"><div class="f-group"><label>City</label><input id="wCity" placeholder="City"></div><div class="f-group"><label>State</label><input id="wState" placeholder="PA" maxlength="2"></div><div></div></div>
@@ -965,11 +965,11 @@ function renderWorkForm() {
         <div class="f-group" id="fg-sd"><label>Start Date *</label><div class="date-pair"><select id="startMo"><option value="">Month</option>${monthOpts}</select><input id="startYr" placeholder="Year" maxlength="4" inputmode="numeric"></div><span class="f-err">Required</span></div>
         <div class="f-group"><label>End Date</label><div class="date-pair"><select id="endMo"><option value="">Month</option>${monthOpts}</select><input id="endYr" placeholder="Year" maxlength="4" inputmode="numeric"></div><label class="check-opt-inline"><input type="checkbox" id="curJob" onchange="toggleCurJob(this)"><span>I currently work here</span></label></div>
       </div>
-      <div class="f-row single"><div class="f-group" id="fg-duties"><label>Describe Your Duties *</label><textarea id="duties" rows="4" placeholder="Describe what you did â€” tools, equipment, tasks, responsibilities. Write naturally; I'll convert it to bullet points."></textarea><span class="f-err">Please describe your duties.</span></div></div>
+      <div class="f-row single"><div class="f-group" id="fg-duties"><label>Describe Your Duties *</label><textarea id="duties" rows="4" placeholder="Describe what you did — tools, equipment, tasks, responsibilities. Write naturally; I'll convert it to bullet points."></textarea><span class="f-err">Please describe your duties.</span></div></div>
     </div>
     <div class="form-card-footer">
-      ${jobs.length?`<button class="btn btn-ghost" onclick="skipToEdu()">Skip â€” No More Jobs</button>`:'<button class="btn btn-ghost" onclick="skipToEdu()">No Work History</button>'}
-      <button class="btn btn-primary" onclick="submitWork()">Generate Bullets â†’</button>
+      ${jobs.length?`<button class="btn btn-ghost" onclick="skipToEdu()">Skip — No More Jobs</button>`:'<button class="btn btn-ghost" onclick="skipToEdu()">No Work History</button>'}
+      <button class="btn btn-primary" onclick="submitWork()">Generate Bullets →</button>
     </div>
   </div>`;
 }
@@ -982,7 +982,7 @@ function toggleCurJob(cb) {
 
 function skipToEdu() {
   setStatus('work','done');
-  addAIMsg(`Work history saved. Let's add your education â€” your trade program is already pre-filled.`);
+  addAIMsg(`Work history saved. Let's add your education — your trade program is already pre-filled.`);
   showSection('education');
 }
 
@@ -1005,46 +1005,46 @@ async function submitWork() {
     duties:document.getElementById('duties').value.trim(),
   };
   const ci = document.getElementById('centerInner');
-  ci.innerHTML = `<div style="text-align:center;padding:60px 20px;color:var(--slate-500)"><div style="font-size:32px;margin-bottom:12px">âš™ï¸</div>Generating bullet pointsâ€¦</div>`;
+  ci.innerHTML = `<div style="text-align:center;padding:60px 20px;color:var(--slate-500)"><div style="font-size:32px;margin-bottom:12px">⚙️</div>Generating bullet points…</div>`;
   const prog = resumeData.personal.program || '';
   const tense = cur ? 'present tense' : 'past tense';
-  const sys = `Write resume bullet points for a trade school student studying ${prog}. Job: ${pendingWork.jobTitle} at ${pendingWork.employer}. Duties: "${pendingWork.duties}". Write 3â€“5 bullets, ${tense}, each starting with a strong action verb. Each line starts with â€¢. Return only the bullet points.`;
+  const sys = `Write resume bullet points for a trade school student studying ${prog}. Job: ${pendingWork.jobTitle} at ${pendingWork.employer}. Duties: "${pendingWork.duties}". Write 3–5 bullets, ${tense}, each starting with a strong action verb. Each line starts with •. Return only the bullet points.`;
   try {
     const result = await callClaude(sys,[{role:'user',content:'Write the bullet points.'}]);
-    pendingWork.bulletLines = result.trim().split('\n').map(l=>l.trim().replace(/^[â€¢\-\*]\s*/,'')).filter(l=>l.length>0);
+    pendingWork.bulletLines = result.trim().split('\n').map(l=>l.trim().replace(/^[•\-\*]\s*/,'')).filter(l=>l.length>0);
     showCenter('workApproval');
-  } catch(e) { addAIMsg('Could not connect â€” please try again.'); showSection('work'); }
+  } catch(e) { addAIMsg('Could not connect — please try again.'); showSection('work'); }
 }
 
 function renderWorkApproval() {
   const j = pendingWork;
   const loc = [j.city,j.state].filter(Boolean).join(', ');
-  const dates = `${j.startMonth} ${j.startYear} â€“ ${j.current?'Present':`${j.endMonth} ${j.endYear}`}`;
+  const dates = `${j.startMonth} ${j.startYear} – ${j.current?'Present':`${j.endMonth} ${j.endYear}`}`;
   const bullets = (j.bulletLines||[]).map(b=>`<li>${escHtml(b)}</li>`).join('');
-  return `<div class="section-hdr"><div class="section-hdr-icon">ðŸ’¼</div><div><div class="section-hdr-title">Work Experience</div><div class="section-hdr-sub">Review before saving</div></div></div>
+  return `<div class="section-hdr"><div class="section-hdr-icon">💼</div><div><div class="section-hdr-title">Work Experience</div><div class="section-hdr-sub">Review before saving</div></div></div>
   <div class="approval-card">
-    <div class="approval-hdr">âœ“ Position â€” Review</div>
+    <div class="approval-hdr">✓ Position — Review</div>
     <div class="approval-body">
       <div class="a-row"><span class="a-label">Job Title</span><span class="a-value">${escHtml(j.jobTitle)}</span></div>
-      <div class="a-row"><span class="a-label">Employer</span><span class="a-value">${escHtml(j.employer)}${loc?' â€” '+escHtml(loc):''}</span></div>
+      <div class="a-row"><span class="a-label">Employer</span><span class="a-value">${escHtml(j.employer)}${loc?' — '+escHtml(loc):''}</span></div>
       <div class="a-row"><span class="a-label">Dates</span><span class="a-value">${escHtml(dates)}</span></div>
       <div class="a-row" style="display:block;padding-top:10px"><span class="a-label" style="display:block;margin-bottom:6px">Bullets</span><ul class="bullet-list">${bullets}</ul></div>
     </div>
     <div class="approval-footer">
       <button class="btn btn-ghost" onclick="showSection('work')">Edit</button>
       <button class="btn btn-ghost" onclick="regenBullets()">Rewrite Bullets</button>
-      <button class="btn btn-confirm" onclick="confirmWork()">Looks Good âœ“</button>
+      <button class="btn btn-confirm" onclick="confirmWork()">Looks Good ✓</button>
     </div>
   </div>`;
 }
 
 async function regenBullets() {
   const ci = document.getElementById('centerInner');
-  ci.innerHTML = `<div style="text-align:center;padding:60px 20px;color:var(--slate-500)"><div style="font-size:32px;margin-bottom:12px">âš™ï¸</div>Rewriting bullet pointsâ€¦</div>`;
+  ci.innerHTML = `<div style="text-align:center;padding:60px 20px;color:var(--slate-500)"><div style="font-size:32px;margin-bottom:12px">⚙️</div>Rewriting bullet points…</div>`;
   const prog = resumeData.personal.program||'';
   const tense = pendingWork.current?'present tense':'past tense';
-  const sys = `Write DIFFERENT resume bullet points for a trade school student studying ${prog}. Job: ${pendingWork.jobTitle} at ${pendingWork.employer}. Duties: "${pendingWork.duties}". Use different action verbs. 3â€“5 bullets, ${tense}. Each line starts with â€¢. Return only the bullet points.`;
-  try { const r=await callClaude(sys,[{role:'user',content:'Write alternate bullets.'}]); pendingWork.bulletLines=r.trim().split('\n').map(l=>l.replace(/^[â€¢\-\*]\s*/,'')).filter(l=>l.length>0); showCenter('workApproval'); }
+  const sys = `Write DIFFERENT resume bullet points for a trade school student studying ${prog}. Job: ${pendingWork.jobTitle} at ${pendingWork.employer}. Duties: "${pendingWork.duties}". Use different action verbs. 3–5 bullets, ${tense}. Each line starts with •. Return only the bullet points.`;
+  try { const r=await callClaude(sys,[{role:'user',content:'Write alternate bullets.'}]); pendingWork.bulletLines=r.trim().split('\n').map(l=>l.replace(/^[•\-\*]\s*/,'')).filter(l=>l.length>0); showCenter('workApproval'); }
   catch(e) { addAIMsg('Could not connect.'); showCenter('workApproval'); }
 }
 
@@ -1057,17 +1057,17 @@ function confirmWork() {
 
 function renderWorkDone() {
   return `<div class="done-card">
-    <span class="done-icon">âœ…</span>
+    <span class="done-icon">✅</span>
     <div class="done-title">Position Saved</div>
     <div class="done-sub">You have ${resumeData.workExperience.length} position(s) on your resume.</div>
     <div class="done-actions">
       <button class="btn btn-ghost" onclick="showSection('work')">Add Another Position</button>
-      <button class="btn btn-primary btn-lg" onclick="skipToEdu()">Continue to Education â†’</button>
+      <button class="btn btn-primary btn-lg" onclick="skipToEdu()">Continue to Education →</button>
     </div>
   </div>`;
 }
 
-// â”€â”€ Education â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+// ── Education ─────────────────────────────────────
 function campusLoc(campus) {
   if (campus.includes('New Castle'))     return {city:'New Castle',state:'PA'};
   if (campus.includes('East Liverpool')) return {city:'East Liverpool',state:'OH'};
@@ -1079,7 +1079,7 @@ function campusLoc(campus) {
 function renderEduForm(prefill) {
   const p = resumeData.personal;
   const pf = prefill || (resumeData.education.length===0 && p.program ? {
-    school:p.campus?p.campus.split('â€”')[0].trim():'',
+    school:p.campus?p.campus.split('—')[0].trim():'',
     degree:'Vocational Certificate',
     fieldOfStudy:p.program||'',
     city:campusLoc(p.campus||'').city,
@@ -1087,14 +1087,14 @@ function renderEduForm(prefill) {
     gradYear:'',isPrefilled:true
   } : null) || {};
   const monthOpts = MONTHS.map(m=>`<option>${m}</option>`).join('');
-  const degOpts = ['','High School Diploma','GED / High School Equivalency',"Associate's Degree","Bachelor's Degree","Master's Degree",'Vocational Certificate','Other'].map(d=>`<option value="${d}" ${pf.degree===d?'selected':''}>${d||'â€” Select â€”'}</option>`).join('');
-  const banner = pf.isPrefilled ? `<div class="prefill-banner">â„¹ï¸ Pre-filled from your program. Add your graduation year and confirm.</div>` : '';
+  const degOpts = ['','High School Diploma','GED / High School Equivalency',"Associate's Degree","Bachelor's Degree","Master's Degree",'Vocational Certificate','Other'].map(d=>`<option value="${d}" ${pf.degree===d?'selected':''}>${d||'— Select —'}</option>`).join('');
+  const banner = pf.isPrefilled ? `<div class="prefill-banner">ℹ️ Pre-filled from your program. Add your graduation year and confirm.</div>` : '';
   const saved = resumeData.education;
-  const savedList = saved.length ? `<div class="form-card" style="margin-bottom:16px"><div class="form-card-hdr">ðŸŽ“ Saved Education (${saved.length})</div><div class="form-card-body" style="padding-bottom:14px">${saved.map(e=>`<div style="padding:8px 0;border-bottom:1px solid var(--slate-100)"><div style="font-size:14px;font-weight:600">${escHtml(e.degree)}${e.fieldOfStudy?' â€“ '+escHtml(e.fieldOfStudy):''}</div><div style="font-size:12px;color:var(--slate-500)">${escHtml(e.school)} | ${escHtml(e.gradYear)}</div></div>`).join('')}</div></div>` : '';
-  return `<div class="section-hdr"><div class="section-hdr-icon">ðŸŽ“</div><div><div class="section-hdr-title">Education</div><div class="section-hdr-sub">${saved.length?saved.length+' entr(ies) saved':'Schools, degrees, and credentials'}</div></div></div>
+  const savedList = saved.length ? `<div class="form-card" style="margin-bottom:16px"><div class="form-card-hdr">🎓 Saved Education (${saved.length})</div><div class="form-card-body" style="padding-bottom:14px">${saved.map(e=>`<div style="padding:8px 0;border-bottom:1px solid var(--slate-100)"><div style="font-size:14px;font-weight:600">${escHtml(e.degree)}${e.fieldOfStudy?' – '+escHtml(e.fieldOfStudy):''}</div><div style="font-size:12px;color:var(--slate-500)">${escHtml(e.school)} | ${escHtml(e.gradYear)}</div></div>`).join('')}</div></div>` : '';
+  return `<div class="section-hdr"><div class="section-hdr-icon">🎓</div><div><div class="section-hdr-title">Education</div><div class="section-hdr-sub">${saved.length?saved.length+' entr(ies) saved':'Schools, degrees, and credentials'}</div></div></div>
   ${savedList}
   <div class="form-card">
-    <div class="form-card-hdr">ðŸŽ“ Education Entry</div>
+    <div class="form-card-hdr">🎓 Education Entry</div>
     <div class="form-card-body">
       ${banner}
       <div class="f-row single"><div class="f-group" id="fg-sch"><label>School Name *</label><input id="schoolName" value="${escHtml(pf.school||'')}" placeholder="School or institution name"><span class="f-err">Required</span></div></div>
@@ -1107,7 +1107,7 @@ function renderEduForm(prefill) {
     </div>
     <div class="form-card-footer">
       ${saved.length?`<button class="btn btn-ghost" onclick="moveToCerts()">No More Education</button>`:'<button class="btn btn-ghost" onclick="moveToCerts()">Skip Education</button>'}
-      <button class="btn btn-primary" onclick="submitEdu()">Continue â†’</button>
+      <button class="btn btn-primary" onclick="submitEdu()">Continue →</button>
     </div>
   </div>`;
 }
@@ -1135,17 +1135,17 @@ function submitEdu() {
 function renderEduApproval() {
   const e = pendingEdu;
   const loc = [e.city,e.state].filter(Boolean).join(', ');
-  return `<div class="section-hdr"><div class="section-hdr-icon">ðŸŽ“</div><div><div class="section-hdr-title">Education</div><div class="section-hdr-sub">Review before saving</div></div></div>
+  return `<div class="section-hdr"><div class="section-hdr-icon">🎓</div><div><div class="section-hdr-title">Education</div><div class="section-hdr-sub">Review before saving</div></div></div>
   <div class="approval-card">
-    <div class="approval-hdr">âœ“ Education â€” Review</div>
+    <div class="approval-hdr">✓ Education — Review</div>
     <div class="approval-body">
-      <div class="a-row"><span class="a-label">School</span><span class="a-value">${escHtml(e.school)}${loc?' â€” '+escHtml(loc):''}</span></div>
-      <div class="a-row"><span class="a-label">Degree</span><span class="a-value">${escHtml(e.degree)}${e.fieldOfStudy?' â€“ '+escHtml(e.fieldOfStudy):''}</span></div>
+      <div class="a-row"><span class="a-label">School</span><span class="a-value">${escHtml(e.school)}${loc?' — '+escHtml(loc):''}</span></div>
+      <div class="a-row"><span class="a-label">Degree</span><span class="a-value">${escHtml(e.degree)}${e.fieldOfStudy?' – '+escHtml(e.fieldOfStudy):''}</span></div>
       <div class="a-row"><span class="a-label">Year</span><span class="a-value">${escHtml(e.gradYear)}</span></div>
     </div>
     <div class="approval-footer">
       <button class="btn btn-ghost" onclick="showSection('education')">Edit</button>
-      <button class="btn btn-confirm" onclick="confirmEdu()">Looks Good âœ“</button>
+      <button class="btn btn-confirm" onclick="confirmEdu()">Looks Good ✓</button>
     </div>
   </div>`;
 }
@@ -1158,37 +1158,37 @@ function confirmEdu() {
 
 function renderEduDone() {
   return `<div class="done-card">
-    <span class="done-icon">âœ…</span>
+    <span class="done-icon">✅</span>
     <div class="done-title">Education Entry Saved</div>
     <div class="done-sub">${resumeData.education.length} education entr${resumeData.education.length===1?'y':'ies'} on your resume.</div>
     <div class="done-actions">
       <button class="btn btn-ghost" onclick="showSection('education')">Add Another</button>
-      <button class="btn btn-primary btn-lg" onclick="moveToCerts()">Continue to Certifications â†’</button>
+      <button class="btn btn-primary btn-lg" onclick="moveToCerts()">Continue to Certifications →</button>
     </div>
   </div>`;
 }
 
 function moveToCerts() {
   setStatus('education','done');
-  addAIMsg(`Education saved. Do you have any certifications or licenses? OSHA, EPA, CDL, welding certs â€” anything relevant to your trade.`);
+  addAIMsg(`Education saved. Do you have any certifications or licenses? OSHA, EPA, CDL, welding certs — anything relevant to your trade.`);
   showSection('certifications');
 }
 
-// â”€â”€ Certifications â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+// ── Certifications ────────────────────────────────
 function renderCertForm() {
   const saved = resumeData.certifications;
-  const savedList = saved.length ? `<div class="form-card" style="margin-bottom:16px"><div class="form-card-hdr">ðŸ“œ Saved Certifications (${saved.length})</div><div class="form-card-body" style="padding-bottom:14px">${saved.map(c=>`<div style="padding:8px 0;border-bottom:1px solid var(--slate-100)"><div style="font-size:14px;font-weight:600">${escHtml(c.name)}</div>${c.org||c.year?`<div style="font-size:12px;color:var(--slate-500)">${[c.org,c.year].filter(Boolean).join(', ')}</div>`:''}</div>`).join('')}</div></div>` : '';
-  return `<div class="section-hdr"><div class="section-hdr-icon">ðŸ“œ</div><div><div class="section-hdr-title">Certifications</div><div class="section-hdr-sub">Licenses, certifications, and credentials</div></div></div>
+  const savedList = saved.length ? `<div class="form-card" style="margin-bottom:16px"><div class="form-card-hdr">📜 Saved Certifications (${saved.length})</div><div class="form-card-body" style="padding-bottom:14px">${saved.map(c=>`<div style="padding:8px 0;border-bottom:1px solid var(--slate-100)"><div style="font-size:14px;font-weight:600">${escHtml(c.name)}</div>${c.org||c.year?`<div style="font-size:12px;color:var(--slate-500)">${[c.org,c.year].filter(Boolean).join(', ')}</div>`:''}</div>`).join('')}</div></div>` : '';
+  return `<div class="section-hdr"><div class="section-hdr-icon">📜</div><div><div class="section-hdr-title">Certifications</div><div class="section-hdr-sub">Licenses, certifications, and credentials</div></div></div>
   ${savedList}
   <div class="form-card">
-    <div class="form-card-hdr">ðŸ“œ Certification / License</div>
+    <div class="form-card-hdr">📜 Certification / License</div>
     <div class="form-card-body">
       <div class="f-row single"><div class="f-group" id="fg-cn"><label>Name *</label><input id="certName" placeholder="e.g. OSHA 10, EPA 608, CDL Class A, AWS Welding"><span class="f-err">Required</span></div></div>
       <div class="f-row"><div class="f-group"><label>Issuing Organization</label><input id="certOrg" placeholder="e.g. OSHA, EPA, AWS"></div><div class="f-group"><label>Year Issued</label><input id="certYear" placeholder="2023" maxlength="4" inputmode="numeric"></div></div>
     </div>
     <div class="form-card-footer">
       ${saved.length?`<button class="btn btn-ghost" onclick="moveToSkills()">No More Certifications</button>`:'<button class="btn btn-ghost" onclick="moveToSkills()">Skip Certifications</button>'}
-      <button class="btn btn-primary" onclick="submitCert()">Continue â†’</button>
+      <button class="btn btn-primary" onclick="submitCert()">Continue →</button>
     </div>
   </div>`;
 }
@@ -1204,16 +1204,16 @@ function submitCert() {
 function renderCertApproval() {
   const c = pendingCert;
   const det = [c.org,c.year].filter(Boolean).join(', ');
-  return `<div class="section-hdr"><div class="section-hdr-icon">ðŸ“œ</div><div><div class="section-hdr-title">Certification</div><div class="section-hdr-sub">Review before saving</div></div></div>
+  return `<div class="section-hdr"><div class="section-hdr-icon">📜</div><div><div class="section-hdr-title">Certification</div><div class="section-hdr-sub">Review before saving</div></div></div>
   <div class="approval-card">
-    <div class="approval-hdr">âœ“ Certification â€” Review</div>
+    <div class="approval-hdr">✓ Certification — Review</div>
     <div class="approval-body">
       <div class="a-row"><span class="a-label">Name</span><span class="a-value">${escHtml(c.name)}</span></div>
       ${det?`<div class="a-row"><span class="a-label">Details</span><span class="a-value">${escHtml(det)}</span></div>`:''}
     </div>
     <div class="approval-footer">
       <button class="btn btn-ghost" onclick="showSection('certifications')">Edit</button>
-      <button class="btn btn-confirm" onclick="confirmCert()">Looks Good âœ“</button>
+      <button class="btn btn-confirm" onclick="confirmCert()">Looks Good ✓</button>
     </div>
   </div>`;
 }
@@ -1225,37 +1225,37 @@ function confirmCert() {
 }
 
 function renderCertDone() {
-  return `<div class="done-card"><span class="done-icon">âœ…</span><div class="done-title">Certification Saved</div><div class="done-sub">${resumeData.certifications.length} certification(s) on your resume.</div><div class="done-actions"><button class="btn btn-ghost" onclick="showSection('certifications')">Add Another</button><button class="btn btn-primary btn-lg" onclick="moveToSkills()">Continue to Skills â†’</button></div></div>`;
+  return `<div class="done-card"><span class="done-icon">✅</span><div class="done-title">Certification Saved</div><div class="done-sub">${resumeData.certifications.length} certification(s) on your resume.</div><div class="done-actions"><button class="btn btn-ghost" onclick="showSection('certifications')">Add Another</button><button class="btn btn-primary btn-lg" onclick="moveToSkills()">Continue to Skills →</button></div></div>`;
 }
 
 function moveToSkills() {
   setStatus('certifications','done');
-  addAIMsg(`Certifications saved. Now let's collect your skills â€” just write everything out naturally, and I'll organize it.`);
+  addAIMsg(`Certifications saved. Now let's collect your skills — just write everything out naturally, and I'll organize it.`);
   showSection('skills');
 }
 
-// â”€â”€ Skills & References â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+// ── Skills & References ───────────────────────────
 function renderSkillsForm() {
   const existing = Array.isArray(resumeData.skills) && resumeData.skills.length ? resumeData.skills.join(', ') : '';
-  return `<div class="section-hdr"><div class="section-hdr-icon">âš¡</div><div><div class="section-hdr-title">Skills &amp; References</div><div class="section-hdr-sub">Brain dump your skills â€” I'll organize them</div></div></div>
+  return `<div class="section-hdr"><div class="section-hdr-icon">⚡</div><div><div class="section-hdr-title">Skills &amp; References</div><div class="section-hdr-sub">Brain dump your skills — I'll organize them</div></div></div>
   <div class="form-card">
-    <div class="form-card-hdr">âš¡ Your Skills</div>
+    <div class="form-card-hdr">⚡ Your Skills</div>
     <div class="form-card-body">
       <div class="f-row single"><div class="f-group" id="fg-sk"><label>List all your skills *</label>
-        <textarea id="skillsDump" rows="5" placeholder="List everything â€” tools, equipment, software, techniques, licenses, anything relevant. Example: MIG and TIG welding, blueprint reading, forklift certified, OSHA 10, Microsoft Office, customer serviceâ€¦">${escHtml(existing)}</textarea>
+        <textarea id="skillsDump" rows="5" placeholder="List everything — tools, equipment, software, techniques, licenses, anything relevant. Example: MIG and TIG welding, blueprint reading, forklift certified, OSHA 10, Microsoft Office, customer service…">${escHtml(existing)}</textarea>
         <span class="f-err">Please list at least a few skills.</span></div></div>
     </div>
   </div>
   <div class="form-card">
-    <div class="form-card-hdr" style="background:var(--green-600)">ðŸ‘¥ References</div>
+    <div class="form-card-hdr" style="background:var(--green-600)">👥 References</div>
     <div class="form-card-body" style="padding-bottom:14px">
       <div style="display:flex;align-items:center;gap:10px;padding:8px 0;font-size:14px;color:var(--slate-600)">
-        <span style="font-size:20px">âœ“</span>
+        <span style="font-size:20px">✓</span>
         <span><strong>"References available upon request"</strong> will be added to your resume automatically.</span>
       </div>
     </div>
     <div class="form-card-footer">
-      <button class="btn btn-primary" onclick="submitSkills()">Organize My Skills â†’</button>
+      <button class="btn btn-primary" onclick="submitSkills()">Organize My Skills →</button>
     </div>
   </div>`;
 }
@@ -1266,29 +1266,29 @@ async function submitSkills() {
   fg.classList.remove('has-error');
   const raw = el.value.trim();
   const ci = document.getElementById('centerInner');
-  ci.innerHTML = `<div style="text-align:center;padding:60px 20px;color:var(--slate-500)"><div style="font-size:32px;margin-bottom:12px">âš¡</div>Organizing your skillsâ€¦</div>`;
+  ci.innerHTML = `<div style="text-align:center;padding:60px 20px;color:var(--slate-500)"><div style="font-size:32px;margin-bottom:12px">⚡</div>Organizing your skills…</div>`;
   const prog = resumeData.personal.program||'';
   const sys = `Organize this skills list for a ${prog} student's resume. Clean up spelling, remove duplicates, group related items. Return ONLY a JSON array of strings. Example: ["MIG/TIG Welding","Blueprint Reading"]. Raw input: "${raw}"`;
   try {
     const result = await callClaude(sys,[{role:'user',content:'Organize my skills.'}]);
     let list;
     try { list=JSON.parse(result.trim().replace(/^```(?:json)?\s*/i,'').replace(/\s*```$/,'')); }
-    catch { list=result.split('\n').map(l=>l.replace(/^[â€¢\-\*"\[,\]]+\s*/,'').replace(/[",\]]+$/,'').trim()).filter(l=>l.length>1); }
+    catch { list=result.split('\n').map(l=>l.replace(/^[•\-\*"\[,\]]+\s*/,'').replace(/[",\]]+$/,'').trim()).filter(l=>l.length>1); }
     resumeData.skills = list;
     resumeData.references = 'Available upon request';
     showCenter('skillsApproval');
-  } catch(e) { addAIMsg('Could not connect â€” try again.'); showSection('skills'); }
+  } catch(e) { addAIMsg('Could not connect — try again.'); showSection('skills'); }
 }
 
 function renderSkillsApproval() {
   const items = resumeData.skills.map(s=>`<li>${escHtml(s)}</li>`).join('');
-  return `<div class="section-hdr"><div class="section-hdr-icon">âš¡</div><div><div class="section-hdr-title">Skills</div><div class="section-hdr-sub">Review your organized skills list</div></div></div>
+  return `<div class="section-hdr"><div class="section-hdr-icon">⚡</div><div><div class="section-hdr-title">Skills</div><div class="section-hdr-sub">Review your organized skills list</div></div></div>
   <div class="approval-card">
-    <div class="approval-hdr">âœ“ Skills â€” Review</div>
+    <div class="approval-hdr">✓ Skills — Review</div>
     <div class="approval-body"><div class="a-row" style="display:block;padding-top:8px"><ul class="bullet-list">${items}</ul></div></div>
     <div class="approval-footer">
       <button class="btn btn-ghost" onclick="showSection('skills')">Rewrite</button>
-      <button class="btn btn-confirm" onclick="confirmSkills()">Looks Good âœ“</button>
+      <button class="btn btn-confirm" onclick="confirmSkills()">Looks Good ✓</button>
     </div>
   </div>`;
 }
@@ -1299,28 +1299,28 @@ function confirmSkills() {
   showSection('template');
 }
 
-// â”€â”€ Template Configurator â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+// ── Template Configurator ─────────────────────────
 const STYLES = [{id:'classic',label:'Classic'},{id:'modern',label:'Modern'},{id:'bold',label:'Bold'},{id:'executive',label:'Executive'}];
 
 function renderTemplateConfig() {
   const styleBtns = STYLES.map(s=>`<button class="style-btn ${s.id===selectedStyle?'sel':''}" id="sb-${s.id}" onclick="pickStyle('${s.id}')"><div class="style-preview" id="sp-${s.id}">${buildPreviewHTML(s.id,selectedColor)}</div><div class="style-name">${s.label}</div></button>`).join('');
   const swatches = Object.entries(COLOR_SCHEMES).map(([k,c])=>`<div class="color-swatch ${k===selectedColor?'sel':''}" id="sw-${k}" style="background:${c.hex}" title="${c.label}" onclick="pickColor('${k}')"></div>`).join('');
-  return `<div class="section-hdr"><div class="section-hdr-icon">ðŸ“„</div><div><div class="section-hdr-title">Build Your Resume</div><div class="section-hdr-sub">Choose a style and color, then generate</div></div></div>
+  return `<div class="section-hdr"><div class="section-hdr-icon">📄</div><div><div class="section-hdr-title">Build Your Resume</div><div class="section-hdr-sub">Choose a style and color, then generate</div></div></div>
   <div class="form-card">
-    <div class="form-card-hdr">ðŸŽ¨ Style</div>
+    <div class="form-card-hdr">🎨 Style</div>
     <div class="form-card-body" style="padding-bottom:14px"><div class="style-grid">${styleBtns}</div></div>
   </div>
   <div class="form-card">
-    <div class="form-card-hdr">ðŸŽ¨ Color Scheme</div>
+    <div class="form-card-hdr">🎨 Color Scheme</div>
     <div class="form-card-body" style="padding-bottom:18px"><div class="color-row">${swatches}</div></div>
   </div>
   <div class="form-card">
-    <div class="form-card-hdr" style="background:var(--green-600)">ðŸ“¥ Generate</div>
+    <div class="form-card-hdr" style="background:var(--green-600)">📥 Generate</div>
     <div class="form-card-body" style="padding-bottom:14px">
       <label style="display:flex;align-items:center;gap:10px;font-size:14px;cursor:pointer;color:var(--slate-700)"><input type="checkbox" id="clToggle" style="accent-color:var(--blue-700);width:15px;height:15px">Also generate a cover letter</label>
     </div>
     <div class="form-card-footer">
-      <button class="btn btn-primary btn-lg" id="genBtn" onclick="generateResume()">Generate &amp; Download â†“</button>
+      <button class="btn btn-primary btn-lg" id="genBtn" onclick="generateResume()">Generate &amp; Download ↓</button>
     </div>
   </div>`;
 }
@@ -1354,44 +1354,44 @@ function buildPreviewHTML(style,colorKey) {
 
 async function generateResume() {
   const btn = document.getElementById('genBtn');
-  btn.disabled=true; btn.textContent='Building resumeâ€¦';
+  btn.disabled=true; btn.textContent='Building resume…';
   try {
     const color = COLOR_SCHEMES[selectedColor];
     const doc = await buildDocument(resumeData, selectedStyle, color);
     const blob = await docx.Packer.toBlob(doc);
     saveAs(blob, `resume-${selectedStyle}-${selectedColor}.docx`);
-    if (document.getElementById('clToggle').checked) { btn.textContent='Writing cover letterâ€¦'; await generateCoverLetter(); }
+    if (document.getElementById('clToggle').checked) { btn.textContent='Writing cover letter…'; await generateCoverLetter(); }
     setStatus('template','done');
-    btn.disabled=false; btn.textContent='Download Again â†“';
+    btn.disabled=false; btn.textContent='Download Again ↓';
     addAIMsg(`Your resume has been downloaded! Change the style or color anytime and click Download Again to try a different look.`);
-  } catch(err) { btn.disabled=false; btn.textContent='Generate & Download â†“'; addAIMsg(`Error generating file: ${err.message}`); console.error(err); }
+  } catch(err) { btn.disabled=false; btn.textContent='Generate & Download ↓'; addAIMsg(`Error generating file: ${err.message}`); console.error(err); }
 }
 
-// â”€â”€ docx Builders (shared helpers) â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+// ── docx Builders (shared helpers) ───────────────
 const twip = n => docx.convertInchesToTwip(n);
 function spacer(a=80){return new docx.Paragraph({spacing:{before:0,after:a}})}
 function bodyTxt(text,opts={}){return new docx.Paragraph({children:[new docx.TextRun({text,size:opts.size||20,color:opts.color||'2a2a2a',italics:opts.italic||false})],indent:opts.indent?{left:twip(opts.indent)}:undefined,spacing:{before:0,after:opts.after!==undefined?opts.after:30},alignment:opts.align||docx.AlignmentType.LEFT})}
-function bullet(text){return new docx.Paragraph({children:[new docx.TextRun({text:`â€¢  ${text}`,size:19,color:'2a2a2a'})],indent:{left:twip(0.15)},spacing:{before:0,after:28}})}
-function jobBlock(job){const items=[],loc=[job.city,job.state].filter(Boolean).join(', '),end=job.current?'Present':[job.endMonth,job.endYear].filter(Boolean).join(' '),dates=`${[job.startMonth,job.startYear].filter(Boolean).join(' ')} â€“ ${end}`;items.push(new docx.Paragraph({spacing:{before:100,after:0},children:[new docx.TextRun({text:job.jobTitle,bold:true,size:21,color:'1a1a1a'}),new docx.TextRun({text:`  â€¢  ${job.employer}${loc?'  â€¢  '+loc:''}`,size:20,color:'444444'})]}));items.push(new docx.Paragraph({spacing:{before:0,after:40},children:[new docx.TextRun({text:dates,italics:true,size:18,color:'777777'})]}));(job.bulletLines||[]).forEach(b=>items.push(bullet(b)));return items;}
-function eduBlock(edu){const loc=[edu.city,edu.state].filter(Boolean).join(', '),field=edu.fieldOfStudy?` â€“ ${edu.fieldOfStudy}`:'';return new docx.Paragraph({spacing:{before:80,after:30},children:[new docx.TextRun({text:`${edu.degree}${field}`,bold:true,size:20,color:'1a1a1a'}),new docx.TextRun({text:`  â€¢  ${edu.school}${loc?', '+loc:''}  â€¢  ${edu.gradYear}`,size:20,color:'555555'})]})}
+function bullet(text){return new docx.Paragraph({children:[new docx.TextRun({text:`•  ${text}`,size:19,color:'2a2a2a'})],indent:{left:twip(0.15)},spacing:{before:0,after:28}})}
+function jobBlock(job){const items=[],loc=[job.city,job.state].filter(Boolean).join(', '),end=job.current?'Present':[job.endMonth,job.endYear].filter(Boolean).join(' '),dates=`${[job.startMonth,job.startYear].filter(Boolean).join(' ')} – ${end}`;items.push(new docx.Paragraph({spacing:{before:100,after:0},children:[new docx.TextRun({text:job.jobTitle,bold:true,size:21,color:'1a1a1a'}),new docx.TextRun({text:`  •  ${job.employer}${loc?'  •  '+loc:''}`,size:20,color:'444444'})]}));items.push(new docx.Paragraph({spacing:{before:0,after:40},children:[new docx.TextRun({text:dates,italics:true,size:18,color:'777777'})]}));(job.bulletLines||[]).forEach(b=>items.push(bullet(b)));return items;}
+function eduBlock(edu){const loc=[edu.city,edu.state].filter(Boolean).join(', '),field=edu.fieldOfStudy?` – ${edu.fieldOfStudy}`:'';return new docx.Paragraph({spacing:{before:80,after:30},children:[new docx.TextRun({text:`${edu.degree}${field}`,bold:true,size:20,color:'1a1a1a'}),new docx.TextRun({text:`  •  ${edu.school}${loc?', '+loc:''}  •  ${edu.gradYear}`,size:20,color:'555555'})]})}
 
 async function buildDocument(data,style,color){const builders={classic:buildClassic,modern:buildModern,bold:buildBold,executive:buildExecutive};return (builders[style]||buildClassic)(data,color);}
 
-function buildClassic(data,color){const p=data.personal,c=data.careerContext,ac=color.accent,M=twip(0.75),ch=[];ch.push(new docx.Paragraph({alignment:docx.AlignmentType.CENTER,spacing:{before:0,after:40},children:[new docx.TextRun({text:`${p.firstName} ${p.lastName}`.trim(),bold:true,size:40,color:'111111'})]}));const contact=[p.email,p.phone,[p.city,p.state].filter(Boolean).join(', ')].filter(Boolean).join('   |   ');if(contact)ch.push(new docx.Paragraph({alignment:docx.AlignmentType.CENTER,spacing:{before:0,after:80},children:[new docx.TextRun({text:contact,size:18,color:'555555'})]}));ch.push(new docx.Paragraph({border:{bottom:{style:docx.BorderStyle.SINGLE,size:8,color:ac}},spacing:{before:0,after:100}}));const sec=t=>new docx.Paragraph({children:[new docx.TextRun({text:t.toUpperCase(),bold:true,size:22,color:ac})],border:{bottom:{style:docx.BorderStyle.SINGLE,size:4,color:ac}},spacing:{before:140,after:60}});if(c.objective){ch.push(sec('Objective'));ch.push(bodyTxt(c.objective,{after:100}));}if(data.workExperience?.length){ch.push(sec('Experience'));data.workExperience.forEach(j=>jobBlock(j).forEach(p=>ch.push(p)));}if(data.education?.length){ch.push(sec('Education'));data.education.forEach(e=>ch.push(eduBlock(e)));}if(data.certifications?.length){ch.push(sec('Certifications'));data.certifications.forEach(cert=>ch.push(new docx.Paragraph({spacing:{before:60,after:30},children:[new docx.TextRun({text:cert.name,bold:true,size:20}),...(cert.org||cert.year?[new docx.TextRun({text:`  â€”  ${[cert.org,cert.year].filter(Boolean).join(', ')}`,size:19,color:'666666'})]:[])]})));}if(data.skills?.length){ch.push(sec('Skills'));ch.push(bodyTxt(Array.isArray(data.skills)?data.skills.join('   â€¢   '):data.skills,{after:60}));}ch.push(spacer(120));ch.push(new docx.Paragraph({alignment:docx.AlignmentType.CENTER,children:[new docx.TextRun({text:'References Available Upon Request',italics:true,size:18,color:'999999'})]}));return new docx.Document({sections:[{properties:{page:{margin:{top:M,bottom:M,left:M,right:M}}},children:ch}]});}
+function buildClassic(data,color){const p=data.personal,c=data.careerContext,ac=color.accent,M=twip(0.75),ch=[];ch.push(new docx.Paragraph({alignment:docx.AlignmentType.CENTER,spacing:{before:0,after:40},children:[new docx.TextRun({text:`${p.firstName} ${p.lastName}`.trim(),bold:true,size:40,color:'111111'})]}));const contact=[p.email,p.phone,[p.city,p.state].filter(Boolean).join(', ')].filter(Boolean).join('   |   ');if(contact)ch.push(new docx.Paragraph({alignment:docx.AlignmentType.CENTER,spacing:{before:0,after:80},children:[new docx.TextRun({text:contact,size:18,color:'555555'})]}));ch.push(new docx.Paragraph({border:{bottom:{style:docx.BorderStyle.SINGLE,size:8,color:ac}},spacing:{before:0,after:100}}));const sec=t=>new docx.Paragraph({children:[new docx.TextRun({text:t.toUpperCase(),bold:true,size:22,color:ac})],border:{bottom:{style:docx.BorderStyle.SINGLE,size:4,color:ac}},spacing:{before:140,after:60}});if(c.objective){ch.push(sec('Objective'));ch.push(bodyTxt(c.objective,{after:100}));}if(data.workExperience?.length){ch.push(sec('Experience'));data.workExperience.forEach(j=>jobBlock(j).forEach(p=>ch.push(p)));}if(data.education?.length){ch.push(sec('Education'));data.education.forEach(e=>ch.push(eduBlock(e)));}if(data.certifications?.length){ch.push(sec('Certifications'));data.certifications.forEach(cert=>ch.push(new docx.Paragraph({spacing:{before:60,after:30},children:[new docx.TextRun({text:cert.name,bold:true,size:20}),...(cert.org||cert.year?[new docx.TextRun({text:`  —  ${[cert.org,cert.year].filter(Boolean).join(', ')}`,size:19,color:'666666'})]:[])]})));}if(data.skills?.length){ch.push(sec('Skills'));ch.push(bodyTxt(Array.isArray(data.skills)?data.skills.join('   •   '):data.skills,{after:60}));}ch.push(spacer(120));ch.push(new docx.Paragraph({alignment:docx.AlignmentType.CENTER,children:[new docx.TextRun({text:'References Available Upon Request',italics:true,size:18,color:'999999'})]}));return new docx.Document({sections:[{properties:{page:{margin:{top:M,bottom:M,left:M,right:M}}},children:ch}]});}
 
-function buildModern(data,color){const p=data.personal,c=data.careerContext,ac=color.accent,st=color.sideText,side=[],main=[];side.push(new docx.Paragraph({spacing:{before:0,after:60},children:[new docx.TextRun({text:`${p.firstName} ${p.lastName}`.trim(),bold:true,size:28,color:st})]}));[p.email,p.phone,[p.city,p.state].filter(Boolean).join(', '),p.address].filter(Boolean).forEach(line=>side.push(new docx.Paragraph({spacing:{before:0,after:22},children:[new docx.TextRun({text:line,size:17,color:st==='FFFFFF'?'CCE4FF':'CCCCCC'})]})));const sideSec=t=>new docx.Paragraph({children:[new docx.TextRun({text:t.toUpperCase(),bold:true,size:19,color:st})],border:{bottom:{style:docx.BorderStyle.SINGLE,size:3,color:st==='FFFFFF'?'6699CC':'777777'}},spacing:{before:160,after:60}});if(data.skills?.length){side.push(sideSec('Skills'));const sl=Array.isArray(data.skills)?data.skills:[data.skills];sl.forEach(s=>side.push(new docx.Paragraph({spacing:{before:0,after:22},children:[new docx.TextRun({text:`â€¢  ${s}`,size:17,color:st==='FFFFFF'?'CCE4FF':'CCCCCC'})]})));}if(data.certifications?.length){side.push(sideSec('Certifications'));data.certifications.forEach(cert=>side.push(new docx.Paragraph({spacing:{before:0,after:22},children:[new docx.TextRun({text:cert.name,size:17,color:st==='FFFFFF'?'CCE4FF':'CCCCCC'})]}))); }const mainSec=t=>new docx.Paragraph({children:[new docx.TextRun({text:t.toUpperCase(),bold:true,size:22,color:ac})],border:{bottom:{style:docx.BorderStyle.SINGLE,size:4,color:ac}},spacing:{before:120,after:60}});if(c.objective){main.push(mainSec('Objective'));main.push(bodyTxt(c.objective,{after:80}));}if(data.workExperience?.length){main.push(mainSec('Experience'));data.workExperience.forEach(j=>jobBlock(j).forEach(p=>main.push(p)));}if(data.education?.length){main.push(mainSec('Education'));data.education.forEach(e=>main.push(eduBlock(e)));}main.push(spacer(120));main.push(new docx.Paragraph({children:[new docx.TextRun({text:'References Available Upon Request',italics:true,size:17,color:'999999'})]}));const nb={style:docx.BorderStyle.NONE,size:0,color:'FFFFFF'};return new docx.Document({sections:[{properties:{page:{margin:{top:0,bottom:0,left:0,right:0}}},children:[new docx.Table({width:{size:100,type:docx.WidthType.PERCENTAGE},borders:{top:nb,bottom:nb,left:nb,right:nb,insideH:nb,insideV:nb},rows:[new docx.TableRow({children:[new docx.TableCell({width:{size:twip(2.4),type:docx.WidthType.DXA},shading:{fill:ac,type:docx.ShadingType.CLEAR,color:'auto'},margins:{top:twip(.4),bottom:twip(.4),left:twip(.25),right:twip(.2)},children:side}),new docx.TableCell({width:{size:twip(5.1),type:docx.WidthType.DXA},margins:{top:twip(.35),bottom:twip(.35),left:twip(.3),right:twip(.3)},children:main})]})]})]},]});}
+function buildModern(data,color){const p=data.personal,c=data.careerContext,ac=color.accent,st=color.sideText,side=[],main=[];side.push(new docx.Paragraph({spacing:{before:0,after:60},children:[new docx.TextRun({text:`${p.firstName} ${p.lastName}`.trim(),bold:true,size:28,color:st})]}));[p.email,p.phone,[p.city,p.state].filter(Boolean).join(', '),p.address].filter(Boolean).forEach(line=>side.push(new docx.Paragraph({spacing:{before:0,after:22},children:[new docx.TextRun({text:line,size:17,color:st==='FFFFFF'?'CCE4FF':'CCCCCC'})]})));const sideSec=t=>new docx.Paragraph({children:[new docx.TextRun({text:t.toUpperCase(),bold:true,size:19,color:st})],border:{bottom:{style:docx.BorderStyle.SINGLE,size:3,color:st==='FFFFFF'?'6699CC':'777777'}},spacing:{before:160,after:60}});if(data.skills?.length){side.push(sideSec('Skills'));const sl=Array.isArray(data.skills)?data.skills:[data.skills];sl.forEach(s=>side.push(new docx.Paragraph({spacing:{before:0,after:22},children:[new docx.TextRun({text:`•  ${s}`,size:17,color:st==='FFFFFF'?'CCE4FF':'CCCCCC'})]})));}if(data.certifications?.length){side.push(sideSec('Certifications'));data.certifications.forEach(cert=>side.push(new docx.Paragraph({spacing:{before:0,after:22},children:[new docx.TextRun({text:cert.name,size:17,color:st==='FFFFFF'?'CCE4FF':'CCCCCC'})]}))); }const mainSec=t=>new docx.Paragraph({children:[new docx.TextRun({text:t.toUpperCase(),bold:true,size:22,color:ac})],border:{bottom:{style:docx.BorderStyle.SINGLE,size:4,color:ac}},spacing:{before:120,after:60}});if(c.objective){main.push(mainSec('Objective'));main.push(bodyTxt(c.objective,{after:80}));}if(data.workExperience?.length){main.push(mainSec('Experience'));data.workExperience.forEach(j=>jobBlock(j).forEach(p=>main.push(p)));}if(data.education?.length){main.push(mainSec('Education'));data.education.forEach(e=>main.push(eduBlock(e)));}main.push(spacer(120));main.push(new docx.Paragraph({children:[new docx.TextRun({text:'References Available Upon Request',italics:true,size:17,color:'999999'})]}));const nb={style:docx.BorderStyle.NONE,size:0,color:'FFFFFF'};return new docx.Document({sections:[{properties:{page:{margin:{top:0,bottom:0,left:0,right:0}}},children:[new docx.Table({width:{size:100,type:docx.WidthType.PERCENTAGE},borders:{top:nb,bottom:nb,left:nb,right:nb,insideH:nb,insideV:nb},rows:[new docx.TableRow({children:[new docx.TableCell({width:{size:twip(2.4),type:docx.WidthType.DXA},shading:{fill:ac,type:docx.ShadingType.CLEAR,color:'auto'},margins:{top:twip(.4),bottom:twip(.4),left:twip(.25),right:twip(.2)},children:side}),new docx.TableCell({width:{size:twip(5.1),type:docx.WidthType.DXA},margins:{top:twip(.35),bottom:twip(.35),left:twip(.3),right:twip(.3)},children:main})]})]})]},]});}
 
-function buildBold(data,color){const p=data.personal,c=data.careerContext,ac=color.accent,st=color.sideText,bm=twip(.65),nb={style:docx.BorderStyle.NONE,size:0,color:'FFFFFF'},contact=[p.email,p.phone,[p.city,p.state].filter(Boolean).join(', ')].filter(Boolean).join('   |   '),hdr=new docx.Table({width:{size:100,type:docx.WidthType.PERCENTAGE},borders:{top:nb,bottom:nb,left:nb,right:nb,insideH:nb,insideV:nb},rows:[new docx.TableRow({children:[new docx.TableCell({shading:{fill:ac,type:docx.ShadingType.CLEAR,color:'auto'},margins:{top:twip(.3),bottom:twip(.25),left:twip(.65),right:twip(.65)},children:[new docx.Paragraph({spacing:{before:0,after:50},children:[new docx.TextRun({text:`${p.firstName} ${p.lastName}`.trim(),bold:true,size:46,color:st})]}),new docx.Paragraph({spacing:{before:0,after:0},children:[new docx.TextRun({text:contact,size:19,color:st==='FFFFFF'?'CCE4FF':'BBBBBB'})]})]})]})]});const ch=[hdr],sec=t=>new docx.Paragraph({spacing:{before:160,after:60},border:{left:{style:docx.BorderStyle.SINGLE,size:16,color:ac}},indent:{left:twip(.15)},children:[new docx.TextRun({text:t.toUpperCase(),bold:true,size:22,color:ac})]});if(c.objective){ch.push(sec('Objective'));ch.push(bodyTxt(c.objective,{after:80}));}if(data.workExperience?.length){ch.push(sec('Experience'));data.workExperience.forEach(j=>jobBlock(j).forEach(q=>ch.push(q)));}if(data.education?.length){ch.push(sec('Education'));data.education.forEach(e=>ch.push(eduBlock(e)));}if(data.certifications?.length){ch.push(sec('Certifications'));data.certifications.forEach(cert=>ch.push(new docx.Paragraph({spacing:{before:60,after:30},children:[new docx.TextRun({text:cert.name,bold:true,size:20}),...(cert.org||cert.year?[new docx.TextRun({text:`  â€”  ${[cert.org,cert.year].filter(Boolean).join(', ')}`,size:19,color:'666666'})]:[])]})));}if(data.skills?.length){ch.push(sec('Skills'));ch.push(bodyTxt(Array.isArray(data.skills)?data.skills.join('   â€¢   '):data.skills));}ch.push(spacer(120));ch.push(new docx.Paragraph({alignment:docx.AlignmentType.CENTER,children:[new docx.TextRun({text:'References Available Upon Request',italics:true,size:18,color:'999999'})]}));return new docx.Document({sections:[{properties:{page:{margin:{top:0,bottom:bm,left:bm,right:bm}}},children:ch}]});}
+function buildBold(data,color){const p=data.personal,c=data.careerContext,ac=color.accent,st=color.sideText,bm=twip(.65),nb={style:docx.BorderStyle.NONE,size:0,color:'FFFFFF'},contact=[p.email,p.phone,[p.city,p.state].filter(Boolean).join(', ')].filter(Boolean).join('   |   '),hdr=new docx.Table({width:{size:100,type:docx.WidthType.PERCENTAGE},borders:{top:nb,bottom:nb,left:nb,right:nb,insideH:nb,insideV:nb},rows:[new docx.TableRow({children:[new docx.TableCell({shading:{fill:ac,type:docx.ShadingType.CLEAR,color:'auto'},margins:{top:twip(.3),bottom:twip(.25),left:twip(.65),right:twip(.65)},children:[new docx.Paragraph({spacing:{before:0,after:50},children:[new docx.TextRun({text:`${p.firstName} ${p.lastName}`.trim(),bold:true,size:46,color:st})]}),new docx.Paragraph({spacing:{before:0,after:0},children:[new docx.TextRun({text:contact,size:19,color:st==='FFFFFF'?'CCE4FF':'BBBBBB'})]})]})]})]});const ch=[hdr],sec=t=>new docx.Paragraph({spacing:{before:160,after:60},border:{left:{style:docx.BorderStyle.SINGLE,size:16,color:ac}},indent:{left:twip(.15)},children:[new docx.TextRun({text:t.toUpperCase(),bold:true,size:22,color:ac})]});if(c.objective){ch.push(sec('Objective'));ch.push(bodyTxt(c.objective,{after:80}));}if(data.workExperience?.length){ch.push(sec('Experience'));data.workExperience.forEach(j=>jobBlock(j).forEach(q=>ch.push(q)));}if(data.education?.length){ch.push(sec('Education'));data.education.forEach(e=>ch.push(eduBlock(e)));}if(data.certifications?.length){ch.push(sec('Certifications'));data.certifications.forEach(cert=>ch.push(new docx.Paragraph({spacing:{before:60,after:30},children:[new docx.TextRun({text:cert.name,bold:true,size:20}),...(cert.org||cert.year?[new docx.TextRun({text:`  —  ${[cert.org,cert.year].filter(Boolean).join(', ')}`,size:19,color:'666666'})]:[])]})));}if(data.skills?.length){ch.push(sec('Skills'));ch.push(bodyTxt(Array.isArray(data.skills)?data.skills.join('   •   '):data.skills));}ch.push(spacer(120));ch.push(new docx.Paragraph({alignment:docx.AlignmentType.CENTER,children:[new docx.TextRun({text:'References Available Upon Request',italics:true,size:18,color:'999999'})]}));return new docx.Document({sections:[{properties:{page:{margin:{top:0,bottom:bm,left:bm,right:bm}}},children:ch}]});}
 
-function buildExecutive(data,color){const p=data.personal,c=data.careerContext,ac=color.accent,M=twip(.65),ch=[];const cl=[p.email,p.phone,[p.city,p.state].filter(Boolean).join(', ')].filter(Boolean).join('  |  ');ch.push(new docx.Paragraph({tabStops:[{type:docx.TabStopType.RIGHT,position:twip(7)}],spacing:{before:0,after:30},children:[new docx.TextRun({text:`${p.firstName} ${p.lastName}`.trim(),bold:true,size:38,color:'111111'}),new docx.TextRun({text:'\t'+cl,size:17,color:'666666'})]}));ch.push(new docx.Paragraph({border:{bottom:{style:docx.BorderStyle.THICK,size:12,color:ac}},spacing:{before:0,after:100}}));const sec=t=>new docx.Paragraph({tabStops:[{type:docx.TabStopType.RIGHT,position:twip(7)}],spacing:{before:160,after:50},children:[new docx.TextRun({text:t.toUpperCase(),bold:true,size:20,color:'111111'})],border:{bottom:{style:docx.BorderStyle.SINGLE,size:2,color:'cccccc'}}});if(c.objective){ch.push(sec('Professional Summary'));ch.push(bodyTxt(c.objective,{after:100}));}if(data.workExperience?.length){ch.push(sec('Experience'));data.workExperience.forEach(job=>{const loc=[job.city,job.state].filter(Boolean).join(', '),end=job.current?'Present':[job.endMonth,job.endYear].filter(Boolean).join(' '),dates=`${[job.startMonth,job.startYear].filter(Boolean).join(' ')} â€“ ${end}`;ch.push(new docx.Paragraph({tabStops:[{type:docx.TabStopType.RIGHT,position:twip(7)}],spacing:{before:100,after:20},children:[new docx.TextRun({text:`${job.jobTitle}  â€¢  ${job.employer}${loc?', '+loc:''}`,bold:true,size:21,color:'1a1a1a'}),new docx.TextRun({text:'\t'+dates,italics:true,size:18,color:'888888'})]}));(job.bulletLines||[]).forEach(b=>ch.push(bullet(b)));});}if(data.education?.length){ch.push(sec('Education'));data.education.forEach(e=>ch.push(eduBlock(e)));}if(data.certifications?.length){ch.push(sec('Certifications'));data.certifications.forEach(cert=>ch.push(new docx.Paragraph({spacing:{before:60,after:30},children:[new docx.TextRun({text:cert.name,bold:true,size:20}),...(cert.org||cert.year?[new docx.TextRun({text:`  â€”  ${[cert.org,cert.year].filter(Boolean).join(', ')}`,size:19,color:'666666'})]:[])]})));}if(data.skills?.length){ch.push(sec('Skills'));ch.push(bodyTxt(Array.isArray(data.skills)?data.skills.join('   â€¢   '):data.skills));}ch.push(spacer(120));ch.push(new docx.Paragraph({alignment:docx.AlignmentType.CENTER,children:[new docx.TextRun({text:'References Available Upon Request',italics:true,size:18,color:'999999'})]}));return new docx.Document({sections:[{properties:{page:{margin:{top:M,bottom:M,left:M,right:M}}},children:ch}]});}
+function buildExecutive(data,color){const p=data.personal,c=data.careerContext,ac=color.accent,M=twip(.65),ch=[];const cl=[p.email,p.phone,[p.city,p.state].filter(Boolean).join(', ')].filter(Boolean).join('  |  ');ch.push(new docx.Paragraph({tabStops:[{type:docx.TabStopType.RIGHT,position:twip(7)}],spacing:{before:0,after:30},children:[new docx.TextRun({text:`${p.firstName} ${p.lastName}`.trim(),bold:true,size:38,color:'111111'}),new docx.TextRun({text:'\t'+cl,size:17,color:'666666'})]}));ch.push(new docx.Paragraph({border:{bottom:{style:docx.BorderStyle.THICK,size:12,color:ac}},spacing:{before:0,after:100}}));const sec=t=>new docx.Paragraph({tabStops:[{type:docx.TabStopType.RIGHT,position:twip(7)}],spacing:{before:160,after:50},children:[new docx.TextRun({text:t.toUpperCase(),bold:true,size:20,color:'111111'})],border:{bottom:{style:docx.BorderStyle.SINGLE,size:2,color:'cccccc'}}});if(c.objective){ch.push(sec('Professional Summary'));ch.push(bodyTxt(c.objective,{after:100}));}if(data.workExperience?.length){ch.push(sec('Experience'));data.workExperience.forEach(job=>{const loc=[job.city,job.state].filter(Boolean).join(', '),end=job.current?'Present':[job.endMonth,job.endYear].filter(Boolean).join(' '),dates=`${[job.startMonth,job.startYear].filter(Boolean).join(' ')} – ${end}`;ch.push(new docx.Paragraph({tabStops:[{type:docx.TabStopType.RIGHT,position:twip(7)}],spacing:{before:100,after:20},children:[new docx.TextRun({text:`${job.jobTitle}  •  ${job.employer}${loc?', '+loc:''}`,bold:true,size:21,color:'1a1a1a'}),new docx.TextRun({text:'\t'+dates,italics:true,size:18,color:'888888'})]}));(job.bulletLines||[]).forEach(b=>ch.push(bullet(b)));});}if(data.education?.length){ch.push(sec('Education'));data.education.forEach(e=>ch.push(eduBlock(e)));}if(data.certifications?.length){ch.push(sec('Certifications'));data.certifications.forEach(cert=>ch.push(new docx.Paragraph({spacing:{before:60,after:30},children:[new docx.TextRun({text:cert.name,bold:true,size:20}),...(cert.org||cert.year?[new docx.TextRun({text:`  —  ${[cert.org,cert.year].filter(Boolean).join(', ')}`,size:19,color:'666666'})]:[])]})));}if(data.skills?.length){ch.push(sec('Skills'));ch.push(bodyTxt(Array.isArray(data.skills)?data.skills.join('   •   '):data.skills));}ch.push(spacer(120));ch.push(new docx.Paragraph({alignment:docx.AlignmentType.CENTER,children:[new docx.TextRun({text:'References Available Upon Request',italics:true,size:18,color:'999999'})]}));return new docx.Document({sections:[{properties:{page:{margin:{top:M,bottom:M,left:M,right:M}}},children:ch}]});}
 
-// â”€â”€ Cover Letter â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+// ── Cover Letter ──────────────────────────────────
 async function generateCoverLetter(){const p=resumeData.personal,c=resumeData.careerContext;const sys=`Write a professional 3-paragraph cover letter for ${p.firstName} ${p.lastName}, studying ${p.program||''}. Looking for: ${c.workSearch||''}. Qualities: ${(c.qualities||[]).join(', ')}. Objective: ${c.objective||''}. Professional and direct, under 300 words. Plain text only.`;const letter=await callClaude(sys,[{role:'user',content:'Write my cover letter.'}]);const name=`${p.firstName||''} ${p.lastName||''}`.trim(),contact=[p.email,p.phone].filter(Boolean).join('   |   '),M=twip(1);const doc=new docx.Document({sections:[{properties:{page:{margin:{top:M,bottom:M,left:M,right:M}}},children:[new docx.Paragraph({children:[new docx.TextRun({text:name,bold:true,size:28})],spacing:{after:40}}),new docx.Paragraph({children:[new docx.TextRun({text:contact,size:19,color:'555555'})],spacing:{after:200}}),...letter.trim().split('\n\n').filter(Boolean).map(para=>new docx.Paragraph({children:[new docx.TextRun({text:para.trim(),size:22})],spacing:{before:0,after:180}})),new docx.Paragraph({children:[new docx.TextRun({text:'Sincerely,',size:22})],spacing:{before:200,after:280}}),new docx.Paragraph({children:[new docx.TextRun({text:name,size:22})]})]}]});const blob=await docx.Packer.toBlob(doc);saveAs(blob,'cover-letter.docx');}
 
-// â”€â”€ Claude API â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+// ── Claude API ────────────────────────────────────
 async function callClaude(system,messages,raw=false){const body={model:'claude-sonnet-4-20250514',max_tokens:1024,messages};if(system)body.system=system;const res=await fetch('https://api.anthropic.com/v1/messages',{method:'POST',headers:{'Content-Type':'application/json','x-api-key':apiKey,'anthropic-version':'2023-06-01','anthropic-dangerous-direct-browser-access':'true'},body:JSON.stringify(body)});if(!res.ok){const e=await res.json().catch(()=>({}));throw new Error(e.error?.message||`API error ${res.status}`);}const data=await res.json();return data.content[0].text;}
 
-// â”€â”€ Right Panel Chat â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+// ── Right Panel Chat ──────────────────────────────
 function sendTip(key){const tip=TIPS[key];if(tip)setTimeout(()=>addAIMsg(tip),300);}
 
 function addAIMsg(text){const msgs=document.getElementById('chatMessages');if(!msgs)return;const div=document.createElement('div');div.className='chat-msg ai';div.innerHTML=`<div class="msg-lbl">AI</div><div class="msg-bubble">${escHtml(text).replace(/\*\*(.+?)\*\*/g,'<strong>$1</strong>').replace(/\n/g,'<br>')}</div>`;msgs.appendChild(div);msgs.scrollTop=msgs.scrollHeight;}
@@ -1400,18 +1400,18 @@ function showChatTyping(){const msgs=document.getElementById('chatMessages');if(
 
 function hideChatTyping(){const el=document.getElementById('chatTyping');if(el)el.remove();isAIThinking=false;}
 
-async function sendChat(){const inp=document.getElementById('chatInput');const text=inp.value.trim();if(!text||isAIThinking)return;inp.value='';autoResizeChat(inp);const um=document.createElement('div');um.className='chat-msg user';um.innerHTML=`<div class="msg-lbl" style="text-align:right">You</div><div class="msg-bubble">${escHtml(text)}</div>`;document.getElementById('chatMessages').appendChild(um);document.getElementById('chatMessages').scrollTop=document.getElementById('chatMessages').scrollHeight;isAIThinking=true;showChatTyping();const p=resumeData.personal;const sys=`You are a resume assistant helping ${p.firstName||'a student'} build their resume. They are on the ${currentSection||'start'} section. Answer questions helpfully and briefly â€” 2â€“3 sentences max. Do not use filler phrases.`;chatHistory.push({role:'user',content:text});try{const reply=await callClaude(sys,chatHistory.slice(-8));hideChatTyping();chatHistory.push({role:'assistant',content:reply});addAIMsg(reply);}catch(e){hideChatTyping();addAIMsg('Sorry, I had trouble connecting. Please try again.');}}
+async function sendChat(){const inp=document.getElementById('chatInput');const text=inp.value.trim();if(!text||isAIThinking)return;inp.value='';autoResizeChat(inp);const um=document.createElement('div');um.className='chat-msg user';um.innerHTML=`<div class="msg-lbl" style="text-align:right">You</div><div class="msg-bubble">${escHtml(text)}</div>`;document.getElementById('chatMessages').appendChild(um);document.getElementById('chatMessages').scrollTop=document.getElementById('chatMessages').scrollHeight;isAIThinking=true;showChatTyping();const p=resumeData.personal;const sys=`You are a resume assistant helping ${p.firstName||'a student'} build their resume. They are on the ${currentSection||'start'} section. Answer questions helpfully and briefly — 2–3 sentences max. Do not use filler phrases.`;chatHistory.push({role:'user',content:text});try{const reply=await callClaude(sys,chatHistory.slice(-8));hideChatTyping();chatHistory.push({role:'assistant',content:reply});addAIMsg(reply);}catch(e){hideChatTyping();addAIMsg('Sorry, I had trouble connecting. Please try again.');}}
 
 function handleChatKey(e){if(e.key==='Enter'&&!e.shiftKey){e.preventDefault();sendChat();}}
 function autoResizeChat(el){el.style.height='auto';el.style.height=Math.min(el.scrollHeight,90)+'px';}
 
-// â”€â”€ Panel Toggle â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
-function toggleChat(){const rp=document.getElementById('rightPanel');const btn=document.querySelector('.rp-toggle');const collapsed=rp.classList.toggle('collapsed');btn.textContent=collapsed?'â–¶':'â—€';}
+// ── Panel Toggle ──────────────────────────────────
+function toggleChat(){const rp=document.getElementById('rightPanel');const btn=document.querySelector('.rp-toggle');const collapsed=rp.classList.toggle('collapsed');btn.textContent=collapsed?'▶':'◀';}
 
-// â”€â”€ Utilities â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+// ── Utilities ─────────────────────────────────────
 function escHtml(str){if(!str)return '';const d=document.createElement('div');d.appendChild(document.createTextNode(String(str)));return d.innerHTML;}
 
-// â”€â”€ Init â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+// ── Init ──────────────────────────────────────────
 window.addEventListener('load',()=>{
   const key = HARDCODED_KEY || sessionStorage.getItem('rb_key');
   if (key&&key.startsWith('sk-ant-')){
