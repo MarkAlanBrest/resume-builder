@@ -1021,14 +1021,18 @@ function shakeEl(el) {
   el.addEventListener('animationend', () => el.classList.remove('shake'), { once: true });
 }
 
-function enableInput() {
-  document.getElementById('userInput').disabled = false;
-  document.getElementById('sendBtn').disabled   = false;
+function enableInput(placeholder) {
+  const input = document.getElementById('userInput');
+  input.disabled     = false;
+  input.placeholder  = placeholder || 'Type your message…';
+  document.getElementById('sendBtn').disabled = false;
 }
 
-function disableInput() {
-  document.getElementById('userInput').disabled = true;
-  document.getElementById('sendBtn').disabled   = true;
+function disableInput(reason) {
+  const input = document.getElementById('userInput');
+  input.disabled    = true;
+  input.placeholder = reason || 'Complete the form above to continue…';
+  document.getElementById('sendBtn').disabled = true;
 }
 
 // ────────────────────────────────────────────────
@@ -1105,6 +1109,7 @@ function makeMsgEl(type, wide) {
 
 function addTypingIndicator() {
   if (isAITyping) return;
+  disableInput('AI is thinking…');
   isAITyping = true;
   const div = document.createElement('div');
   div.className = 'message ai';
@@ -1604,10 +1609,22 @@ function confirmObjective() {
   currentStep = 'work_experience';
 
   addAIMessage(
-    `<p>Objective saved. Next, I need your work history. Do you have any previous jobs to include on your resume? If yes, type "yes" — if not, type "no" and we'll move on.</p>`
+    `<p>Objective saved. Do you have any previous jobs to include on your resume?</p>`,
+    () => {
+      const wrapper = document.createElement('div');
+      wrapper.className = 'message ai';
+      wrapper.innerHTML = `
+        <div class="avatar ai-avatar">AI</div>
+        <div class="bubble">
+          <div class="inline-actions">
+            <button class="btn btn-primary" onclick="startWorkHistory(this)">Yes, add work history</button>
+            <button class="btn btn-ghost"   onclick="skipWorkHistory(this)">No work history</button>
+          </div>
+        </div>`;
+      document.getElementById('chatWindow').appendChild(wrapper);
+      scrollBottom();
+    }
   );
-  enableInput();
-  document.getElementById('userInput').focus();
 }
 
 // ────────────────────────────────────────────────
@@ -1651,28 +1668,37 @@ async function sendUserMessage() {
   autoResize(input);
   addUserMessage(text);
 
-  if (currentStep === 'work_experience') {
-    handleWorkExperienceResponse(text);
-  }
+  // future free-text steps go here
 }
 
-function handleWorkExperienceResponse(text) {
-  const lower = text.toLowerCase();
-  if (lower.includes('yes') || lower.includes('yeah') || lower.includes('yep') || lower.includes('yup')) {
-    disableInput();
-    addAIMessage(`<p>Good. Fill out the form below for your first job. You can add more after.</p>`,
-      () => setTimeout(showWorkExperienceForm, 400)
-    );
-  } else if (lower.includes('no') || lower.includes('nope') || lower.includes("don't") || lower.includes('none')) {
-    disableInput();
-    currentStep = 'education';
-    addAIMessage(`<p>No work history — noted. Let's move on to your education.</p>`,
-      () => setTimeout(showEducationForm, 400)
-    );
-  } else {
-    addAIMessage(`<p>Please answer yes or no — do you have any previous jobs to include on your resume?</p>`);
-    enableInput();
-  }
+function startWorkHistory(btn) {
+  btn.closest('.message').remove();
+  addAIMessage(
+    `<p>Fill out the form below for your first job. You can add more after.</p>`,
+    () => setTimeout(showWorkExperienceForm, 400)
+  );
+}
+
+function skipWorkHistory(btn) {
+  btn.closest('.message').remove();
+  setSectionStatus('workExperience', 'done');
+  setSectionStatus('education', 'active');
+  currentStep = 'education';
+  const p = resumeData.personal;
+  addAIMessage(
+    `<p>No work history — noted. Let's add your education. I've pre-filled your trade program below — confirm the details and add your graduation year, then we'll add any other schools.</p>`,
+    () => {
+      const loc = campusLocation(p.campus);
+      setTimeout(() => showEducationForm({
+        school      : p.campus.split('—')[0].trim(),
+        degree      : 'Vocational Certificate',
+        fieldOfStudy: p.program,
+        city        : loc.city,
+        state       : loc.state,
+        gradYear    : '',
+      }), 400);
+    }
+  );
 }
 
 // ────────────────────────────────────────────────
@@ -2040,18 +2066,285 @@ function moveToEducation(btn) {
   currentStep = 'education';
   setSectionStatus('workExperience', 'done');
   setSectionStatus('education', 'active');
+  const pe = resumeData.personal;
   addAIMessage(
-    `<p>Work history complete. Now let's add your education.</p>`,
-    () => setTimeout(showEducationForm, 400)
+    `<p>Work history complete. Let's add your education. I've pre-filled your trade program below — confirm the details and add your graduation year, then we'll add any other schools.</p>`,
+    () => {
+      const loc = campusLocation(pe.campus);
+      setTimeout(() => showEducationForm({
+        school      : pe.campus.split('—')[0].trim(),
+        degree      : 'Vocational Certificate',
+        fieldOfStudy: pe.program,
+        city        : loc.city,
+        state       : loc.state,
+        gradYear    : '',
+      }), 400);
+    }
   );
 }
 
 // ────────────────────────────────────────────────
-//  Education — stub (next phase)
+//  Education
 // ────────────────────────────────────────────────
-function showEducationForm() {
-  addAIMessage(`<p>Education form coming soon.</p>`);
-  enableInput();
+let currentEduFormWrapper = null;
+let pendingEdu = {};
+let eduIsFirst  = true;
+
+function campusLocation(campus) {
+  if (campus.includes('New Castle'))     return { city: 'New Castle',    state: 'PA' };
+  if (campus.includes('East Liverpool')) return { city: 'East Liverpool', state: 'OH' };
+  if (campus.includes('Pulaski'))        return { city: 'Pulaski',        state: 'PA' };
+  if (campus.includes('Baltimore'))      return { city: 'Baltimore',      state: 'MD' };
+  return { city: '', state: '' };
+}
+
+function showEducationForm(prefill) {
+  currentStep = 'education_form';
+  disableInput();
+
+  const pf  = prefill || {};
+  const isPrefilled = !!prefill;
+
+  const monthOpts = ['January','February','March','April','May','June',
+                     'July','August','September','October','November','December']
+                    .map(m => `<option value="${m}">${m}</option>`).join('');
+
+  const degreeOpts = [
+    ['', '— Select —'],
+    ['High School Diploma', 'High School Diploma'],
+    ['GED / High School Equivalency', 'GED / High School Equivalency'],
+    ["Associate's Degree", "Associate's Degree"],
+    ["Bachelor's Degree", "Bachelor's Degree"],
+    ["Master's Degree", "Master's Degree"],
+    ['Vocational Certificate', 'Vocational Certificate'],
+    ['Other', 'Other'],
+  ].map(([v, l]) =>
+    `<option value="${escHtml(v)}" ${pf.degree === v ? 'selected' : ''}>${escHtml(l)}</option>`
+  ).join('');
+
+  const prefillBanner = isPrefilled ? `
+    <div style="background:var(--blue-50);border:1.5px solid var(--blue-100);border-radius:7px;padding:9px 12px;margin-bottom:12px;font-size:13px;color:var(--blue-700);">
+      ℹ️ Pre-filled from your program information. Confirm or update as needed.
+    </div>` : '';
+
+  const formHtml = `
+    <div class="inline-form">
+      <div class="form-card-header"><span>🎓</span> Education</div>
+      <div class="form-card-body">
+        ${prefillBanner}
+
+        <div class="f-row single">
+          <div class="f-group" id="fg-schoolName">
+            <label>School / Institution Name *</label>
+            <input type="text" id="schoolName" placeholder="e.g. Western PA High School, Community College of Beaver County" value="${escHtml(pf.school || '')}">
+            <span class="f-err">Please enter the school name.</span>
+          </div>
+        </div>
+
+        <div class="f-row">
+          <div class="f-group" id="fg-degreeType">
+            <label>Degree / Diploma *</label>
+            <select id="degreeType">${degreeOpts}</select>
+            <span class="f-err">Please select a degree or diploma type.</span>
+          </div>
+          <div class="f-group">
+            <label>Field of Study <span style="font-weight:400;text-transform:none;font-size:11px">(optional)</span></label>
+            <input type="text" id="fieldOfStudy" placeholder="e.g. General Studies, Automotive" value="${escHtml(pf.fieldOfStudy || '')}">
+          </div>
+        </div>
+
+        <div class="f-row triple">
+          <div class="f-group">
+            <label>City</label>
+            <input type="text" id="eduCity" placeholder="City" value="${escHtml(pf.city || '')}">
+          </div>
+          <div class="f-group">
+            <label>State</label>
+            <input type="text" id="eduState" placeholder="PA" maxlength="2" value="${escHtml(pf.state || '')}">
+          </div>
+          <div class="f-group" id="fg-gradYear">
+            <label>Graduation Year *</label>
+            <input type="text" id="gradYear" placeholder="2024" maxlength="4" inputmode="numeric" value="${escHtml(pf.gradYear || '')}">
+            <label class="check-option" style="margin-top:6px;border:none;background:none;padding:2px 0;gap:6px">
+              <input type="checkbox" id="inProgress" onchange="toggleInProgress(this)" ${pf.gradYear === 'In Progress' ? 'checked' : ''}>
+              <span style="font-size:12px;font-weight:500">In progress / Expected</span>
+            </label>
+            <span class="f-err">Please enter a graduation year or check In Progress.</span>
+          </div>
+        </div>
+
+      </div>
+      <div class="form-card-footer">
+        <button class="btn btn-primary" onclick="submitEducation()">Continue &rarr;</button>
+      </div>
+    </div>`;
+
+  const wrapper = document.createElement('div');
+  wrapper.className = 'message ai wide';
+  wrapper.innerHTML = formHtml;
+  currentEduFormWrapper = wrapper;
+  if (!sectionMarkers.education) sectionMarkers.education = wrapper;
+  document.getElementById('chatWindow').appendChild(wrapper);
+  scrollBottom();
+
+  // If pre-filled, focus grad year; otherwise focus school name
+  setTimeout(() => {
+    const focus = isPrefilled ? document.getElementById('gradYear') : document.getElementById('schoolName');
+    if (focus) focus.focus();
+  }, 100);
+
+  if (pf.gradYear === 'In Progress') toggleInProgress({ checked: true });
+}
+
+function toggleInProgress(cb) {
+  const yr = document.getElementById('gradYear');
+  if (!yr) return;
+  yr.disabled = cb.checked;
+  if (cb.checked) yr.value = '';
+  document.getElementById('fg-gradYear').classList.remove('has-error');
+}
+
+function submitEducation() {
+  let valid = true;
+
+  const schoolEl = document.getElementById('schoolName');
+  const fgSchool = document.getElementById('fg-schoolName');
+  if (!schoolEl.value.trim()) { fgSchool.classList.add('has-error'); valid = false; }
+  else                        { fgSchool.classList.remove('has-error'); }
+
+  const degreeEl = document.getElementById('degreeType');
+  const fgDegree = document.getElementById('fg-degreeType');
+  if (!degreeEl.value) { fgDegree.classList.add('has-error'); valid = false; }
+  else                 { fgDegree.classList.remove('has-error'); }
+
+  const inProg = document.getElementById('inProgress').checked;
+  const yearEl = document.getElementById('gradYear');
+  const fgYear = document.getElementById('fg-gradYear');
+  if (!inProg && !/^\d{4}$/.test(yearEl.value.trim())) {
+    fgYear.classList.add('has-error'); valid = false;
+  } else {
+    fgYear.classList.remove('has-error');
+  }
+
+  if (!valid) return;
+
+  pendingEdu = {
+    school      : schoolEl.value.trim(),
+    degree      : degreeEl.value,
+    fieldOfStudy: document.getElementById('fieldOfStudy').value.trim(),
+    city        : document.getElementById('eduCity').value.trim(),
+    state       : document.getElementById('eduState').value.trim().toUpperCase(),
+    gradYear    : inProg ? 'In Progress' : yearEl.value.trim(),
+  };
+
+  if (currentEduFormWrapper) currentEduFormWrapper.style.display = 'none';
+  showEducationApproval();
+}
+
+function showEducationApproval() {
+  const e = pendingEdu;
+  const location = [e.city, e.state].filter(Boolean).join(', ');
+  const rows = [
+    ['School',  escHtml(e.school) + (location ? ` — ${escHtml(location)}` : '')],
+    ['Degree',  escHtml(e.degree) + (e.fieldOfStudy ? `, ${escHtml(e.fieldOfStudy)}` : '')],
+    ['Year',    escHtml(e.gradYear)],
+  ];
+
+  const rowsHtml = rows.map(([lbl, val]) =>
+    `<div class="a-row"><span class="a-label">${lbl}</span><span class="a-value">${val}</span></div>`
+  ).join('');
+
+  const cardHtml = `
+    <div class="approval-card">
+      <div class="approval-header"><span>✓</span> Education — Review</div>
+      <div class="approval-body">${rowsHtml}</div>
+      <div class="approval-footer">
+        <button class="btn btn-ghost"   onclick="editEducation()">Edit</button>
+        <button class="btn btn-confirm" onclick="confirmEducation()">Looks Good ✓</button>
+      </div>
+    </div>`;
+
+  addAICard(cardHtml, true);
+}
+
+function editEducation() {
+  removeLastAICard();
+  if (currentEduFormWrapper) {
+    currentEduFormWrapper.style.display = '';
+    scrollBottom();
+    setTimeout(() => document.getElementById('schoolName').focus(), 50);
+  }
+}
+
+function confirmEducation() {
+  removeLastAICard();
+  resumeData.education.push({ ...pendingEdu });
+  pendingEdu = {};
+
+  addAIMessage(
+    `<p>Saved. Do you have another school or credential to add?</p>`,
+    () => {
+      const wrapper = document.createElement('div');
+      wrapper.className = 'message ai';
+      wrapper.innerHTML = `
+        <div class="avatar ai-avatar">AI</div>
+        <div class="bubble">
+          <div class="inline-actions">
+            <button class="btn btn-primary" onclick="addAnotherEducation(this)">Add Another</button>
+            <button class="btn btn-ghost"   onclick="moveToCertifications(this)">No, Continue</button>
+          </div>
+        </div>`;
+      document.getElementById('chatWindow').appendChild(wrapper);
+      scrollBottom();
+    }
+  );
+}
+
+function addAnotherEducation(btn) {
+  btn.closest('.message').remove();
+  addAIMessage(
+    `<p>Fill out the form below for your next entry.</p>`,
+    () => setTimeout(() => showEducationForm(), 400)
+  );
+}
+
+function moveToCertifications(btn) {
+  btn.closest('.message').remove();
+  setSectionStatus('education', 'done');
+  setSectionStatus('certifications', 'active');
+  currentStep = 'certifications';
+  addAIMessage(
+    `<p>Education complete. Do you have any certifications or licenses to add — things like OSHA cards, EPA 608, CDL, welding certs, or trade-specific licenses?</p>`,
+    () => {
+      const wrapper = document.createElement('div');
+      wrapper.className = 'message ai';
+      wrapper.innerHTML = `
+        <div class="avatar ai-avatar">AI</div>
+        <div class="bubble">
+          <div class="inline-actions">
+            <button class="btn btn-primary" onclick="startCertifications(this)">Yes, add certifications</button>
+            <button class="btn btn-ghost"   onclick="skipCertifications(this)">No certifications</button>
+          </div>
+        </div>`;
+      document.getElementById('chatWindow').appendChild(wrapper);
+      scrollBottom();
+    }
+  );
+}
+
+// ────────────────────────────────────────────────
+//  Certifications — stub
+// ────────────────────────────────────────────────
+function startCertifications(btn) {
+  btn.closest('.message').remove();
+  addAIMessage(`<p>Certifications form coming soon.</p>`);
+}
+
+function skipCertifications(btn) {
+  btn.closest('.message').remove();
+  setSectionStatus('certifications', 'done');
+  setSectionStatus('skills', 'active');
+  addAIMessage(`<p>Skills section coming soon.</p>`);
 }
 
 // ────────────────────────────────────────────────
