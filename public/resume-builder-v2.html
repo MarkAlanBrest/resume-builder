@@ -622,6 +622,76 @@
       background: var(--white);
     }
 
+    /* ── Date Pair (month + year side by side) ───── */
+    .date-pair {
+      display: grid;
+      grid-template-columns: 1.6fr 1fr;
+      gap: 8px;
+    }
+
+    .date-pair select,
+    .date-pair input {
+      border: 1.5px solid var(--slate-200);
+      border-radius: 7px;
+      padding: 9px 11px;
+      font-size: 14px;
+      color: var(--slate-900);
+      background: var(--slate-50);
+      outline: none;
+      width: 100%;
+      font-family: inherit;
+      margin: 0;
+      transition: border-color 0.18s, box-shadow 0.18s;
+    }
+
+    .date-pair select:focus,
+    .date-pair input:focus {
+      border-color: var(--blue-700);
+      box-shadow: 0 0 0 3px rgba(29,78,216,0.12);
+      background: var(--white);
+    }
+
+    .date-pair select:disabled,
+    .date-pair input:disabled {
+      opacity: 0.45;
+      cursor: not-allowed;
+    }
+
+    /* ── Bullet list in approval card ────────────── */
+    .bullet-list {
+      list-style: none;
+      padding: 0;
+      margin: 0;
+    }
+
+    .bullet-list li {
+      display: flex;
+      gap: 8px;
+      padding: 5px 0;
+      font-size: 14px;
+      color: var(--slate-800);
+      line-height: 1.5;
+      border-bottom: 1px solid var(--slate-100);
+    }
+
+    .bullet-list li:last-child { border-bottom: none; }
+
+    .bullet-list li::before {
+      content: '•';
+      color: var(--blue-700);
+      font-weight: 700;
+      flex-shrink: 0;
+      margin-top: 1px;
+    }
+
+    /* ── Inline action buttons (add another etc.) ── */
+    .inline-actions {
+      display: flex;
+      gap: 10px;
+      margin-top: 10px;
+      flex-wrap: wrap;
+    }
+
     /* ── Responsive ──────────────────────────────── */
     @media (max-width: 600px) {
       .app { height: 100dvh; }
@@ -1499,14 +1569,336 @@ function scrollBottom() {
 }
 
 // ────────────────────────────────────────────────
-//  Stubs — next phases
+//  Work Experience
 // ────────────────────────────────────────────────
+const MONTHS = ['January','February','March','April','May','June',
+                'July','August','September','October','November','December'];
+
+let currentWorkFormWrapper = null;
+let pendingWorkJob = {};
+
 function showWorkExperienceForm() {
   currentStep = 'work_experience_form';
-  addAIMessage(`<p>Work experience form coming soon.</p>`);
-  enableInput();
+  disableInput();
+
+  const monthOpts = MONTHS.map(m => `<option value="${m}">${m}</option>`).join('');
+
+  const formHtml = `
+    <div class="inline-form">
+      <div class="form-card-header"><span>💼</span> Work Experience</div>
+      <div class="form-card-body">
+
+        <div class="f-row">
+          <div class="f-group" id="fg-employer">
+            <label>Employer Name *</label>
+            <input type="text" id="employer" placeholder="Company or employer name">
+            <span class="f-err">Required.</span>
+          </div>
+          <div class="f-group" id="fg-weJobTitle">
+            <label>Job Title *</label>
+            <input type="text" id="weJobTitle" placeholder="Your position or title">
+            <span class="f-err">Required.</span>
+          </div>
+        </div>
+
+        <div class="f-row triple">
+          <div class="f-group">
+            <label>City</label>
+            <input type="text" id="weCity" placeholder="City">
+          </div>
+          <div class="f-group">
+            <label>State</label>
+            <input type="text" id="weState" placeholder="PA" maxlength="2">
+          </div>
+          <div class="f-group">
+            <!-- spacer -->
+          </div>
+        </div>
+
+        <div class="f-row">
+          <div class="f-group" id="fg-startDate">
+            <label>Start Date *</label>
+            <div class="date-pair">
+              <select id="startMonth"><option value="">Month</option>${monthOpts}</select>
+              <input type="text" id="startYear" placeholder="Year" maxlength="4" inputmode="numeric">
+            </div>
+            <span class="f-err">Please enter a start month and year.</span>
+          </div>
+          <div class="f-group" id="fg-endDate">
+            <label>End Date</label>
+            <div class="date-pair">
+              <select id="endMonth"><option value="">Month</option>${monthOpts}</select>
+              <input type="text" id="endYear" placeholder="Year" maxlength="4" inputmode="numeric">
+            </div>
+            <label class="check-option" style="margin-top:6px;border:none;background:none;padding:2px 0;gap:6px">
+              <input type="checkbox" id="currentJob" onchange="toggleCurrentJob(this)">
+              <span style="font-size:12px;font-weight:500">I currently work here</span>
+            </label>
+          </div>
+        </div>
+
+        <div class="f-row single">
+          <div class="f-group" id="fg-duties">
+            <label>Describe Your Duties *</label>
+            <textarea id="duties" rows="4" placeholder="Describe what you did in your own words — tasks, tools, responsibilities, anything you're proud of. The AI will convert this into professional bullet points."></textarea>
+            <span class="f-err">Please describe your duties.</span>
+          </div>
+        </div>
+
+      </div>
+      <div class="form-card-footer">
+        <button class="btn btn-primary" onclick="submitWorkExperience()">Generate Bullet Points &rarr;</button>
+      </div>
+    </div>`;
+
+  const wrapper = document.createElement('div');
+  wrapper.className = 'message ai wide';
+  wrapper.innerHTML = formHtml;
+  currentWorkFormWrapper = wrapper;
+  document.getElementById('chatWindow').appendChild(wrapper);
+  scrollBottom();
+  setTimeout(() => document.getElementById('employer').focus(), 100);
 }
 
+function toggleCurrentJob(cb) {
+  const endMonth = document.getElementById('endMonth');
+  const endYear  = document.getElementById('endYear');
+  endMonth.disabled = cb.checked;
+  endYear.disabled  = cb.checked;
+  if (cb.checked) { endMonth.value = ''; endYear.value = ''; }
+}
+
+function submitWorkExperience() {
+  const checks = [
+    { id: 'employer',    fg: 'fg-employer',   test: v => v.length > 0 },
+    { id: 'weJobTitle',  fg: 'fg-weJobTitle', test: v => v.length > 0 },
+    { id: 'startMonth',  fg: 'fg-startDate',  test: v => v !== '' },
+    { id: 'startYear',   fg: 'fg-startDate',  test: v => /^\d{4}$/.test(v) },
+    { id: 'duties',      fg: 'fg-duties',     test: v => v.length > 10 },
+  ];
+
+  let valid = true;
+  const seen = new Set();
+  checks.forEach(({ id, fg, test }) => {
+    const el  = document.getElementById(id);
+    const grp = document.getElementById(fg);
+    if (!test(el.value.trim())) {
+      if (!seen.has(fg)) { grp.classList.add('has-error'); seen.add(fg); }
+      valid = false;
+    } else {
+      if (!seen.has(fg)) grp.classList.remove('has-error');
+    }
+  });
+
+  if (!valid) return;
+
+  const isCurrent = document.getElementById('currentJob').checked;
+
+  pendingWorkJob = {
+    employer  : document.getElementById('employer').value.trim(),
+    jobTitle  : document.getElementById('weJobTitle').value.trim(),
+    city      : document.getElementById('weCity').value.trim(),
+    state     : document.getElementById('weState').value.trim().toUpperCase(),
+    startMonth: document.getElementById('startMonth').value,
+    startYear : document.getElementById('startYear').value.trim(),
+    endMonth  : isCurrent ? '' : document.getElementById('endMonth').value,
+    endYear   : isCurrent ? 'Present' : document.getElementById('endYear').value.trim(),
+    current   : isCurrent,
+    duties    : document.getElementById('duties').value.trim(),
+  };
+
+  if (currentWorkFormWrapper) currentWorkFormWrapper.style.display = 'none';
+  generateBulletPoints();
+}
+
+async function generateBulletPoints() {
+  addTypingIndicator();
+
+  const j = pendingWorkJob;
+  const p = resumeData.personal;
+  const tense = j.current ? 'present tense' : 'past tense';
+  const dateRange = j.current
+    ? `${j.startMonth} ${j.startYear} to Present`
+    : `${j.startMonth} ${j.startYear} to ${j.endMonth} ${j.endYear}`.trim();
+
+  const system = `You are writing resume bullet points for a trade school student studying ${p.program}.
+
+Job: ${j.jobTitle} at ${j.employer}${j.city ? ', ' + j.city : ''}${j.state ? ', ' + j.state : ''}
+Dates: ${dateRange}
+
+Student's description of duties:
+"${j.duties}"
+
+Write 3 to 5 professional resume bullet points. Rules:
+- Each bullet starts with a strong action verb
+- Write in ${tense}
+- Be specific — include tools, equipment, or processes mentioned
+- Do not start two bullets with the same verb
+- Return ONLY the bullet points, one per line, each line starting with a bullet character •
+- No headers, no labels, no extra text`;
+
+  try {
+    const result = await callClaude(system, [
+      { role: 'user', content: 'Write the resume bullet points.' }
+    ]);
+
+    removeTypingIndicator();
+    pendingWorkJob.bullets = result.trim();
+    showWorkApprovalCard();
+
+  } catch (err) {
+    removeTypingIndicator();
+    addAIMessage(`<p>Could not connect to generate bullet points. Please check your connection and try again.</p>`);
+    if (currentWorkFormWrapper) currentWorkFormWrapper.style.display = '';
+    enableInput();
+  }
+}
+
+function showWorkApprovalCard() {
+  const j = pendingWorkJob;
+
+  const dateRange = j.current
+    ? `${j.startMonth} ${j.startYear} – Present`
+    : `${j.startMonth} ${j.startYear} – ${j.endMonth ? j.endMonth + ' ' : ''}${j.endYear}`;
+
+  const location = [j.city, j.state].filter(Boolean).join(', ');
+
+  const bulletLines = j.bullets
+    .split('\n')
+    .map(l => l.trim())
+    .filter(l => l.length > 0)
+    .map(l => l.replace(/^[•\-\*]\s*/, ''));
+
+  const bulletItems = bulletLines.map(b =>
+    `<li>${escHtml(b)}</li>`
+  ).join('');
+
+  const cardHtml = `
+    <div class="approval-card" id="workApprovalCard">
+      <div class="approval-header"><span>✓</span> Work Experience — Review</div>
+      <div class="approval-body">
+        <div class="a-row">
+          <span class="a-label">Job Title</span>
+          <span class="a-value">${escHtml(j.jobTitle)}</span>
+        </div>
+        <div class="a-row">
+          <span class="a-label">Employer</span>
+          <span class="a-value">${escHtml(j.employer)}${location ? ' — ' + escHtml(location) : ''}</span>
+        </div>
+        <div class="a-row">
+          <span class="a-label">Dates</span>
+          <span class="a-value">${escHtml(dateRange)}</span>
+        </div>
+        <div class="a-row" style="display:block;padding-top:10px">
+          <span class="a-label" style="display:block;margin-bottom:6px">Bullet Points</span>
+          <ul class="bullet-list">${bulletItems}</ul>
+        </div>
+      </div>
+      <div class="approval-footer">
+        <button class="btn btn-ghost"   onclick="editWorkExperience()">Edit</button>
+        <button class="btn btn-ghost"   onclick="regenerateBullets()">Rewrite Bullets</button>
+        <button class="btn btn-confirm" onclick="confirmWorkExperience()">Looks Good ✓</button>
+      </div>
+    </div>`;
+
+  addAIMessage(
+    `<p>Here is the work experience entry I built from what you described. Review the bullet points below — they'll appear on your resume exactly like this.</p>`,
+    () => setTimeout(() => addAICard(cardHtml, true), 300)
+  );
+}
+
+function editWorkExperience() {
+  removeLastAICard();
+  if (currentWorkFormWrapper) {
+    currentWorkFormWrapper.style.display = '';
+    scrollBottom();
+    setTimeout(() => document.getElementById('employer').focus(), 50);
+  }
+}
+
+async function regenerateBullets() {
+  removeLastAICard();
+  addTypingIndicator();
+
+  const j = pendingWorkJob;
+  const p = resumeData.personal;
+  const tense = j.current ? 'present tense' : 'past tense';
+
+  const system = `You are writing resume bullet points for a trade school student studying ${p.program}.
+
+Job: ${j.jobTitle} at ${j.employer}
+Student's description: "${j.duties}"
+
+Write a DIFFERENT version — vary the action verbs and sentence structure from a typical first attempt.
+Write 3 to 5 professional bullet points in ${tense}.
+Return ONLY the bullet points, one per line, each starting with •`;
+
+  try {
+    const result = await callClaude(system, [
+      { role: 'user', content: 'Write alternate resume bullet points.' }
+    ]);
+    removeTypingIndicator();
+    pendingWorkJob.bullets = result.trim();
+    showWorkApprovalCard();
+  } catch (err) {
+    removeTypingIndicator();
+    addAIMessage(`<p>Could not connect. Please try again.</p>`);
+  }
+}
+
+function confirmWorkExperience() {
+  removeLastAICard();
+
+  const saved = { ...pendingWorkJob };
+  saved.bulletLines = saved.bullets
+    .split('\n')
+    .map(l => l.trim().replace(/^[•\-\*]\s*/, ''))
+    .filter(l => l.length > 0);
+
+  resumeData.workExperience.push(saved);
+  pendingWorkJob = {};
+
+  addAIMessage(
+    `<p>Saved. Do you have another job to add?</p>`,
+    () => {
+      const actionsHtml = `
+        <div class="message ai">
+          <div class="avatar ai-avatar">AI</div>
+          <div class="bubble">
+            <div class="inline-actions">
+              <button class="btn btn-primary" onclick="addAnotherJob(this)">Add Another Job</button>
+              <button class="btn btn-ghost"   onclick="moveToEducation(this)">No, Continue</button>
+            </div>
+          </div>
+        </div>`;
+      const wrapper = document.createElement('div');
+      wrapper.innerHTML = actionsHtml;
+      document.getElementById('chatWindow').appendChild(wrapper.firstElementChild);
+      scrollBottom();
+    }
+  );
+}
+
+function addAnotherJob(btn) {
+  btn.closest('.message').remove();
+  addAIMessage(
+    `<p>Fill out the form below for your next position.</p>`,
+    () => setTimeout(showWorkExperienceForm, 400)
+  );
+}
+
+function moveToEducation(btn) {
+  btn.closest('.message').remove();
+  currentStep = 'education';
+  addAIMessage(
+    `<p>Work history complete. Now let's add your education.</p>`,
+    () => setTimeout(showEducationForm, 400)
+  );
+}
+
+// ────────────────────────────────────────────────
+//  Education — stub (next phase)
+// ────────────────────────────────────────────────
 function showEducationForm() {
   addAIMessage(`<p>Education form coming soon.</p>`);
   enableInput();
