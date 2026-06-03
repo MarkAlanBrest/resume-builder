@@ -693,6 +693,48 @@
       flex-wrap: wrap;
     }
 
+    /* ── File Upload Area ────────────────────────── */
+    .upload-card {
+      background: var(--white);
+      border-radius: 12px;
+      box-shadow: 0 2px 12px rgba(0,0,0,0.1);
+      overflow: hidden;
+      width: 100%;
+    }
+
+    .upload-drop {
+      border: 2px dashed var(--slate-300);
+      border-radius: 8px;
+      padding: 28px 20px;
+      text-align: center;
+      cursor: pointer;
+      transition: border-color 0.2s, background 0.2s;
+      margin: 18px 18px 0;
+    }
+
+    .upload-drop:hover, .upload-drop.drag-over {
+      border-color: var(--blue-700);
+      background: var(--blue-50);
+    }
+
+    .upload-drop .drop-icon { font-size: 32px; display: block; margin-bottom: 8px; }
+    .upload-drop .drop-label { font-size: 14px; color: var(--slate-600); font-weight: 600; }
+    .upload-drop .drop-sub   { font-size: 12px; color: var(--slate-400); margin-top: 4px; }
+
+    .upload-selected {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding: 10px 14px;
+      background: var(--blue-50);
+      border: 1.5px solid var(--blue-100);
+      border-radius: 7px;
+      margin: 12px 18px 0;
+      font-size: 13px;
+      color: var(--blue-700);
+      font-weight: 600;
+    }
+
     /* ── App Body (sidebar + chat column) ───────── */
     .app {
       max-width: 1060px !important;
@@ -817,7 +859,9 @@
       .api-key-area input[type="password"] { width: 130px; font-size: 12px; }
       .header-badge { display: none; }
     }
-  </style>
+    </style>
+  <!-- mammoth.js for .docx text extraction -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/mammoth/1.6.0/mammoth.browser.min.js"></script>
 </head>
 <body>
 <div class="app">
@@ -888,6 +932,11 @@
 </div><!-- /.app -->
 
 <script>
+// ────────────────────────────────────────────────
+//  API Key — paste your key below
+// ────────────────────────────────────────────────
+const HARDCODED_KEY = ''; // paste your key here
+
 // ────────────────────────────────────────────────
 //  Campus & Program Data
 // ────────────────────────────────────────────────
@@ -1043,13 +1092,274 @@ function startConversation() {
   if (notice) notice.remove();
 
   renderSidebar();
-  currentStep = 'personal_info';
+  currentStep = 'start';
   setSectionStatus('personal', 'active');
 
   addAIMessage(
-    `<p>I'll be collecting information from you to build your resume. To get started, I need to learn about you — your background, work experience, skills, and goals — so I can put together a strong professional profile.</p>
-     <p>Let's begin with your basic contact information. Please fill out the form below.</p>`,
-    () => setTimeout(showPersonalInfoForm, 450)
+    `<p>I'll be collecting information from you to build your professional resume. Would you like to start from scratch, or do you have an existing resume you'd like to load?</p>`,
+    () => {
+      const wrapper = document.createElement('div');
+      wrapper.className = 'message ai';
+      wrapper.innerHTML = `
+        <div class="avatar ai-avatar">AI</div>
+        <div class="bubble">
+          <div class="inline-actions">
+            <button class="btn btn-primary" onclick="startFresh(this)">Start Fresh</button>
+            <button class="btn btn-ghost"   onclick="showUploadArea(this)">Load Existing Resume</button>
+          </div>
+        </div>`;
+      document.getElementById('chatWindow').appendChild(wrapper);
+      scrollBottom();
+    }
+  );
+}
+
+function startFresh(btn) {
+  btn.closest('.message').remove();
+  currentStep = 'personal_info';
+  addAIMessage(
+    `<p>Let's begin with your basic contact information. Please fill out the form below.</p>`,
+    () => setTimeout(showPersonalInfoForm, 400)
+  );
+}
+
+// ────────────────────────────────────────────────
+//  Resume Upload & Extraction
+// ────────────────────────────────────────────────
+function showUploadArea(btn) {
+  btn.closest('.message').remove();
+  currentStep = 'uploading';
+
+  const cardHtml = `
+    <div class="upload-card" id="uploadCard">
+      <div class="form-card-header"><span>📄</span> Load Existing Resume</div>
+
+      <div class="upload-drop" id="uploadDrop"
+        ondragover="event.preventDefault();this.classList.add('drag-over')"
+        ondragleave="this.classList.remove('drag-over')"
+        ondrop="handleDrop(event)"
+        onclick="document.getElementById('resumeFileInput').click()"
+      >
+        <span class="drop-icon">⬆️</span>
+        <div class="drop-label">Click to browse or drag and drop your resume here</div>
+        <div class="drop-sub">Supports PDF, Word (.docx), or plain text (.txt)</div>
+      </div>
+
+      <div id="uploadSelected" style="display:none"></div>
+
+      <input type="file" id="resumeFileInput" accept=".pdf,.docx,.txt,application/pdf,application/vnd.openxmlformats-officedocument.wordprocessingml.document,text/plain" style="display:none" onchange="handleFileSelect(this)">
+
+      <div class="form-card-footer" style="margin-top:12px">
+        <button class="btn btn-ghost" onclick="cancelUpload()">Cancel — Start Fresh Instead</button>
+        <button class="btn btn-primary" id="extractBtn" onclick="extractResume()" disabled style="opacity:0.5">Extract Information &rarr;</button>
+      </div>
+    </div>`;
+
+  const wrapper = document.createElement('div');
+  wrapper.className = 'message ai wide';
+  wrapper.innerHTML = cardHtml;
+  document.getElementById('chatWindow').appendChild(wrapper);
+  scrollBottom();
+}
+
+let selectedResumeFile = null;
+
+function handleDrop(e) {
+  e.preventDefault();
+  document.getElementById('uploadDrop').classList.remove('drag-over');
+  const file = e.dataTransfer.files[0];
+  if (file) setSelectedFile(file);
+}
+
+function handleFileSelect(input) {
+  if (input.files[0]) setSelectedFile(input.files[0]);
+}
+
+function setSelectedFile(file) {
+  const allowed = ['application/pdf', 'application/vnd.openxmlformats-officedocument.wordprocessingml.document', 'text/plain'];
+  const allowedExt = ['.pdf', '.docx', '.txt'];
+  const ext = '.' + file.name.split('.').pop().toLowerCase();
+
+  if (!allowed.includes(file.type) && !allowedExt.includes(ext)) {
+    document.getElementById('uploadSelected').style.display = 'none';
+    alert('Please select a PDF, Word (.docx), or plain text (.txt) file.');
+    return;
+  }
+
+  selectedResumeFile = file;
+  const sel = document.getElementById('uploadSelected');
+  sel.style.display = 'flex';
+  sel.innerHTML = `<span>📎</span> <span>${escHtml(file.name)}</span> <span style="margin-left:auto;font-weight:400;color:var(--slate-500)">${(file.size/1024).toFixed(0)} KB</span>`;
+
+  const btn = document.getElementById('extractBtn');
+  btn.disabled = false;
+  btn.style.opacity = '1';
+}
+
+function cancelUpload() {
+  selectedResumeFile = null;
+  document.getElementById('uploadCard').closest('.message').remove();
+  currentStep = 'personal_info';
+  addAIMessage(
+    `<p>No problem. Let's begin with your basic contact information.</p>`,
+    () => setTimeout(showPersonalInfoForm, 400)
+  );
+}
+
+async function extractResume() {
+  if (!selectedResumeFile) return;
+
+  document.getElementById('extractBtn').disabled = true;
+  document.getElementById('extractBtn').textContent = 'Extracting…';
+  document.getElementById('uploadCard').closest('.message').style.display = 'none';
+
+  addTypingIndicator();
+
+  try {
+    let extractedText = '';
+    let useDocumentApi = false;
+    let base64data = '';
+    const ext = selectedResumeFile.name.split('.').pop().toLowerCase();
+
+    if (ext === 'txt') {
+      extractedText = await readFileAsText(selectedResumeFile);
+    } else if (ext === 'pdf') {
+      // Send PDF directly to Claude as base64 document
+      base64data = await readFileAsBase64(selectedResumeFile);
+      useDocumentApi = true;
+    } else if (ext === 'docx') {
+      extractedText = await extractDocxText(selectedResumeFile);
+    }
+
+    const parsed = await parseResumeWithClaude(extractedText, useDocumentApi, base64data);
+    removeTypingIndicator();
+
+    prePopulateFromExtracted(parsed);
+
+  } catch (err) {
+    removeTypingIndicator();
+    document.getElementById('uploadCard').closest('.message').style.display = '';
+    const btn = document.getElementById('extractBtn');
+    btn.disabled = false;
+    btn.textContent = 'Extract Information →';
+    btn.style.opacity = '1';
+    addAIMessage(`<p>Could not read that file. Please try a different file or start fresh.</p>`);
+  }
+}
+
+function readFileAsText(file) {
+  return new Promise((resolve, reject) => {
+    const reader = new FileReader();
+    reader.onload  = e => resolve(e.target.result);
+    reader.onerror = reject;
+    reader.readAsText(file);
+  });
+}
+
+function readFileAsBase64(file) {
+  return new Promise((resolve, reject) => {
+    const reader = new FileReader();
+    reader.onload  = e => {
+      const b64 = btoa(new Uint8Array(e.target.result).reduce((d, b) => d + String.fromCharCode(b), ''));
+      resolve(b64);
+    };
+    reader.onerror = reject;
+    reader.readAsArrayBuffer(file);
+  });
+}
+
+async function extractDocxText(file) {
+  return new Promise((resolve, reject) => {
+    const reader = new FileReader();
+    reader.onload = async e => {
+      try {
+        const result = await mammoth.extractRawText({ arrayBuffer: e.target.result });
+        resolve(result.value);
+      } catch (err) { reject(err); }
+    };
+    reader.onerror = reject;
+    reader.readAsArrayBuffer(file);
+  });
+}
+
+async function parseResumeWithClaude(text, useDocumentApi, base64data) {
+  const instruction = `Extract information from this resume and return a JSON object with this exact structure. Leave fields as empty string if not found. For workExperience.bulletLines, return an array of strings (one per bullet). Return ONLY valid JSON, no explanation.
+
+{
+  "personal": { "firstName":"","lastName":"","email":"","phone":"","address":"","city":"","state":"","zip":"" },
+  "objective": "",
+  "workExperience": [{ "employer":"","jobTitle":"","city":"","state":"","startMonth":"","startYear":"","endMonth":"","endYear":"","current":false,"bulletLines":[] }],
+  "education": [{ "school":"","degree":"","fieldOfStudy":"","city":"","state":"","gradYear":"" }],
+  "certifications": [{ "name":"","org":"","year":"" }],
+  "skills": []
+}`;
+
+  let messages;
+  if (useDocumentApi) {
+    messages = [{
+      role: 'user',
+      content: [
+        { type: 'document', source: { type: 'base64', media_type: 'application/pdf', data: base64data } },
+        { type: 'text', text: instruction }
+      ]
+    }];
+  } else {
+    messages = [{ role: 'user', content: `${instruction}\n\nResume text:\n\n${text}` }];
+  }
+
+  const res = await fetch('https://api.anthropic.com/v1/messages', {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      'x-api-key': apiKey,
+      'anthropic-version': '2023-06-01',
+      'anthropic-dangerous-direct-browser-access': 'true'
+    },
+    body: JSON.stringify({ model: 'claude-sonnet-4-20250514', max_tokens: 2048, messages })
+  });
+
+  if (!res.ok) throw new Error(`API error ${res.status}`);
+  const data = await res.json();
+  const raw  = data.content[0].text.trim();
+
+  // Strip markdown code fences if present
+  const json = raw.replace(/^```(?:json)?\s*/i, '').replace(/\s*```$/, '');
+  return JSON.parse(json);
+}
+
+function prePopulateFromExtracted(data) {
+  // Merge into resumeData
+  if (data.personal)        Object.assign(resumeData.personal, data.personal);
+  if (data.objective)       resumeData.careerContext.objective = data.objective;
+  if (data.workExperience?.length) resumeData.workExperience = data.workExperience;
+  if (data.education?.length)      resumeData.education      = data.education;
+  if (data.certifications?.length) resumeData.certifications = data.certifications;
+  if (data.skills?.length)         resumeData.skills         = data.skills;
+
+  // Build a summary to show the student
+  const p = resumeData.personal;
+  const name = [p.firstName, p.lastName].filter(Boolean).join(' ') || 'your name';
+  const jobs = resumeData.workExperience.length;
+  const edu  = resumeData.education.length;
+  const certs = resumeData.certifications.length;
+  const skills = resumeData.skills.length;
+
+  addAIMessage(
+    `<p>I extracted the following from your resume:</p>
+     <ul style="margin:8px 0 0 4px;padding-left:18px;line-height:1.8">
+       <li><strong>Name:</strong> ${escHtml(name)}</li>
+       ${jobs  ? `<li><strong>Work Experience:</strong> ${jobs} position${jobs>1?'s':''}</li>` : ''}
+       ${edu   ? `<li><strong>Education:</strong> ${edu} entr${edu>1?'ies':'y'}</li>` : ''}
+       ${certs ? `<li><strong>Certifications:</strong> ${certs}</li>` : ''}
+       ${skills ? `<li><strong>Skills:</strong> ${skills} items</li>` : ''}
+     </ul>
+     <p style="margin-top:8px">I'll walk you through each section so you can confirm and fill in anything that's missing.</p>`,
+    () => {
+      setTimeout(() => {
+        currentStep = 'personal_info';
+        showPersonalInfoForm(true); // pass flag to pre-fill from resumeData.personal
+      }, 500);
+    }
   );
 }
 
@@ -1134,10 +1444,16 @@ function removeTypingIndicator() {
 // ────────────────────────────────────────────────
 //  Personal Info Form
 // ────────────────────────────────────────────────
-function showPersonalInfoForm() {
+function showPersonalInfoForm(prefilled) {
+  const pf = prefilled ? resumeData.personal : {};
   const campusOpts = Object.keys(CAMPUSES)
-    .map(c => `<option value="${escHtml(c)}">${escHtml(c)}</option>`)
+    .map(c => `<option value="${escHtml(c)}" ${pf.campus === c ? 'selected' : ''}>${escHtml(c)}</option>`)
     .join('');
+
+  const prefillBanner = prefilled ? `
+    <div style="background:var(--blue-50);border:1.5px solid var(--blue-100);border-radius:7px;padding:9px 12px;margin-bottom:12px;font-size:13px;color:var(--blue-700);">
+      ℹ️ Pre-filled from your uploaded resume. Confirm or update, then select your campus and program.
+    </div>` : '';
 
   const formHtml = `
     <div class="inline-form" id="personalInfoForm">
@@ -1145,16 +1461,17 @@ function showPersonalInfoForm() {
         <span>📋</span> Personal Information
       </div>
       <div class="form-card-body">
+        ${prefillBanner}
 
         <div class="f-row">
           <div class="f-group" id="fg-firstName">
             <label>First Name *</label>
-            <input type="text" id="firstName" placeholder="First name" autocomplete="given-name">
+            <input type="text" id="firstName" placeholder="First name" autocomplete="given-name" value="${escHtml(pf.firstName||'')}">
             <span class="f-err">Please enter your first name.</span>
           </div>
           <div class="f-group" id="fg-lastName">
             <label>Last Name *</label>
-            <input type="text" id="lastName" placeholder="Last name" autocomplete="family-name">
+            <input type="text" id="lastName" placeholder="Last name" autocomplete="family-name" value="${escHtml(pf.lastName||'')}">
             <span class="f-err">Please enter your last name.</span>
           </div>
         </div>
@@ -1162,12 +1479,12 @@ function showPersonalInfoForm() {
         <div class="f-row">
           <div class="f-group" id="fg-email">
             <label>Email Address *</label>
-            <input type="email" id="piEmail" placeholder="you@example.com" autocomplete="email">
+            <input type="email" id="piEmail" placeholder="you@example.com" autocomplete="email" value="${escHtml(pf.email||'')}">
             <span class="f-err">Please enter a valid email address.</span>
           </div>
           <div class="f-group" id="fg-phone">
             <label>Phone Number *</label>
-            <input type="tel" id="phone" placeholder="(555) 555-5555" autocomplete="tel">
+            <input type="tel" id="phone" placeholder="(555) 555-5555" autocomplete="tel" value="${escHtml(pf.phone||'')}">
             <span class="f-err">Please enter your phone number.</span>
           </div>
         </div>
@@ -1175,22 +1492,22 @@ function showPersonalInfoForm() {
         <div class="f-row single">
           <div class="f-group">
             <label>Street Address</label>
-            <input type="text" id="address" placeholder="123 Main Street" autocomplete="street-address">
+            <input type="text" id="address" placeholder="123 Main Street" autocomplete="street-address" value="${escHtml(pf.address||'')}">
           </div>
         </div>
 
         <div class="f-row triple">
           <div class="f-group">
             <label>City</label>
-            <input type="text" id="city" placeholder="City" autocomplete="address-level2">
+            <input type="text" id="city" placeholder="City" autocomplete="address-level2" value="${escHtml(pf.city||'')}">
           </div>
           <div class="f-group">
             <label>State</label>
-            <input type="text" id="piState" placeholder="PA" maxlength="2" autocomplete="address-level1">
+            <input type="text" id="piState" placeholder="PA" maxlength="2" autocomplete="address-level1" value="${escHtml(pf.state||'')}">
           </div>
           <div class="f-group">
             <label>ZIP Code</label>
-            <input type="text" id="zip" placeholder="00000" maxlength="5" inputmode="numeric">
+            <input type="text" id="zip" placeholder="00000" maxlength="5" inputmode="numeric" value="${escHtml(pf.zip||'')}">
           </div>
         </div>
 
@@ -1226,6 +1543,13 @@ function showPersonalInfoForm() {
   scrollBottom();
 
   document.getElementById('phone').addEventListener('input', formatPhone);
+  // If campus was pre-filled, populate the program dropdown
+  if (pf.campus) {
+    setTimeout(() => {
+      updatePrograms();
+      if (pf.program) document.getElementById('programSelect').value = pf.program;
+    }, 50);
+  }
   setTimeout(() => document.getElementById('firstName').focus(), 100);
 }
 
@@ -2610,10 +2934,20 @@ function confirmSkills() {
 //  Init — restore saved key
 // ────────────────────────────────────────────────
 window.addEventListener('load', () => {
-  const saved = sessionStorage.getItem('rb_api_key');
-  if (saved) {
-    document.getElementById('apiKeyInput').value = saved;
-    activateKey();
+  if (HARDCODED_KEY && HARDCODED_KEY.startsWith('sk-ant-')) {
+    // Key is hardcoded — hide the input area and activate silently
+    apiKey = HARDCODED_KEY;
+    document.getElementById('apiKeyArea').style.display = 'none';
+    document.getElementById('keyReady').style.display   = 'flex';
+    enableInput();
+    startConversation();
+  } else {
+    // Fall back to sessionStorage or manual entry
+    const saved = sessionStorage.getItem('rb_api_key');
+    if (saved) {
+      document.getElementById('apiKeyInput').value = saved;
+      activateKey();
+    }
   }
 });
 </script>
