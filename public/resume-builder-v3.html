@@ -303,7 +303,7 @@ const SECTIONS = [
 // ── AI Section Tips ───────────────────────────────
 const TIPS = {
   personal:`Fill in your contact information carefully — this is how employers reach you. Make sure your email looks professional and your phone number is correct. Select your campus and program from the dropdowns.`,
-  career:`Be specific about the type of job and employer you're targeting. The more detail you give me here, the stronger I can make your resume objective. Pick up to 3 qualities that describe you as a worker.`,
+  career:`Be specific about the type of job and employer you're targeting. Examples: "I want to work as an automotive technician at a dealership doing diagnostics and hands-on repairs." "I am looking for an entry-level HVAC position where I can install, maintain, and troubleshoot residential systems." "I want a welding job in manufacturing or construction where I can use MIG/TIG skills and read blueprints." Pick up to 3 qualities that describe you as a worker.`,
   work:`When describing your duties, just write naturally — don't worry about formatting. Mention specific tools, equipment, tasks, and anything you're proud of. I'll convert it into professional bullet points for you.`,
   education:`Your trade program has been pre-filled below. Confirm the details and add your graduation year. Then add your high school diploma or any other education you have.`,
   certifications:`Include anything relevant — OSHA cards, EPA licenses, CDL, welding certifications, manufacturer training, first aid. Certifications stand out in the trades and show employers you're ready to work.`,
@@ -760,6 +760,7 @@ function fmtZip(el) {
   el.value = el.value.replace(/\D/g,'').slice(0,5);
 }
 
+const CAREER_FIELD_GROUPS = {workSearch:'fg-ws',standout:'fg-standout'};
 const QUALITIES = ['Reliable','Detail-oriented','Hard worker','Fast learner','Self-motivated','Team player','Safety-conscious','Customer-focused','Problem solver','Physically fit / active'];
 
 function renderCareerForm() {
@@ -780,8 +781,8 @@ function renderCareerForm() {
           <span class="f-err">Select at least one quality.</span></div>
       </div>
       <div class="f-row single">
-        <div class="f-group"><label>What sets you apart? <span style="font-weight:400;text-transform:none;font-size:11px">(optional)</span></label>
-          <textarea id="standout" rows="2" placeholder="One or two sentences about something specific that makes you stand out.">${escHtml(c.standout||'')}</textarea></div>
+        <div class="f-group" id="fg-standout"><label>What sets you apart? <span style="font-weight:400;text-transform:none;font-size:11px">(optional)</span></label>
+          <textarea id="standout" rows="2" placeholder="One or two sentences about something specific that makes you stand out.">${escHtml(c.standout||'')}</textarea><span class="f-err">Please revise this to sound professional.</span></div>
       </div>
     </div>
     <div class="form-card-footer">
@@ -792,17 +793,87 @@ function renderCareerForm() {
 
 function limitQuals(cb) { if ([...document.querySelectorAll('input[name="qual"]:checked')].length>3) cb.checked=false; }
 
-function submitCareer() {
+async function submitCareer() {
+  let career = collectCareerData();
+  applyCareerData(career);
+  if (!validateCareerData(career)) return;
+
+  const btn = document.querySelector('button[onclick="submitCareer()"]');
+  if (btn) { btn.disabled = true; btn.textContent = 'Checking...'; }
+  try {
+    const review = await reviewCareerData(career);
+    if (review?.corrections && Object.keys(review.corrections).length) {
+      career = {...career, ...review.corrections, qualities:career.qualities};
+      applyCareerData(career);
+    }
+    if (!validateCareerData(career)) return;
+    if (review?.issues?.length) {
+      review.issues.forEach(issue=>setFieldError(CAREER_FIELD_GROUPS[issue.field], issue.message || 'Please revise this field.'));
+      addAIMsg('I found a few career profile items that need your review. Please fix the highlighted fields, then continue.');
+      return;
+    }
+    resumeData.careerContext = career;
+    showCenter('careerApproval');
+  } catch(e) {
+    addAIMsg('I could not complete the career profile spelling and professionalism review. Please check your connection or API key, then try Continue again.');
+  } finally {
+    if (btn && currentSection === 'career') { btn.disabled = false; btn.textContent = 'Continue →'; }
+  }
+}
+
+function collectCareerData() {
+  return {
+    workSearch:cleanCareerText(document.getElementById('workSearch').value),
+    qualities:[...document.querySelectorAll('input[name="qual"]:checked')].map(cb=>cb.value),
+    standout:cleanCareerText(document.getElementById('standout').value),
+  };
+}
+
+function applyCareerData(c) {
   const ws = document.getElementById('workSearch');
-  const fgWS = document.getElementById('fg-ws');
-  const quals = [...document.querySelectorAll('input[name="qual"]:checked')].map(cb=>cb.value);
-  const fgQ = document.getElementById('fg-quals');
+  const standout = document.getElementById('standout');
+  if (ws) ws.value = c.workSearch || '';
+  if (standout) standout.value = c.standout || '';
+}
+
+function validateCareerData(c) {
   let valid = true;
-  if (ws.value.trim().length < 10) { fgWS.classList.add('has-error'); valid = false; } else fgWS.classList.remove('has-error');
-  if (!quals.length) { fgQ.classList.add('has-error'); valid = false; } else fgQ.classList.remove('has-error');
-  if (!valid) return;
-  resumeData.careerContext = { workSearch:ws.value.trim(), qualities:quals, standout:document.getElementById('standout').value.trim() };
-  showCenter('careerApproval');
+  if (!isProfessionalCareerText(c.workSearch, 18)) { setFieldError('fg-ws','Describe the job you want in a complete, professional sentence.'); valid=false; } else clearFieldError('fg-ws');
+  if (!c.qualities.length) { setFieldError('fg-quals','Select at least one quality.'); valid=false; } else clearFieldError('fg-quals');
+  if (c.standout && !isProfessionalCareerText(c.standout, 12)) { setFieldError('fg-standout','Use a complete, professional sentence or leave this blank.'); valid=false; } else clearFieldError('fg-standout');
+  return valid;
+}
+
+async function reviewCareerData(career) {
+  if (!apiKey) throw new Error('AI review requires an API key.');
+  const sys = `You review a trade-school resume career profile. Fix spelling, capitalization, punctuation, grammar, and professional wording when the correction is clear. Return ONLY JSON:
+{"corrections":{"workSearch":"","standout":""},"issues":[{"field":"workSearch","message":"Short user-facing instruction"}]}
+Rules:
+- Omit unchanged correction fields.
+- Keep the student's meaning. Do not invent certifications, experience, employers, or skills.
+- Make workSearch and standout professional, concise, and resume-ready.
+- If workSearch is too vague, slang, unprofessional, not a job goal, or cannot be fixed confidently, add an issue.
+- If standout is present but too vague, slang, unprofessional, or cannot be fixed confidently, add an issue.
+- field must be "workSearch" or "standout".`;
+  const raw = await callClaude(sys,[{role:'user',content:JSON.stringify(career)}]);
+  const parsed = JSON.parse(raw.trim().replace(/^```(?:json)?\s*/i,'').replace(/\s*```$/,''));
+  const corrections = {};
+  if (parsed.corrections?.workSearch) corrections.workSearch = cleanCareerText(parsed.corrections.workSearch);
+  if (parsed.corrections?.standout) corrections.standout = cleanCareerText(parsed.corrections.standout);
+  const issues = (parsed.issues || []).filter(issue=>CAREER_FIELD_GROUPS[issue.field] && issue.message);
+  return {corrections, issues};
+}
+
+function cleanCareerText(value) {
+  const cleaned = value.trim().replace(/\s+/g,' ').replace(/\s+([,.!?;:])/g,'$1').replace(/([.!?])([A-Za-z])/g,'$1 $2').replace(/(^|[.!?]\s+)([a-z])/g,(m,p,c)=>p+c.toUpperCase());
+  return cleaned && !/[.!?]$/.test(cleaned) ? `${cleaned}.` : cleaned;
+}
+
+function isProfessionalCareerText(value, minLen) {
+  if (!value || value.length < minLen) return false;
+  if (!/[.!?]$/.test(value)) return false;
+  if (/\b(idk|dunno|whatever|stuff|things|kinda|gonna|wanna|lol|money|cash)\b/i.test(value)) return false;
+  return /[A-Za-z]{3,}/.test(value);
 }
 
 function renderCareerApproval() {
