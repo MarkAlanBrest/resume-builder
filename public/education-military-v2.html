@@ -119,7 +119,7 @@ Auto-Fill Selected Program
 </button>
 
 <div class="system">School or Institution Name</div>
-<input id="schoolName">
+<input id="schoolName" onblur="formatSchoolNameInput()">
 
 <div class="system">Program / Degree / Certificate</div>
 <input id="programName">
@@ -128,7 +128,7 @@ Auto-Fill Selected Program
 
 <div>
 <div class="system">School City</div>
-<input id="schoolCity">
+<input id="schoolCity" onblur="formatSchoolCityInput()">
 </div>
 
 <div>
@@ -217,6 +217,63 @@ return dateSortValue(b.endDate)-dateSortValue(a.endDate);
 function normalizeEducationOrder(data){
 data.education=sortEducationNewestFirst(data.education);
 return data;
+}
+
+function smartTitleCase(value){
+const uppercaseWords={
+"a/c":"A/C",
+"ase":"ASE",
+"aws":"AWS",
+"cdl":"CDL",
+"cnc":"CNC",
+"epa":"EPA",
+"fcaw":"FCAW",
+"gmaw":"GMAW",
+"hrvac":"HRVAC",
+"hvac":"HVAC",
+"nfpa":"NFPA",
+"pa":"PA",
+"oh":"OH",
+"md":"MD",
+"smaw":"SMAW"
+};
+
+const lowercaseWords=new Set(["a","an","and","at","for","in","of","or","the","to","with"]);
+
+return value.trim().split(/\s+/).map(function(word,index){
+const match=word.match(/^([^A-Za-z0-9]*)(.*?)([^A-Za-z0-9]*)$/);
+if(!match){return word;}
+
+const leading=match[1];
+const core=match[2];
+const trailing=match[3];
+const key=core.toLowerCase().replace(/\.$/,"");
+
+if(!core){return word;}
+if(uppercaseWords[key]){return leading+uppercaseWords[key]+trailing;}
+if(/^[A-Z0-9&/]+$/.test(core)&&/[A-Z]/.test(core)&&core.length>1){
+return leading+core+trailing;
+}
+if(index>0&&lowercaseWords.has(key)){
+return leading+key+trailing;
+}
+
+const formatted=core
+.toLowerCase()
+.replace(/(^|[-'])([a-z])/g,function(match,prefix,letter){
+return prefix+letter.toUpperCase();
+});
+
+return leading+formatted+trailing;
+}).join(" ");
+}
+
+function formatSchoolNameInput(){
+schoolName.value=smartTitleCase(schoolName.value);
+}
+
+function formatSchoolCityInput(){
+schoolCity.value=smartTitleCase(schoolCity.value);
 }
 
 /* PROGRAM DATA */
@@ -380,13 +437,17 @@ autoFillProgramBtn.style.display="none";
 function saveEducation(){
 
 const entry={
-school:schoolName.value.trim(),
+school:smartTitleCase(schoolName.value),
 program:programName.value.trim(),
-city:schoolCity.value.trim(),
-state:schoolState.value.trim(),
+city:smartTitleCase(schoolCity.value),
+state:schoolState.value.trim().toUpperCase(),
 endDate:eduEndDate.value.trim(),
 notes:eduNotes.value.trim()
 };
+
+schoolName.value=entry.school;
+schoolCity.value=entry.city;
+schoolState.value=entry.state;
 
 if(!entry.school||!entry.program||!entry.city||!entry.state||!entry.endDate){
 alert("Please complete all required education fields, including city, state, and end date.");

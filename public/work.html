@@ -70,13 +70,13 @@ Enter <strong>all work and military experience</strong> here.
 <div id="jobForm" style="display:none;">
 
 <div class="system">Employer / Branch</div>
-<input id="employer">
+<input id="employer" onblur="formatEmployerInput()">
 
 <div class="form-row">
 
 <div>
 <div class="system">City</div>
-<input id="employerCity">
+<input id="employerCity" onblur="formatEmployerCityInput()">
 </div>
 
 <div>
@@ -102,7 +102,7 @@ Enter <strong>all work and military experience</strong> here.
 </div>
 
 <div class="system">Job Title / Military Role</div>
-<input id="title">
+<input id="title" onblur="formatTitleInput()">
 
 <div class="form-row">
 
@@ -187,6 +187,67 @@ function validDate(v){
 if(!v) return false;
 if(v.toLowerCase()==="present") return true;
 return /^(0?[1-9]|1[0-2])\/\d{4}$/i.test(v);
+}
+
+function smartTitleCase(value){
+const uppercaseWords={
+"a/c":"A/C",
+"ase":"ASE",
+"aws":"AWS",
+"cdl":"CDL",
+"cnc":"CNC",
+"epa":"EPA",
+"fcaw":"FCAW",
+"gmaw":"GMAW",
+"hrvac":"HRVAC",
+"hvac":"HVAC",
+"nfpa":"NFPA",
+"pa":"PA",
+"oh":"OH",
+"md":"MD",
+"smaw":"SMAW"
+};
+
+const lowercaseWords=new Set(["a","an","and","at","for","in","of","or","the","to","with"]);
+
+return value.trim().split(/\s+/).map(function(word,index){
+const match=word.match(/^([^A-Za-z0-9]*)(.*?)([^A-Za-z0-9]*)$/);
+if(!match){return word;}
+
+const leading=match[1];
+const core=match[2];
+const trailing=match[3];
+const key=core.toLowerCase().replace(/\.$/,"");
+
+if(!core){return word;}
+if(uppercaseWords[key]){return leading+uppercaseWords[key]+trailing;}
+if(/^[A-Z0-9&/]+$/.test(core)&&/[A-Z]/.test(core)&&core.length>1){
+return leading+core+trailing;
+}
+if(index>0&&lowercaseWords.has(key)){
+return leading+key+trailing;
+}
+
+const formatted=core
+.toLowerCase()
+.replace(/(^|[-'])([a-z])/g,function(match,prefix,letter){
+return prefix+letter.toUpperCase();
+});
+
+return leading+formatted+trailing;
+}).join(" ");
+}
+
+function formatEmployerInput(){
+employer.value=smartTitleCase(employer.value);
+}
+
+function formatEmployerCityInput(){
+employerCity.value=smartTitleCase(employerCity.value);
+}
+
+function formatTitleInput(){
+title.value=smartTitleCase(title.value);
 }
 
 /* BULLET VALIDATION */
@@ -317,10 +378,10 @@ return alert("Invalid end date.");
 }
 
 const job={
-employer:employer.value.trim(),
-employerCity:employerCity.value.trim(),
+employer:smartTitleCase(employer.value),
+employerCity:smartTitleCase(employerCity.value),
 employerState:employerState.value.trim().toUpperCase().slice(0,2),
-title:title.value.trim(),
+title:smartTitleCase(title.value),
 start:startDate.value.trim(),
 end:endDate.value.trim(),
 task1:stripBullet(task1.value.trim()),
@@ -329,6 +390,10 @@ task3:stripBullet(task3.value.trim()),
 task4:stripBullet(task4.value.trim()),
 task5:stripBullet(task5.value.trim())
 };
+
+employer.value=job.employer;
+employerCity.value=job.employerCity;
+title.value=job.title;
 
 const d=getData();
 d.workExperience.push(job);
