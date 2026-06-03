@@ -742,8 +742,8 @@ function startConversation() {
   currentStep = 'personal_info';
 
   addAIMessage(
-    `<p>Hi there! I'm your AI career assistant, and I'm here to help you build an outstanding professional resume.</p>
-     <p>Let's start with some basic information. Please fill out the form below — it'll only take a minute!</p>`,
+    `<p>I'll be collecting information from you to build your resume. To get started, I need to learn about you — your background, work experience, skills, and goals — so I can put together a strong professional profile.</p>
+     <p>Let's begin with your basic contact information. Please fill out the form below.</p>`,
     () => setTimeout(showPersonalInfoForm, 450)
   );
 }
@@ -1086,11 +1086,10 @@ async function callClaudeGreeting(personal) {
   addTypingIndicator();
   disableInput();
 
-  const system = `You are a warm, encouraging career counselor AI helping a trade school student build a professional resume.
-Keep every response to 2–3 sentences. Be specific to their trade program.
-The student just confirmed their name is ${personal.firstName} ${personal.lastName} and they are studying ${personal.program} at ${personal.campus}.
-Greet them personally by first name, acknowledge their program with genuine enthusiasm, then ask ONE focused question:
-what kind of job or employer are they hoping to work for after graduation? Make it feel like a real conversation.`;
+  const system = `You are a resume-building assistant helping a trade school student create a professional resume.
+Your job is to gather the information needed to write a strong resume — stay focused on that goal.
+The student's name is ${personal.firstName} ${personal.lastName}. They are studying ${personal.program} at ${personal.campus}.
+Acknowledge their name and program briefly, then ask ONE direct question: what type of job or employer are they targeting after graduation? Keep your response to 2 sentences. Do not use filler phrases like "That's great!" or "Fantastic!".`;
 
   const messages = [
     { role: 'user', content: `Hi, I'm ${personal.firstName} and I'm studying ${personal.program}.` }
@@ -1109,7 +1108,7 @@ what kind of job or employer are they hoping to work for after graduation? Make 
 
   } catch (err) {
     removeTypingIndicator();
-    addAIMessage(`<p>Nice to meet you, ${escHtml(personal.firstName)}! ${escHtml(personal.program)} is a fantastic field. What kind of employer or job are you hoping to land after graduation — any particular companies or type of work environment in mind?</p>`);
+    addAIMessage(`<p>Thanks, ${escHtml(personal.firstName)}. To build your resume profile, I need to understand your goals. What type of job or employer are you targeting after completing ${escHtml(personal.program)}?</p>`);
     enableInput();
   }
 }
@@ -1137,14 +1136,16 @@ async function continueCareerContext(userText) {
 
   const p = resumeData.personal;
 
-  const system = `You are a warm, encouraging career counselor AI helping ${p.firstName} ${p.lastName}, a trade school student studying ${p.program} at ${p.campus}, build a professional resume.
+  const system = `You are a resume-building assistant. Your purpose is to gather information needed to write a strong resume for ${p.firstName} ${p.lastName}, who is studying ${p.program} at ${p.campus}.
 
-Phase: Career context conversation. Learn about their goals, work ethic, and personal qualities through natural dialogue.
+You are in the profile-building phase. Collect information about their career goals and work qualities — this will be used to write a resume objective and profile section.
 Rules:
-- 2 to 3 sentences per reply, never more.
-- Ask exactly ONE follow-up question per turn.
-- Topics to cover over 3–4 exchanges: job goals, preferred work environment, strongest work qualities, what motivates them.
-- After 3–4 exchanges, smoothly transition: "Now let's talk about your work history — have you had any jobs we should include on your resume?"`;
+- Stay focused on resume content. Do not go off topic.
+- 2 sentences per reply, never more.
+- Ask exactly ONE direct question per turn.
+- Do not use filler phrases like "Great!", "Awesome!", or "That's wonderful!".
+- Topics to cover over 3–4 exchanges: job type they are targeting, preferred work setting, their strongest work qualities, anything that sets them apart as an employee.
+- After 3–4 exchanges, transition directly: "Now I need to collect your work history. Have you held any jobs we should include on your resume?"`;
 
   conversationHistory.push({ role: 'user', content: userText });
 
