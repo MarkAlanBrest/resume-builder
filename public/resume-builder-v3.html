@@ -1012,6 +1012,42 @@ function isProfessionalDuties(value) {
   return words.length >= 1;
 }
 
+function monthIndex(month) {
+  const idx = MONTHS.indexOf(month);
+  return idx >= 0 ? idx : -1;
+}
+
+function workSortValue(job) {
+  if (job.current) return 999999;
+  const year = Number(job.endYear || job.startYear) || 0;
+  const month = monthIndex(job.endMonth || job.startMonth);
+  return year * 12 + month;
+}
+
+function eduSortValue(edu) {
+  if (edu.gradYear === 'In Progress') return 999999;
+  const year = Number(edu.gradYear) || 0;
+  return year * 12 + monthIndex(edu.gradMonth);
+}
+
+function sortedWorkExperience() {
+  return resumeData.workExperience.map((job,index)=>({job,index})).sort((a,b)=>workSortValue(b.job)-workSortValue(a.job));
+}
+
+function sortedEducation() {
+  return resumeData.education.map((edu,index)=>({edu,index})).sort((a,b)=>eduSortValue(b.edu)-eduSortValue(a.edu));
+}
+
+function deleteWork(index) {
+  resumeData.workExperience.splice(index,1);
+  showSection('work');
+}
+
+function deleteEdu(index) {
+  resumeData.education.splice(index,1);
+  showSection('education');
+}
+
 function renderWorkForm() {
   const p = resumeData.personal;
   const jobs = resumeData.workExperience;
@@ -1019,8 +1055,9 @@ function renderWorkForm() {
   const savedList = jobs.length ? `<div class="form-card" style="margin-bottom:16px">
     <div class="form-card-hdr">💼 Saved Positions (${jobs.length})</div>
     <div class="form-card-body" style="padding-bottom:14px">
-      ${jobs.map((j,i)=>`<div style="display:flex;justify-content:space-between;align-items:center;padding:8px 0;border-bottom:1px solid var(--slate-100)">
+      ${sortedWorkExperience().map(({job:j,index:i})=>`<div style="display:flex;justify-content:space-between;align-items:center;gap:10px;padding:8px 0;border-bottom:1px solid var(--slate-100)">
         <div><div style="font-size:14px;font-weight:600">${escHtml(j.jobTitle)} at ${escHtml(j.employer)}</div><div style="font-size:12px;color:var(--slate-500)">${j.startMonth} ${j.startYear} – ${j.current?'Present':`${j.endMonth} ${j.endYear}`}</div></div>
+        <button class="btn btn-ghost" style="padding:6px 10px;font-size:12px" onclick="deleteWork(${i})">Delete</button>
       </div>`).join('')}
     </div>
   </div>` : '';
@@ -1186,6 +1223,7 @@ async function regenBullets() {
 
 function confirmWork() {
   resumeData.workExperience.push({...pendingWork});
+  resumeData.workExperience.sort((a,b)=>workSortValue(b)-workSortValue(a));
   pendingWork = {};
   setStatus('work','done');
   showCenter('workDone');
@@ -1227,7 +1265,7 @@ function renderEduForm(prefill) {
   const isInProgress = pf.gradYear === 'In Progress';
   const banner = pf.isPrefilled ? `<div class="prefill-banner">ℹ️ Pre-filled from your program. Add your graduation month/year and confirm.</div>` : '';
   const saved = resumeData.education;
-  const savedList = saved.length ? `<div class="form-card" style="margin-bottom:16px"><div class="form-card-hdr">🎓 Saved Education (${saved.length})</div><div class="form-card-body" style="padding-bottom:14px">${saved.map(e=>`<div style="padding:8px 0;border-bottom:1px solid var(--slate-100)"><div style="font-size:14px;font-weight:600">${escHtml(e.degree)}${e.fieldOfStudy?' – '+escHtml(e.fieldOfStudy):''}</div><div style="font-size:12px;color:var(--slate-500)">${escHtml(e.school)} | ${escHtml(eduGradDate(e))}</div></div>`).join('')}</div></div>` : '';
+  const savedList = saved.length ? `<div class="form-card" style="margin-bottom:16px"><div class="form-card-hdr">🎓 Saved Education (${saved.length})</div><div class="form-card-body" style="padding-bottom:14px">${sortedEducation().map(({edu:e,index:i})=>`<div style="display:flex;justify-content:space-between;align-items:center;gap:10px;padding:8px 0;border-bottom:1px solid var(--slate-100)"><div><div style="font-size:14px;font-weight:600">${escHtml(e.degree)}${e.fieldOfStudy?' – '+escHtml(e.fieldOfStudy):''}</div><div style="font-size:12px;color:var(--slate-500)">${escHtml(e.school)} | ${escHtml(eduGradDate(e))}</div></div><button class="btn btn-ghost" style="padding:6px 10px;font-size:12px" onclick="deleteEdu(${i})">Delete</button></div>`).join('')}</div></div>` : '';
   return `<div class="section-hdr"><div class="section-hdr-icon">🎓</div><div><div class="section-hdr-title">Education</div><div class="section-hdr-sub">${saved.length?saved.length+' entr(ies) saved':'Schools, degrees, and credentials'}</div></div></div>
   ${savedList}
   <div class="form-card">
@@ -1418,7 +1456,9 @@ function renderEduApproval() {
 }
 
 function confirmEdu() {
-  resumeData.education.push({...pendingEdu}); pendingEdu={};
+  resumeData.education.push({...pendingEdu});
+  resumeData.education.sort((a,b)=>eduSortValue(b)-eduSortValue(a));
+  pendingEdu={};
   setStatus('education','done');
   showCenter('eduDone');
 }
@@ -1525,13 +1565,6 @@ function renderSkillsForm() {
     </div>
   </div>
   <div class="form-card">
-    <div class="form-card-hdr" style="background:var(--green-600)">👥 References</div>
-    <div class="form-card-body" style="padding-bottom:14px">
-      <div style="display:flex;align-items:center;gap:10px;padding:8px 0;font-size:14px;color:var(--slate-600)">
-        <span style="font-size:20px">✓</span>
-        <span><strong>"References available upon request"</strong> will be added to your resume automatically.</span>
-      </div>
-    </div>
     <div class="form-card-footer">
       <button class="btn btn-primary" onclick="submitSkills()">Organize Skills & Certs →</button>
     </div>
@@ -1675,7 +1708,7 @@ function bullet(text){return new docx.Paragraph({children:[new docx.TextRun({tex
 function jobBlock(job){const items=[],loc=[job.city,job.state].filter(Boolean).join(', '),end=job.current?'Present':[job.endMonth,job.endYear].filter(Boolean).join(' '),dates=`${[job.startMonth,job.startYear].filter(Boolean).join(' ')} – ${end}`;items.push(new docx.Paragraph({spacing:{before:100,after:0},children:[new docx.TextRun({text:job.jobTitle,bold:true,size:21,color:'1a1a1a'}),new docx.TextRun({text:`  •  ${job.employer}${loc?'  •  '+loc:''}`,size:20,color:'444444'})]}));items.push(new docx.Paragraph({spacing:{before:0,after:40},children:[new docx.TextRun({text:dates,italics:true,size:18,color:'777777'})]}));(job.bulletLines||[]).forEach(b=>items.push(bullet(b)));return items;}
 function eduBlock(edu){const loc=[edu.city,edu.state].filter(Boolean).join(', '),field=edu.fieldOfStudy?` – ${edu.fieldOfStudy}`:'';return new docx.Paragraph({spacing:{before:80,after:30},children:[new docx.TextRun({text:`${edu.degree}${field}`,bold:true,size:20,color:'1a1a1a'}),new docx.TextRun({text:`  •  ${edu.school}${loc?', '+loc:''}  •  ${eduGradDate(edu)}`,size:20,color:'555555'})]})}
 
-async function buildDocument(data,style,color){const builders={classic:buildClassic,modern:buildModern,bold:buildBold,executive:buildExecutive};return (builders[style]||buildClassic)(data,color);}
+async function buildDocument(data,style,color){const builders={classic:buildClassic,modern:buildModern,bold:buildBold,executive:buildExecutive};const sortedData={...data,workExperience:[...(data.workExperience||[])].sort((a,b)=>workSortValue(b)-workSortValue(a)),education:[...(data.education||[])].sort((a,b)=>eduSortValue(b)-eduSortValue(a))};return (builders[style]||buildClassic)(sortedData,color);}
 
 function buildClassic(data,color){const p=data.personal,c=data.careerContext,ac=color.accent,M=twip(0.75),ch=[];ch.push(new docx.Paragraph({alignment:docx.AlignmentType.CENTER,spacing:{before:0,after:40},children:[new docx.TextRun({text:`${p.firstName} ${p.lastName}`.trim(),bold:true,size:40,color:'111111'})]}));const contact=[p.email,p.phone,[p.city,p.state].filter(Boolean).join(', ')].filter(Boolean).join('   |   ');if(contact)ch.push(new docx.Paragraph({alignment:docx.AlignmentType.CENTER,spacing:{before:0,after:80},children:[new docx.TextRun({text:contact,size:18,color:'555555'})]}));ch.push(new docx.Paragraph({border:{bottom:{style:docx.BorderStyle.SINGLE,size:8,color:ac}},spacing:{before:0,after:100}}));const sec=t=>new docx.Paragraph({children:[new docx.TextRun({text:t.toUpperCase(),bold:true,size:22,color:ac})],border:{bottom:{style:docx.BorderStyle.SINGLE,size:4,color:ac}},spacing:{before:140,after:60}});if(c.objective){ch.push(sec('Objective'));ch.push(bodyTxt(c.objective,{after:100}));}if(data.workExperience?.length){ch.push(sec('Experience'));data.workExperience.forEach(j=>jobBlock(j).forEach(p=>ch.push(p)));}if(data.education?.length){ch.push(sec('Education'));data.education.forEach(e=>ch.push(eduBlock(e)));}if(data.certifications?.length){ch.push(sec('Certifications'));data.certifications.forEach(cert=>ch.push(new docx.Paragraph({spacing:{before:60,after:30},children:[new docx.TextRun({text:cert.name,bold:true,size:20}),...(cert.org||cert.year?[new docx.TextRun({text:`  —  ${[cert.org,cert.year].filter(Boolean).join(', ')}`,size:19,color:'666666'})]:[])]})));}if(data.skills?.length){ch.push(sec('Skills'));ch.push(bodyTxt(Array.isArray(data.skills)?data.skills.join('   •   '):data.skills,{after:60}));}ch.push(spacer(120));ch.push(new docx.Paragraph({alignment:docx.AlignmentType.CENTER,children:[new docx.TextRun({text:'References Available Upon Request',italics:true,size:18,color:'999999'})]}));return new docx.Document({sections:[{properties:{page:{margin:{top:M,bottom:M,left:M,right:M}}},children:ch}]});}
 
