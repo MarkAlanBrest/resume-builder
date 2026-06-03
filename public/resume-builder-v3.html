@@ -311,6 +311,16 @@ const TIPS = {
   template:`Pick the style and color that matches the field you're entering. Classic and Executive are safe for any employer. Modern works well for technical roles. Bold makes a strong first impression.`,
 };
 
+const WORK_TIP_EXAMPLES = [
+  {match:/automotive|motorcycle|power equipment/i,examples:['Diagnosed vehicle issues using scan tools and basic electrical testing.','Performed oil changes, brake service, tire rotations, and multipoint inspections.','Maintained a clean, organized work area while following shop safety procedures.']},
+  {match:/hvac|refrigeration|climate|ac technology/i,examples:['Assisted with installing and servicing heating, ventilation, and cooling equipment.','Used gauges, meters, and hand tools to troubleshoot system performance issues.','Followed safety procedures while handling refrigerant lines, electrical components, and customer work areas.']},
+  {match:/welding/i,examples:['Read blueprints and measured materials before cutting, fitting, and welding parts.','Used MIG, TIG, or stick welding techniques to complete assigned fabrication tasks.','Inspected welds for quality, cleaned finished work, and followed shop safety standards.']},
+  {match:/electrical|electro-mechanical|industrial maintenance/i,examples:['Assisted with wiring, troubleshooting, and maintaining electrical systems and equipment.','Used meters, hand tools, and diagrams to identify and correct basic faults.','Followed lockout/tagout and safety procedures while working around powered equipment.']},
+  {match:/building|construction/i,examples:['Measured, cut, and assembled materials for construction and repair projects.','Used hand and power tools safely while supporting framing, drywall, or finish work.','Maintained job-site organization and followed directions from supervisors and crew leads.']},
+  {match:/truck|cdl|diesel|heavy equipment/i,examples:['Completed pre-trip inspections and followed safety procedures for vehicles or equipment.','Assisted with maintenance, repair, and troubleshooting of diesel or heavy equipment systems.','Documented work performed and kept tools, parts, and work areas organized.']},
+  {match:/machinist|cnc|manufacturing/i,examples:['Operated or assisted with CNC machines, measuring tools, and production equipment.','Read work instructions and checked parts for accuracy using calipers or gauges.','Maintained quality standards while keeping the workstation clean and organized.']},
+];
+
 // ── State ────────────────────────────────────────
 let apiKey = '';
 let currentSection = null;
@@ -942,6 +952,59 @@ function confirmObjective() {
 }
 
 // ── Work Experience ───────────────────────────────
+const WORK_FIELD_GROUPS = {employer:'fg-emp',jobTitle:'fg-jt',city:'fg-wcity',state:'fg-wstate',startDate:'fg-sd',endDate:'fg-ed',duties:'fg-duties'};
+
+function cleanEmployerName(value) {
+  return value.trim().replace(/\s+/g,' ').split(/([ '&.,/-])/).map(part=>{
+    if (/^[A-Za-z]/.test(part)) {
+      const upper = part.toUpperCase();
+      if (['LLC','INC','LTD','LP','USA','UPS','KFC','CVS'].includes(upper)) return upper;
+      return smartCapWord(part);
+    }
+    return part;
+  }).join('').replace(/\bMcdonald'?s\b/i,"McDonald's").replace(/\bWalmart\b/i,'Walmart');
+}
+
+function cleanJobTitle(value) {
+  return value.trim().replace(/\s+/g,' ').split(/([ /&-])/).map(part=>{
+    if (/^[A-Za-z]/.test(part)) {
+      const upper = part.toUpperCase();
+      if (['HVAC','CNC','CDL'].includes(upper)) return upper;
+      return smartCapWord(part);
+    }
+    return part;
+  }).join('');
+}
+
+function isProfessionalOrgName(value) {
+  if (!value || value.length < 2 || value.length > 80) return false;
+  if (!/[A-Za-z]{2,}/.test(value)) return false;
+  return !/\b(fake|none|n\/a|na|idk|unknown|whatever|stuff)\b/i.test(value);
+}
+
+function isProfessionalJobTitle(value) {
+  if (!value || value.length < 2 || value.length > 70) return false;
+  if (!/[A-Za-z]{2,}/.test(value)) return false;
+  return !/\b(fake|none|n\/a|na|idk|unknown|whatever|stuff)\b/i.test(value);
+}
+
+function isReasonableYear(value) {
+  const year = Number(value);
+  const nextYear = new Date().getFullYear() + 1;
+  return /^\d{4}$/.test(value) && year >= 1950 && year <= nextYear;
+}
+
+function compareWorkDates(monthA, yearA, monthB, yearB) {
+  return (Number(yearA) * 12 + MONTHS.indexOf(monthA)) - (Number(yearB) * 12 + MONTHS.indexOf(monthB));
+}
+
+function isProfessionalDuties(value) {
+  if (!value || value.length < 25) return false;
+  if (!/[.!?]$/.test(value)) return false;
+  if (/\b(idk|dunno|whatever|stuff|things|kinda|gonna|wanna|lol|money|cash)\b/i.test(value)) return false;
+  return value.split(/\s+/).filter(Boolean).length >= 6;
+}
+
 function renderWorkForm() {
   const p = resumeData.personal;
   const jobs = resumeData.workExperience;
@@ -960,10 +1023,10 @@ function renderWorkForm() {
     <div class="form-card-hdr">💼 ${jobs.length?'Add Another Position':'Position Details'}</div>
     <div class="form-card-body">
       <div class="f-row"><div class="f-group" id="fg-emp"><label>Employer *</label><input id="empName" placeholder="Company name"><span class="f-err">Required</span></div><div class="f-group" id="fg-jt"><label>Job Title *</label><input id="jobTitle" placeholder="Your position"><span class="f-err">Required</span></div></div>
-      <div class="f-row triple"><div class="f-group"><label>City</label><input id="wCity" placeholder="City"></div><div class="f-group"><label>State</label><input id="wState" placeholder="PA" maxlength="2"></div><div></div></div>
+      <div class="f-row triple"><div class="f-group" id="fg-wcity"><label>City</label><input id="wCity" placeholder="City"><span class="f-err">Enter a valid city or leave blank.</span></div><div class="f-group" id="fg-wstate"><label>State</label><input id="wState" placeholder="PA" maxlength="2" oninput="fmtState(this)"><span class="f-err">Use a valid 2-letter state or leave blank.</span></div><div></div></div>
       <div class="f-row">
         <div class="f-group" id="fg-sd"><label>Start Date *</label><div class="date-pair"><select id="startMo"><option value="">Month</option>${monthOpts}</select><input id="startYr" placeholder="Year" maxlength="4" inputmode="numeric"></div><span class="f-err">Required</span></div>
-        <div class="f-group"><label>End Date</label><div class="date-pair"><select id="endMo"><option value="">Month</option>${monthOpts}</select><input id="endYr" placeholder="Year" maxlength="4" inputmode="numeric"></div><label class="check-opt-inline"><input type="checkbox" id="curJob" onchange="toggleCurJob(this)"><span>I currently work here</span></label></div>
+        <div class="f-group" id="fg-ed"><label>End Date</label><div class="date-pair"><select id="endMo"><option value="">Month</option>${monthOpts}</select><input id="endYr" placeholder="Year" maxlength="4" inputmode="numeric"></div><label class="check-opt-inline"><input type="checkbox" id="curJob" onchange="toggleCurJob(this)"><span>I currently work here</span></label><span class="f-err">Enter an end date after the start date, or mark current.</span></div>
       </div>
       <div class="f-row single"><div class="f-group" id="fg-duties"><label>Describe Your Duties *</label><textarea id="duties" rows="4" placeholder="Describe what you did — tools, equipment, tasks, responsibilities. Write naturally; I'll convert it to bullet points."></textarea><span class="f-err">Please describe your duties.</span></div></div>
     </div>
@@ -987,33 +1050,98 @@ function skipToEdu() {
 }
 
 async function submitWork() {
-  const checks=[{id:'empName',fg:'fg-emp',test:v=>v.length>0},{id:'jobTitle',fg:'fg-jt',test:v=>v.length>0},{id:'startMo',fg:'fg-sd',test:v=>v!==''},{id:'startYr',fg:'fg-sd',test:v=>/^\d{4}$/.test(v)},{id:'duties',fg:'fg-duties',test:v=>v.length>10}];
-  let valid=true; const seen=new Set();
-  checks.forEach(({id,fg,test})=>{ const el=document.getElementById(id),grp=document.getElementById(fg); if(!test(el.value.trim())){if(!seen.has(fg)){grp.classList.add('has-error');seen.add(fg);}valid=false;}else if(!seen.has(fg))grp.classList.remove('has-error'); });
-  if (!valid) return;
-  const cur = document.getElementById('curJob').checked;
-  pendingWork = {
-    employer:document.getElementById('empName').value.trim(),
-    jobTitle:document.getElementById('jobTitle').value.trim(),
-    city:document.getElementById('wCity').value.trim(),
-    state:document.getElementById('wState').value.trim().toUpperCase(),
-    startMonth:document.getElementById('startMo').value,
-    startYear:document.getElementById('startYr').value.trim(),
-    endMonth:cur?'':document.getElementById('endMo').value,
-    endYear:cur?'Present':document.getElementById('endYr').value.trim(),
-    current:cur,
-    duties:document.getElementById('duties').value.trim(),
-  };
+  let work = collectWorkData();
+  applyWorkData(work);
+  if (!validateWorkData(work)) return;
+
+  const btn = document.querySelector('button[onclick="submitWork()"]');
+  if (btn) { btn.disabled = true; btn.textContent = 'Checking...'; }
+  try {
+    const review = await reviewWorkData(work);
+    if (review?.corrections && Object.keys(review.corrections).length) {
+      work = {...work, ...review.corrections, current:work.current};
+      applyWorkData(work);
+    }
+    if (!validateWorkData(work)) return;
+    if (review?.issues?.length) {
+      review.issues.forEach(issue=>setFieldError(WORK_FIELD_GROUPS[issue.field], issue.message || 'Please revise this field.'));
+      addAIMsg('I found a few work experience items that need your review. Please fix the highlighted fields, then generate bullets again.');
+      return;
+    }
+  } catch(e) {
+    addAIMsg('I could not complete the work experience spelling and professionalism review. Please check your connection or API key, then try again.');
+    return;
+  } finally {
+    if (btn && currentSection === 'work') { btn.disabled = false; btn.textContent = 'Generate Bullets →'; }
+  }
+
+  pendingWork = work;
   const ci = document.getElementById('centerInner');
   ci.innerHTML = `<div style="text-align:center;padding:60px 20px;color:var(--slate-500)"><div style="font-size:32px;margin-bottom:12px">⚙️</div>Generating bullet points…</div>`;
   const prog = resumeData.personal.program || '';
-  const tense = cur ? 'present tense' : 'past tense';
+  const tense = work.current ? 'present tense' : 'past tense';
   const sys = `Write resume bullet points for a trade school student studying ${prog}. Job: ${pendingWork.jobTitle} at ${pendingWork.employer}. Duties: "${pendingWork.duties}". Write 3–5 bullets, ${tense}, each starting with a strong action verb. Each line starts with •. Return only the bullet points.`;
   try {
     const result = await callClaude(sys,[{role:'user',content:'Write the bullet points.'}]);
     pendingWork.bulletLines = result.trim().split('\n').map(l=>l.trim().replace(/^[•\-\*]\s*/,'')).filter(l=>l.length>0);
     showCenter('workApproval');
   } catch(e) { addAIMsg('Could not connect — please try again.'); showSection('work'); }
+}
+
+function collectWorkData() {
+  const cur = document.getElementById('curJob').checked;
+  return {
+    employer:cleanEmployerName(document.getElementById('empName').value),
+    jobTitle:cleanJobTitle(document.getElementById('jobTitle').value),
+    city:cleanPlaceName(document.getElementById('wCity').value),
+    state:document.getElementById('wState').value.trim().toUpperCase(),
+    startMonth:document.getElementById('startMo').value,
+    startYear:document.getElementById('startYr').value.trim(),
+    endMonth:cur?'':document.getElementById('endMo').value,
+    endYear:cur?'Present':document.getElementById('endYr').value.trim(),
+    current:cur,
+    duties:cleanCareerText(document.getElementById('duties').value),
+  };
+}
+
+function applyWorkData(w) {
+  const pairs = [['empName',w.employer],['jobTitle',w.jobTitle],['wCity',w.city],['wState',w.state],['startMo',w.startMonth],['startYr',w.startYear],['endMo',w.endMonth],['endYr',w.current?'':w.endYear],['duties',w.duties]];
+  pairs.forEach(([id,value])=>{ const el=document.getElementById(id); if(el) el.value=value || ''; });
+}
+
+function validateWorkData(w) {
+  let valid = true;
+  if (!isProfessionalOrgName(w.employer)) { setFieldError('fg-emp','Enter the real employer or company name.'); valid=false; } else clearFieldError('fg-emp');
+  if (!isProfessionalJobTitle(w.jobTitle)) { setFieldError('fg-jt','Enter a professional job title.'); valid=false; } else clearFieldError('fg-jt');
+  if (w.city && !/^[A-Za-z][A-Za-z' .-]{1,49}$/.test(w.city)) { setFieldError('fg-wcity','Enter a valid city or leave blank.'); valid=false; } else clearFieldError('fg-wcity');
+  if (w.state && !US_STATES.has(w.state)) { setFieldError('fg-wstate','Use a valid 2-letter state or leave blank.'); valid=false; } else clearFieldError('fg-wstate');
+  if (!w.startMonth || !isReasonableYear(w.startYear)) { setFieldError('fg-sd','Enter a valid start month and year.'); valid=false; } else clearFieldError('fg-sd');
+  if (!w.current && (!w.endMonth || !isReasonableYear(w.endYear) || compareWorkDates(w.endMonth,w.endYear,w.startMonth,w.startYear) < 0)) { setFieldError('fg-ed','Enter an end date after the start date, or mark current.'); valid=false; } else clearFieldError('fg-ed');
+  if (!isProfessionalDuties(w.duties)) { setFieldError('fg-duties','Describe real duties in professional complete sentences.'); valid=false; } else clearFieldError('fg-duties');
+  return valid;
+}
+
+async function reviewWorkData(work) {
+  if (!apiKey) throw new Error('AI review requires an API key.');
+  const sys = `You review a resume work experience entry. Fix clear spelling, capitalization, punctuation, grammar, and professional wording. Return ONLY JSON:
+{"corrections":{"employer":"","jobTitle":"","city":"","state":"","duties":""},"issues":[{"field":"employer","message":"Short user-facing instruction"}]}
+Rules:
+- Omit unchanged correction fields.
+- Keep the student's meaning. Do not invent employers, job titles, locations, tools, certifications, or responsibilities.
+- Correct employer capitalization only when obvious, such as "mcdonalds" to "McDonald's".
+- Make jobTitle and duties professional and resume-ready.
+- If employer/jobTitle/duties are fake, vague, slang, inappropriate, or cannot be fixed confidently, add an issue.
+- field must be one of: employer,jobTitle,city,state,duties.`;
+  const raw = await callClaude(sys,[{role:'user',content:JSON.stringify(work)}]);
+  const parsed = JSON.parse(raw.trim().replace(/^```(?:json)?\s*/i,'').replace(/\s*```$/,''));
+  const corrections = {};
+  if (parsed.corrections?.employer) corrections.employer = cleanEmployerName(parsed.corrections.employer);
+  if (parsed.corrections?.jobTitle) corrections.jobTitle = cleanJobTitle(parsed.corrections.jobTitle);
+  if (parsed.corrections?.city) corrections.city = cleanPlaceName(parsed.corrections.city);
+  if (parsed.corrections?.state) corrections.state = parsed.corrections.state.trim().toUpperCase();
+  if (parsed.corrections?.duties) corrections.duties = cleanCareerText(parsed.corrections.duties);
+  const issues = (parsed.issues || []).filter(issue=>WORK_FIELD_GROUPS[issue.field] && issue.message);
+  return {corrections, issues};
 }
 
 function renderWorkApproval() {
@@ -1392,7 +1520,14 @@ async function generateCoverLetter(){const p=resumeData.personal,c=resumeData.ca
 async function callClaude(system,messages,raw=false){const body={model:'claude-sonnet-4-20250514',max_tokens:1024,messages};if(system)body.system=system;const res=await fetch('https://api.anthropic.com/v1/messages',{method:'POST',headers:{'Content-Type':'application/json','x-api-key':apiKey,'anthropic-version':'2023-06-01','anthropic-dangerous-direct-browser-access':'true'},body:JSON.stringify(body)});if(!res.ok){const e=await res.json().catch(()=>({}));throw new Error(e.error?.message||`API error ${res.status}`);}const data=await res.json();return data.content[0].text;}
 
 // ── Right Panel Chat ──────────────────────────────
-function sendTip(key){const tip=TIPS[key];if(tip)setTimeout(()=>addAIMsg(tip),300);}
+function sendTip(key){const tip=key==='work'?buildWorkTip():TIPS[key];if(tip)setTimeout(()=>addAIMsg(tip),300);}
+
+function buildWorkTip() {
+  const program = resumeData.personal.program || '';
+  const found = WORK_TIP_EXAMPLES.find(item=>item.match.test(program));
+  const examples = (found || {examples:['Helped customers, completed assigned tasks, and followed workplace procedures.','Used tools, equipment, or software safely to complete daily responsibilities.','Kept work areas organized and communicated with supervisors and team members.']}).examples;
+  return `${TIPS.work} Since your program is ${program || 'not selected yet'}, here are examples you can model your duties after:\n\n${examples.map(e=>`• ${e}`).join('\n')}`;
+}
 
 function addAIMsg(text){const msgs=document.getElementById('chatMessages');if(!msgs)return;const div=document.createElement('div');div.className='chat-msg ai';div.innerHTML=`<div class="msg-lbl">AI</div><div class="msg-bubble">${escHtml(text).replace(/\*\*(.+?)\*\*/g,'<strong>$1</strong>').replace(/\n/g,'<br>')}</div>`;msgs.appendChild(div);msgs.scrollTop=msgs.scrollHeight;}
 
