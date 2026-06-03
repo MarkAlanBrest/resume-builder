@@ -564,6 +564,64 @@
       margin-left: 2px;
     }
 
+    /* ── Checkbox Grid (career profile qualities) ── */
+    .check-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 6px 12px;
+      margin-top: 4px;
+    }
+
+    .check-option {
+      display: flex;
+      align-items: center;
+      gap: 7px;
+      font-size: 13px;
+      color: var(--slate-700);
+      cursor: pointer;
+      padding: 5px 8px;
+      border-radius: 6px;
+      border: 1.5px solid var(--slate-200);
+      background: var(--slate-50);
+      transition: border-color 0.15s, background 0.15s;
+      user-select: none;
+    }
+
+    .check-option:hover {
+      border-color: var(--blue-700);
+      background: var(--blue-50);
+    }
+
+    .check-option input[type="checkbox"] {
+      width: 15px;
+      height: 15px;
+      margin: 0;
+      flex-shrink: 0;
+      accent-color: var(--blue-700);
+    }
+
+    .f-group textarea {
+      border: 1.5px solid var(--slate-200);
+      border-radius: 7px;
+      padding: 9px 11px;
+      font-size: 14px;
+      color: var(--slate-900);
+      background: var(--slate-50);
+      resize: vertical;
+      min-height: 60px;
+      outline: none;
+      width: 100%;
+      font-family: inherit;
+      transition: border-color 0.18s, box-shadow 0.18s, background 0.18s;
+      margin: 0;
+    }
+
+    .f-group textarea:focus {
+      border-color: var(--blue-700);
+      box-shadow: 0 0 0 3px rgba(29,78,216,0.12);
+      background: var(--white);
+    }
+
     /* ── Responsive ──────────────────────────────── */
     @media (max-width: 600px) {
       .app { height: 100dvh; }
@@ -1047,10 +1105,292 @@ function editPersonalInfo() {
 function confirmPersonalInfo() {
   removeLastAICard();
   const p = resumeData.personal;
-  currentStep = 'career_context';
+  currentStep = 'career_profile';
 
   addUserMessage(`${p.firstName} ${p.lastName} — ${p.program}`);
-  callClaudeGreeting(p);
+
+  addAIMessage(
+    `<p>Good. Now I need to build your career profile. This information is used to write your resume objective and tailor your resume to the right employers. Please fill out the form below.</p>`,
+    () => setTimeout(showCareerProfileForm, 400)
+  );
+}
+
+// ────────────────────────────────────────────────
+//  Career Profile Form
+// ────────────────────────────────────────────────
+const WORK_QUALITIES = [
+  'Reliable',
+  'Detail-oriented',
+  'Hard worker',
+  'Fast learner',
+  'Self-motivated',
+  'Team player',
+  'Safety-conscious',
+  'Customer-focused',
+  'Problem solver',
+  'Physically fit / active'
+];
+
+function showCareerProfileForm() {
+  const qualityCheckboxes = WORK_QUALITIES.map((q, i) => `
+    <label class="check-option">
+      <input type="checkbox" name="quality" value="${escHtml(q)}" onchange="enforceQualityLimit(this)">
+      <span>${escHtml(q)}</span>
+    </label>`).join('');
+
+  const formHtml = `
+    <div class="inline-form" id="careerProfileForm">
+      <div class="form-card-header">
+        <span>🎯</span> Career Profile
+      </div>
+      <div class="form-card-body">
+
+        <div class="f-row">
+          <div class="f-group" id="fg-jobTitle">
+            <label>Target Job Title *</label>
+            <input type="text" id="jobTitle" placeholder="e.g. Automotive Technician, Electrician's Apprentice">
+            <span class="f-err">Please enter the job title you are targeting.</span>
+          </div>
+          <div class="f-group" id="fg-employerType">
+            <label>Type of Employer *</label>
+            <input type="text" id="employerType" placeholder="e.g. Auto dealership, HVAC contractor, repair shop">
+            <span class="f-err">Please enter the type of employer you are targeting.</span>
+          </div>
+        </div>
+
+        <div class="f-row single">
+          <div class="f-group" id="fg-expLevel">
+            <label>Experience Level *</label>
+            <select id="expLevel">
+              <option value="">— Select —</option>
+              <option value="Recent/upcoming graduate seeking an entry-level position">Recent / upcoming graduate — entry-level</option>
+              <option value="Candidate with 1–2 years of related experience">Have 1–2 years of related experience</option>
+              <option value="Experienced professional with 3 or more years in the field">Have 3+ years of experience</option>
+            </select>
+            <span class="f-err">Please select your experience level.</span>
+          </div>
+        </div>
+
+        <div class="f-row single">
+          <div class="f-group" id="fg-qualities">
+            <label>Top Work Qualities — pick up to 3 *</label>
+            <div class="check-grid">${qualityCheckboxes}</div>
+            <span class="f-err">Please select at least one quality.</span>
+          </div>
+        </div>
+
+        <div class="f-row single">
+          <div class="f-group">
+            <label>What sets you apart? <span style="font-weight:400;text-transform:none;font-size:11px">(optional)</span></label>
+            <textarea id="standout" rows="2" placeholder="One or two sentences about something specific that makes you a strong candidate."></textarea>
+          </div>
+        </div>
+
+      </div>
+      <div class="form-card-footer">
+        <button class="btn btn-primary" onclick="submitCareerProfile()">Continue &rarr;</button>
+      </div>
+    </div>`;
+
+  const wrapper = document.createElement('div');
+  wrapper.className = 'message ai wide';
+  wrapper.innerHTML = formHtml;
+  document.getElementById('chatWindow').appendChild(wrapper);
+  scrollBottom();
+
+  setTimeout(() => document.getElementById('jobTitle').focus(), 100);
+}
+
+function enforceQualityLimit(cb) {
+  const checked = document.querySelectorAll('input[name="quality"]:checked');
+  if (checked.length > 3) cb.checked = false;
+}
+
+function submitCareerProfile() {
+  const checks = [
+    { id: 'jobTitle',      fg: 'fg-jobTitle',      test: v => v.length > 0 },
+    { id: 'employerType',  fg: 'fg-employerType',  test: v => v.length > 0 },
+    { id: 'expLevel',      fg: 'fg-expLevel',       test: v => v !== '' },
+  ];
+
+  let valid = true;
+  checks.forEach(({ id, fg, test }) => {
+    const el  = document.getElementById(id);
+    const grp = document.getElementById(fg);
+    if (!test(el.value.trim())) { grp.classList.add('has-error'); valid = false; }
+    else                        { grp.classList.remove('has-error'); }
+  });
+
+  const selectedQualities = Array.from(document.querySelectorAll('input[name="quality"]:checked')).map(cb => cb.value);
+  const fgQ = document.getElementById('fg-qualities');
+  if (selectedQualities.length === 0) { fgQ.classList.add('has-error'); valid = false; }
+  else                                { fgQ.classList.remove('has-error'); }
+
+  if (!valid) return;
+
+  resumeData.careerContext = {
+    jobTitle      : document.getElementById('jobTitle').value.trim(),
+    employerType  : document.getElementById('employerType').value.trim(),
+    expLevel      : document.getElementById('expLevel').value,
+    qualities     : selectedQualities,
+    standout      : document.getElementById('standout').value.trim(),
+  };
+
+  document.getElementById('careerProfileForm').style.display = 'none';
+  showCareerProfileApproval();
+}
+
+function showCareerProfileApproval() {
+  const c = resumeData.careerContext;
+
+  const rows = [
+    ['Target Role',   escHtml(c.jobTitle)],
+    ['Employer Type', escHtml(c.employerType)],
+    ['Experience',    escHtml(c.expLevel)],
+    ['Qualities',     escHtml(c.qualities.join(', '))],
+  ];
+
+  if (c.standout) rows.push(['Stands Out', escHtml(c.standout)]);
+
+  const rowsHtml = rows.map(([lbl, val]) =>
+    `<div class="a-row"><span class="a-label">${lbl}</span><span class="a-value">${val}</span></div>`
+  ).join('');
+
+  const cardHtml = `
+    <div class="approval-card">
+      <div class="approval-header"><span>✓</span> Career Profile — Review</div>
+      <div class="approval-body">${rowsHtml}</div>
+      <div class="approval-footer">
+        <button class="btn btn-ghost"   onclick="editCareerProfile()">Edit</button>
+        <button class="btn btn-confirm" onclick="confirmCareerProfile()">Looks Good ✓</button>
+      </div>
+    </div>`;
+
+  addAICard(cardHtml, true);
+}
+
+function editCareerProfile() {
+  removeLastAICard();
+  const form = document.getElementById('careerProfileForm');
+  if (form) { form.style.display = ''; scrollBottom(); }
+}
+
+async function confirmCareerProfile() {
+  removeLastAICard();
+  const c = resumeData.careerContext;
+  const p = resumeData.personal;
+
+  addUserMessage([c.jobTitle, c.employerType, c.qualities.join(', ')].filter(Boolean).join(' · '));
+
+  addTypingIndicator();
+  disableInput();
+
+  const qualitiesList = c.qualities.join(', ');
+  const standoutLine  = c.standout ? ` ${c.standout}` : '';
+
+  const system = `You are a resume-building assistant. Write a resume objective statement for a trade school student.
+
+Student: ${p.firstName} ${p.lastName}
+Program: ${p.program}
+Target job: ${c.jobTitle}
+Target employer: ${c.employerType}
+Experience level: ${c.expLevel}
+Key qualities: ${qualitiesList}
+Additional context: ${c.standout || 'none'}
+
+Write exactly 2–3 sentences. Format as plain text — no bullet points, no labels. Be direct and professional. Do not use the phrase "dynamic" or "passionate". Do not add any explanation — return only the objective text.`;
+
+  try {
+    const objective = await callClaude(system, [
+      { role: 'user', content: 'Write the resume objective.' }
+    ]);
+
+    resumeData.careerContext.objective = objective.trim();
+    removeTypingIndicator();
+
+    const objCardHtml = `
+      <div class="approval-card">
+        <div class="approval-header"><span>✓</span> Resume Objective — Review</div>
+        <div class="approval-body">
+          <div class="a-row" style="display:block;padding:10px 0">
+            <span class="a-value" style="font-size:15px;line-height:1.6">${escHtml(objective.trim())}</span>
+          </div>
+        </div>
+        <div class="approval-footer">
+          <button class="btn btn-ghost"   onclick="rewriteObjective()">Rewrite</button>
+          <button class="btn btn-confirm" onclick="confirmObjective()">Looks Good ✓</button>
+        </div>
+      </div>`;
+
+    addAIMessage(`<p>Based on what you told me, here is the objective statement I'll put at the top of your resume. Review it below.</p>`, () => {
+      setTimeout(() => addAICard(objCardHtml, true), 300);
+    });
+
+  } catch (err) {
+    removeTypingIndicator();
+    addAIMessage(`<p>I had trouble connecting. Click "Looks Good" on your profile to try again.</p>`);
+    enableInput();
+  }
+}
+
+async function rewriteObjective() {
+  removeLastAICard();
+  const c = resumeData.careerContext;
+  const p = resumeData.personal;
+
+  addTypingIndicator();
+
+  const system = `You are a resume-building assistant. Rewrite the resume objective for this trade school student. Write a different version — vary the sentence structure and wording.
+
+Student: ${p.firstName} ${p.lastName}
+Program: ${p.program}
+Target job: ${c.jobTitle}
+Target employer: ${c.employerType}
+Experience level: ${c.expLevel}
+Key qualities: ${c.qualities.join(', ')}
+Additional context: ${c.standout || 'none'}
+
+Write exactly 2–3 sentences. Plain text only. Professional and direct. Do not use "dynamic" or "passionate". Return only the objective text.`;
+
+  try {
+    const objective = await callClaude(system, [
+      { role: 'user', content: 'Write an alternate resume objective.' }
+    ]);
+
+    resumeData.careerContext.objective = objective.trim();
+    removeTypingIndicator();
+
+    const objCardHtml = `
+      <div class="approval-card">
+        <div class="approval-header"><span>✓</span> Resume Objective — Review</div>
+        <div class="approval-body">
+          <div class="a-row" style="display:block;padding:10px 0">
+            <span class="a-value" style="font-size:15px;line-height:1.6">${escHtml(objective.trim())}</span>
+          </div>
+        </div>
+        <div class="approval-footer">
+          <button class="btn btn-ghost"   onclick="rewriteObjective()">Rewrite</button>
+          <button class="btn btn-confirm" onclick="confirmObjective()">Looks Good ✓</button>
+        </div>
+      </div>`;
+
+    addAICard(objCardHtml, true);
+
+  } catch (err) {
+    removeTypingIndicator();
+    addAIMessage(`<p>Could not connect. Please try again.</p>`);
+  }
+}
+
+function confirmObjective() {
+  removeLastAICard();
+  currentStep = 'work_experience';
+
+  addAIMessage(
+    `<p>Objective saved. Next, I need your work history. Do you have any previous jobs to include on your resume? If yes, type "yes" — if not, type "no" and we'll move on.</p>`
+  );
+  enableInput();
+  document.getElementById('userInput').focus();
 }
 
 // ────────────────────────────────────────────────
@@ -1082,39 +1422,8 @@ async function callClaude(system, messages) {
   return data.content[0].text;
 }
 
-async function callClaudeGreeting(personal) {
-  addTypingIndicator();
-  disableInput();
-
-  const system = `You are a resume-building assistant helping a trade school student create a professional resume.
-Your job is to gather the information needed to write a strong resume — stay focused on that goal.
-The student's name is ${personal.firstName} ${personal.lastName}. They are studying ${personal.program} at ${personal.campus}.
-Acknowledge their name and program briefly, then ask ONE direct question: what type of job or employer are they targeting after graduation? Keep your response to 2 sentences. Do not use filler phrases like "That's great!" or "Fantastic!".`;
-
-  const messages = [
-    { role: 'user', content: `Hi, I'm ${personal.firstName} and I'm studying ${personal.program}.` }
-  ];
-
-  try {
-    const reply = await callClaude(system, messages);
-    removeTypingIndicator();
-
-    conversationHistory.push({ role: 'user',      content: messages[0].content });
-    conversationHistory.push({ role: 'assistant', content: reply });
-
-    addAIMessage(formatReply(reply));
-    enableInput();
-    document.getElementById('userInput').focus();
-
-  } catch (err) {
-    removeTypingIndicator();
-    addAIMessage(`<p>Thanks, ${escHtml(personal.firstName)}. To build your resume profile, I need to understand your goals. What type of job or employer are you targeting after completing ${escHtml(personal.program)}?</p>`);
-    enableInput();
-  }
-}
-
 // ────────────────────────────────────────────────
-//  User Input / Conversation Loop
+//  User Input
 // ────────────────────────────────────────────────
 async function sendUserMessage() {
   const input = document.getElementById('userInput');
@@ -1125,43 +1434,26 @@ async function sendUserMessage() {
   autoResize(input);
   addUserMessage(text);
 
-  if (currentStep === 'career_context') {
-    await continueCareerContext(text);
+  if (currentStep === 'work_experience') {
+    handleWorkExperienceResponse(text);
   }
 }
 
-async function continueCareerContext(userText) {
-  addTypingIndicator();
-  disableInput();
-
-  const p = resumeData.personal;
-
-  const system = `You are a resume-building assistant. Your purpose is to gather information needed to write a strong resume for ${p.firstName} ${p.lastName}, who is studying ${p.program} at ${p.campus}.
-
-You are in the profile-building phase. Collect information about their career goals and work qualities — this will be used to write a resume objective and profile section.
-Rules:
-- Stay focused on resume content. Do not go off topic.
-- 2 sentences per reply, never more.
-- Ask exactly ONE direct question per turn.
-- Do not use filler phrases like "Great!", "Awesome!", or "That's wonderful!".
-- Topics to cover over 3–4 exchanges: job type they are targeting, preferred work setting, their strongest work qualities, anything that sets them apart as an employee.
-- After 3–4 exchanges, transition directly: "Now I need to collect your work history. Have you held any jobs we should include on your resume?"`;
-
-  conversationHistory.push({ role: 'user', content: userText });
-
-  try {
-    const reply = await callClaude(system, conversationHistory);
-    removeTypingIndicator();
-
-    conversationHistory.push({ role: 'assistant', content: reply });
-
-    addAIMessage(formatReply(reply));
-    enableInput();
-    document.getElementById('userInput').focus();
-
-  } catch (err) {
-    removeTypingIndicator();
-    addAIMessage(`<p>That's great to know! What would you say is your strongest quality as an employee — something a future employer would notice right away?</p>`);
+function handleWorkExperienceResponse(text) {
+  const lower = text.toLowerCase();
+  if (lower.includes('yes') || lower.includes('yeah') || lower.includes('yep') || lower.includes('yup')) {
+    disableInput();
+    addAIMessage(`<p>Good. Fill out the form below for your first job. You can add more after.</p>`,
+      () => setTimeout(showWorkExperienceForm, 400)
+    );
+  } else if (lower.includes('no') || lower.includes('nope') || lower.includes("don't") || lower.includes('none')) {
+    disableInput();
+    currentStep = 'education';
+    addAIMessage(`<p>No work history — noted. Let's move on to your education.</p>`,
+      () => setTimeout(showEducationForm, 400)
+    );
+  } else {
+    addAIMessage(`<p>Please answer yes or no — do you have any previous jobs to include on your resume?</p>`);
     enableInput();
   }
 }
@@ -1204,6 +1496,20 @@ function scrollBottom() {
     const cw = document.getElementById('chatWindow');
     cw.scrollTop = cw.scrollHeight;
   });
+}
+
+// ────────────────────────────────────────────────
+//  Stubs — next phases
+// ────────────────────────────────────────────────
+function showWorkExperienceForm() {
+  currentStep = 'work_experience_form';
+  addAIMessage(`<p>Work experience form coming soon.</p>`);
+  enableInput();
+}
+
+function showEducationForm() {
+  addAIMessage(`<p>Education form coming soon.</p>`);
+  enableInput();
 }
 
 // ────────────────────────────────────────────────
