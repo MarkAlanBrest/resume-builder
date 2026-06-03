@@ -534,11 +534,11 @@ function renderPersonalForm() {
         <div class="f-group" id="fg-em"><label>Email *</label><input id="em" type="email" value="${escHtml(p.email||'')}" placeholder="you@example.com"><span class="f-err">Valid email required</span></div>
         <div class="f-group" id="fg-ph"><label>Phone *</label><input id="ph" type="tel" value="${escHtml(p.phone||'')}" placeholder="(555) 555-5555" oninput="fmtPhone(this)"><span class="f-err">Required</span></div>
       </div>
-      <div class="f-row single"><div class="f-group"><label>Street Address</label><input id="addr" value="${escHtml(p.address||'')}" placeholder="123 Main Street"></div></div>
+      <div class="f-row single"><div class="f-group" id="fg-addr"><label>Street Address *</label><input id="addr" value="${escHtml(p.address||'')}" placeholder="123 Main Street"><span class="f-err">Required</span></div></div>
       <div class="f-row triple">
-        <div class="f-group"><label>City</label><input id="pcity" value="${escHtml(p.city||'')}" placeholder="City"></div>
-        <div class="f-group"><label>State</label><input id="pstate" value="${escHtml(p.state||'')}" placeholder="PA" maxlength="2"></div>
-        <div class="f-group"><label>ZIP</label><input id="pzip" value="${escHtml(p.zip||'')}" placeholder="00000" maxlength="5" inputmode="numeric"></div>
+        <div class="f-group" id="fg-city"><label>City *</label><input id="pcity" value="${escHtml(p.city||'')}" placeholder="City"><span class="f-err">Required</span></div>
+        <div class="f-group" id="fg-state"><label>State *</label><input id="pstate" value="${escHtml(p.state||'')}" placeholder="PA" maxlength="2" oninput="fmtState(this)"><span class="f-err">Required</span></div>
+        <div class="f-group" id="fg-zip"><label>ZIP *</label><input id="pzip" value="${escHtml(p.zip||'')}" placeholder="00000" maxlength="5" inputmode="numeric" oninput="fmtZip(this)"><span class="f-err">Required</span></div>
       </div>
     </div>
   </div>
@@ -567,34 +567,115 @@ function updatePrograms() {
   } else { ps.innerHTML = '<option value="">— Select Campus First —</option>'; ps.disabled = true; }
 }
 
-function submitPersonal() {
-  const checks = [
-    {id:'fn',fg:'fg-fn',test:v=>v.length>0},
-    {id:'ln',fg:'fg-ln',test:v=>v.length>0},
-    {id:'em',fg:'fg-em',test:v=>/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(v)},
-    {id:'ph',fg:'fg-ph',test:v=>v.replace(/\D/g,'').length>=7},
-    {id:'campusSel',fg:'fg-campus',test:v=>v!==''},
-    {id:'progSel',fg:'fg-prog',test:v=>v!==''},
-  ];
-  let valid = true;
-  checks.forEach(({id,fg,test})=>{ const el=document.getElementById(id),grp=document.getElementById(fg); if(el&&grp){if(!test(el.value.trim())){grp.classList.add('has-error');valid=false;}else{grp.classList.remove('has-error');}} });
-  if (!valid) return;
-  resumeData.personal = {
-    firstName:document.getElementById('fn').value.trim(),
-    lastName:document.getElementById('ln').value.trim(),
-    email:document.getElementById('em').value.trim(),
+async function submitPersonal() {
+  let personal = collectPersonalData();
+  applyPersonalData(personal);
+  if (!validatePersonalData(personal)) return;
+
+  const btn = document.querySelector('button[onclick="submitPersonal()"]');
+  if (btn) { btn.disabled = true; btn.textContent = 'Checking...'; }
+  try {
+    const review = await reviewPersonalData(personal);
+    if (review?.corrections && Object.keys(review.corrections).length) {
+      personal = {...personal, ...review.corrections};
+      applyPersonalData(personal);
+    }
+    if (!validatePersonalData(personal)) return;
+    if (review?.issues?.length) {
+      review.issues.forEach(issue=>setFieldError(PERSONAL_FIELD_GROUPS[issue.field], issue.message || 'Please correct this field.'));
+      addAIMsg('I found a few items that need your review before we continue. Please fix the highlighted fields.');
+      return;
+    }
+
+    resumeData.personal = personal;
+    setStatus('personal','done');
+    const p = resumeData.personal;
+    addAIMsg(`Thanks ${p.firstName}! Your contact info is saved. Let's build your career profile next.`);
+    showSection('career');
+  } catch(e) {
+    addAIMsg('I could not complete the spelling and address review. Please check your connection or API key, then try Continue again.');
+  } finally {
+    if (btn && currentSection === 'personal') { btn.disabled = false; btn.textContent = 'Continue →'; }
+  }
+}
+
+function collectPersonalData() {
+  return {
+    firstName:cleanPersonName(document.getElementById('fn').value),
+    lastName:cleanPersonName(document.getElementById('ln').value),
+    email:document.getElementById('em').value.trim().toLowerCase(),
     phone:document.getElementById('ph').value.trim(),
-    address:document.getElementById('addr').value.trim(),
-    city:document.getElementById('pcity').value.trim(),
+    address:cleanAddress(document.getElementById('addr').value),
+    city:cleanPlaceName(document.getElementById('pcity').value),
     state:document.getElementById('pstate').value.trim().toUpperCase(),
     zip:document.getElementById('pzip').value.trim(),
     campus:document.getElementById('campusSel').value,
     program:document.getElementById('progSel').value,
   };
-  setStatus('personal','done');
-  const p = resumeData.personal;
-  addAIMsg(`Thanks ${p.firstName}! Your contact info is saved. Let's build your career profile next.`);
-  showSection('career');
+}
+
+function applyPersonalData(p) {
+  const pairs = [['fn',p.firstName],['ln',p.lastName],['em',p.email],['ph',p.phone],['addr',p.address],['pcity',p.city],['pstate',p.state],['pzip',p.zip],['campusSel',p.campus],['progSel',p.program]];
+  pairs.forEach(([id,value])=>{ const el=document.getElementById(id); if(el) el.value=value || ''; });
+}
+
+function validatePersonalData(p) {
+  const checks = [
+    {id:'fn',fg:'fg-fn',value:p.firstName,test:v=>/^[A-Za-z][A-Za-z' -]{1,39}$/.test(v),msg:'Enter a real first name.'},
+    {id:'ln',fg:'fg-ln',value:p.lastName,test:v=>/^[A-Za-z][A-Za-z' -]{1,49}$/.test(v),msg:'Enter a real last name.'},
+    {id:'em',fg:'fg-em',value:p.email,test:isProfessionalEmail,msg:'Use a valid, professional email.'},
+    {id:'ph',fg:'fg-ph',value:p.phone,test:v=>v.replace(/\D/g,'').length===10,msg:'Enter a 10-digit phone number.'},
+    {id:'addr',fg:'fg-addr',value:p.address,test:v=>/^\d+\s+[A-Za-z0-9' .#-]{3,}$/.test(v),msg:'Enter a complete street address.'},
+    {id:'pcity',fg:'fg-city',value:p.city,test:v=>/^[A-Za-z][A-Za-z' .-]{1,49}$/.test(v),msg:'Enter a valid city.'},
+    {id:'pstate',fg:'fg-state',value:p.state,test:v=>US_STATES.has(v),msg:'Use a valid 2-letter state.'},
+    {id:'pzip',fg:'fg-zip',value:p.zip,test:v=>/^\d{5}$/.test(v),msg:'Enter a 5-digit ZIP code.'},
+    {id:'campusSel',fg:'fg-campus',value:p.campus,test:v=>v!=='' && Boolean(CAMPUSES[v]),msg:'Select a campus.'},
+    {id:'progSel',fg:'fg-prog',value:p.program,test:v=>v!=='' && p.campus && CAMPUSES[p.campus]?.includes(v),msg:'Select a program.'},
+  ];
+  let valid = true;
+  checks.forEach(({id,fg,value,test,msg})=>{ const el=document.getElementById(id); if(el)el.value=value; if(!test(value)){setFieldError(fg,msg);valid=false;}else{clearFieldError(fg);} });
+  return valid;
+}
+
+async function reviewPersonalData(personal) {
+  if (!apiKey) throw new Error('AI review requires an API key.');
+  const sys = `You review resume contact information for data quality. Fix clear spelling and capitalization mistakes, but do not invent missing personal data. Return ONLY JSON with this exact shape:
+{"corrections":{"firstName":"","lastName":"","email":"","phone":"","address":"","city":"","state":"","zip":"","campus":"","program":""},"issues":[{"field":"address","message":"Short user-facing instruction"}]}
+Rules:
+- Omit fields from corrections when no change is needed.
+- Correct obvious capitalization in names, city, and street address.
+- Correct obvious street suffix words such as "stret" to "Street", "avenu" to "Avenue", and unit capitalization such as "apt" to "Apt".
+- Do not change a person's name unless it is only capitalization, spacing, hyphen, or apostrophe cleanup.
+- Do not invent apartment numbers, street numbers, ZIP codes, phone numbers, campus, or program.
+- If an email is unprofessional, suspicious, or not employer-ready, add an issue for "email".
+- If an address, city, state, or ZIP seems misspelled, incomplete, mismatched, or impossible to verify confidently, add an issue instead of guessing.
+- Field must be one of: firstName,lastName,email,phone,address,city,state,zip,campus,program.`;
+  const raw = await callClaude(sys,[{role:'user',content:JSON.stringify(personal)}]);
+  let review = JSON.parse(raw.trim().replace(/^```(?:json)?\s*/i,'').replace(/\s*```$/,''));
+  const allowed = new Set(Object.keys(PERSONAL_FIELD_GROUPS));
+  const corrections = {};
+  Object.entries(review.corrections || {}).forEach(([field,value])=>{
+    if (allowed.has(field) && value != null && String(value).trim()) {
+      const cleaned = cleanReviewedPersonalValue(field, String(value));
+      if (cleaned) corrections[field] = cleaned;
+    }
+  });
+  const issues = (review.issues || []).filter(issue=>allowed.has(issue.field) && issue.message);
+  return {corrections, issues};
+}
+
+function cleanReviewedPersonalValue(field, value) {
+  if (field === 'firstName' || field === 'lastName') return cleanPersonName(value);
+  if (field === 'city') return cleanPlaceName(value);
+  if (field === 'address') return cleanAddress(value);
+  if (field === 'state') return value.trim().toUpperCase();
+  if (field === 'zip') return value.replace(/\D/g,'').slice(0,5);
+  if (field === 'email') return value.trim().toLowerCase();
+  if (field === 'phone') {
+    const d = value.replace(/\D/g,'').slice(0,10);
+    if (d.length === 10) return `(${d.slice(0,3)}) ${d.slice(3,6)}-${d.slice(6)}`;
+  }
+  return value.trim().replace(/\s+/g,' ');
 }
 
 function fmtPhone(el) {
@@ -605,6 +686,80 @@ function fmtPhone(el) {
 }
 
 // ── Career Profile ────────────────────────────────
+const PERSONAL_FIELD_GROUPS = {firstName:'fg-fn',lastName:'fg-ln',email:'fg-em',phone:'fg-ph',address:'fg-addr',city:'fg-city',state:'fg-state',zip:'fg-zip',campus:'fg-campus',program:'fg-prog'};
+const US_STATES = new Set(['AL','AK','AZ','AR','CA','CO','CT','DE','FL','GA','HI','ID','IL','IN','IA','KS','KY','LA','ME','MD','MA','MI','MN','MS','MO','MT','NE','NV','NH','NJ','NM','NY','NC','ND','OH','OK','OR','PA','RI','SC','SD','TN','TX','UT','VT','VA','WA','WV','WI','WY','DC']);
+const UNPRO_EMAIL_WORDS = ['420','69','666','adult','babe','beer','blaze','booze','booty','bossbabe','crazy','drunk','gangsta','gamer','hot','killa','killer','lazy','lit','party','playa','pothead','princess','sexy','smoke','stoner','thug','weed','xxx'];
+const STREET_WORDS = {st:'Street','st.':'Street',street:'Street',stret:'Street',strret:'Street',ave:'Avenue','ave.':'Avenue',av:'Avenue',avenue:'Avenue',avenu:'Avenue',rd:'Road','rd.':'Road',road:'Road',dr:'Drive','dr.':'Drive',drive:'Drive',drv:'Drive',ln:'Lane','ln.':'Lane',lane:'Lane',blvd:'Boulevard','blvd.':'Boulevard',boulevard:'Boulevard',ct:'Court','ct.':'Court',court:'Court',cir:'Circle','cir.':'Circle',circle:'Circle',pl:'Place','pl.':'Place',place:'Place',pkwy:'Parkway','pkwy.':'Parkway',parkway:'Parkway',hwy:'Highway','hwy.':'Highway',highway:'Highway',terrace:'Terrace',ter:'Terrace','ter.':'Terrace'};
+const UNIT_WORDS = {apt:'Apt','apt.':'Apt',apartment:'Apt',unit:'Unit',suite:'Suite',ste:'Suite','ste.':'Suite',floor:'Floor',fl:'Floor','fl.':'Floor'};
+
+function setFieldError(fg, msg) {
+  const grp = document.getElementById(fg);
+  if (!grp) return;
+  const err = grp.querySelector('.f-err');
+  if (err) err.textContent = msg;
+  grp.classList.add('has-error');
+}
+
+function clearFieldError(fg) {
+  const grp = document.getElementById(fg);
+  if (grp) grp.classList.remove('has-error');
+}
+
+function cleanPersonName(value) {
+  return value.trim().replace(/\s+/g,' ').split(/([ '-])/).map(part=>{
+    if (/^[A-Za-z]/.test(part)) return smartCapWord(part);
+    return part;
+  }).join('');
+}
+
+function cleanPlaceName(value) {
+  return value.trim().replace(/\s+/g,' ').split(/([ .'-])/).map(part=>{
+    if (/^[A-Za-z]/.test(part)) return smartCapWord(part);
+    return part;
+  }).join('');
+}
+
+function cleanAddress(value) {
+  return value.trim().replace(/\s+/g,' ').split(' ').map((part,i,arr)=>{
+    const lower = part.toLowerCase();
+    const clean = lower.replace(/[.,]$/,'');
+    const suffix = part.slice(clean.length);
+    if (STREET_WORDS[lower]) return STREET_WORDS[lower];
+    if (STREET_WORDS[clean]) return STREET_WORDS[clean] + suffix;
+    if (UNIT_WORDS[lower]) return UNIT_WORDS[lower];
+    if (UNIT_WORDS[clean]) return UNIT_WORDS[clean] + suffix;
+    if (i > 0 && UNIT_WORDS[arr[i-1].toLowerCase().replace(/[.,]$/,'')]) return part.toUpperCase();
+    if (/^\d+[a-z]$/i.test(part)) return part.toUpperCase();
+    return part.split(/([-'/.])/).map(tok=>/^[A-Za-z]/.test(tok)?smartCapWord(tok):tok).join('');
+  }).join(' ');
+}
+
+function smartCapWord(word) {
+  const lower = word.toLowerCase();
+  if (/^mc[a-z]{2,}/.test(lower)) return 'Mc' + lower.charAt(2).toUpperCase() + lower.slice(3);
+  if (/^mac[a-z]{2,}/.test(lower)) return 'Mac' + lower.charAt(3).toUpperCase() + lower.slice(4);
+  return lower.charAt(0).toUpperCase() + lower.slice(1);
+}
+
+function isProfessionalEmail(email) {
+  if (!/^[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,}$/i.test(email)) return false;
+  const local = email.split('@')[0].toLowerCase();
+  if (local.length < 3 || local.length > 40) return false;
+  if (/(.)\1{3,}/.test(local) || /[._%+-]{2,}/.test(local)) return false;
+  if (!/[a-z]/.test(local)) return false;
+  const words = local.split(/[^a-z0-9]+/).filter(Boolean);
+  if (words.some(w=>UNPRO_EMAIL_WORDS.includes(w))) return false;
+  return !UNPRO_EMAIL_WORDS.some(w=>local.includes(w) && (w.length > 3 || /^\d+$/.test(w)));
+}
+
+function fmtState(el) {
+  el.value = el.value.replace(/[^A-Za-z]/g,'').slice(0,2).toUpperCase();
+}
+
+function fmtZip(el) {
+  el.value = el.value.replace(/\D/g,'').slice(0,5);
+}
+
 const QUALITIES = ['Reliable','Detail-oriented','Hard worker','Fast learner','Self-motivated','Team player','Safety-conscious','Customer-focused','Problem solver','Physically fit / active'];
 
 function renderCareerForm() {
