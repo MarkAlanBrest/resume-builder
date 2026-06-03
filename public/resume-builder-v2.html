@@ -2333,18 +2333,277 @@ function moveToCertifications(btn) {
 }
 
 // ────────────────────────────────────────────────
-//  Certifications — stub
+//  Certifications
 // ────────────────────────────────────────────────
+let currentCertFormWrapper = null;
+let pendingCert = {};
+
 function startCertifications(btn) {
   btn.closest('.message').remove();
-  addAIMessage(`<p>Certifications form coming soon.</p>`);
+  addAIMessage(
+    `<p>Fill out the form below for your first certification or license. You can add more after.</p>`,
+    () => setTimeout(showCertForm, 400)
+  );
 }
 
 function skipCertifications(btn) {
   btn.closest('.message').remove();
   setSectionStatus('certifications', 'done');
   setSectionStatus('skills', 'active');
-  addAIMessage(`<p>Skills section coming soon.</p>`);
+  addAIMessage(
+    `<p>No certifications — noted. Now let's collect your skills.</p>`,
+    () => setTimeout(showSkillsForm, 400)
+  );
+}
+
+function showCertForm() {
+  currentStep = 'cert_form';
+  disableInput();
+
+  const formHtml = `
+    <div class="inline-form">
+      <div class="form-card-header"><span>📜</span> Certification / License</div>
+      <div class="form-card-body">
+
+        <div class="f-row single">
+          <div class="f-group" id="fg-certName">
+            <label>Certification or License Name *</label>
+            <input type="text" id="certName" placeholder="e.g. OSHA 10, EPA 608, CDL Class A, AWS Welding Cert">
+            <span class="f-err">Please enter the certification name.</span>
+          </div>
+        </div>
+
+        <div class="f-row">
+          <div class="f-group">
+            <label>Issuing Organization <span style="font-weight:400;text-transform:none;font-size:11px">(optional)</span></label>
+            <input type="text" id="certOrg" placeholder="e.g. OSHA, EPA, State of PA, AWS">
+          </div>
+          <div class="f-group">
+            <label>Year Issued <span style="font-weight:400;text-transform:none;font-size:11px">(optional)</span></label>
+            <input type="text" id="certYear" placeholder="2023" maxlength="4" inputmode="numeric">
+          </div>
+        </div>
+
+      </div>
+      <div class="form-card-footer">
+        <button class="btn btn-primary" onclick="submitCert()">Continue &rarr;</button>
+      </div>
+    </div>`;
+
+  const wrapper = document.createElement('div');
+  wrapper.className = 'message ai wide';
+  wrapper.innerHTML = formHtml;
+  currentCertFormWrapper = wrapper;
+  if (!sectionMarkers.certifications) sectionMarkers.certifications = wrapper;
+  document.getElementById('chatWindow').appendChild(wrapper);
+  scrollBottom();
+  setTimeout(() => document.getElementById('certName').focus(), 100);
+}
+
+function submitCert() {
+  const nameEl = document.getElementById('certName');
+  const fgName = document.getElementById('fg-certName');
+  if (!nameEl.value.trim()) { fgName.classList.add('has-error'); return; }
+  fgName.classList.remove('has-error');
+
+  pendingCert = {
+    name : nameEl.value.trim(),
+    org  : document.getElementById('certOrg').value.trim(),
+    year : document.getElementById('certYear').value.trim(),
+  };
+
+  if (currentCertFormWrapper) currentCertFormWrapper.style.display = 'none';
+
+  const loc  = [pendingCert.org, pendingCert.year].filter(Boolean).join(', ');
+  const cardHtml = `
+    <div class="approval-card">
+      <div class="approval-header"><span>✓</span> Certification — Review</div>
+      <div class="approval-body">
+        <div class="a-row"><span class="a-label">Name</span><span class="a-value">${escHtml(pendingCert.name)}</span></div>
+        ${loc ? `<div class="a-row"><span class="a-label">Details</span><span class="a-value">${escHtml(loc)}</span></div>` : ''}
+      </div>
+      <div class="approval-footer">
+        <button class="btn btn-ghost"   onclick="editCert()">Edit</button>
+        <button class="btn btn-confirm" onclick="confirmCert()">Looks Good ✓</button>
+      </div>
+    </div>`;
+
+  addAICard(cardHtml, true);
+}
+
+function editCert() {
+  removeLastAICard();
+  if (currentCertFormWrapper) { currentCertFormWrapper.style.display = ''; scrollBottom(); }
+}
+
+function confirmCert() {
+  removeLastAICard();
+  resumeData.certifications.push({ ...pendingCert });
+  pendingCert = {};
+
+  addAIMessage(`<p>Saved. Do you have another certification or license to add?</p>`, () => {
+    const wrapper = document.createElement('div');
+    wrapper.className = 'message ai';
+    wrapper.innerHTML = `
+      <div class="avatar ai-avatar">AI</div>
+      <div class="bubble">
+        <div class="inline-actions">
+          <button class="btn btn-primary" onclick="addAnotherCert(this)">Add Another</button>
+          <button class="btn btn-ghost"   onclick="moveToSkills(this)">No, Continue</button>
+        </div>
+      </div>`;
+    document.getElementById('chatWindow').appendChild(wrapper);
+    scrollBottom();
+  });
+}
+
+function addAnotherCert(btn) {
+  btn.closest('.message').remove();
+  addAIMessage(`<p>Fill out the form below for your next entry.</p>`,
+    () => setTimeout(showCertForm, 400)
+  );
+}
+
+function moveToSkills(btn) {
+  btn.closest('.message').remove();
+  setSectionStatus('certifications', 'done');
+  setSectionStatus('skills', 'active');
+  addAIMessage(`<p>Certifications saved. Now let's collect your skills.</p>`,
+    () => setTimeout(showSkillsForm, 400)
+  );
+}
+
+// ────────────────────────────────────────────────
+//  Skills & References (combined)
+// ────────────────────────────────────────────────
+let currentSkillsFormWrapper = null;
+
+function showSkillsForm() {
+  currentStep = 'skills_form';
+  disableInput();
+
+  const formHtml = `
+    <div class="inline-form">
+      <div class="form-card-header"><span>⚡</span> Skills &amp; References</div>
+      <div class="form-card-body">
+
+        <div class="f-row single">
+          <div class="f-group" id="fg-skillsDump">
+            <label>Your Skills *</label>
+            <textarea id="skillsDump" rows="5" placeholder="List everything you know how to do — tools, equipment, software, techniques, licenses, anything relevant to your trade. Don't worry about formatting. Example: MIG and TIG welding, blueprint reading, forklift certified, basic electrical wiring, OSHA 10, customer service, Microsoft Office..."></textarea>
+            <span class="f-err">Please list at least a few skills.</span>
+          </div>
+        </div>
+
+        <div style="background:var(--slate-50);border:1.5px solid var(--slate-200);border-radius:7px;padding:10px 14px;margin-bottom:12px;display:flex;align-items:center;gap:10px;">
+          <span style="font-size:18px">👥</span>
+          <div>
+            <div style="font-size:12px;font-weight:700;color:var(--slate-600);text-transform:uppercase;letter-spacing:0.5px">References</div>
+            <div style="font-size:13px;color:var(--slate-500);margin-top:2px">"Available upon request" will be added to your resume automatically.</div>
+          </div>
+        </div>
+
+      </div>
+      <div class="form-card-footer">
+        <button class="btn btn-primary" onclick="submitSkills()">Organize My Skills &rarr;</button>
+      </div>
+    </div>`;
+
+  const wrapper = document.createElement('div');
+  wrapper.className = 'message ai wide';
+  wrapper.innerHTML = formHtml;
+  currentSkillsFormWrapper = wrapper;
+  if (!sectionMarkers.skills) sectionMarkers.skills = wrapper;
+  document.getElementById('chatWindow').appendChild(wrapper);
+  scrollBottom();
+  setTimeout(() => document.getElementById('skillsDump').focus(), 100);
+}
+
+async function submitSkills() {
+  const el  = document.getElementById('skillsDump');
+  const fgS = document.getElementById('fg-skillsDump');
+
+  if (el.value.trim().length < 5) { fgS.classList.add('has-error'); return; }
+  fgS.classList.remove('has-error');
+
+  const raw = el.value.trim();
+  if (currentSkillsFormWrapper) currentSkillsFormWrapper.style.display = 'none';
+
+  addTypingIndicator();
+
+  const p = resumeData.personal;
+  const system = `You are organizing a skills list for a trade school student's resume.
+Student program: ${p.program}
+Their raw skills list: "${raw}"
+
+Clean up and organize these into a professional skills list for a resume.
+Rules:
+- Combine duplicates
+- Fix capitalization and spelling
+- Group related items where it makes sense (e.g. "Welding: MIG, TIG, Stick")
+- Remove anything not relevant to a resume
+- Keep it concise — each item should be short
+- Return ONLY a JSON array of strings. No explanation. Example: ["MIG/TIG Welding","Blueprint Reading","Forklift Certified (OSHA)"]`;
+
+  try {
+    const result = await callClaude(system, [
+      { role: 'user', content: 'Organize my skills list.' }
+    ]);
+
+    // Parse JSON, fall back to splitting by comma if needed
+    let skillsList;
+    try {
+      skillsList = JSON.parse(result.trim());
+    } catch {
+      skillsList = result.split('\n')
+        .map(l => l.replace(/^[•\-\*"\[,\]]+\s*/, '').replace(/[",\]]+$/, '').trim())
+        .filter(l => l.length > 1);
+    }
+
+    resumeData.skills          = skillsList;
+    resumeData.references      = 'Available upon request';
+    removeTypingIndicator();
+
+    const bulletItems = skillsList.map(s => `<li>${escHtml(s)}</li>`).join('');
+    const cardHtml = `
+      <div class="approval-card">
+        <div class="approval-header"><span>✓</span> Skills — Review</div>
+        <div class="approval-body">
+          <div class="a-row" style="display:block;padding-top:8px">
+            <ul class="bullet-list">${bulletItems}</ul>
+          </div>
+        </div>
+        <div class="approval-footer">
+          <button class="btn btn-ghost"   onclick="rewriteSkills()">Rewrite</button>
+          <button class="btn btn-confirm" onclick="confirmSkills()">Looks Good ✓</button>
+        </div>
+      </div>`;
+
+    addAIMessage(`<p>Here are your skills organized for the resume. Review the list and confirm or rewrite.</p>`,
+      () => setTimeout(() => addAICard(cardHtml, true), 300)
+    );
+
+  } catch (err) {
+    removeTypingIndicator();
+    if (currentSkillsFormWrapper) currentSkillsFormWrapper.style.display = '';
+    addAIMessage(`<p>Could not connect. Please try again.</p>`);
+  }
+}
+
+async function rewriteSkills() {
+  removeLastAICard();
+  if (currentSkillsFormWrapper) currentSkillsFormWrapper.style.display = '';
+  scrollBottom();
+  setTimeout(() => document.getElementById('skillsDump').focus(), 50);
+}
+
+function confirmSkills() {
+  removeLastAICard();
+  setSectionStatus('skills',     'done');
+  setSectionStatus('references', 'done');
+  setSectionStatus('template',   'active');
+  currentStep = 'template';
+  addAIMessage(`<p>Skills saved. References set to "Available upon request." All sections complete — template selection coming next.</p>`);
 }
 
 // ────────────────────────────────────────────────
