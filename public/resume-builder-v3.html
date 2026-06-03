@@ -104,6 +104,8 @@ html,body{height:100%;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Ro
 .check-opt input[type="checkbox"]{width:15px;height:15px;margin:0;flex-shrink:0;accent-color:var(--blue-700)}
 .check-opt-inline{display:flex;align-items:center;gap:6px;font-size:12px;font-weight:500;margin-top:6px;cursor:pointer}
 .check-opt-inline input{accent-color:var(--blue-700)}
+.two-panel-grid{display:grid;grid-template-columns:1fr 1fr;gap:16px}
+@media(max-width:700px){.two-panel-grid{grid-template-columns:1fr}}
 
 /* ── Buttons ── */
 .btn{padding:9px 20px;border-radius:7px;font-size:14px;font-weight:600;border:none;cursor:pointer;transition:all .15s;font-family:inherit;line-height:1}
@@ -295,8 +297,7 @@ const SECTIONS = [
   {key:'career',        label:'Career Profile',  icon:'🎯'},
   {key:'work',          label:'Work Experience', icon:'💼'},
   {key:'education',     label:'Education',       icon:'🎓'},
-  {key:'certifications',label:'Certifications',  icon:'📜'},
-  {key:'skills',        label:'Skills',          icon:'⚡'},
+  {key:'skills',        label:'Skills & Certs',  icon:'⚡'},
   {key:'template',      label:'Build Resume',    icon:'📄'},
 ];
 
@@ -306,8 +307,7 @@ const TIPS = {
   career:`Be specific about the type of job and employer you're targeting. Examples: "I want to work as an automotive technician at a dealership doing diagnostics and hands-on repairs." "I am looking for an entry-level HVAC position where I can install, maintain, and troubleshoot residential systems." "I want a welding job in manufacturing or construction where I can use MIG/TIG skills and read blueprints." Pick up to 3 qualities that describe you as a worker.`,
   work:`When describing your duties, just write naturally — don't worry about formatting. Mention specific tools, equipment, tasks, and anything you're proud of. I'll convert it into professional bullet points for you.`,
   education:`Your trade program has been pre-filled below. Confirm the details and add your graduation year. Then add your high school diploma or any other education you have.`,
-  certifications:`Include anything relevant — OSHA cards, EPA licenses, CDL, welding certifications, manufacturer training, first aid. Certifications stand out in the trades and show employers you're ready to work.`,
-  skills:`Write out every skill you have — tools, equipment, software, techniques, even things that seem obvious. Don't filter yourself. I'll clean it up, remove duplicates, and organize it professionally.`,
+  skills:`Write out every skill and certification you have — tools, equipment, software, techniques, licenses, OSHA/EPA/CDL cards, manufacturer training, anything relevant. I'll clean it up, remove duplicates, and organize it professionally.`,
   template:`Pick the style and color that matches the field you're entering. Classic and Executive are safe for any employer. Modern works well for technical roles. Bold makes a strong first impression.`,
 };
 
@@ -319,6 +319,16 @@ const WORK_TIP_EXAMPLES = [
   {match:/building|construction/i,examples:['Measured, cut, and assembled materials for construction and repair projects.','Used hand and power tools safely while supporting framing, drywall, or finish work.','Maintained job-site organization and followed directions from supervisors and crew leads.']},
   {match:/truck|cdl|diesel|heavy equipment/i,examples:['Completed pre-trip inspections and followed safety procedures for vehicles or equipment.','Assisted with maintenance, repair, and troubleshooting of diesel or heavy equipment systems.','Documented work performed and kept tools, parts, and work areas organized.']},
   {match:/machinist|cnc|manufacturing/i,examples:['Operated or assisted with CNC machines, measuring tools, and production equipment.','Read work instructions and checked parts for accuracy using calipers or gauges.','Maintained quality standards while keeping the workstation clean and organized.']},
+];
+
+const SKILL_CERT_TIP_EXAMPLES = [
+  {match:/automotive|motorcycle|power equipment/i,skills:['Diagnostics','Brake service','Oil changes','Tire rotation','Electrical testing','Shop safety'],certs:['ASE Student Certification','EPA Section 609','OSHA 10','Manufacturer training']},
+  {match:/hvac|refrigeration|climate|ac technology/i,skills:['Refrigerant handling','System troubleshooting','Electrical testing','Brazing','Preventive maintenance','Customer service'],certs:['EPA Section 608','OSHA 10','NATE Ready-to-Work','R-410A Safety']},
+  {match:/welding/i,skills:['MIG welding','TIG welding','Stick welding','Blueprint reading','Metal fabrication','Weld inspection'],certs:['AWS Certification','OSHA 10','Forklift Certification','First Aid/CPR']},
+  {match:/electrical|electro-mechanical|industrial maintenance/i,skills:['Electrical troubleshooting','Motor controls','PLC basics','Preventive maintenance','Blueprint/schematic reading','Lockout/tagout'],certs:['OSHA 10','NFPA 70E Awareness','First Aid/CPR','Forklift Certification']},
+  {match:/building|construction/i,skills:['Blueprint reading','Power tools','Framing','Drywall','Measuring and layout','Job-site safety'],certs:['OSHA 10','Forklift Certification','First Aid/CPR','Scissor Lift/Aerial Lift']},
+  {match:/truck|cdl|diesel|heavy equipment/i,skills:['Pre-trip inspections','Diesel maintenance','Hydraulics','Preventive maintenance','DOT safety','Equipment operation'],certs:['CDL Permit or License','OSHA 10','Forklift Certification','DOT Medical Card']},
+  {match:/machinist|cnc|manufacturing/i,skills:['CNC operation','Blueprint reading','Precision measurement','Calipers and micrometers','Machine setup','Quality control'],certs:['NIMS Certification','OSHA 10','Forklift Certification','Lean Manufacturing']},
 ];
 
 // ── State ────────────────────────────────────────
@@ -408,9 +418,6 @@ function showCenter(view, data) {
     education:      renderEduForm,
     eduApproval:    renderEduApproval,
     eduDone:        renderEduDone,
-    certifications: renderCertForm,
-    certApproval:   renderCertApproval,
-    certDone:       renderCertDone,
     skills:         renderSkillsForm,
     skillsApproval: renderSkillsApproval,
     template:       renderTemplateConfig,
@@ -427,7 +434,7 @@ function showSection(key) {
   else if (key === 'career') { showCenter('career'); sendTip('career'); }
   else if (key === 'work') { showCenter('work'); sendTip('work'); }
   else if (key === 'education') { showCenter('education'); sendTip('education'); }
-  else if (key === 'certifications') { showCenter('certifications'); sendTip('certifications'); }
+  else if (key === 'certifications') { showSection('skills'); }
   else if (key === 'skills') { showCenter('skills'); sendTip('skills'); }
   else if (key === 'template') { showCenter('template'); sendTip('template'); }
 }
@@ -1212,13 +1219,14 @@ function renderEduForm(prefill) {
     fieldOfStudy:p.program||'',
     city:campusLoc(p.campus||'').city,
     state:campusLoc(p.campus||'').state,
-    gradYear:'',isPrefilled:true
+    gradMonth:'',gradYear:'',isPrefilled:true
   } : null) || {};
-  const monthOpts = MONTHS.map(m=>`<option>${m}</option>`).join('');
+  const monthOpts = MONTHS.map(m=>`<option value="${m}" ${pf.gradMonth===m?'selected':''}>${m}</option>`).join('');
   const degOpts = ['','High School Diploma','GED / High School Equivalency',"Associate's Degree","Bachelor's Degree","Master's Degree",'Vocational Certificate','Other'].map(d=>`<option value="${d}" ${pf.degree===d?'selected':''}>${d||'— Select —'}</option>`).join('');
-  const banner = pf.isPrefilled ? `<div class="prefill-banner">ℹ️ Pre-filled from your program. Add your graduation year and confirm.</div>` : '';
+  const isInProgress = pf.gradYear === 'In Progress';
+  const banner = pf.isPrefilled ? `<div class="prefill-banner">ℹ️ Pre-filled from your program. Add your graduation month/year and confirm.</div>` : '';
   const saved = resumeData.education;
-  const savedList = saved.length ? `<div class="form-card" style="margin-bottom:16px"><div class="form-card-hdr">🎓 Saved Education (${saved.length})</div><div class="form-card-body" style="padding-bottom:14px">${saved.map(e=>`<div style="padding:8px 0;border-bottom:1px solid var(--slate-100)"><div style="font-size:14px;font-weight:600">${escHtml(e.degree)}${e.fieldOfStudy?' – '+escHtml(e.fieldOfStudy):''}</div><div style="font-size:12px;color:var(--slate-500)">${escHtml(e.school)} | ${escHtml(e.gradYear)}</div></div>`).join('')}</div></div>` : '';
+  const savedList = saved.length ? `<div class="form-card" style="margin-bottom:16px"><div class="form-card-hdr">🎓 Saved Education (${saved.length})</div><div class="form-card-body" style="padding-bottom:14px">${saved.map(e=>`<div style="padding:8px 0;border-bottom:1px solid var(--slate-100)"><div style="font-size:14px;font-weight:600">${escHtml(e.degree)}${e.fieldOfStudy?' – '+escHtml(e.fieldOfStudy):''}</div><div style="font-size:12px;color:var(--slate-500)">${escHtml(e.school)} | ${escHtml(eduGradDate(e))}</div></div>`).join('')}</div></div>` : '';
   return `<div class="section-hdr"><div class="section-hdr-icon">🎓</div><div><div class="section-hdr-title">Education</div><div class="section-hdr-sub">${saved.length?saved.length+' entr(ies) saved':'Schools, degrees, and credentials'}</div></div></div>
   ${savedList}
   <div class="form-card">
@@ -1226,11 +1234,14 @@ function renderEduForm(prefill) {
     <div class="form-card-body">
       ${banner}
       <div class="f-row single"><div class="f-group" id="fg-sch"><label>School Name *</label><input id="schoolName" value="${escHtml(pf.school||'')}" placeholder="School or institution name"><span class="f-err">Required</span></div></div>
-      <div class="f-row"><div class="f-group" id="fg-deg"><label>Degree / Diploma *</label><select id="degType">${degOpts}</select><span class="f-err">Required</span></div><div class="f-group"><label>Field of Study</label><input id="fieldStudy" value="${escHtml(pf.fieldOfStudy||'')}" placeholder="e.g. General Studies"></div></div>
-      <div class="f-row triple">
-        <div class="f-group"><label>City</label><input id="eduCity" value="${escHtml(pf.city||'')}" placeholder="City"></div>
-        <div class="f-group"><label>State</label><input id="eduState" value="${escHtml(pf.state||'')}" placeholder="PA" maxlength="2"></div>
-        <div class="f-group" id="fg-gy"><label>Graduation Year *</label><input id="gradYear" value="${escHtml(pf.gradYear||'')}" placeholder="2024" maxlength="4" inputmode="numeric"><label class="check-opt-inline"><input type="checkbox" id="inProg" onchange="toggleInProg(this)" ${pf.gradYear==='In Progress'?'checked':''}><span>In progress</span></label><span class="f-err">Required</span></div>
+      <div class="f-row"><div class="f-group" id="fg-deg"><label>Degree / Diploma *</label><select id="degType">${degOpts}</select><span class="f-err">Required</span></div><div class="f-group" id="fg-field"><label>Field of Study</label><input id="fieldStudy" value="${escHtml(pf.fieldOfStudy||'')}" placeholder="e.g. General Studies"><span class="f-err">Please use a professional field of study.</span></div></div>
+      <div class="f-row">
+        <div class="f-group" id="fg-ecity"><label>City</label><input id="eduCity" value="${escHtml(pf.city||'')}" placeholder="City"><span class="f-err">Enter a valid city or leave blank.</span></div>
+        <div class="f-group" id="fg-estate"><label>State</label><input id="eduState" value="${escHtml(pf.state||'')}" placeholder="PA" maxlength="2" oninput="fmtState(this)"><span class="f-err">Use a valid 2-letter state or leave blank.</span></div>
+      </div>
+      <div class="f-row">
+        <div class="f-group" id="fg-gm"><label>Graduation Month *</label><select id="gradMonth" ${isInProgress?'disabled':''}><option value="">Month</option>${monthOpts}</select><span class="f-err">Required</span></div>
+        <div class="f-group" id="fg-gy"><label>Graduation Year *</label><input id="gradYear" value="${isInProgress?'':escHtml(pf.gradYear||'')}" placeholder="2024" maxlength="4" inputmode="numeric" ${isInProgress?'disabled':''}><label class="check-opt-inline"><input type="checkbox" id="inProg" onchange="toggleInProg(this)" ${isInProgress?'checked':''}><span>In progress</span></label><span class="f-err">Required</span></div>
       </div>
     </div>
     <div class="form-card-footer">
@@ -1241,23 +1252,150 @@ function renderEduForm(prefill) {
 }
 
 function toggleInProg(cb) {
+  const mo = document.getElementById('gradMonth');
   const yr = document.getElementById('gradYear');
+  mo.disabled = cb.checked;
   yr.disabled = cb.checked;
-  if (cb.checked) yr.value = '';
+  if (cb.checked) { mo.value = ''; yr.value = ''; }
+  document.getElementById('fg-gm').classList.remove('has-error');
   document.getElementById('fg-gy').classList.remove('has-error');
 }
 
-function submitEdu() {
-  let valid=true;
-  const sch=document.getElementById('schoolName'),fgSch=document.getElementById('fg-sch');
-  if (!sch.value.trim()) { fgSch.classList.add('has-error'); valid=false; } else fgSch.classList.remove('has-error');
-  const deg=document.getElementById('degType'),fgDeg=document.getElementById('fg-deg');
-  if (!deg.value) { fgDeg.classList.add('has-error'); valid=false; } else fgDeg.classList.remove('has-error');
-  const ip=document.getElementById('inProg').checked,yr=document.getElementById('gradYear'),fgGy=document.getElementById('fg-gy');
-  if (!ip && !/^\d{4}$/.test(yr.value.trim())) { fgGy.classList.add('has-error'); valid=false; } else fgGy.classList.remove('has-error');
-  if (!valid) return;
-  pendingEdu = {school:sch.value.trim(),degree:deg.value,fieldOfStudy:document.getElementById('fieldStudy').value.trim(),city:document.getElementById('eduCity').value.trim(),state:document.getElementById('eduState').value.trim().toUpperCase(),gradYear:ip?'In Progress':yr.value.trim()};
-  showCenter('eduApproval');
+async function submitEdu() {
+  let edu = collectEduData();
+  applyEduData(edu);
+  if (!validateEduData(edu)) return;
+
+  const btn = document.querySelector('button[onclick="submitEdu()"]');
+  if (btn) { btn.disabled = true; btn.textContent = 'Checking...'; }
+  try {
+    const review = await reviewEduData(edu);
+    if (review?.corrections && Object.keys(review.corrections).length) {
+      edu = {...edu, ...review.corrections};
+      applyEduData(edu);
+    }
+    if (!validateEduData(edu)) return;
+    if (review?.issues?.length) {
+      review.issues.forEach(issue=>setFieldError(EDU_FIELD_GROUPS[issue.field], issue.message || 'Please revise this field.'));
+      addAIMsg('I found a few education items that need your review. Please fix the highlighted fields, then continue.');
+      return;
+    }
+    pendingEdu = edu;
+    showCenter('eduApproval');
+  } catch(e) {
+    addAIMsg('I could not complete the education spelling and professionalism review. Please check your connection or API key, then try again.');
+  } finally {
+    if (btn && currentSection === 'education') { btn.disabled = false; btn.textContent = 'Continue →'; }
+  }
+}
+
+const EDU_FIELD_GROUPS = {school:'fg-sch',degree:'fg-deg',fieldOfStudy:'fg-field',city:'fg-ecity',state:'fg-estate',gradMonth:'fg-gm',gradYear:'fg-gy'};
+
+function collectEduData() {
+  const inProgress = document.getElementById('inProg').checked;
+  return {
+    school:cleanSchoolName(document.getElementById('schoolName').value),
+    degree:document.getElementById('degType').value,
+    fieldOfStudy:cleanProgramName(document.getElementById('fieldStudy').value),
+    city:cleanPlaceName(document.getElementById('eduCity').value),
+    state:document.getElementById('eduState').value.trim().toUpperCase(),
+    gradMonth:inProgress?'':document.getElementById('gradMonth').value,
+    gradYear:inProgress?'In Progress':document.getElementById('gradYear').value.trim(),
+  };
+}
+
+function applyEduData(e) {
+  const pairs = [['schoolName',e.school],['degType',e.degree],['fieldStudy',e.fieldOfStudy],['eduCity',e.city],['eduState',e.state],['gradMonth',e.gradMonth],['gradYear',e.gradYear==='In Progress'?'':e.gradYear]];
+  pairs.forEach(([id,value])=>{ const el=document.getElementById(id); if(el) el.value=value || ''; });
+  const inProg = document.getElementById('inProg');
+  if (inProg) {
+    inProg.checked = e.gradYear === 'In Progress';
+    toggleInProg(inProg);
+  }
+}
+
+function validateEduData(e) {
+  let valid = true;
+  if (!isProfessionalSchoolName(e.school)) { setFieldError('fg-sch','Enter a real school or institution name.'); valid=false; } else clearFieldError('fg-sch');
+  if (!e.degree) { setFieldError('fg-deg','Select a degree or diploma.'); valid=false; } else clearFieldError('fg-deg');
+  if (e.fieldOfStudy && !isProfessionalProgramName(e.fieldOfStudy)) { setFieldError('fg-field','Use a professional field of study.'); valid=false; } else clearFieldError('fg-field');
+  if (e.city && !/^[A-Za-z][A-Za-z' .-]{1,49}$/.test(e.city)) { setFieldError('fg-ecity','Enter a valid city or leave blank.'); valid=false; } else clearFieldError('fg-ecity');
+  if (e.state && !US_STATES.has(e.state)) { setFieldError('fg-estate','Use a valid 2-letter state or leave blank.'); valid=false; } else clearFieldError('fg-estate');
+  if (e.gradYear !== 'In Progress' && !e.gradMonth) { setFieldError('fg-gm','Select a graduation month.'); valid=false; } else clearFieldError('fg-gm');
+  if (e.gradYear !== 'In Progress' && !isReasonableYear(e.gradYear)) { setFieldError('fg-gy','Enter a valid graduation year.'); valid=false; } else clearFieldError('fg-gy');
+  return valid;
+}
+
+async function reviewEduData(edu) {
+  if (!apiKey) throw new Error('AI review requires an API key.');
+  const sys = `You review a resume education entry. Fix clear spelling, capitalization, punctuation, and professional wording. Return ONLY JSON:
+{"corrections":{"school":"","degree":"","fieldOfStudy":"","city":"","state":"","gradMonth":"","gradYear":""},"issues":[{"field":"school","message":"Short user-facing instruction"}]}
+Rules:
+- Omit unchanged correction fields.
+- Keep the student's meaning. Do not invent schools, degrees, programs, dates, or locations.
+- Correct obvious school/program capitalization and spelling.
+- Do not change degree unless it clearly maps to the selected meaning.
+- City, state, and fieldOfStudy are optional; do not add an issue when those are blank.
+- If gradYear is "In Progress", do not require gradMonth.
+- If school, fieldOfStudy, city, state, gradMonth, or gradYear is fake, vague, inappropriate, incomplete, or cannot be fixed confidently, add an issue.
+- field must be one of: school,degree,fieldOfStudy,city,state,gradMonth,gradYear.`;
+  const raw = await callClaude(sys,[{role:'user',content:JSON.stringify(edu)}]);
+  const parsed = JSON.parse(raw.trim().replace(/^```(?:json)?\s*/i,'').replace(/\s*```$/,''));
+  const corrections = {};
+  if (parsed.corrections?.school) corrections.school = cleanSchoolName(parsed.corrections.school);
+  if (parsed.corrections?.degree) corrections.degree = parsed.corrections.degree.trim();
+  if (parsed.corrections?.fieldOfStudy) corrections.fieldOfStudy = cleanProgramName(parsed.corrections.fieldOfStudy);
+  if (parsed.corrections?.city) corrections.city = cleanPlaceName(parsed.corrections.city);
+  if (parsed.corrections?.state) corrections.state = parsed.corrections.state.trim().toUpperCase();
+  if (parsed.corrections?.gradMonth) {
+    const month = normalizeMonth(parsed.corrections.gradMonth);
+    if (month) corrections.gradMonth = month;
+  }
+  if (parsed.corrections?.gradYear) corrections.gradYear = parsed.corrections.gradYear.trim();
+  const reviewed = {...edu, ...corrections};
+  const issues = (parsed.issues || []).filter(issue=>{
+    if (!EDU_FIELD_GROUPS[issue.field] || !issue.message) return false;
+    if (['city','state','fieldOfStudy'].includes(issue.field) && !reviewed[issue.field]) return false;
+    if (reviewed.gradYear === 'In Progress' && ['gradMonth','gradYear'].includes(issue.field)) return false;
+    return true;
+  });
+  return {corrections, issues};
+}
+
+function cleanSchoolName(value) {
+  return value.trim().replace(/\s+/g,' ').split(/([ '&.,/-])/).map(part=>/^[A-Za-z]/.test(part)?smartCapWord(part):part).join('').replace(/\bCtc\b/g,'CTC').replace(/\bCdl\b/g,'CDL');
+}
+
+function cleanProgramName(value) {
+  return value.trim().replace(/\s+/g,' ').split(/([ /&-])/).map(part=>{
+    if (/^[A-Za-z]/.test(part)) {
+      const upper = part.toUpperCase();
+      if (['HVAC','CNC','CDL','GED'].includes(upper)) return upper;
+      return smartCapWord(part);
+    }
+    return part;
+  }).join('');
+}
+
+function isProfessionalSchoolName(value) {
+  if (!value || value.length < 2 || value.length > 90) return false;
+  if (!/[A-Za-z]{2,}/.test(value)) return false;
+  return !/\b(fake|none|n\/a|na|idk|unknown|whatever|stuff)\b/i.test(value);
+}
+
+function isProfessionalProgramName(value) {
+  if (!value || value.length > 90) return false;
+  if (!/[A-Za-z]{2,}/.test(value)) return false;
+  return !/\b(fake|none|n\/a|na|idk|unknown|whatever|stuff)\b/i.test(value);
+}
+
+function eduGradDate(e) {
+  return e.gradYear === 'In Progress' ? 'In Progress' : [e.gradMonth, e.gradYear].filter(Boolean).join(' ');
+}
+
+function normalizeMonth(value) {
+  const lower = String(value).trim().toLowerCase();
+  return MONTHS.find(m=>m.toLowerCase()===lower || m.toLowerCase().slice(0,3)===lower.slice(0,3)) || '';
 }
 
 function renderEduApproval() {
@@ -1269,7 +1407,7 @@ function renderEduApproval() {
     <div class="approval-body">
       <div class="a-row"><span class="a-label">School</span><span class="a-value">${escHtml(e.school)}${loc?' — '+escHtml(loc):''}</span></div>
       <div class="a-row"><span class="a-label">Degree</span><span class="a-value">${escHtml(e.degree)}${e.fieldOfStudy?' – '+escHtml(e.fieldOfStudy):''}</span></div>
-      <div class="a-row"><span class="a-label">Year</span><span class="a-value">${escHtml(e.gradYear)}</span></div>
+      <div class="a-row"><span class="a-label">Graduation</span><span class="a-value">${escHtml(eduGradDate(e))}</span></div>
     </div>
     <div class="approval-footer">
       <button class="btn btn-ghost" onclick="showSection('education')">Edit</button>
@@ -1298,8 +1436,8 @@ function renderEduDone() {
 
 function moveToCerts() {
   setStatus('education','done');
-  addAIMsg(`Education saved. Do you have any certifications or licenses? OSHA, EPA, CDL, welding certs — anything relevant to your trade.`);
-  showSection('certifications');
+  addAIMsg(`Education saved. Now let's collect your skills and certifications together.`);
+  showSection('skills');
 }
 
 // ── Certifications ────────────────────────────────
@@ -1365,13 +1503,24 @@ function moveToSkills() {
 // ── Skills & References ───────────────────────────
 function renderSkillsForm() {
   const existing = Array.isArray(resumeData.skills) && resumeData.skills.length ? resumeData.skills.join(', ') : '';
-  return `<div class="section-hdr"><div class="section-hdr-icon">⚡</div><div><div class="section-hdr-title">Skills &amp; References</div><div class="section-hdr-sub">Brain dump your skills — I'll organize them</div></div></div>
-  <div class="form-card">
-    <div class="form-card-hdr">⚡ Your Skills</div>
-    <div class="form-card-body">
-      <div class="f-row single"><div class="f-group" id="fg-sk"><label>List all your skills *</label>
-        <textarea id="skillsDump" rows="5" placeholder="List everything — tools, equipment, software, techniques, licenses, anything relevant. Example: MIG and TIG welding, blueprint reading, forklift certified, OSHA 10, Microsoft Office, customer service…">${escHtml(existing)}</textarea>
-        <span class="f-err">Please list at least a few skills.</span></div></div>
+  const existingCerts = resumeData.certifications.length ? resumeData.certifications.map(c=>[c.name,c.org,c.year].filter(Boolean).join(', ')).join('\n') : '';
+  return `<div class="section-hdr"><div class="section-hdr-icon">⚡</div><div><div class="section-hdr-title">Skills &amp; Certifications</div><div class="section-hdr-sub">List both sides — I'll organize them</div></div></div>
+  <div class="two-panel-grid">
+    <div class="form-card">
+      <div class="form-card-hdr">⚡ Skills</div>
+      <div class="form-card-body">
+        <div class="f-row single"><div class="f-group" id="fg-sk"><label>Skills *</label>
+          <textarea id="skillsDump" rows="9" placeholder="Examples: MIG welding, blueprint reading, forklift operation, customer service, Microsoft Office">${escHtml(existing)}</textarea>
+          <span class="f-err">Please list at least a few skills.</span></div></div>
+      </div>
+    </div>
+    <div class="form-card">
+      <div class="form-card-hdr">📜 Certifications</div>
+      <div class="form-card-body">
+        <div class="f-row single"><div class="f-group" id="fg-certlist"><label>Certifications / Licenses</label>
+          <textarea id="certsDump" rows="9" placeholder="Examples: OSHA 10&#10;EPA 608&#10;CDL Class A&#10;AWS Welding Certification">${escHtml(existingCerts)}</textarea>
+          <span class="f-err">Please list real certifications or leave this blank.</span></div></div>
+      </div>
     </div>
   </div>
   <div class="form-card">
@@ -1383,7 +1532,7 @@ function renderSkillsForm() {
       </div>
     </div>
     <div class="form-card-footer">
-      <button class="btn btn-primary" onclick="submitSkills()">Organize My Skills →</button>
+      <button class="btn btn-primary" onclick="submitSkills()">Organize Skills & Certs →</button>
     </div>
   </div>`;
 }
@@ -1392,37 +1541,59 @@ async function submitSkills() {
   const el=document.getElementById('skillsDump'),fg=document.getElementById('fg-sk');
   if (el.value.trim().length<5) { fg.classList.add('has-error'); return; }
   fg.classList.remove('has-error');
-  const raw = el.value.trim();
+  const certEl=document.getElementById('certsDump'),fgCert=document.getElementById('fg-certlist');
+  if (certEl.value.trim() && /\b(fake|none|idk|whatever)\b/i.test(certEl.value)) { fgCert.classList.add('has-error'); return; }
+  fgCert.classList.remove('has-error');
+  const rawSkills = el.value.trim();
+  const rawCerts = certEl.value.trim();
   const ci = document.getElementById('centerInner');
-  ci.innerHTML = `<div style="text-align:center;padding:60px 20px;color:var(--slate-500)"><div style="font-size:32px;margin-bottom:12px">⚡</div>Organizing your skills…</div>`;
+  ci.innerHTML = `<div style="text-align:center;padding:60px 20px;color:var(--slate-500)"><div style="font-size:32px;margin-bottom:12px">⚡</div>Organizing your skills and certifications…</div>`;
   const prog = resumeData.personal.program||'';
-  const sys = `Organize this skills list for a ${prog} student's resume. Clean up spelling, remove duplicates, group related items. Return ONLY a JSON array of strings. Example: ["MIG/TIG Welding","Blueprint Reading"]. Raw input: "${raw}"`;
+  const sys = `Organize skills and certifications for a ${prog} student's resume. Clean up spelling, capitalization, duplicates, and professional wording. Return ONLY JSON with this shape: {"skills":["MIG/TIG Welding","Blueprint Reading"],"certifications":[{"name":"OSHA 10","org":"OSHA","year":""}]}. Do not invent certifications. Raw skills: "${rawSkills}" Raw certifications: "${rawCerts || 'none'}"`;
   try {
     const result = await callClaude(sys,[{role:'user',content:'Organize my skills.'}]);
-    let list;
-    try { list=JSON.parse(result.trim().replace(/^```(?:json)?\s*/i,'').replace(/\s*```$/,'')); }
-    catch { list=result.split('\n').map(l=>l.replace(/^[•\-\*"\[,\]]+\s*/,'').replace(/[",\]]+$/,'').trim()).filter(l=>l.length>1); }
-    resumeData.skills = list;
+    let data;
+    try { data=JSON.parse(result.trim().replace(/^```(?:json)?\s*/i,'').replace(/\s*```$/,'')); }
+    catch { data={skills:result.split('\n').map(l=>l.replace(/^[•\-\*"\[,\]]+\s*/,'').replace(/[",\]]+$/,'').trim()).filter(l=>l.length>1),certifications:parseCertLines(rawCerts)}; }
+    resumeData.skills = Array.isArray(data.skills) ? data.skills.map(s=>String(s).trim()).filter(Boolean) : [];
+    resumeData.certifications = Array.isArray(data.certifications) ? data.certifications.map(cleanCertObject).filter(c=>c.name) : parseCertLines(rawCerts);
     resumeData.references = 'Available upon request';
     showCenter('skillsApproval');
   } catch(e) { addAIMsg('Could not connect — try again.'); showSection('skills'); }
 }
 
+function parseCertLines(raw) {
+  return raw.split(/\n|;/).map(line=>line.trim()).filter(Boolean).map(line=>({name:line,org:'',year:''}));
+}
+
+function cleanCertObject(cert) {
+  return {
+    name:cleanProgramName(String(cert.name||'')),
+    org:String(cert.org||'').trim().toUpperCase(),
+    year:/^\d{4}$/.test(String(cert.year||'').trim()) ? String(cert.year).trim() : ''
+  };
+}
+
 function renderSkillsApproval() {
   const items = resumeData.skills.map(s=>`<li>${escHtml(s)}</li>`).join('');
-  return `<div class="section-hdr"><div class="section-hdr-icon">⚡</div><div><div class="section-hdr-title">Skills</div><div class="section-hdr-sub">Review your organized skills list</div></div></div>
-  <div class="approval-card">
-    <div class="approval-hdr">✓ Skills — Review</div>
-    <div class="approval-body"><div class="a-row" style="display:block;padding-top:8px"><ul class="bullet-list">${items}</ul></div></div>
-    <div class="approval-footer">
-      <button class="btn btn-ghost" onclick="showSection('skills')">Rewrite</button>
-      <button class="btn btn-confirm" onclick="confirmSkills()">Looks Good ✓</button>
+  const certItems = resumeData.certifications.map(c=>`<li>${escHtml([c.name,c.org,c.year].filter(Boolean).join(', '))}</li>`).join('');
+  return `<div class="section-hdr"><div class="section-hdr-icon">⚡</div><div><div class="section-hdr-title">Skills &amp; Certifications</div><div class="section-hdr-sub">Review your organized lists</div></div></div>
+  <div class="two-panel-grid">
+    <div class="approval-card">
+      <div class="approval-hdr">✓ Skills — Review</div>
+      <div class="approval-body"><div class="a-row" style="display:block;padding-top:8px"><ul class="bullet-list">${items}</ul></div></div>
     </div>
-  </div>`;
+    <div class="approval-card">
+      <div class="approval-hdr">✓ Certifications — Review</div>
+      <div class="approval-body"><div class="a-row" style="display:block;padding-top:8px">${certItems?`<ul class="bullet-list">${certItems}</ul>`:'<span class="a-value">No certifications listed.</span>'}</div></div>
+    </div>
+  </div>
+  <div class="approval-card"><div class="approval-footer"><button class="btn btn-ghost" onclick="showSection('skills')">Edit</button><button class="btn btn-confirm" onclick="confirmSkills()">Looks Good ✓</button></div></div>`;
 }
 
 function confirmSkills() {
   setStatus('skills','done');
+  setStatus('certifications','done');
   addAIMsg(`Skills saved! All sections are complete. Now choose a style and color for your resume.`);
   showSection('template');
 }
@@ -1501,7 +1672,7 @@ function spacer(a=80){return new docx.Paragraph({spacing:{before:0,after:a}})}
 function bodyTxt(text,opts={}){return new docx.Paragraph({children:[new docx.TextRun({text,size:opts.size||20,color:opts.color||'2a2a2a',italics:opts.italic||false})],indent:opts.indent?{left:twip(opts.indent)}:undefined,spacing:{before:0,after:opts.after!==undefined?opts.after:30},alignment:opts.align||docx.AlignmentType.LEFT})}
 function bullet(text){return new docx.Paragraph({children:[new docx.TextRun({text:`•  ${text}`,size:19,color:'2a2a2a'})],indent:{left:twip(0.15)},spacing:{before:0,after:28}})}
 function jobBlock(job){const items=[],loc=[job.city,job.state].filter(Boolean).join(', '),end=job.current?'Present':[job.endMonth,job.endYear].filter(Boolean).join(' '),dates=`${[job.startMonth,job.startYear].filter(Boolean).join(' ')} – ${end}`;items.push(new docx.Paragraph({spacing:{before:100,after:0},children:[new docx.TextRun({text:job.jobTitle,bold:true,size:21,color:'1a1a1a'}),new docx.TextRun({text:`  •  ${job.employer}${loc?'  •  '+loc:''}`,size:20,color:'444444'})]}));items.push(new docx.Paragraph({spacing:{before:0,after:40},children:[new docx.TextRun({text:dates,italics:true,size:18,color:'777777'})]}));(job.bulletLines||[]).forEach(b=>items.push(bullet(b)));return items;}
-function eduBlock(edu){const loc=[edu.city,edu.state].filter(Boolean).join(', '),field=edu.fieldOfStudy?` – ${edu.fieldOfStudy}`:'';return new docx.Paragraph({spacing:{before:80,after:30},children:[new docx.TextRun({text:`${edu.degree}${field}`,bold:true,size:20,color:'1a1a1a'}),new docx.TextRun({text:`  •  ${edu.school}${loc?', '+loc:''}  •  ${edu.gradYear}`,size:20,color:'555555'})]})}
+function eduBlock(edu){const loc=[edu.city,edu.state].filter(Boolean).join(', '),field=edu.fieldOfStudy?` – ${edu.fieldOfStudy}`:'';return new docx.Paragraph({spacing:{before:80,after:30},children:[new docx.TextRun({text:`${edu.degree}${field}`,bold:true,size:20,color:'1a1a1a'}),new docx.TextRun({text:`  •  ${edu.school}${loc?', '+loc:''}  •  ${eduGradDate(edu)}`,size:20,color:'555555'})]})}
 
 async function buildDocument(data,style,color){const builders={classic:buildClassic,modern:buildModern,bold:buildBold,executive:buildExecutive};return (builders[style]||buildClassic)(data,color);}
 
@@ -1520,13 +1691,22 @@ async function generateCoverLetter(){const p=resumeData.personal,c=resumeData.ca
 async function callClaude(system,messages,raw=false){const body={model:'claude-sonnet-4-20250514',max_tokens:1024,messages};if(system)body.system=system;const res=await fetch('https://api.anthropic.com/v1/messages',{method:'POST',headers:{'Content-Type':'application/json','x-api-key':apiKey,'anthropic-version':'2023-06-01','anthropic-dangerous-direct-browser-access':'true'},body:JSON.stringify(body)});if(!res.ok){const e=await res.json().catch(()=>({}));throw new Error(e.error?.message||`API error ${res.status}`);}const data=await res.json();return data.content[0].text;}
 
 // ── Right Panel Chat ──────────────────────────────
-function sendTip(key){const tip=key==='work'?buildWorkTip():TIPS[key];if(tip)setTimeout(()=>addAIMsg(tip),300);}
+function sendTip(key){const tip=key==='work'?buildWorkTip():key==='skills'?buildSkillsCertsTip():TIPS[key];if(tip)setTimeout(()=>addAIMsg(tip),300);}
 
 function buildWorkTip() {
   const program = resumeData.personal.program || '';
   const found = WORK_TIP_EXAMPLES.find(item=>item.match.test(program));
   const examples = (found || {examples:['Helped customers, completed assigned tasks, and followed workplace procedures.','Used tools, equipment, or software safely to complete daily responsibilities.','Kept work areas organized and communicated with supervisors and team members.']}).examples;
   return `${TIPS.work} Since your program is ${program || 'not selected yet'}, here are examples you can model your duties after:\n\n${examples.map(e=>`• ${e}`).join('\n')}`;
+}
+
+function buildSkillsCertsTip() {
+  const program = resumeData.personal.program || '';
+  const found = SKILL_CERT_TIP_EXAMPLES.find(item=>item.match.test(program)) || {
+    skills:['Safety procedures','Hand and power tools','Customer service','Teamwork','Problem solving','Time management'],
+    certs:['OSHA 10','First Aid/CPR','Forklift Certification']
+  };
+  return `${TIPS.skills} Recommended examples for ${program || 'your program'}:\n\nSkills:\n${found.skills.map(s=>`• ${s}`).join('\n')}\n\nCertifications:\n${found.certs.map(c=>`• ${c}`).join('\n')}`;
 }
 
 function addAIMsg(text){const msgs=document.getElementById('chatMessages');if(!msgs)return;const div=document.createElement('div');div.className='chat-msg ai';div.innerHTML=`<div class="msg-lbl">AI</div><div class="msg-bubble">${escHtml(text).replace(/\*\*(.+?)\*\*/g,'<strong>$1</strong>').replace(/\n/g,'<br>')}</div>`;msgs.appendChild(div);msgs.scrollTop=msgs.scrollHeight;}
