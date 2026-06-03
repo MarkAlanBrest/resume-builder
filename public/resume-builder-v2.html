@@ -173,9 +173,10 @@
       scroll-behavior: smooth;
     }
 
-    .chat-window::-webkit-scrollbar { width: 5px; }
-    .chat-window::-webkit-scrollbar-track { background: transparent; }
-    .chat-window::-webkit-scrollbar-thumb { background: var(--slate-300); border-radius: 3px; }
+    .chat-window::-webkit-scrollbar { width: 10px; }
+    .chat-window::-webkit-scrollbar-track { background: var(--slate-200); border-left: 1px solid var(--slate-300); }
+    .chat-window::-webkit-scrollbar-thumb { background: var(--slate-400); border-radius: 0; border: 2px solid var(--slate-200); }
+    .chat-window::-webkit-scrollbar-thumb:hover { background: var(--slate-500); }
 
     /* ── Welcome placeholder ─────────────────────── */
     .setup-notice {
@@ -692,12 +693,128 @@
       flex-wrap: wrap;
     }
 
+    /* ── App Body (sidebar + chat column) ───────── */
+    .app {
+      max-width: 1060px !important;
+    }
+
+    .app-body {
+      flex: 1;
+      display: flex;
+      overflow: hidden;
+    }
+
+    .chat-column {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      overflow: hidden;
+    }
+
+    /* ── Sidebar ─────────────────────────────────── */
+    .sidebar {
+      width: 176px;
+      flex-shrink: 0;
+      background: var(--white);
+      border-right: 1px solid var(--slate-200);
+      padding: 18px 0 24px;
+      display: flex;
+      flex-direction: column;
+      gap: 2px;
+      overflow-y: auto;
+    }
+
+    .sidebar-heading {
+      font-size: 10px;
+      font-weight: 700;
+      color: var(--slate-400);
+      text-transform: uppercase;
+      letter-spacing: 0.9px;
+      padding: 0 14px 10px;
+    }
+
+    .sidebar-item {
+      display: flex;
+      align-items: center;
+      gap: 9px;
+      padding: 8px 14px;
+      cursor: default;
+      transition: background 0.15s;
+      position: relative;
+    }
+
+    .sidebar-item.s-clickable {
+      cursor: pointer;
+    }
+
+    .sidebar-item.s-clickable:hover {
+      background: var(--slate-50);
+    }
+
+    .sidebar-item.s-active {
+      background: var(--blue-50);
+    }
+
+    .sidebar-item.s-active::before {
+      content: '';
+      position: absolute;
+      left: 0; top: 4px; bottom: 4px;
+      width: 3px;
+      background: var(--blue-700);
+      border-radius: 0 3px 3px 0;
+    }
+
+    .sb-icon {
+      width: 30px;
+      height: 30px;
+      border-radius: 7px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 15px;
+      flex-shrink: 0;
+      transition: background 0.2s;
+    }
+
+    .s-pending .sb-icon  { background: var(--slate-100); filter: grayscale(1) opacity(0.5); }
+    .s-active  .sb-icon  { background: var(--blue-100); }
+    .s-done    .sb-icon  { background: #dcfce7; font-size: 13px; }
+
+    .sb-label {
+      font-size: 12px;
+      font-weight: 600;
+      line-height: 1.3;
+      transition: color 0.2s;
+    }
+
+    .s-pending .sb-label { color: var(--slate-400); }
+    .s-active  .sb-label { color: var(--blue-700); }
+    .s-done    .sb-label { color: var(--slate-600); }
+
+    .sb-check {
+      margin-left: auto;
+      font-size: 11px;
+      color: var(--green-600);
+      font-weight: 700;
+      display: none;
+    }
+
+    .s-done .sb-check { display: block; }
+
     /* ── Responsive ──────────────────────────────── */
-    @media (max-width: 600px) {
+    @media (max-width: 700px) {
+      .sidebar { width: 44px; }
+      .sb-label, .sidebar-heading, .sb-check { display: none; }
+      .sidebar-item { justify-content: center; padding: 8px 0; }
+      .sidebar-item.s-active::before { display: none; }
+    }
+
+    @media (max-width: 500px) {
       .app { height: 100dvh; }
+      .sidebar { display: none; }
       .f-row { grid-template-columns: 1fr; }
       .f-row.triple { grid-template-columns: 1fr 1fr; }
-      .api-key-area input[type="password"] { width: 140px; font-size: 12px; }
+      .api-key-area input[type="password"] { width: 130px; font-size: 12px; }
       .header-badge { display: none; }
     }
   </style>
@@ -729,36 +846,46 @@
     </div>
   </header>
 
-  <!-- ── Chat Window ──────────────────────────── -->
-  <main class="chat-window" id="chatWindow">
-    <div class="setup-notice" id="setupNotice">
-      <span class="notice-icon">🎓</span>
-      <h2>Welcome to AI Resume Builder</h2>
-      <p>Enter your API key above to begin. The AI will guide you step by step through building a professional resume tailored to your trade program.</p>
-    </div>
-  </main>
+  <div class="app-body">
 
-  <!-- ── Input Area ───────────────────────────── -->
-  <footer class="input-area">
-    <div class="input-inner">
-      <textarea
-        id="userInput"
-        class="user-input"
-        placeholder="Type your message…"
-        rows="1"
-        disabled
-        onkeydown="handleKeydown(event)"
-        oninput="autoResize(this)"
-      ></textarea>
-      <button class="send-btn" id="sendBtn" onclick="sendUserMessage()" disabled title="Send">
-        <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-          <path d="M2.01 21L23 12 2.01 3 2 10l15 2-15 2z"/>
-        </svg>
-      </button>
-    </div>
-  </footer>
+    <!-- ── Sidebar ────────────────────────────────── -->
+    <nav class="sidebar" id="sidebar"></nav>
 
-</div>
+    <div class="chat-column">
+
+      <!-- ── Chat Window ────────────────────────────── -->
+      <main class="chat-window" id="chatWindow">
+        <div class="setup-notice" id="setupNotice">
+          <span class="notice-icon">🎓</span>
+          <h2>Welcome to AI Resume Builder</h2>
+          <p>Enter your API key above to begin. The AI will guide you step by step through building a professional resume tailored to your trade program.</p>
+        </div>
+      </main>
+
+      <!-- ── Input Area ─────────────────────────────── -->
+      <footer class="input-area">
+        <div class="input-inner">
+          <textarea
+            id="userInput"
+            class="user-input"
+            placeholder="Type your message…"
+            rows="1"
+            disabled
+            onkeydown="handleKeydown(event)"
+            oninput="autoResize(this)"
+          ></textarea>
+          <button class="send-btn" id="sendBtn" onclick="sendUserMessage()" disabled title="Send">
+            <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+              <path d="M2.01 21L23 12 2.01 3 2 10l15 2-15 2z"/>
+            </svg>
+          </button>
+        </div>
+      </footer>
+
+    </div><!-- /.chat-column -->
+  </div><!-- /.app-body -->
+
+</div><!-- /.app -->
 
 <script>
 // ────────────────────────────────────────────────
@@ -794,6 +921,50 @@ const CAMPUSES = {
     "Commercial Truck Driving with CDL License"
   ]
 };
+
+// ────────────────────────────────────────────────
+//  Sidebar
+// ────────────────────────────────────────────────
+const SIDEBAR_SECTIONS = [
+  { key: 'personal',       label: 'Personal Info',   icon: '👤' },
+  { key: 'careerProfile',  label: 'Career Profile',  icon: '🎯' },
+  { key: 'workExperience', label: 'Work Experience', icon: '💼' },
+  { key: 'education',      label: 'Education',       icon: '🎓' },
+  { key: 'certifications', label: 'Certifications',  icon: '📜' },
+  { key: 'skills',         label: 'Skills',          icon: '⚡' },
+  { key: 'references',     label: 'References',      icon: '👥' },
+  { key: 'template',       label: 'Build Resume',    icon: '📄' },
+];
+
+const sectionStatus  = { personal:'pending', careerProfile:'pending', workExperience:'pending', education:'pending', certifications:'pending', skills:'pending', references:'pending', template:'pending' };
+const sectionMarkers = {};
+
+function setSectionStatus(key, status) {
+  sectionStatus[key] = status;
+  renderSidebar();
+}
+
+function renderSidebar() {
+  const el = document.getElementById('sidebar');
+  if (!el) return;
+  el.innerHTML = `<div class="sidebar-heading">Progress</div>` +
+    SIDEBAR_SECTIONS.map(s => {
+      const st        = sectionStatus[s.key];
+      const clickable = st === 'done' ? 's-clickable' : '';
+      const icon      = st === 'done' ? '✓' : s.icon;
+      const onclick   = st === 'done' ? `onclick="jumpToSection('${s.key}')"` : '';
+      return `<div class="sidebar-item s-${st} ${clickable}" ${onclick}>
+        <div class="sb-icon">${icon}</div>
+        <span class="sb-label">${s.label}</span>
+        <span class="sb-check">✓</span>
+      </div>`;
+    }).join('');
+}
+
+function jumpToSection(key) {
+  const el = sectionMarkers[key];
+  if (el) el.scrollIntoView({ behavior: 'smooth', block: 'start' });
+}
 
 // ────────────────────────────────────────────────
 //  Resume Data Store
@@ -867,7 +1038,9 @@ function startConversation() {
   const notice = document.getElementById('setupNotice');
   if (notice) notice.remove();
 
+  renderSidebar();
   currentStep = 'personal_info';
+  setSectionStatus('personal', 'active');
 
   addAIMessage(
     `<p>I'll be collecting information from you to build your resume. To get started, I need to learn about you — your background, work experience, skills, and goals — so I can put together a strong professional profile.</p>
@@ -1043,6 +1216,7 @@ function showPersonalInfoForm() {
   const wrapper = document.createElement('div');
   wrapper.className = 'message ai wide';
   wrapper.innerHTML = formHtml;
+  sectionMarkers.personal = wrapper;
   document.getElementById('chatWindow').appendChild(wrapper);
   scrollBottom();
 
@@ -1177,6 +1351,9 @@ function confirmPersonalInfo() {
   const p = resumeData.personal;
   currentStep = 'career_profile';
 
+  setSectionStatus('personal', 'done');
+  setSectionStatus('careerProfile', 'active');
+
   addUserMessage(`${p.firstName} ${p.lastName} — ${p.program}`);
 
   addAIMessage(
@@ -1215,29 +1392,11 @@ function showCareerProfileForm() {
       </div>
       <div class="form-card-body">
 
-        <div class="f-row">
-          <div class="f-group" id="fg-jobTitle">
-            <label>Target Job Title *</label>
-            <input type="text" id="jobTitle" placeholder="e.g. Automotive Technician, Electrician's Apprentice">
-            <span class="f-err">Please enter the job title you are targeting.</span>
-          </div>
-          <div class="f-group" id="fg-employerType">
-            <label>Type of Employer *</label>
-            <input type="text" id="employerType" placeholder="e.g. Auto dealership, HVAC contractor, repair shop">
-            <span class="f-err">Please enter the type of employer you are targeting.</span>
-          </div>
-        </div>
-
         <div class="f-row single">
-          <div class="f-group" id="fg-expLevel">
-            <label>Experience Level *</label>
-            <select id="expLevel">
-              <option value="">— Select —</option>
-              <option value="Recent/upcoming graduate seeking an entry-level position">Recent / upcoming graduate — entry-level</option>
-              <option value="Candidate with 1–2 years of related experience">Have 1–2 years of related experience</option>
-              <option value="Experienced professional with 3 or more years in the field">Have 3+ years of experience</option>
-            </select>
-            <span class="f-err">Please select your experience level.</span>
+          <div class="f-group" id="fg-workSearch">
+            <label>What type of work are you looking for? *</label>
+            <textarea id="workSearch" rows="3" placeholder="Describe the kind of job and employer you're hoping to find after graduation. Example: I want to work as an automotive technician at a dealership or independent shop, doing diagnostics and hands-on repairs."></textarea>
+            <span class="f-err">Please describe the type of work you are looking for.</span>
           </div>
         </div>
 
@@ -1268,7 +1427,8 @@ function showCareerProfileForm() {
   document.getElementById('chatWindow').appendChild(wrapper);
   scrollBottom();
 
-  setTimeout(() => document.getElementById('jobTitle').focus(), 100);
+  sectionMarkers.careerProfile = wrapper;
+  setTimeout(() => document.getElementById('workSearch').focus(), 100);
 }
 
 function enforceQualityLimit(cb) {
@@ -1277,19 +1437,15 @@ function enforceQualityLimit(cb) {
 }
 
 function submitCareerProfile() {
-  const checks = [
-    { id: 'jobTitle',      fg: 'fg-jobTitle',      test: v => v.length > 0 },
-    { id: 'employerType',  fg: 'fg-employerType',  test: v => v.length > 0 },
-    { id: 'expLevel',      fg: 'fg-expLevel',       test: v => v !== '' },
-  ];
+  const wsEl  = document.getElementById('workSearch');
+  const fgWS  = document.getElementById('fg-workSearch');
+  let valid   = true;
 
-  let valid = true;
-  checks.forEach(({ id, fg, test }) => {
-    const el  = document.getElementById(id);
-    const grp = document.getElementById(fg);
-    if (!test(el.value.trim())) { grp.classList.add('has-error'); valid = false; }
-    else                        { grp.classList.remove('has-error'); }
-  });
+  if (!wsEl.value.trim() || wsEl.value.trim().length < 10) {
+    fgWS.classList.add('has-error'); valid = false;
+  } else {
+    fgWS.classList.remove('has-error');
+  }
 
   const selectedQualities = Array.from(document.querySelectorAll('input[name="quality"]:checked')).map(cb => cb.value);
   const fgQ = document.getElementById('fg-qualities');
@@ -1299,11 +1455,9 @@ function submitCareerProfile() {
   if (!valid) return;
 
   resumeData.careerContext = {
-    jobTitle      : document.getElementById('jobTitle').value.trim(),
-    employerType  : document.getElementById('employerType').value.trim(),
-    expLevel      : document.getElementById('expLevel').value,
-    qualities     : selectedQualities,
-    standout      : document.getElementById('standout').value.trim(),
+    workSearch : wsEl.value.trim(),
+    qualities  : selectedQualities,
+    standout   : document.getElementById('standout').value.trim(),
   };
 
   document.getElementById('careerProfileForm').style.display = 'none';
@@ -1314,10 +1468,8 @@ function showCareerProfileApproval() {
   const c = resumeData.careerContext;
 
   const rows = [
-    ['Target Role',   escHtml(c.jobTitle)],
-    ['Employer Type', escHtml(c.employerType)],
-    ['Experience',    escHtml(c.expLevel)],
-    ['Qualities',     escHtml(c.qualities.join(', '))],
+    ['Looking For', escHtml(c.workSearch)],
+    ['Qualities',   escHtml(c.qualities.join(', '))],
   ];
 
   if (c.standout) rows.push(['Stands Out', escHtml(c.standout)]);
@@ -1350,22 +1502,19 @@ async function confirmCareerProfile() {
   const c = resumeData.careerContext;
   const p = resumeData.personal;
 
-  addUserMessage([c.jobTitle, c.employerType, c.qualities.join(', ')].filter(Boolean).join(' · '));
+  setSectionStatus('careerProfile', 'done');
+  setSectionStatus('workExperience', 'active');
+  addUserMessage([c.workSearch, c.qualities.join(', ')].filter(Boolean).join(' · ').slice(0, 80) + '…');
 
   addTypingIndicator();
   disableInput();
-
-  const qualitiesList = c.qualities.join(', ');
-  const standoutLine  = c.standout ? ` ${c.standout}` : '';
 
   const system = `You are a resume-building assistant. Write a resume objective statement for a trade school student.
 
 Student: ${p.firstName} ${p.lastName}
 Program: ${p.program}
-Target job: ${c.jobTitle}
-Target employer: ${c.employerType}
-Experience level: ${c.expLevel}
-Key qualities: ${qualitiesList}
+What they are looking for: ${c.workSearch}
+Key work qualities: ${c.qualities.join(', ')}
 Additional context: ${c.standout || 'none'}
 
 Write exactly 2–3 sentences. Format as plain text — no bullet points, no labels. Be direct and professional. Do not use the phrase "dynamic" or "passionate". Do not add any explanation — return only the objective text.`;
@@ -1414,10 +1563,8 @@ async function rewriteObjective() {
 
 Student: ${p.firstName} ${p.lastName}
 Program: ${p.program}
-Target job: ${c.jobTitle}
-Target employer: ${c.employerType}
-Experience level: ${c.expLevel}
-Key qualities: ${c.qualities.join(', ')}
+What they are looking for: ${c.workSearch}
+Key work qualities: ${c.qualities.join(', ')}
 Additional context: ${c.standout || 'none'}
 
 Write exactly 2–3 sentences. Plain text only. Professional and direct. Do not use "dynamic" or "passionate". Return only the objective text.`;
@@ -1655,6 +1802,7 @@ function showWorkExperienceForm() {
   wrapper.className = 'message ai wide';
   wrapper.innerHTML = formHtml;
   currentWorkFormWrapper = wrapper;
+  if (!sectionMarkers.workExperience) sectionMarkers.workExperience = wrapper;
   document.getElementById('chatWindow').appendChild(wrapper);
   scrollBottom();
   setTimeout(() => document.getElementById('employer').focus(), 100);
@@ -1890,6 +2038,8 @@ function addAnotherJob(btn) {
 function moveToEducation(btn) {
   btn.closest('.message').remove();
   currentStep = 'education';
+  setSectionStatus('workExperience', 'done');
+  setSectionStatus('education', 'active');
   addAIMessage(
     `<p>Work history complete. Now let's add your education.</p>`,
     () => setTimeout(showEducationForm, 400)
