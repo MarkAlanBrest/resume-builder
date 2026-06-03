@@ -1,0 +1,1220 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>AI Resume Builder</title>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --blue-900: #1e3a8a;
+      --blue-800: #1e40af;
+      --blue-700: #1d4ed8;
+      --slate-900: #0f172a;
+      --slate-700: #334155;
+      --slate-600: #475569;
+      --slate-500: #64748b;
+      --slate-400: #94a3b8;
+      --slate-300: #cbd5e1;
+      --slate-200: #e2e8f0;
+      --slate-100: #f1f5f9;
+      --slate-50:  #f8fafc;
+      --green-600: #16a34a;
+      --green-700: #15803d;
+      --red-600:   #dc2626;
+      --white: #ffffff;
+    }
+
+    html, body {
+      height: 100%;
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', sans-serif;
+      background: linear-gradient(135deg, #cbd5e1 0%, #64748b 100%);
+      background-attachment: fixed;
+    }
+
+    /* ── App Shell ─────────────────────────────── */
+    .app {
+      display: flex;
+      flex-direction: column;
+      height: 100vh;
+      max-width: 840px;
+      margin: 0 auto;
+      box-shadow: 0 0 60px rgba(0,0,0,0.3);
+    }
+
+    /* ── Header ──────────────────────────────────── */
+    .app-header {
+      flex-shrink: 0;
+      background: var(--slate-900);
+      padding: 0 20px;
+      height: 62px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 16px;
+    }
+
+    .header-brand {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      white-space: nowrap;
+    }
+
+    .header-icon { font-size: 22px; }
+
+    .header-title {
+      font-size: 17px;
+      font-weight: 700;
+      color: var(--white);
+      letter-spacing: -0.2px;
+    }
+
+    .header-badge {
+      font-size: 11px;
+      font-weight: 600;
+      color: var(--slate-400);
+      background: rgba(255,255,255,0.08);
+      padding: 2px 8px;
+      border-radius: 20px;
+      letter-spacing: 0.5px;
+      text-transform: uppercase;
+    }
+
+    /* API key input in header */
+    .api-key-area {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      flex-shrink: 0;
+    }
+
+    .api-key-area input[type="password"] {
+      background: rgba(255,255,255,0.1);
+      border: 1px solid rgba(255,255,255,0.18);
+      color: var(--white);
+      padding: 7px 14px;
+      border-radius: 20px;
+      font-size: 13px;
+      width: 210px;
+      outline: none;
+      transition: border-color 0.2s, background 0.2s;
+      font-family: inherit;
+    }
+
+    .api-key-area input[type="password"]::placeholder { color: var(--slate-400); }
+
+    .api-key-area input[type="password"]:focus {
+      border-color: rgba(255,255,255,0.4);
+      background: rgba(255,255,255,0.15);
+    }
+
+    .api-key-area input[type="password"].shake {
+      animation: shake 0.35s ease;
+    }
+
+    @keyframes shake {
+      0%,100% { transform: translateX(0); }
+      20%      { transform: translateX(-6px); }
+      40%      { transform: translateX(6px); }
+      60%      { transform: translateX(-4px); }
+      80%      { transform: translateX(4px); }
+    }
+
+    .btn-activate {
+      background: var(--blue-700);
+      color: var(--white);
+      border: none;
+      padding: 7px 16px;
+      border-radius: 20px;
+      font-size: 13px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: background 0.15s;
+      white-space: nowrap;
+      font-family: inherit;
+    }
+
+    .btn-activate:hover { background: var(--blue-800); }
+
+    .key-ready {
+      display: none;
+      align-items: center;
+      gap: 7px;
+      color: #86efac;
+      font-size: 13px;
+      font-weight: 600;
+      white-space: nowrap;
+    }
+
+    .key-dot {
+      width: 8px;
+      height: 8px;
+      background: #4ade80;
+      border-radius: 50%;
+      animation: pulse 2.2s ease-in-out infinite;
+    }
+
+    @keyframes pulse {
+      0%,100% { opacity: 1; transform: scale(1); }
+      50%      { opacity: 0.4; transform: scale(0.85); }
+    }
+
+    /* ── Chat Window ─────────────────────────────── */
+    .chat-window {
+      flex: 1;
+      overflow-y: auto;
+      padding: 24px 20px 16px;
+      display: flex;
+      flex-direction: column;
+      gap: 14px;
+      background: rgba(241, 245, 249, 0.9);
+      scroll-behavior: smooth;
+    }
+
+    .chat-window::-webkit-scrollbar { width: 5px; }
+    .chat-window::-webkit-scrollbar-track { background: transparent; }
+    .chat-window::-webkit-scrollbar-thumb { background: var(--slate-300); border-radius: 3px; }
+
+    /* ── Welcome placeholder ─────────────────────── */
+    .setup-notice {
+      background: rgba(255,255,255,0.92);
+      border: 2px dashed var(--slate-300);
+      border-radius: 14px;
+      padding: 36px 28px;
+      text-align: center;
+      margin: auto;
+      max-width: 400px;
+      width: 100%;
+    }
+
+    .setup-notice .notice-icon {
+      font-size: 42px;
+      display: block;
+      margin-bottom: 14px;
+    }
+
+    .setup-notice h2 {
+      font-size: 20px;
+      color: var(--slate-900);
+      margin-bottom: 8px;
+    }
+
+    .setup-notice p {
+      font-size: 14px;
+      color: var(--slate-500);
+      line-height: 1.55;
+    }
+
+    /* ── Message Bubbles ─────────────────────────── */
+    .message {
+      display: flex;
+      align-items: flex-start;
+      gap: 10px;
+      max-width: 86%;
+      animation: fadeUp 0.28s ease-out;
+    }
+
+    @keyframes fadeUp {
+      from { opacity: 0; transform: translateY(8px); }
+      to   { opacity: 1; transform: translateY(0); }
+    }
+
+    .message.ai   { align-self: flex-start; }
+    .message.user { align-self: flex-end; flex-direction: row-reverse; }
+    .message.wide { max-width: 96%; }
+
+    .avatar {
+      width: 34px;
+      height: 34px;
+      border-radius: 50%;
+      flex-shrink: 0;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 12px;
+      font-weight: 700;
+      letter-spacing: -0.5px;
+      margin-top: 2px;
+    }
+
+    .ai-avatar   { background: var(--blue-900); color: var(--white); }
+    .user-avatar { background: var(--slate-600); color: var(--white); }
+
+    .bubble {
+      padding: 11px 15px;
+      border-radius: 14px;
+      line-height: 1.55;
+      font-size: 15px;
+    }
+
+    .message.ai .bubble {
+      background: var(--white);
+      color: var(--slate-900);
+      border-top-left-radius: 4px;
+      box-shadow: 0 1px 4px rgba(0,0,0,0.09);
+    }
+
+    .message.user .bubble {
+      background: var(--blue-900);
+      color: var(--white);
+      border-top-right-radius: 4px;
+    }
+
+    .bubble p + p { margin-top: 8px; }
+
+    /* ── Typing Indicator ────────────────────────── */
+    .typing-indicator {
+      display: flex;
+      gap: 5px;
+      padding: 6px 4px;
+      align-items: center;
+    }
+
+    .t-dot {
+      width: 7px;
+      height: 7px;
+      background: var(--slate-400);
+      border-radius: 50%;
+      animation: typingBounce 1.1s ease-in-out infinite;
+    }
+
+    .t-dot:nth-child(2) { animation-delay: 0.18s; }
+    .t-dot:nth-child(3) { animation-delay: 0.36s; }
+
+    @keyframes typingBounce {
+      0%,60%,100% { transform: translateY(0); }
+      30%          { transform: translateY(-7px); }
+    }
+
+    /* ── Inline Form Card ────────────────────────── */
+    .inline-form {
+      background: var(--white);
+      border-radius: 12px;
+      box-shadow: 0 2px 12px rgba(0,0,0,0.1);
+      overflow: hidden;
+      width: 100%;
+    }
+
+    .form-card-header {
+      background: var(--blue-900);
+      color: var(--white);
+      padding: 13px 18px;
+      font-size: 14px;
+      font-weight: 700;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .form-card-body {
+      padding: 18px 18px 6px;
+    }
+
+    .f-row {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 12px;
+      margin-bottom: 12px;
+    }
+
+    .f-row.triple { grid-template-columns: 2fr 1fr 1fr; }
+    .f-row.single { grid-template-columns: 1fr; }
+
+    .f-group {
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+    }
+
+    .f-group label {
+      font-size: 11px;
+      font-weight: 700;
+      color: var(--slate-500);
+      text-transform: uppercase;
+      letter-spacing: 0.6px;
+    }
+
+    .f-group input,
+    .f-group select {
+      border: 1.5px solid var(--slate-200);
+      border-radius: 7px;
+      padding: 9px 11px;
+      font-size: 14px;
+      color: var(--slate-900);
+      background: var(--slate-50);
+      transition: border-color 0.18s, box-shadow 0.18s, background 0.18s;
+      outline: none;
+      width: 100%;
+      font-family: inherit;
+      margin: 0;
+    }
+
+    .f-group input:focus,
+    .f-group select:focus {
+      border-color: var(--blue-700);
+      box-shadow: 0 0 0 3px rgba(29,78,216,0.12);
+      background: var(--white);
+    }
+
+    .f-group select:disabled {
+      opacity: 0.5;
+      cursor: not-allowed;
+    }
+
+    .f-err {
+      font-size: 11px;
+      color: var(--red-600);
+      display: none;
+      margin-top: 1px;
+    }
+
+    .f-group.has-error input,
+    .f-group.has-error select {
+      border-color: var(--red-600);
+      box-shadow: 0 0 0 3px rgba(220,38,38,0.1);
+    }
+
+    .f-group.has-error .f-err { display: block; }
+
+    .form-card-footer {
+      padding: 12px 18px 14px;
+      display: flex;
+      justify-content: flex-end;
+      gap: 8px;
+      background: var(--slate-50);
+      border-top: 1px solid var(--slate-100);
+    }
+
+    /* ── Approval Card ───────────────────────────── */
+    .approval-card {
+      background: var(--white);
+      border-radius: 12px;
+      box-shadow: 0 2px 12px rgba(0,0,0,0.1);
+      overflow: hidden;
+      width: 100%;
+    }
+
+    .approval-header {
+      background: var(--green-600);
+      color: var(--white);
+      padding: 13px 18px;
+      font-size: 14px;
+      font-weight: 700;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .approval-body { padding: 6px 18px 2px; }
+
+    .a-row {
+      display: flex;
+      align-items: baseline;
+      gap: 10px;
+      padding: 8px 0;
+      border-bottom: 1px solid var(--slate-100);
+    }
+
+    .a-row:last-child { border-bottom: none; }
+
+    .a-label {
+      font-size: 11px;
+      font-weight: 700;
+      color: var(--slate-400);
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      min-width: 80px;
+      flex-shrink: 0;
+    }
+
+    .a-value {
+      font-size: 14px;
+      color: var(--slate-800);
+    }
+
+    .approval-footer {
+      padding: 12px 18px 14px;
+      display: flex;
+      justify-content: flex-end;
+      gap: 8px;
+      background: var(--slate-50);
+      border-top: 1px solid var(--slate-100);
+    }
+
+    /* ── Buttons ─────────────────────────────────── */
+    .btn {
+      padding: 9px 20px;
+      border-radius: 7px;
+      font-size: 14px;
+      font-weight: 600;
+      border: none;
+      cursor: pointer;
+      transition: all 0.15s;
+      font-family: inherit;
+      line-height: 1;
+    }
+
+    .btn-primary {
+      background: var(--blue-900);
+      color: var(--white);
+    }
+
+    .btn-primary:hover {
+      background: var(--blue-800);
+      transform: translateY(-1px);
+      box-shadow: 0 4px 14px rgba(30,58,138,0.28);
+    }
+
+    .btn-ghost {
+      background: var(--white);
+      color: var(--slate-600);
+      border: 1.5px solid var(--slate-200);
+    }
+
+    .btn-ghost:hover {
+      border-color: var(--slate-400);
+      background: var(--slate-50);
+    }
+
+    .btn-confirm {
+      background: var(--green-600);
+      color: var(--white);
+    }
+
+    .btn-confirm:hover {
+      background: var(--green-700);
+      transform: translateY(-1px);
+      box-shadow: 0 4px 14px rgba(22,163,74,0.28);
+    }
+
+    /* ── Input Area ──────────────────────────────── */
+    .input-area {
+      flex-shrink: 0;
+      background: var(--white);
+      border-top: 1px solid var(--slate-200);
+      padding: 12px 16px;
+      box-shadow: 0 -2px 10px rgba(0,0,0,0.05);
+    }
+
+    .input-inner {
+      display: flex;
+      align-items: flex-end;
+      gap: 10px;
+    }
+
+    .user-input {
+      flex: 1;
+      border: 1.5px solid var(--slate-200);
+      border-radius: 22px;
+      padding: 10px 16px;
+      font-size: 15px;
+      color: var(--slate-900);
+      resize: none;
+      min-height: 44px;
+      max-height: 120px;
+      line-height: 1.45;
+      overflow-y: auto;
+      outline: none;
+      transition: border-color 0.18s;
+      font-family: inherit;
+      background: var(--white);
+    }
+
+    .user-input:focus { border-color: var(--blue-700); }
+
+    .user-input:disabled {
+      background: var(--slate-50);
+      color: var(--slate-400);
+      cursor: not-allowed;
+    }
+
+    .user-input::placeholder { color: var(--slate-400); }
+
+    .send-btn {
+      width: 44px;
+      height: 44px;
+      border-radius: 50%;
+      background: var(--blue-900);
+      border: none;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-shrink: 0;
+      transition: all 0.15s;
+      padding: 0;
+    }
+
+    .send-btn:hover:not(:disabled) {
+      background: var(--blue-800);
+      transform: scale(1.06);
+    }
+
+    .send-btn:disabled {
+      background: var(--slate-300);
+      cursor: not-allowed;
+    }
+
+    .send-btn svg {
+      width: 18px;
+      height: 18px;
+      fill: var(--white);
+      margin-left: 2px;
+    }
+
+    /* ── Responsive ──────────────────────────────── */
+    @media (max-width: 600px) {
+      .app { height: 100dvh; }
+      .f-row { grid-template-columns: 1fr; }
+      .f-row.triple { grid-template-columns: 1fr 1fr; }
+      .api-key-area input[type="password"] { width: 140px; font-size: 12px; }
+      .header-badge { display: none; }
+    }
+  </style>
+</head>
+<body>
+<div class="app">
+
+  <!-- ── Header ──────────────────────────────── -->
+  <header class="app-header">
+    <div class="header-brand">
+      <span class="header-icon">✨</span>
+      <span class="header-title">Resume Builder</span>
+      <span class="header-badge">AI&nbsp;Powered</span>
+    </div>
+
+    <div class="api-key-area" id="apiKeyArea">
+      <input
+        type="password"
+        id="apiKeyInput"
+        placeholder="Paste API key to begin…"
+        onkeydown="if(event.key==='Enter') activateKey()"
+      >
+      <button class="btn-activate" onclick="activateKey()">Activate</button>
+    </div>
+
+    <div class="key-ready" id="keyReady">
+      <span class="key-dot"></span>
+      AI Connected
+    </div>
+  </header>
+
+  <!-- ── Chat Window ──────────────────────────── -->
+  <main class="chat-window" id="chatWindow">
+    <div class="setup-notice" id="setupNotice">
+      <span class="notice-icon">🎓</span>
+      <h2>Welcome to AI Resume Builder</h2>
+      <p>Enter your API key above to begin. The AI will guide you step by step through building a professional resume tailored to your trade program.</p>
+    </div>
+  </main>
+
+  <!-- ── Input Area ───────────────────────────── -->
+  <footer class="input-area">
+    <div class="input-inner">
+      <textarea
+        id="userInput"
+        class="user-input"
+        placeholder="Type your message…"
+        rows="1"
+        disabled
+        onkeydown="handleKeydown(event)"
+        oninput="autoResize(this)"
+      ></textarea>
+      <button class="send-btn" id="sendBtn" onclick="sendUserMessage()" disabled title="Send">
+        <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+          <path d="M2.01 21L23 12 2.01 3 2 10l15 2-15 2z"/>
+        </svg>
+      </button>
+    </div>
+  </footer>
+
+</div>
+
+<script>
+// ────────────────────────────────────────────────
+//  Campus & Program Data
+// ────────────────────────────────────────────────
+const CAMPUSES = {
+  "Main Campus — New Castle, PA": [
+    "Automotive Technology",
+    "Building Technology",
+    "Combination Welding",
+    "Electrical Technology",
+    "Industrial Electro-Mechanical Technology",
+    "Refrigeration and AC Technology"
+  ],
+  "East Liverpool Campus — East Liverpool, OH": [
+    "Combination Welding",
+    "Electrical and Industrial Maintenance",
+    "Refrigeration and Climate Control"
+  ],
+  "Satellite Campus — Pulaski, PA": [
+    "Commercial Truck Driving CDL",
+    "Diesel and Heavy Equipment Repair Technology",
+    "Heavy Equipment Operations with CDL",
+    "Machinist and CNC Manufacturing",
+    "Motorcycle and Power Equipment Technology"
+  ],
+  "North American Trade Schools — Baltimore, MD": [
+    "Building Construction Technology",
+    "Combination Welding",
+    "Electrical Technology",
+    "HVAC Technology",
+    "Diesel Technology",
+    "Commercial Truck Driving with CDL License"
+  ]
+};
+
+// ────────────────────────────────────────────────
+//  Resume Data Store
+// ────────────────────────────────────────────────
+const resumeData = {
+  personal:       {},
+  careerContext:  {},
+  workExperience: [],
+  education:      [],
+  certifications: [],
+  skills:         [],
+  references:     []
+};
+
+// ────────────────────────────────────────────────
+//  State
+// ────────────────────────────────────────────────
+let apiKey              = '';
+let conversationHistory = [];
+let currentStep         = 'awaiting_key';
+let isAITyping          = false;
+
+// ────────────────────────────────────────────────
+//  API Key
+// ────────────────────────────────────────────────
+function activateKey() {
+  const input = document.getElementById('apiKeyInput');
+  const key   = input.value.trim();
+
+  if (!key) { shakeEl(input); return; }
+
+  if (!key.startsWith('sk-ant-')) {
+    shakeEl(input);
+    const prev = input.placeholder;
+    input.placeholder = 'Key must start with sk-ant-…';
+    setTimeout(() => { input.placeholder = prev; }, 2500);
+    return;
+  }
+
+  apiKey = key;
+  sessionStorage.setItem('rb_api_key', key);
+
+  document.getElementById('apiKeyArea').style.display = 'none';
+  document.getElementById('keyReady').style.display   = 'flex';
+
+  enableInput();
+  startConversation();
+}
+
+function shakeEl(el) {
+  el.classList.remove('shake');
+  void el.offsetWidth;
+  el.classList.add('shake');
+  el.addEventListener('animationend', () => el.classList.remove('shake'), { once: true });
+}
+
+function enableInput() {
+  document.getElementById('userInput').disabled = false;
+  document.getElementById('sendBtn').disabled   = false;
+}
+
+function disableInput() {
+  document.getElementById('userInput').disabled = true;
+  document.getElementById('sendBtn').disabled   = true;
+}
+
+// ────────────────────────────────────────────────
+//  Conversation Start
+// ────────────────────────────────────────────────
+function startConversation() {
+  const notice = document.getElementById('setupNotice');
+  if (notice) notice.remove();
+
+  currentStep = 'personal_info';
+
+  addAIMessage(
+    `<p>Hi there! I'm your AI career assistant, and I'm here to help you build an outstanding professional resume.</p>
+     <p>Let's start with some basic information. Please fill out the form below — it'll only take a minute!</p>`,
+    () => setTimeout(showPersonalInfoForm, 450)
+  );
+}
+
+// ────────────────────────────────────────────────
+//  Message Rendering
+// ────────────────────────────────────────────────
+function addAIMessage(htmlContent, onDone, wide) {
+  const msgEl  = makeMsgEl('ai', wide);
+  const bubble = msgEl.querySelector('.bubble');
+
+  bubble.innerHTML = `
+    <div class="typing-indicator">
+      <div class="t-dot"></div><div class="t-dot"></div><div class="t-dot"></div>
+    </div>`;
+
+  document.getElementById('chatWindow').appendChild(msgEl);
+  scrollBottom();
+
+  const delay = htmlContent.length > 120 ? 900 : 700;
+  setTimeout(() => {
+    bubble.innerHTML = htmlContent;
+    scrollBottom();
+    if (onDone) onDone();
+  }, delay);
+}
+
+function addAICard(cardHtml, wide) {
+  const wrapper = document.createElement('div');
+  wrapper.className = 'message ai' + (wide ? ' wide' : '');
+  wrapper.innerHTML = cardHtml;
+  document.getElementById('chatWindow').appendChild(wrapper);
+  scrollBottom();
+}
+
+function addUserMessage(text) {
+  const msgEl = makeMsgEl('user');
+  msgEl.querySelector('.bubble').textContent = text;
+  document.getElementById('chatWindow').appendChild(msgEl);
+  scrollBottom();
+}
+
+function makeMsgEl(type, wide) {
+  const div    = document.createElement('div');
+  div.className = `message ${type}` + (wide ? ' wide' : '');
+
+  const av      = document.createElement('div');
+  av.className  = `avatar ${type}-avatar`;
+  av.textContent = type === 'ai' ? 'AI' : 'Me';
+
+  const bubble  = document.createElement('div');
+  bubble.className = 'bubble';
+
+  div.appendChild(av);
+  div.appendChild(bubble);
+  return div;
+}
+
+function addTypingIndicator() {
+  if (isAITyping) return;
+  isAITyping = true;
+  const div = document.createElement('div');
+  div.className = 'message ai';
+  div.id = 'aiTyping';
+  div.innerHTML = `
+    <div class="avatar ai-avatar">AI</div>
+    <div class="bubble">
+      <div class="typing-indicator">
+        <div class="t-dot"></div><div class="t-dot"></div><div class="t-dot"></div>
+      </div>
+    </div>`;
+  document.getElementById('chatWindow').appendChild(div);
+  scrollBottom();
+}
+
+function removeTypingIndicator() {
+  isAITyping = false;
+  const el = document.getElementById('aiTyping');
+  if (el) el.remove();
+}
+
+// ────────────────────────────────────────────────
+//  Personal Info Form
+// ────────────────────────────────────────────────
+function showPersonalInfoForm() {
+  const campusOpts = Object.keys(CAMPUSES)
+    .map(c => `<option value="${escHtml(c)}">${escHtml(c)}</option>`)
+    .join('');
+
+  const formHtml = `
+    <div class="inline-form" id="personalInfoForm">
+      <div class="form-card-header">
+        <span>📋</span> Personal Information
+      </div>
+      <div class="form-card-body">
+
+        <div class="f-row">
+          <div class="f-group" id="fg-firstName">
+            <label>First Name *</label>
+            <input type="text" id="firstName" placeholder="First name" autocomplete="given-name">
+            <span class="f-err">Please enter your first name.</span>
+          </div>
+          <div class="f-group" id="fg-lastName">
+            <label>Last Name *</label>
+            <input type="text" id="lastName" placeholder="Last name" autocomplete="family-name">
+            <span class="f-err">Please enter your last name.</span>
+          </div>
+        </div>
+
+        <div class="f-row">
+          <div class="f-group" id="fg-email">
+            <label>Email Address *</label>
+            <input type="email" id="piEmail" placeholder="you@example.com" autocomplete="email">
+            <span class="f-err">Please enter a valid email address.</span>
+          </div>
+          <div class="f-group" id="fg-phone">
+            <label>Phone Number *</label>
+            <input type="tel" id="phone" placeholder="(555) 555-5555" autocomplete="tel">
+            <span class="f-err">Please enter your phone number.</span>
+          </div>
+        </div>
+
+        <div class="f-row single">
+          <div class="f-group">
+            <label>Street Address</label>
+            <input type="text" id="address" placeholder="123 Main Street" autocomplete="street-address">
+          </div>
+        </div>
+
+        <div class="f-row triple">
+          <div class="f-group">
+            <label>City</label>
+            <input type="text" id="city" placeholder="City" autocomplete="address-level2">
+          </div>
+          <div class="f-group">
+            <label>State</label>
+            <input type="text" id="piState" placeholder="PA" maxlength="2" autocomplete="address-level1">
+          </div>
+          <div class="f-group">
+            <label>ZIP Code</label>
+            <input type="text" id="zip" placeholder="00000" maxlength="5" inputmode="numeric">
+          </div>
+        </div>
+
+        <div class="f-row">
+          <div class="f-group" id="fg-campus">
+            <label>Campus *</label>
+            <select id="campusSelect" onchange="updatePrograms()">
+              <option value="">— Select Your Campus —</option>
+              ${campusOpts}
+            </select>
+            <span class="f-err">Please select your campus.</span>
+          </div>
+          <div class="f-group" id="fg-program">
+            <label>Program *</label>
+            <select id="programSelect" disabled>
+              <option value="">— Select Campus First —</option>
+            </select>
+            <span class="f-err">Please select your program.</span>
+          </div>
+        </div>
+
+      </div>
+      <div class="form-card-footer">
+        <button class="btn btn-primary" onclick="submitPersonalInfo()">Continue &rarr;</button>
+      </div>
+    </div>`;
+
+  const wrapper = document.createElement('div');
+  wrapper.className = 'message ai wide';
+  wrapper.innerHTML = formHtml;
+  document.getElementById('chatWindow').appendChild(wrapper);
+  scrollBottom();
+
+  document.getElementById('phone').addEventListener('input', formatPhone);
+  setTimeout(() => document.getElementById('firstName').focus(), 100);
+}
+
+function updatePrograms() {
+  const campus  = document.getElementById('campusSelect').value;
+  const pSelect = document.getElementById('programSelect');
+  const fgProg  = document.getElementById('fg-program');
+
+  pSelect.innerHTML = '';
+  fgProg.classList.remove('has-error');
+
+  if (campus && CAMPUSES[campus]) {
+    const ph = document.createElement('option');
+    ph.value = ''; ph.textContent = '— Select Your Program —';
+    pSelect.appendChild(ph);
+
+    CAMPUSES[campus].forEach(prog => {
+      const opt = document.createElement('option');
+      opt.value = prog; opt.textContent = prog;
+      pSelect.appendChild(opt);
+    });
+
+    pSelect.disabled = false;
+  } else {
+    const ph = document.createElement('option');
+    ph.value = ''; ph.textContent = '— Select Campus First —';
+    pSelect.appendChild(ph);
+    pSelect.disabled = true;
+  }
+}
+
+function formatPhone(e) {
+  let d = e.target.value.replace(/\D/g, '').slice(0, 10);
+  if      (d.length >= 6) d = `(${d.slice(0,3)}) ${d.slice(3,6)}-${d.slice(6)}`;
+  else if (d.length >= 3) d = `(${d.slice(0,3)}) ${d.slice(3)}`;
+  e.target.value = d;
+}
+
+function submitPersonalInfo() {
+  const checks = [
+    { id: 'firstName',     fg: 'fg-firstName', test: v => v.length > 0 },
+    { id: 'lastName',      fg: 'fg-lastName',  test: v => v.length > 0 },
+    { id: 'piEmail',       fg: 'fg-email',     test: v => /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(v) },
+    { id: 'phone',         fg: 'fg-phone',     test: v => v.replace(/\D/g,'').length >= 7 },
+    { id: 'campusSelect',  fg: 'fg-campus',    test: v => v !== '' },
+    { id: 'programSelect', fg: 'fg-program',   test: v => v !== '' },
+  ];
+
+  let valid = true;
+  checks.forEach(({ id, fg, test }) => {
+    const el  = document.getElementById(id);
+    const grp = document.getElementById(fg);
+    if (el && grp) {
+      if (!test(el.value.trim())) { grp.classList.add('has-error'); valid = false; }
+      else                        { grp.classList.remove('has-error'); }
+    }
+  });
+
+  if (!valid) {
+    const firstErr = document.querySelector('.f-group.has-error input, .f-group.has-error select');
+    if (firstErr) firstErr.scrollIntoView({ behavior: 'smooth', block: 'center' });
+    return;
+  }
+
+  resumeData.personal = {
+    firstName : document.getElementById('firstName').value.trim(),
+    lastName  : document.getElementById('lastName').value.trim(),
+    email     : document.getElementById('piEmail').value.trim(),
+    phone     : document.getElementById('phone').value.trim(),
+    address   : document.getElementById('address').value.trim(),
+    city      : document.getElementById('city').value.trim(),
+    state     : document.getElementById('piState').value.trim().toUpperCase(),
+    zip       : document.getElementById('zip').value.trim(),
+    campus    : document.getElementById('campusSelect').value,
+    program   : document.getElementById('programSelect').value,
+  };
+
+  document.getElementById('personalInfoForm').style.display = 'none';
+  showPersonalApproval();
+}
+
+// ────────────────────────────────────────────────
+//  Approval Card
+// ────────────────────────────────────────────────
+function showPersonalApproval() {
+  const p = resumeData.personal;
+  const addrLine = [p.address, [p.city, p.state, p.zip].filter(Boolean).join(' ')]
+    .filter(Boolean).join(', ') || '—';
+
+  const rows = [
+    ['Name',    `${escHtml(p.firstName)} ${escHtml(p.lastName)}`],
+    ['Email',   escHtml(p.email)],
+    ['Phone',   escHtml(p.phone)],
+    ['Address', escHtml(addrLine)],
+    ['Campus',  escHtml(p.campus)],
+    ['Program', escHtml(p.program)],
+  ];
+
+  const rowsHtml = rows.map(([lbl, val]) =>
+    `<div class="a-row"><span class="a-label">${lbl}</span><span class="a-value">${val}</span></div>`
+  ).join('');
+
+  const cardHtml = `
+    <div class="approval-card">
+      <div class="approval-header"><span>✓</span> Does this look right?</div>
+      <div class="approval-body">${rowsHtml}</div>
+      <div class="approval-footer">
+        <button class="btn btn-ghost"    onclick="editPersonalInfo()">Edit</button>
+        <button class="btn btn-confirm"  onclick="confirmPersonalInfo()">Looks Good ✓</button>
+      </div>
+    </div>`;
+
+  addAICard(cardHtml, true);
+}
+
+function editPersonalInfo() {
+  removeLastAICard();
+  const form = document.getElementById('personalInfoForm');
+  if (form) {
+    form.style.display = '';
+    scrollBottom();
+    setTimeout(() => document.getElementById('firstName').focus(), 50);
+  }
+}
+
+function confirmPersonalInfo() {
+  removeLastAICard();
+  const p = resumeData.personal;
+  currentStep = 'career_context';
+
+  addUserMessage(`${p.firstName} ${p.lastName} — ${p.program}`);
+  callClaudeGreeting(p);
+}
+
+// ────────────────────────────────────────────────
+//  Claude API
+// ────────────────────────────────────────────────
+async function callClaude(system, messages) {
+  const res = await fetch('https://api.anthropic.com/v1/messages', {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      'x-api-key': apiKey,
+      'anthropic-version': '2023-06-01',
+      'anthropic-dangerous-direct-browser-access': 'true'
+    },
+    body: JSON.stringify({
+      model: 'claude-sonnet-4-20250514',
+      max_tokens: 1024,
+      system,
+      messages
+    })
+  });
+
+  if (!res.ok) {
+    const err = await res.json().catch(() => ({}));
+    throw new Error(err.error?.message || `API error ${res.status}`);
+  }
+
+  const data = await res.json();
+  return data.content[0].text;
+}
+
+async function callClaudeGreeting(personal) {
+  addTypingIndicator();
+  disableInput();
+
+  const system = `You are a warm, encouraging career counselor AI helping a trade school student build a professional resume.
+Keep every response to 2–3 sentences. Be specific to their trade program.
+The student just confirmed their name is ${personal.firstName} ${personal.lastName} and they are studying ${personal.program} at ${personal.campus}.
+Greet them personally by first name, acknowledge their program with genuine enthusiasm, then ask ONE focused question:
+what kind of job or employer are they hoping to work for after graduation? Make it feel like a real conversation.`;
+
+  const messages = [
+    { role: 'user', content: `Hi, I'm ${personal.firstName} and I'm studying ${personal.program}.` }
+  ];
+
+  try {
+    const reply = await callClaude(system, messages);
+    removeTypingIndicator();
+
+    conversationHistory.push({ role: 'user',      content: messages[0].content });
+    conversationHistory.push({ role: 'assistant', content: reply });
+
+    addAIMessage(formatReply(reply));
+    enableInput();
+    document.getElementById('userInput').focus();
+
+  } catch (err) {
+    removeTypingIndicator();
+    addAIMessage(`<p>Nice to meet you, ${escHtml(personal.firstName)}! ${escHtml(personal.program)} is a fantastic field. What kind of employer or job are you hoping to land after graduation — any particular companies or type of work environment in mind?</p>`);
+    enableInput();
+  }
+}
+
+// ────────────────────────────────────────────────
+//  User Input / Conversation Loop
+// ────────────────────────────────────────────────
+async function sendUserMessage() {
+  const input = document.getElementById('userInput');
+  const text  = input.value.trim();
+  if (!text || isAITyping) return;
+
+  input.value = '';
+  autoResize(input);
+  addUserMessage(text);
+
+  if (currentStep === 'career_context') {
+    await continueCareerContext(text);
+  }
+}
+
+async function continueCareerContext(userText) {
+  addTypingIndicator();
+  disableInput();
+
+  const p = resumeData.personal;
+
+  const system = `You are a warm, encouraging career counselor AI helping ${p.firstName} ${p.lastName}, a trade school student studying ${p.program} at ${p.campus}, build a professional resume.
+
+Phase: Career context conversation. Learn about their goals, work ethic, and personal qualities through natural dialogue.
+Rules:
+- 2 to 3 sentences per reply, never more.
+- Ask exactly ONE follow-up question per turn.
+- Topics to cover over 3–4 exchanges: job goals, preferred work environment, strongest work qualities, what motivates them.
+- After 3–4 exchanges, smoothly transition: "Now let's talk about your work history — have you had any jobs we should include on your resume?"`;
+
+  conversationHistory.push({ role: 'user', content: userText });
+
+  try {
+    const reply = await callClaude(system, conversationHistory);
+    removeTypingIndicator();
+
+    conversationHistory.push({ role: 'assistant', content: reply });
+
+    addAIMessage(formatReply(reply));
+    enableInput();
+    document.getElementById('userInput').focus();
+
+  } catch (err) {
+    removeTypingIndicator();
+    addAIMessage(`<p>That's great to know! What would you say is your strongest quality as an employee — something a future employer would notice right away?</p>`);
+    enableInput();
+  }
+}
+
+// ────────────────────────────────────────────────
+//  Utilities
+// ────────────────────────────────────────────────
+function removeLastAICard() {
+  const all = document.querySelectorAll('#chatWindow > .message.ai');
+  if (all.length) all[all.length - 1].remove();
+}
+
+function escHtml(str) {
+  if (!str) return '';
+  const d = document.createElement('div');
+  d.appendChild(document.createTextNode(String(str)));
+  return d.innerHTML;
+}
+
+function formatReply(text) {
+  const escaped = escHtml(text);
+  const paragraphs = escaped.split(/\n\n+/).map(p => `<p>${p.replace(/\n/g,'<br>')}</p>`).join('');
+  return paragraphs;
+}
+
+function handleKeydown(e) {
+  if (e.key === 'Enter' && !e.shiftKey) {
+    e.preventDefault();
+    sendUserMessage();
+  }
+}
+
+function autoResize(el) {
+  el.style.height = 'auto';
+  el.style.height = Math.min(el.scrollHeight, 120) + 'px';
+}
+
+function scrollBottom() {
+  requestAnimationFrame(() => {
+    const cw = document.getElementById('chatWindow');
+    cw.scrollTop = cw.scrollHeight;
+  });
+}
+
+// ────────────────────────────────────────────────
+//  Init — restore saved key
+// ────────────────────────────────────────────────
+window.addEventListener('load', () => {
+  const saved = sessionStorage.getItem('rb_api_key');
+  if (saved) {
+    document.getElementById('apiKeyInput').value = saved;
+    activateKey();
+  }
+});
+</script>
+</body>
+</html>
