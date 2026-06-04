@@ -94,15 +94,16 @@ input[type="color"].color-input::-webkit-color-swatch{border:none;border-radius:
 .bullet-opt{border:1.5px solid var(--slate-200);border-radius:7px;padding:7px 16px;font-size:15px;background:var(--slate-50);cursor:pointer;color:var(--slate-700);transition:border-color .15s,background .15s;font-family:inherit}
 .bullet-opt:hover{border-color:var(--slate-400);background:var(--slate-100)}
 .bullet-opt.sel{border-color:var(--blue-700);background:var(--blue-50);color:var(--blue-700);font-weight:700}
-.preview-card{background:var(--white);border-radius:12px;box-shadow:0 1px 8px rgba(0,0,0,.08);padding:28px;margin-bottom:16px}
-.preview-card h3{font-size:13px;font-weight:700;color:var(--slate-500);text-transform:uppercase;letter-spacing:.6px;margin-bottom:16px}
-.letter-preview{font-size:14px;line-height:1.7;color:var(--slate-700);white-space:pre-wrap}
-.letter-preview .lp-name{font-size:18px;font-weight:700;margin-bottom:2px}
-.letter-preview .lp-contact{font-size:13px;color:var(--slate-500);margin-bottom:8px}
-.letter-preview .lp-rule{height:2px;margin-bottom:14px;border-radius:1px}
-.letter-preview .lp-body{font-size:14px;line-height:1.75;color:var(--slate-800)}
-.letter-preview .lp-bullets{margin:8px 0 8px 16px}
-.letter-preview .lp-bullet{margin-bottom:4px}
+.approval-card{background:var(--white);border-radius:12px;box-shadow:0 1px 8px rgba(0,0,0,.08);overflow:hidden;margin-bottom:16px}
+.approval-hdr{background:var(--green-600);color:var(--white);padding:12px 18px;font-size:14px;font-weight:700;display:flex;align-items:center;gap:8px}
+.approval-body{padding:8px 18px 4px}
+.a-row{display:flex;align-items:baseline;gap:10px;padding:8px 0;border-bottom:1px solid var(--slate-100)}
+.a-row:last-child{border-bottom:none}
+.a-label{font-size:11px;font-weight:700;color:var(--slate-400);text-transform:uppercase;letter-spacing:.5px;min-width:90px;flex-shrink:0}
+.a-value{font-size:14px;color:var(--slate-800);line-height:1.55}
+.approval-footer{padding:12px 18px 14px;display:flex;justify-content:flex-end;gap:8px;background:var(--slate-50);border-top:1px solid var(--slate-100)}
+.bullet-list{list-style:none;padding:0;margin:4px 0}
+.bullet-list li{padding:3px 0;font-size:14px;color:var(--slate-700)}
 @media(max-width:700px){.right-panel{display:none}}
 </style>
 </head>
@@ -122,14 +123,10 @@ input[type="color"].color-input::-webkit-color-swatch{border:none;border-radius:
 
 <script>
 // ── Constants ────────────────────────────────────────
-const PRESET_COLORS=['#1e3a8a','#14532d','#7f1d1d','#334155','#1c1c1c','#0f766e','#4c1d95','#9a3412','#1d4ed8','#0369a1'];
-const BULLET_OPTIONS=['•','▸','◆','–','✓'];
 const MONTHS=['January','February','March','April','May','June','July','August','September','October','November','December'];
 
 // ── State ────────────────────────────────────────────
 let resumeData = null;
-let selectedColorHex = '#1e3a8a';
-let selectedBullet = '•';
 let pendingLetter = {};
 let selectedResumeFile = null;
 let lookupResult = null;
@@ -249,8 +246,6 @@ function readDocx(f){return new Promise((res,rej)=>{const r=new FileReader();r.o
 function renderMainView(){
   const p=resumeData?.personal||{};
   const dataBadge=p.firstName?`<div class="data-badge"><span class="data-badge-icon">👤</span><div><strong>${escHtml(p.firstName)} ${escHtml(p.lastName||'')}</strong><br><span style="font-weight:400;color:var(--slate-500)">${escHtml(p.program||'')}${p.email?' · '+escHtml(p.email):''}</span></div><button class="btn btn-ghost" style="margin-left:auto;font-size:12px;padding:5px 10px" onclick="showView('upload')">Change</button></div>`:'';
-  const presets=PRESET_COLORS.map(hex=>`<div class="color-preset ${hex===selectedColorHex?'sel':''}" data-hex="${hex}" style="background:${hex}" onclick="pickColor('${hex}')"></div>`).join('');
-  const bullets=BULLET_OPTIONS.map((b,i)=>`<button class="bullet-opt ${b===selectedBullet?'sel':''}" id="bo-${i}" onclick="pickBullet('${b}')">${b}&nbsp;&nbsp;${['Round','Arrow','Diamond','Dash','Check'][i]}</button>`).join('');
   return `<div class="section-hdr"><div class="section-hdr-icon">✉️</div><div><div class="section-hdr-title">Cover Letter</div><div class="section-hdr-sub">Enter employer details and generate your letter</div></div></div>
   ${dataBadge}
   <div class="form-card">
@@ -276,6 +271,12 @@ function renderMainView(){
           <input id="fHiringManager" placeholder="e.g. John Smith">
         </div>
       </div>
+      <div class="f-row single">
+        <div class="f-group">
+          <label>Company Street Address <span style="font-weight:400;text-transform:none;font-size:11px">(optional)</span></label>
+          <input id="fCompanyStreet" placeholder="e.g. 123 Commerce Drive">
+        </div>
+      </div>
       <div class="f-row">
         <div class="f-group">
           <label>Company City, State <span style="font-weight:400;text-transform:none;font-size:11px">(optional)</span></label>
@@ -291,22 +292,6 @@ function renderMainView(){
           <label>Job Description / Key Requirements <span style="font-weight:400;text-transform:none;font-size:11px">(optional but recommended)</span></label>
           <textarea id="fJobDesc" rows="4" placeholder="Paste a few lines from the job posting. The more detail you provide, the more tailored your letter will be."></textarea>
         </div>
-      </div>
-    </div>
-  </div>
-  <div class="form-card">
-    <div class="form-card-hdr">⚙️ Color &amp; Style Options</div>
-    <div class="form-card-body" style="padding-bottom:18px">
-      <div style="margin-bottom:16px">
-        <div class="opt-label">Header Color</div>
-        <div class="color-picker-wrap">
-          <input type="color" class="color-input" id="colorPickerInput" value="${selectedColorHex}" oninput="pickColor(this.value)">
-          <div class="color-presets">${presets}</div>
-        </div>
-      </div>
-      <div>
-        <div class="opt-label">Qualification Bullet Style</div>
-        <div style="display:flex;gap:8px;flex-wrap:wrap">${bullets}</div>
       </div>
     </div>
     <div class="form-card-footer">
@@ -360,6 +345,7 @@ ${locationHint?'Location hint: '+locationHint:''}`;
 
 function applyLookup(){
   if(!lookupResult)return;
+  if(lookupResult.address) document.getElementById('fCompanyStreet').value=lookupResult.address;
   const csz=[lookupResult.city,lookupResult.state].filter(Boolean).join(', ');
   if(csz) document.getElementById('fCompanyCityState').value=csz;
   if(lookupResult.phone) document.getElementById('fCompanyPhone').value=lookupResult.phone;
@@ -372,6 +358,7 @@ function collectEmployerData(){
     company:document.getElementById('fCompany').value.trim(),
     jobTitle:document.getElementById('fJobTitle').value.trim(),
     hiringManager:document.getElementById('fHiringManager').value.trim(),
+    companyStreet:document.getElementById('fCompanyStreet').value.trim(),
     companyCityState:document.getElementById('fCompanyCityState').value.trim(),
     companyPhone:document.getElementById('fCompanyPhone').value.trim(),
     jobDesc:document.getElementById('fJobDesc').value.trim(),
@@ -394,12 +381,13 @@ async function generateLetter(){
   const workSummary=(resumeData?.workExperience||[]).slice(0,3).map(j=>`${j.jobTitle} at ${j.employer}`).join('; ')||'no prior experience listed';
   const salutation=emp.hiringManager?`Dear ${emp.hiringManager},`:'Dear Hiring Manager,';
   const sys=`You write professional cover letters for trade school students. Return ONLY valid JSON with no other text:
-{"salutation":"${salutation}","opening":"","qualifications":["","","",""],"closing":""}
+{"salutation":"${salutation}","paragraphs":["","",""]}
 Rules:
-- opening: 2-3 sentences. Reference the specific job title and company name. Show genuine interest. Do NOT start with "I am writing to".
-- qualifications: exactly 4 bullets, each 12-18 words. Match the student's actual skills and experience to the job. Start each with a strong skill name or action verb.
-- closing: 2-3 sentences. Express enthusiasm, request an interview, thank them. Professional and direct.
-- Tone: professional trade school. No "I am passionate about", no fluff.
+- paragraphs: exactly 3 strings, each a full paragraph.
+  - Paragraph 1 (Opening): 2-3 sentences. Reference the specific job title and company. Show genuine interest. Do NOT start with "I am writing to".
+  - Paragraph 2 (Body): 3-4 sentences. Connect the student's actual skills, certifications, and experience directly to the job requirements. Be specific — use real details from their background.
+  - Paragraph 3 (Closing): 2-3 sentences. Express enthusiasm, request an interview, thank them. Professional and direct.
+- Tone: professional trade school. No "I am passionate about", no fluff, no invented details.
 
 Student: ${p.firstName||'Student'} ${p.lastName||''}, ${p.program||'trade'} student
 Applying for: ${emp.jobTitle} at ${emp.company}
@@ -412,7 +400,7 @@ Work experience: ${workSummary}`;
   try{
     const raw=await callClaude(sys,[{role:'user',content:'Write the cover letter.'}],{maxTokens:1000});
     const letter=JSON.parse(raw.replace(/^```(?:json)?\s*/i,'').replace(/\s*```$/,''));
-    if(!letter.opening||!Array.isArray(letter.qualifications)){throw new Error('bad response');}
+    if(!Array.isArray(letter.paragraphs)||letter.paragraphs.length<2){throw new Error('bad response');}
     pendingLetter.letter=letter;
     showView('preview');
     addAIMsg('Your cover letter is ready! Review it carefully — edit the downloaded file if anything needs adjusting before you send it.');
@@ -428,34 +416,24 @@ function renderPreviewView(){
   const emp=pendingLetter.employer||{};
   const letter=pendingLetter.letter||{};
   const name=[p.firstName,p.lastName].filter(Boolean).join(' ')||'Your Name';
-  const cityState=[p.city,p.state].filter(Boolean).join(', ');
-  const contact=[p.email,p.phone,p.address?cityState:''].filter(Boolean).join('   |   ');
-  const today=new Date().toLocaleDateString('en-US',{year:'numeric',month:'long',day:'numeric'});
-  const empBlock=[emp.hiringManager,emp.company,emp.companyCityState].filter(Boolean).join('\n');
-  const qualHtml=(letter.qualifications||[]).map(q=>`<div class="lp-bullet">${escHtml(selectedBullet)}  ${escHtml(q)}</div>`).join('');
-  return `<div class="section-hdr"><div class="section-hdr-icon">✉️</div><div><div class="section-hdr-title">Your Cover Letter</div><div class="section-hdr-sub">Review before downloading</div></div></div>
-  <div class="preview-card">
-    <h3>Preview</h3>
-    <div class="letter-preview">
-      <div class="lp-name" style="color:${selectedColorHex}">${escHtml(name)}</div>
-      <div class="lp-contact">${escHtml(contact)}</div>
-      <div class="lp-rule" style="background:${selectedColorHex}"></div>
-      <div class="lp-body">
-        <div style="margin-bottom:14px">${escHtml(today)}</div>
-        ${empBlock?`<div style="margin-bottom:14px;white-space:pre-line">${escHtml(empBlock)}</div>`:''}
-        <div style="margin-bottom:14px">${escHtml(letter.salutation||'Dear Hiring Manager,')}</div>
-        <div style="margin-bottom:14px">${escHtml(letter.opening||'')}</div>
-        <div style="margin-bottom:8px">My qualifications for this position include:</div>
-        <div class="lp-bullets">${qualHtml}</div>
-        <div style="margin-bottom:14px;margin-top:8px">${escHtml(letter.closing||'')}</div>
-        <div style="margin-bottom:40px">Sincerely,</div>
-        <div style="font-weight:600">${escHtml(name)}</div>
-        ${p.program?`<div style="color:var(--slate-500);font-size:13px">${escHtml(p.program)}</div>`:''}
-      </div>
+  const addressedTo=[emp.hiringManager,emp.company,emp.companyCityState].filter(Boolean).join(', ')||emp.company||'—';
+  const paraLabels=['Opening','Body','Closing'];
+  const parasHtml=(letter.paragraphs||[]).map((para,i)=>`
+    <div class="a-row" style="display:block;padding:10px 0">
+      <span class="a-label" style="display:block;margin-bottom:6px">${paraLabels[i]||'Paragraph '+(i+1)}</span>
+      <span class="a-value">${escHtml(para)}</span>
+    </div>`).join('');
+  return `<div class="section-hdr"><div class="section-hdr-icon">✉️</div><div><div class="section-hdr-title">Cover Letter</div><div class="section-hdr-sub">Review before downloading</div></div></div>
+  <div class="approval-card">
+    <div class="approval-hdr">✓ Cover Letter — Review</div>
+    <div class="approval-body">
+      <div class="a-row"><span class="a-label">From</span><span class="a-value">${escHtml(name)}</span></div>
+      <div class="a-row"><span class="a-label">To</span><span class="a-value">${escHtml(addressedTo)}</span></div>
+      <div class="a-row"><span class="a-label">Position</span><span class="a-value">${escHtml(emp.jobTitle||'—')}</span></div>
+      <div class="a-row"><span class="a-label">Salutation</span><span class="a-value">${escHtml(letter.salutation||'Dear Hiring Manager,')}</span></div>
+      ${parasHtml}
     </div>
-  </div>
-  <div class="form-card">
-    <div class="form-card-footer" style="justify-content:space-between">
+    <div class="approval-footer" style="justify-content:space-between">
       <button class="btn btn-ghost" onclick="renderMain()">← Edit Details</button>
       <div style="display:flex;gap:8px">
         <button class="btn btn-ghost" onclick="rewriteLetter()">Rewrite</button>
@@ -472,76 +450,53 @@ async function rewriteLetter(){
 
 // ── Word Doc Builder ─────────────────────────────────
 function twip(inches){return Math.round(inches*1440);}
-function getColorObj(hex){
-  const clean=hex.replace('#','').toUpperCase();
-  const r=parseInt(clean.slice(0,2),16),g=parseInt(clean.slice(2,4),16),b=parseInt(clean.slice(4,6),16);
-  const lum=(0.299*r+0.587*g+0.114*b)/255;
-  return{hex,accent:clean,sideText:lum>0.55?'111111':'FFFFFF'};
-}
 
 async function downloadLetter(){
   const p=resumeData?.personal||{};
   const emp=pendingLetter.employer||{};
   const letter=pendingLetter.letter||{};
-  const color=getColorObj(selectedColorHex);
-  const ac=color.accent;
-  const M=twip(1);
-  const nb={style:docx.BorderStyle.NONE,size:0,color:'FFFFFF'};
-  const name=[p.firstName,p.lastName].filter(Boolean).join(' ')||'';
-  const cityState=[p.city,p.state].filter(Boolean).join(', ');
-  const contact=[p.email,p.phone,p.address?cityState:''].filter(Boolean).join('   |   ');
-  const today=new Date().toLocaleDateString('en-US',{year:'numeric',month:'long',day:'numeric'});
-  const txt=(t,opts={})=>new docx.Paragraph({spacing:{before:0,after:opts.after||0,...(opts.spaceBefore?{before:opts.spaceBefore}:{})},children:[new docx.TextRun({text:t,...opts})]});
-  const blank=(after=200)=>new docx.Paragraph({spacing:{before:0,after}});
-  const ch=[];
-  // Name
-  ch.push(new docx.Paragraph({spacing:{before:0,after:60},children:[new docx.TextRun({text:name,bold:true,size:36,color:ac})]}));
-  // Contact
-  if(contact) ch.push(new docx.Paragraph({spacing:{before:0,after:120},children:[new docx.TextRun({text:contact,size:20,color:'666666'})]}));
-  // Rule
-  ch.push(new docx.Paragraph({border:{bottom:{style:docx.BorderStyle.SINGLE,size:8,color:ac}},spacing:{before:0,after:260}}));
-  // Date
-  ch.push(txt(today,{size:22,color:'2a2a2a',after:220}));
-  // Employer block
-  if(emp.hiringManager) ch.push(txt(emp.hiringManager,{size:22,color:'2a2a2a',after:40}));
-  if(emp.company) ch.push(txt(emp.company,{size:22,color:'2a2a2a',after:40}));
-  if(emp.companyCityState) ch.push(txt(emp.companyCityState,{size:22,color:'2a2a2a',after:40}));
-  if(emp.companyPhone) ch.push(txt(emp.companyPhone,{size:22,color:'2a2a2a',after:40}));
-  if(emp.company||emp.hiringManager) ch.push(blank(180));
-  // Salutation
-  ch.push(txt(letter.salutation||'Dear Hiring Manager,',{size:22,color:'2a2a2a',after:220}));
-  // Opening
-  ch.push(txt(letter.opening||'',{size:22,color:'2a2a2a',after:220}));
-  // Qualifications
-  ch.push(txt('My qualifications for this position include:',{size:22,color:'2a2a2a',after:120}));
-  (letter.qualifications||[]).forEach(q=>{
-    ch.push(new docx.Paragraph({indent:{left:twip(0.25)},spacing:{before:0,after:120},children:[new docx.TextRun({text:`${selectedBullet}  ${q}`,size:22,color:'2a2a2a'})]}));
+  const M=twip(1.1);
+  const BODY=24,SMALL=22,NAME=30;
+  const LS={line:276,lineRule:'auto'}; // 1.15 line spacing
+  const para=(t,opts={})=>new docx.Paragraph({
+    spacing:{before:0,after:opts.after!==undefined?opts.after:0,...(opts.before?{before:opts.before}:{}),...LS},
+    children:[new docx.TextRun({text:t,size:opts.size||BODY,color:opts.color||'1a1a1a',bold:!!opts.bold,italics:!!opts.italic})]
   });
-  ch.push(blank(120));
-  // Closing
-  ch.push(txt(letter.closing||'',{size:22,color:'2a2a2a',after:320}));
-  // Sign-off
-  ch.push(txt('Sincerely,',{size:22,color:'2a2a2a',after:320}));
-  ch.push(new docx.Paragraph({spacing:{before:0,after:40},children:[new docx.TextRun({text:name,bold:true,size:22,color:'2a2a2a'})]}));
-  if(p.program) ch.push(txt(p.program,{size:20,color:'777777'}));
+  const blank=(pts=240)=>new docx.Paragraph({spacing:{before:0,after:pts}});
+  const ch=[];
+  // ── Student header ──
+  const name=[p.firstName,p.lastName].filter(Boolean).join(' ')||'';
+  ch.push(para(name,{size:NAME,bold:true,color:'111111',after:80}));
+  if(p.address) ch.push(para(p.address,{size:SMALL,color:'444444',after:40}));
+  const cityStateZip=[[p.city,p.state].filter(Boolean).join(', '),p.zip].filter(Boolean).join(' ');
+  if(cityStateZip) ch.push(para(cityStateZip,{size:SMALL,color:'444444',after:40}));
+  const contactLine=[p.email,p.phone].filter(Boolean).join('   |   ');
+  if(contactLine) ch.push(para(contactLine,{size:SMALL,color:'444444',after:120}));
+  // ── Rule ──
+  ch.push(new docx.Paragraph({border:{bottom:{style:docx.BorderStyle.SINGLE,size:4,color:'333333'}},spacing:{before:0,after:300}}));
+  // ── Date ──
+  const today=new Date().toLocaleDateString('en-US',{year:'numeric',month:'long',day:'numeric'});
+  ch.push(para(today,{after:260}));
+  // ── Employer address block ──
+  if(emp.hiringManager) ch.push(para(emp.hiringManager,{after:40}));
+  if(emp.company) ch.push(para(emp.company,{after:40}));
+  if(emp.companyStreet) ch.push(para(emp.companyStreet,{after:40}));
+  if(emp.companyCityState) ch.push(para(emp.companyCityState,{after:40}));
+  if(emp.companyPhone) ch.push(para(emp.companyPhone,{after:40}));
+  if(emp.company) ch.push(blank(280));
+  // ── Salutation ──
+  ch.push(para(letter.salutation||'Dear Hiring Manager,',{after:260}));
+  // ── Body paragraphs ──
+  (letter.paragraphs||[]).forEach(p=>ch.push(para(p,{after:240})));
+  // ── Sign-off ──
+  ch.push(para('Sincerely,',{after:360}));
+  ch.push(para(name,{bold:true,after:60}));
+  if(p.program) ch.push(para(p.program,{size:SMALL,color:'555555',after:0}));
   const doc=new docx.Document({sections:[{properties:{page:{margin:{top:M,bottom:M,left:M,right:M}}},children:ch}]});
   const blob=await docx.Packer.toBlob(doc);
   const fname=[p.firstName,p.lastName].filter(Boolean).join('-')||'Cover-Letter';
   saveAs(blob,`${fname}-Cover-Letter.docx`);
-  addAIMsg(`Downloaded! Open the file in Word to make any final edits before sending. Good luck! 🎉`);
-}
-
-// ── Options ───────────────────────────────────────────
-function pickColor(hex){
-  selectedColorHex=hex;
-  const inp=document.getElementById('colorPickerInput');
-  if(inp) inp.value=hex;
-  document.querySelectorAll('.color-preset').forEach(el=>el.classList.toggle('sel',el.dataset.hex===hex));
-}
-
-function pickBullet(char){
-  selectedBullet=char;
-  document.querySelectorAll('.bullet-opt').forEach((el,i)=>{el.classList.toggle('sel',BULLET_OPTIONS[i]===char);});
+  addAIMsg('Downloaded! Open the file in Word to make any final edits before sending. Good luck! 🎉');
 }
 
 // ── Claude API ────────────────────────────────────────
