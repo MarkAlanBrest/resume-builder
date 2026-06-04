@@ -177,6 +177,14 @@ html,body{height:100%;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Ro
 .bullet-opt{border:1.5px solid var(--slate-200);border-radius:7px;padding:7px 16px;font-size:15px;background:var(--slate-50);cursor:pointer;color:var(--slate-700);transition:border-color .15s,background .15s;font-family:inherit}
 .bullet-opt:hover{border-color:var(--slate-400);background:var(--slate-100)}
 .bullet-opt.sel{border-color:var(--blue-700);background:var(--blue-50);color:var(--blue-700);font-weight:700}
+.sugg-card{padding:2px 0}
+.sugg-label{font-size:11px;font-weight:700;color:var(--slate-400);text-transform:uppercase;letter-spacing:.5px;margin-bottom:7px}
+.sugg-item{display:flex;align-items:flex-start;gap:8px;padding:6px 4px;border-radius:5px;cursor:pointer;transition:background .12s;margin:0 -4px}
+.sugg-item:hover{background:var(--blue-50)}
+.sugg-item+.sugg-item{border-top:1px solid var(--slate-100)}
+.sugg-text{flex:1;font-size:12px;color:var(--slate-700);line-height:1.45}
+.sugg-use{background:var(--blue-700);color:white;border:none;border-radius:4px;padding:3px 8px;font-size:10px;font-weight:600;cursor:pointer;flex-shrink:0;font-family:inherit;margin-top:1px}
+.sugg-use:hover{background:var(--blue-800)}
 
 /* ── Right Panel (AI Chat) ── */
 .right-panel{width:var(--chat-w);flex-shrink:0;display:flex;flex-direction:column;background:var(--slate-50);border-left:1px solid var(--slate-200);transition:width .25s ease;overflow:hidden}
@@ -335,6 +343,27 @@ const SKILL_CERT_TIP_EXAMPLES = [
   {match:/building|construction/i,skills:['Blueprint reading','Power tools','Framing','Drywall','Measuring and layout','Job-site safety'],certs:['OSHA 10','Forklift Certification','First Aid/CPR','Scissor Lift/Aerial Lift']},
   {match:/truck|cdl|diesel|heavy equipment/i,skills:['Pre-trip inspections','Diesel maintenance','Hydraulics','Preventive maintenance','DOT safety','Equipment operation'],certs:['CDL Permit or License','OSHA 10','Forklift Certification','DOT Medical Card']},
   {match:/machinist|cnc|manufacturing/i,skills:['CNC operation','Blueprint reading','Precision measurement','Calipers and micrometers','Machine setup','Quality control'],certs:['NIMS Certification','OSHA 10','Forklift Certification','Lean Manufacturing']},
+];
+
+// ── Career & Duty Suggestions ────────────────────
+const CAREER_SUGGESTIONS = [
+  {match:/automotive|motorcycle|power equipment/i,workSearch:['I want to work as an automotive technician at a dealership performing diagnostics, repairs, and maintenance.','I am looking for an entry-level position at an auto shop doing oil changes, brake service, and vehicle inspections.','I want a job at a dealership or independent shop where I can grow my diagnostic and repair skills.']},
+  {match:/hvac|refrigeration|climate|ac technology/i,workSearch:['I am looking for an entry-level HVAC position where I can install, maintain, and troubleshoot residential and commercial systems.','I want to work for an HVAC contractor performing service calls, installations, and preventive maintenance.','I am seeking a position with an HVAC company where I can apply my EPA certification and system troubleshooting skills.']},
+  {match:/welding/i,workSearch:['I want a welding job in manufacturing or construction where I can use my MIG, TIG, and stick welding skills.','I am looking for a fabrication or welding position where I can read blueprints and work with structural metal.','I want to work for a welding shop or construction company performing production or structural welding.']},
+  {match:/electrical|electro-mechanical|industrial maintenance/i,workSearch:['I am looking for an entry-level electrician or industrial maintenance position where I can troubleshoot and repair electrical systems.','I want to work for an electrical contractor or manufacturing facility performing wiring, installations, and equipment maintenance.','I am seeking an industrial maintenance role where I can apply my electrical, motor control, and PLC skills.']},
+  {match:/building|construction/i,workSearch:['I want to work in residential or commercial construction doing framing, drywall, and finish work.','I am looking for a position with a building contractor where I can develop my carpentry and construction skills.','I want a job in construction where I can work hands-on with a crew on building and renovation projects.']},
+  {match:/truck|cdl|diesel|heavy equipment/i,workSearch:['I am looking for a CDL driver position with a trucking or logistics company.','I want to work for a fleet operation or construction company as a professional driver or diesel technician.','I am seeking a heavy equipment operator or diesel maintenance role where I can put my training and CDL to use.']},
+  {match:/machinist|cnc|manufacturing/i,workSearch:['I want to work as a machinist or CNC operator in a precision manufacturing facility.','I am looking for a production or machining role where I can operate equipment and inspect finished parts.','I want a position in manufacturing where I can apply my blueprint reading, CNC, and quality control skills.']},
+];
+
+const STANDOUT_SUGGESTIONS = [
+  'I take pride in quality work and never cut corners on safety.',
+  'I am a fast learner who picks up new tools and procedures quickly.',
+  'I show up on time, work hard, and follow through on every assigned task.',
+  'I work well as part of a team and communicate clearly with supervisors.',
+  'I am detail-oriented and always double-check my work before moving on.',
+  'I am physically fit, safety-conscious, and comfortable in a hands-on environment.',
+  'I am self-motivated and take initiative when I see something that needs to be done.',
 ];
 
 // ── State ────────────────────────────────────────
@@ -849,7 +878,7 @@ async function submitCareer() {
       return;
     }
     resumeData.careerContext = career;
-    showCenter('careerApproval');
+    generateObjective();
   } catch(e) {
     addAIMsg('I could not complete the career profile spelling and professionalism review. Please check your connection or API key, then try Continue again.');
   } finally {
@@ -940,7 +969,7 @@ async function generateObjective() {
     showCenter('objectiveApproval');
   } catch(e) {
     addAIMsg('Had trouble connecting — try again.');
-    showCenter('careerApproval');
+    showSection('career');
   }
 }
 
@@ -1267,14 +1296,14 @@ function renderEduForm(prefill) {
   const p = resumeData.personal;
   const pf = prefill || (resumeData.education.length===0 && p.program ? {
     school:p.campus?campusSchoolName(p.campus):'',
-    degree:'Vocational Certificate',
+    degree:'Diploma',
     fieldOfStudy:p.program||'',
     city:campusLoc(p.campus||'').city,
     state:campusLoc(p.campus||'').state,
     gradMonth:'',gradYear:'',isPrefilled:true
   } : null) || {};
   const monthOpts = MONTHS.map(m=>`<option value="${m}" ${pf.gradMonth===m?'selected':''}>${m}</option>`).join('');
-  const degOpts = ['','High School Diploma','GED / High School Equivalency',"Associate's Degree","Bachelor's Degree","Master's Degree",'Vocational Certificate','Other'].map(d=>`<option value="${d}" ${pf.degree===d?'selected':''}>${d||'— Select —'}</option>`).join('');
+  const degOpts = ['','Diploma','Associate in Specialized Technology','High School Diploma','GED / High School Equivalency',"Associate's Degree","Bachelor's Degree","Master's Degree",'Vocational Certificate','Other'].map(d=>`<option value="${d}" ${pf.degree===d?'selected':''}>${d||'— Select —'}</option>`).join('');
   const isInProgress = pf.gradYear === 'In Progress';
   const banner = pf.isPrefilled ? `<div class="prefill-banner">ℹ️ Pre-filled from your program. Add your graduation month/year and confirm.</div>` : '';
   const saved = resumeData.education;
@@ -1821,7 +1850,26 @@ async function generateCoverLetter(){const p=resumeData.personal,c=resumeData.ca
 async function callClaude(system,messages,raw=false){const body={model:'claude-sonnet-4-6',max_tokens:1024,messages};if(system)body.system=system;const res=await fetch('https://api.anthropic.com/v1/messages',{method:'POST',headers:{'Content-Type':'application/json','x-api-key':apiKey,'anthropic-version':'2023-06-01','anthropic-dangerous-direct-browser-access':'true'},body:JSON.stringify(body)});if(!res.ok){const e=await res.json().catch(()=>({}));throw new Error(e.error?.message||`API error ${res.status}`);}const data=await res.json();return data.content[0].text;}
 
 // ── Right Panel Chat ──────────────────────────────
-function sendTip(key){const tip=key==='work'?buildWorkTip():key==='skills'?buildSkillsCertsTip():TIPS[key];if(tip)setTimeout(()=>addAIMsg(tip),300);}
+function sendTip(key){
+  const tip=key==='skills'?buildSkillsCertsTip():key!=='work'?TIPS[key]:null;
+  if(tip)setTimeout(()=>addAIMsg(tip),300);
+
+  if(key==='career'){
+    const program=resumeData.personal.program||'';
+    const found=CAREER_SUGGESTIONS.find(item=>item.match.test(program));
+    const workItems=found?found.workSearch:['I want to work in a skilled trade where I can apply my hands-on training.','I am looking for an entry-level position where I can learn from experienced tradespeople.','I want a job that lets me use the skills I developed in my program right away.'];
+    setTimeout(()=>addSuggestionCard('What are you looking for in a job?',workItems,'workSearch'),600);
+    setTimeout(()=>addSuggestionCard('What sets you apart?',STANDOUT_SUGGESTIONS,'standout'),900);
+  }
+
+  if(key==='work'){
+    const program=resumeData.personal.program||'';
+    const found=WORK_TIP_EXAMPLES.find(item=>item.match.test(program));
+    const examples=found?found.examples:['Completed assigned tasks safely while following all workplace procedures.','Used hand tools, power tools, and equipment to carry out daily responsibilities.','Maintained a clean work area and communicated clearly with supervisors and coworkers.'];
+    setTimeout(()=>addAIMsg(`Write naturally — describe the tools you used, what you built or fixed, who you worked with, and anything you're proud of. I'll turn it into professional bullet points.`),300);
+    setTimeout(()=>addSuggestionCard('Job duty examples — click to use as a starting point:',examples,'duties'),700);
+  }
+}
 
 function buildWorkTip() {
   const program = resumeData.personal.program || '';
@@ -1837,6 +1885,35 @@ function buildSkillsCertsTip() {
     certs:['OSHA 10','First Aid/CPR','Forklift Certification']
   };
   return `${TIPS.skills} Recommended examples for ${program || 'your program'}:\n\nSkills:\n${found.skills.map(s=>`• ${s}`).join('\n')}\n\nCertifications:\n${found.certs.map(c=>`• ${c}`).join('\n')}`;
+}
+
+const _suggPool=[];
+
+function addSuggestionCard(label,items,targetId){
+  const msgs=document.getElementById('chatMessages');
+  if(!msgs)return;
+  const div=document.createElement('div');
+  div.className='chat-msg ai';
+  const itemsHtml=items.map(text=>{
+    const idx=_suggPool.length;
+    _suggPool.push({text,targetId});
+    return `<div class="sugg-item" onclick="applySuggestion(${idx})"><span class="sugg-text">${escHtml(text)}</span><button class="sugg-use" onclick="event.stopPropagation();applySuggestion(${idx})">Use ↵</button></div>`;
+  }).join('');
+  div.innerHTML=`<div class="msg-lbl">Suggestions</div><div class="msg-bubble sugg-card"><div class="sugg-label">${escHtml(label)}</div>${itemsHtml}</div>`;
+  msgs.appendChild(div);
+  msgs.scrollTop=msgs.scrollHeight;
+}
+
+function applySuggestion(idx){
+  const s=_suggPool[idx];
+  if(!s)return;
+  const el=document.getElementById(s.targetId);
+  if(!el)return;
+  el.value=s.text;
+  el.focus();
+  el.style.transition='border-color .3s';
+  el.style.borderColor='var(--blue-700)';
+  setTimeout(()=>{el.style.borderColor='';},1200);
 }
 
 function addAIMsg(text){const msgs=document.getElementById('chatMessages');if(!msgs)return;const div=document.createElement('div');div.className='chat-msg ai';div.innerHTML=`<div class="msg-lbl">AI</div><div class="msg-bubble">${escHtml(text).replace(/\*\*(.+?)\*\*/g,'<strong>$1</strong>').replace(/\n/g,'<br>')}</div>`;msgs.appendChild(div);msgs.scrollTop=msgs.scrollHeight;}
