@@ -1331,8 +1331,9 @@ async function submitMilitary() {
     pendingMilitary.bulletLines = r.trim().split('\n').map(l=>l.trim().replace(/^[•\-\*]\s*/,'')).filter(l=>l.length>0).map(l=>cleanCareerText(l));
     showCenter('militaryApproval');
   } catch(e) {
-    addAIMsg('Could not connect — please try again.');
-    showSection('military');
+    const msg = e?.name==='AbortError' ? 'The request timed out — please try again.' : 'Could not connect — please try again.';
+    addAIMsg(msg);
+    showCenter('military');
   }
 }
 
@@ -2266,14 +2267,14 @@ async function generateCoverLetter(){const p=resumeData.personal,c=resumeData.ca
 async function callClaude(system,messages,opts){
   const body={model:'claude-sonnet-4-6',max_tokens:(opts&&opts.maxTokens)||2048,messages};
   if(system)body.system=system;
-  const res=await fetch('/api/claude',{
-    method:'POST',
-    headers:{'Content-Type':'application/json'},
-    body:JSON.stringify(body)
-  });
-  if(!res.ok){const e=await res.json().catch(()=>({}));throw new Error(e.error||`Server error ${res.status}`);}
-  const data=await res.json();
-  return data.content[0].text;
+  const controller=new AbortController();
+  const timer=setTimeout(()=>controller.abort(),40000);
+  try{
+    const res=await fetch('/api/claude',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(body),signal:controller.signal});
+    if(!res.ok){const e=await res.json().catch(()=>({}));throw new Error(e.error||`Server error ${res.status}`);}
+    const data=await res.json();
+    return data.content[0].text;
+  }finally{clearTimeout(timer);}
 }
 
 // ── Right Panel Chat ──────────────────────────────
