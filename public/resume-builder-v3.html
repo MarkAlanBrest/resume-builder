@@ -295,7 +295,7 @@ const MONTHS = ['January','February','March','April','May','June','July','August
 
 // ── Color Schemes ────────────────────────────────
 const BULLET_OPTIONS = ['•','▸','◆','–','✓'];
-const SECTION_ICONS = {Objective:'🎯 ',Experience:'💼 ',Education:'🎓 ',Certifications:'📜 ',Skills:'⚡ '};
+const SECTION_ICONS = {Objective:'🎯 ',Experience:'💼 ','Military Service':'🎖️ ',Education:'🎓 ',Certifications:'📜 ',Skills:'⚡ '};
 
 const COLOR_SCHEMES = {
   navy:    {label:'Navy',    hex:'#1e3a8a',accent:'1e3a8a',sideText:'FFFFFF'},
@@ -310,6 +310,7 @@ const SECTIONS = [
   {key:'personal',      label:'Personal Info',   icon:'👤'},
   {key:'career',        label:'Career Profile',  icon:'🎯'},
   {key:'work',          label:'Work Experience', icon:'💼'},
+  {key:'military',      label:'Military',        icon:'🎖️'},
   {key:'education',     label:'Education',       icon:'🎓'},
   {key:'skills',        label:'Skills & Certs',  icon:'⚡'},
   {key:'template',      label:'Build Resume',    icon:'📄'},
@@ -322,6 +323,7 @@ const TIPS = {
   work:`When describing your duties, just write naturally — don't worry about formatting. Mention specific tools, equipment, tasks, and anything you're proud of. I'll convert it into professional bullet points for you.`,
   education:`Your trade program has been pre-filled below. Confirm the details and add your graduation year. Then add your high school diploma or any other education you have.`,
   skills:`Write out every skill and certification you have — tools, equipment, software, techniques, licenses, OSHA/EPA/CDL cards, manufacturer training, anything relevant. I'll clean it up, remove duplicates, and organize it professionally.`,
+  military:`Add any military service — active duty, reserves, or National Guard. Even if your role wasn't in your trade field, employers value military experience for leadership, discipline, reliability, and hands-on skills. Add what you served and describe your duties naturally.`,
   template:`Pick the style and color that matches the field you're entering. Classic and Executive are safe for any employer. Modern works well for technical roles. Bold makes a strong first impression.`,
 };
 
@@ -373,7 +375,7 @@ let chatHistory = [];
 let isAIThinking = false;
 
 const resumeData = {
-  personal:{},careerContext:{},workExperience:[],education:[],certifications:[],skills:[],references:'Available upon request'
+  personal:{},careerContext:{},workExperience:[],militaryService:[],education:[],certifications:[],skills:[],references:'Available upon request'
 };
 const sectionStatus = {};
 SECTIONS.forEach(s => sectionStatus[s.key] = 'pending');
@@ -381,6 +383,10 @@ SECTIONS.forEach(s => sectionStatus[s.key] = 'pending');
 // Temp state for multi-step flows
 let pendingWork = {};
 let pendingEdu  = {};
+let pendingMilitary = {};
+let editingWorkIndex     = -1;
+let editingEduIndex      = -1;
+let editingMilitaryIndex = -1;
 let pendingCert = {};
 let selectedStyle = 'classic';
 let selectedColor = 'navy';
@@ -388,13 +394,24 @@ let selectedBullet = '•';
 let showIcons = true;
 let selectedResumeFile = null;
 
+// ── Progress Save / Load ──────────────────────────
+function saveProgress(){
+  try{localStorage.setItem('rb_progress',JSON.stringify(resumeData));}catch(e){}
+}
+function loadProgress(){
+  try{const s=localStorage.getItem('rb_progress');return s?JSON.parse(s):null;}catch(e){return null;}
+}
+function clearProgress(){
+  localStorage.removeItem('rb_progress');
+}
+
 // ── API Key ───────────────────────────────────────
 function activateKey() {
   const inp = document.getElementById('apiKeyInput');
   const key = inp.value.trim();
   if (!key.startsWith('sk-ant-')) { shakeEl(inp); return; }
   apiKey = key;
-  sessionStorage.setItem('rb_key', key);
+  localStorage.setItem('rb_key', key);
   document.getElementById('apiKeyArea').style.display = 'none';
   document.getElementById('keyReady').style.display = 'flex';
   document.getElementById('chatInput').disabled = false;
@@ -437,6 +454,7 @@ function navClick(key) {
 function setStatus(key, status) {
   sectionStatus[key] = status;
   renderLeftNav();
+  if(status==='done') saveProgress();
 }
 
 // ── Center Panel Router ───────────────────────────
@@ -451,8 +469,11 @@ function showCenter(view, data) {
     objectiveApproval: renderObjectiveApproval,
     work:           renderWorkForm,
     workApproval:   renderWorkApproval,
-    workDone:       renderWorkDone,
-    education:      renderEduForm,
+    workDone:          renderWorkDone,
+    military:          renderMilitaryForm,
+    militaryApproval:  renderMilitaryApproval,
+    militaryDone:      renderMilitaryDone,
+    education:         renderEduForm,
     eduApproval:    renderEduApproval,
     eduDone:        renderEduDone,
     skills:         renderSkillsForm,
@@ -470,6 +491,7 @@ function showSection(key) {
   if (key === 'personal') { showCenter('personal'); sendTip('personal'); }
   else if (key === 'career') { showCenter('career'); sendTip('career'); }
   else if (key === 'work') { showCenter('work'); sendTip('work'); }
+  else if (key === 'military') { showCenter('military'); sendTip('military'); }
   else if (key === 'education') { showCenter('education'); sendTip('education'); }
   else if (key === 'certifications') { showSection('skills'); }
   else if (key === 'skills') { showCenter('skills'); sendTip('skills'); }
@@ -478,19 +500,58 @@ function showSection(key) {
 
 // ── Welcome ───────────────────────────────────────
 function renderWelcome() {
+  const saved = loadProgress();
+  const hasSaved = !!(saved && (saved.personal?.firstName || saved.workExperience?.length));
+  const savedName = saved?.personal?.firstName ? ` for ${escHtml(saved.personal.firstName)}` : '';
   return `<div class="welcome-card">
     <span class="welcome-icon">🎓</span>
     <div class="welcome-title">Build Your Professional Resume</div>
     <div class="welcome-sub">I'll guide you through each section. Fill out the forms in this panel, ask me questions in the chat, and I'll generate a polished resume when you're done.</div>
+    ${hasSaved ? `<div class="prefill-banner" style="margin:0 0 20px;text-align:left">📋 Saved progress found${savedName}. Continue where you left off or start over.</div>` : ''}
     <div class="welcome-actions">
-      <button class="btn btn-primary btn-lg" onclick="startFresh()">Start Fresh</button>
+      ${hasSaved ? `<button class="btn btn-primary btn-lg" onclick="continueProgress()">Continue Where I Left Off</button>` : ''}
+      <button class="btn ${hasSaved ? 'btn-ghost' : 'btn-primary'} btn-lg" onclick="startFresh()">${hasSaved ? 'Start Over' : 'Start Fresh'}</button>
       <button class="btn btn-ghost btn-lg" onclick="showCenter('upload')">Upload Existing Resume</button>
     </div>
   </div>`;
 }
 
 function startFresh() {
+  clearProgress();
+  resumeData.personal={};
+  resumeData.careerContext={};
+  resumeData.workExperience=[];
+  resumeData.militaryService=[];
+  resumeData.education=[];
+  resumeData.certifications=[];
+  resumeData.skills=[];
+  resumeData.references='Available upon request';
+  SECTIONS.forEach(s=>sectionStatus[s.key]='pending');
+  renderLeftNav();
   showSection('personal');
+}
+
+function continueProgress() {
+  const saved = loadProgress();
+  if (!saved) { startFresh(); return; }
+  Object.assign(resumeData, saved);
+  if (saved.personal?.firstName)                            setStatus('personal','done');
+  if (saved.careerContext?.objective)                       setStatus('career','done');
+  if (saved.workExperience?.length || saved.militaryService?.length || saved.education?.length) setStatus('work','done');
+  if (saved.militaryService?.length || saved.education?.length) setStatus('military','done');
+  if (saved.education?.length)                             setStatus('education','done');
+  if (saved.skills?.length || saved.certifications?.length) {
+    setStatus('skills','done');
+    setStatus('certifications','done');
+  }
+  const name = saved.personal?.firstName ? `, ${saved.personal.firstName}` : '';
+  addAIMsg(`Welcome back${name}! I've restored your progress. Use the menu on the left to pick up where you left off.`);
+  if      (!saved.personal?.firstName)          showSection('personal');
+  else if (!saved.careerContext?.objective)      showSection('career');
+  else if (!saved.workExperience?.length && !saved.militaryService?.length && !saved.education?.length) showSection('work');
+  else if (!saved.education?.length)            showSection('military');
+  else if (!saved.skills?.length && !saved.certifications?.length) showSection('skills');
+  else                                           showSection('template');
 }
 
 // ── Upload ────────────────────────────────────────
@@ -975,11 +1036,19 @@ async function generateObjective() {
 
 function renderObjectiveApproval() {
   const obj = resumeData.careerContext.objective || '';
+  const wordCount = obj.trim().split(/\s+/).filter(Boolean).length;
+  const tooShort = wordCount < 20;
+  const tooLong = wordCount > 80;
+  const lengthColor = tooShort || tooLong ? '#d97706' : '#16a34a';
+  const lengthMsg = tooShort ? `⚠ A bit short (${wordCount} words) — try Rewrite for more detail`
+    : tooLong ? `⚠ A bit long (${wordCount} words) — try Rewrite for a tighter version`
+    : `✓ Good length (${wordCount} words)`;
   return `<div class="section-hdr"><div class="section-hdr-icon">🎯</div><div><div class="section-hdr-title">Resume Objective</div><div class="section-hdr-sub">This goes at the top of your resume</div></div></div>
   <div class="approval-card">
     <div class="approval-hdr">✓ Objective — Review</div>
     <div class="approval-body">
       <div class="a-row" style="display:block;padding:12px 0"><span class="a-value" style="font-size:15px;line-height:1.65">${escHtml(obj)}</span></div>
+      <div class="a-row" style="padding:8px 0"><span style="font-size:12px;font-weight:600;color:${lengthColor}">${lengthMsg}</span></div>
     </div>
     <div class="approval-footer">
       <button class="btn btn-ghost" onclick="generateObjective()">Rewrite</button>
@@ -1077,43 +1146,271 @@ function sortedEducation() {
 
 function deleteWork(index) {
   resumeData.workExperience.splice(index,1);
+  saveProgress();
+  showSection('work');
+}
+
+function editWork(index) {
+  editingWorkIndex = index;
+  showCenter('work', resumeData.workExperience[index]);
+}
+
+function cancelEditWork() {
+  editingWorkIndex = -1;
+  pendingWork = {};
   showSection('work');
 }
 
 function deleteEdu(index) {
   resumeData.education.splice(index,1);
+  saveProgress();
   showSection('education');
 }
 
-function renderWorkForm() {
-  const p = resumeData.personal;
+function editEdu(index) {
+  editingEduIndex = index;
+  showCenter('education', resumeData.education[index]);
+}
+
+function cancelEditEdu() {
+  editingEduIndex = -1;
+  pendingEdu = {};
+  showSection('education');
+}
+
+// ── Military Service ──────────────────────────────
+const MILITARY_BRANCHES = ['United States Army','United States Navy','United States Marine Corps','United States Air Force','United States Space Force','United States Coast Guard','Army National Guard','Air National Guard','Army Reserve','Navy Reserve','Marine Corps Reserve','Air Force Reserve','Coast Guard Reserve'];
+
+function renderMilitaryForm(pf={}) {
+  const service = resumeData.militaryService;
+  const isEditing = editingMilitaryIndex >= 0;
+  const moOpts = sel => MONTHS.map(m=>`<option value="${m}" ${m===sel?'selected':''}>${m}</option>`).join('');
+  const branchOpts = MILITARY_BRANCHES.map(b=>`<option value="${b}" ${b===pf.branch?'selected':''}>${b}</option>`).join('');
+  const savedList = service.length ? `<div class="form-card" style="margin-bottom:16px">
+    <div class="form-card-hdr">🎖️ Saved Service Records (${service.length})</div>
+    <div class="form-card-body" style="padding-bottom:14px">
+      ${service.map((s,i)=>`<div style="display:flex;justify-content:space-between;align-items:center;gap:10px;padding:8px 0;border-bottom:1px solid var(--slate-100)">
+        <div><div style="font-size:14px;font-weight:600">${escHtml(s.rank||'')} — ${escHtml(s.branch||'')}</div><div style="font-size:12px;color:var(--slate-500)">${s.startMonth} ${s.startYear} – ${s.current?'Present':`${s.endMonth} ${s.endYear}`}</div></div>
+        <div style="display:flex;gap:6px">
+          <button class="btn btn-ghost" style="padding:6px 10px;font-size:12px" onclick="editMilitary(${i})">Edit</button>
+          <button class="btn btn-ghost" style="padding:6px 10px;font-size:12px" onclick="deleteMilitary(${i})">Delete</button>
+        </div>
+      </div>`).join('')}
+    </div>
+  </div>` : '';
+  const cardTitle = isEditing ? 'Edit Service Record' : service.length ? 'Add Another Service Record' : 'Service Details';
+  const footerLeft = isEditing
+    ? `<button class="btn btn-ghost" onclick="cancelEditMilitary()">Cancel</button>`
+    : `<button class="btn btn-ghost" onclick="skipMilitary()">Skip — No Military Service</button>`;
+  const dutiesLabel = isEditing ? 'Current Bullets — edit or rewrite *' : 'Duties &amp; Accomplishments *';
+  const dutiesValue = isEditing ? escHtml((pf.bulletLines||[]).join('\n')) : '';
+  return `<div class="section-hdr"><div class="section-hdr-icon">🎖️</div><div><div class="section-hdr-title">Military Service</div><div class="section-hdr-sub">${isEditing?'Editing service record':service.length?service.length+' record(s) saved — add another or continue':'Add military, reserve, or National Guard service'}</div></div></div>
+  ${savedList}
+  <div class="form-card">
+    <div class="form-card-hdr">🎖️ ${cardTitle}</div>
+    <div class="form-card-body">
+      <div class="f-row"><div class="f-group" id="fg-mbranch"><label>Branch *</label><select id="milBranch"><option value="">— Select Branch —</option>${branchOpts}</select><span class="f-err">Required</span></div><div class="f-group" id="fg-mrank"><label>Rank at Separation *</label><input id="milRank" value="${escHtml(pf.rank||'')}" placeholder="e.g. Sergeant (E-5), Petty Officer 2nd Class"><span class="f-err">Required</span></div></div>
+      <div class="f-row single"><div class="f-group"><label>Military Job Title / MOS <span style="font-weight:400;font-size:11px">(optional)</span></label><input id="milJob" value="${escHtml(pf.jobTitle||'')}" placeholder="e.g. Automotive Mechanic, 11B Infantryman, Machinist's Mate"></div></div>
+      <div class="f-row triple"><div class="f-group"><label>City</label><input id="milCity" value="${escHtml(pf.city||'')}" placeholder="Duty station city"></div><div class="f-group"><label>State</label><input id="milState" value="${escHtml(pf.state||'')}" placeholder="PA" maxlength="2" oninput="fmtState(this)"></div><div></div></div>
+      <div class="f-row">
+        <div class="f-group" id="fg-msd"><label>Start Date *</label><div class="date-pair"><select id="milStartMo"><option value="">Month</option>${moOpts(pf.startMonth)}</select><input id="milStartYr" value="${escHtml(pf.startYear||'')}" placeholder="Year" maxlength="4" inputmode="numeric"></div><span class="f-err">Required</span></div>
+        <div class="f-group" id="fg-med"><label>End Date</label><div class="date-pair"><select id="milEndMo" ${pf.current?'disabled':''}><option value="">Month</option>${moOpts(pf.endMonth)}</select><input id="milEndYr" value="${escHtml(pf.current?'':pf.endYear||'')}" placeholder="Year" maxlength="4" inputmode="numeric" ${pf.current?'disabled':''}></div><label class="check-opt-inline"><input type="checkbox" id="milCurJob" ${pf.current?'checked':''} onchange="toggleMilCurJob(this)"><span>Currently serving</span></label><span class="f-err">Enter an end date or mark currently serving.</span></div>
+      </div>
+      <div class="f-row single"><div class="f-group" id="fg-mduties"><label>${dutiesLabel}</label><textarea id="milDuties" rows="4" placeholder="Describe your role, responsibilities, equipment operated, people managed, or notable accomplishments.">${dutiesValue}</textarea><span class="f-err">Please describe your duties.</span></div></div>
+      <label class="check-opt-inline" style="margin:8px 0 4px"><input type="checkbox" id="milHonDischarge" ${pf.honorableDischarge?'checked':''}><span style="font-size:13px">Honorably discharged</span></label>
+    </div>
+    <div class="form-card-footer">
+      ${footerLeft}
+      <button class="btn btn-primary" onclick="submitMilitary()">${isEditing?'Update Bullets →':'Generate Bullets →'}</button>
+    </div>
+  </div>`;
+}
+
+function toggleMilCurJob(cb) {
+  document.getElementById('milEndMo').disabled = cb.checked;
+  document.getElementById('milEndYr').disabled = cb.checked;
+  if (cb.checked) { document.getElementById('milEndMo').value=''; document.getElementById('milEndYr').value=''; }
+}
+
+function skipMilitary() {
+  setStatus('military','done');
+  addAIMsg(`No military service recorded. Let's add your education — your trade program is already pre-filled.`);
+  showSection('education');
+}
+
+function collectMilitaryData() {
+  const cur = document.getElementById('milCurJob').checked;
+  return {
+    branch: document.getElementById('milBranch').value,
+    rank: cleanJobTitle(document.getElementById('milRank').value),
+    jobTitle: cleanJobTitle(document.getElementById('milJob').value),
+    city: cleanPlaceName(document.getElementById('milCity').value),
+    state: document.getElementById('milState').value.trim().toUpperCase(),
+    startMonth: document.getElementById('milStartMo').value,
+    startYear: document.getElementById('milStartYr').value.trim(),
+    endMonth: cur ? '' : document.getElementById('milEndMo').value,
+    endYear: cur ? '' : document.getElementById('milEndYr').value.trim(),
+    current: cur,
+    honorableDischarge: document.getElementById('milHonDischarge').checked,
+  };
+}
+
+function applyMilitaryData(m) {
+  const pairs = [['milBranch',m.branch],['milRank',m.rank],['milJob',m.jobTitle],['milCity',m.city],['milState',m.state],['milStartMo',m.startMonth],['milStartYr',m.startYear],['milEndMo',m.endMonth],['milEndYr',m.endYear]];
+  pairs.forEach(([id,val])=>{ const el=document.getElementById(id); if(el)el.value=val||''; });
+  const cur=document.getElementById('milCurJob');
+  if(cur){cur.checked=m.current;toggleMilCurJob(cur);}
+}
+
+function validateMilitaryData(m) {
+  let valid = true;
+  if (!m.branch) { setFieldError('fg-mbranch','Select a branch.'); valid=false; } else clearFieldError('fg-mbranch');
+  if (!m.rank||m.rank.length<2) { setFieldError('fg-mrank','Enter your rank.'); valid=false; } else clearFieldError('fg-mrank');
+  if (!m.startMonth||!m.startYear||!/^\d{4}$/.test(m.startYear)) { setFieldError('fg-msd','Enter a valid start date.'); valid=false; } else clearFieldError('fg-msd');
+  if (!m.current&&(!m.endMonth||!m.endYear||!/^\d{4}$/.test(m.endYear))) { setFieldError('fg-med','Enter an end date or mark currently serving.'); valid=false; } else clearFieldError('fg-med');
+  const duties=document.getElementById('milDuties')?.value||'';
+  if (!duties||duties.trim().length<3) { setFieldError('fg-mduties','Please describe your duties.'); valid=false; } else clearFieldError('fg-mduties');
+  return valid;
+}
+
+async function submitMilitary() {
+  const mil = collectMilitaryData();
+  applyMilitaryData(mil);
+  if (!validateMilitaryData(mil)) return;
+  Object.assign(pendingMilitary, mil);
+  const btn = document.querySelector('button[onclick="submitMilitary()"]');
+  if (btn) { btn.disabled=true; btn.textContent='Generating…'; }
+  const duties = document.getElementById('milDuties').value.trim();
+  const ci = document.getElementById('centerInner');
+  ci.innerHTML = `<div style="text-align:center;padding:60px 20px;color:var(--slate-500)"><div style="font-size:32px;margin-bottom:12px">⚙️</div>Generating bullet points…</div>`;
+  const tense = mil.current ? 'present tense' : 'past tense';
+  const sys = `Write 3–4 professional resume bullet points for military service. Use ${tense}. Branch: ${mil.branch}. Rank: ${mil.rank}. Job: ${mil.jobTitle||'not specified'}. Duties: ${duties}. Emphasize civilian-transferable skills: leadership, training, equipment operation, safety, teamwork, and logistics. Start each bullet with a strong action verb. No bullet characters. No "I". Plain text, one bullet per line.`;
+  try {
+    const r = await callClaude(sys,[{role:'user',content:'Write the bullet points.'}]);
+    pendingMilitary.bulletLines = r.trim().split('\n').map(l=>l.trim().replace(/^[•\-\*]\s*/,'')).filter(l=>l.length>0).map(l=>cleanCareerText(l));
+    showCenter('militaryApproval');
+  } catch(e) {
+    addAIMsg('Could not connect — please try again.');
+    showSection('military');
+  }
+}
+
+function renderMilitaryApproval() {
+  const m = pendingMilitary;
+  const loc = [m.city,m.state].filter(Boolean).join(', ');
+  const dates = `${m.startMonth} ${m.startYear} – ${m.current?'Present':`${m.endMonth} ${m.endYear}`}`;
+  const bullets = (m.bulletLines||[]).map(b=>`<li>${escHtml(b)}</li>`).join('');
+  return `<div class="section-hdr"><div class="section-hdr-icon">🎖️</div><div><div class="section-hdr-title">Military Service</div><div class="section-hdr-sub">Review before saving</div></div></div>
+  <div class="approval-card">
+    <div class="approval-hdr">✓ Service Record — Review</div>
+    <div class="approval-body">
+      <div class="a-row"><span class="a-label">Branch</span><span class="a-value">${escHtml(m.branch)}</span></div>
+      <div class="a-row"><span class="a-label">Rank</span><span class="a-value">${escHtml(m.rank)}${m.jobTitle?' — '+escHtml(m.jobTitle):''}</span></div>
+      ${loc?`<div class="a-row"><span class="a-label">Location</span><span class="a-value">${escHtml(loc)}</span></div>`:''}
+      <div class="a-row"><span class="a-label">Dates</span><span class="a-value">${escHtml(dates)}</span></div>
+      <div class="a-row" style="display:block;padding-top:8px"><ul class="bullet-list">${bullets}</ul></div>
+    </div>
+    <div class="approval-footer">
+      <button class="btn btn-ghost" onclick="showSection('military')">Edit</button>
+      <button class="btn btn-ghost" onclick="regenMilitaryBullets()">Rewrite</button>
+      <button class="btn btn-confirm" onclick="confirmMilitary()">Looks Good ✓</button>
+    </div>
+  </div>`;
+}
+
+async function regenMilitaryBullets() {
+  const ci = document.getElementById('centerInner');
+  ci.innerHTML = `<div style="text-align:center;padding:60px 20px;color:var(--slate-500)"><div style="font-size:32px;margin-bottom:12px">⚙️</div>Rewriting bullet points…</div>`;
+  const m = pendingMilitary;
+  const tense = m.current?'present tense':'past tense';
+  const sys = `Write 3–4 different professional resume bullet points for military service. Use ${tense}. Branch: ${m.branch}. Rank: ${m.rank}. Job: ${m.jobTitle||'not specified'}. Emphasize different civilian-transferable skills than before. No bullet characters. No "I". Plain text, one bullet per line.`;
+  try {
+    const r = await callClaude(sys,[{role:'user',content:'Rewrite the bullets.'}]);
+    pendingMilitary.bulletLines = r.trim().split('\n').map(l=>l.replace(/^[•\-\*]\s*/,'')).filter(l=>l.length>0).map(l=>cleanCareerText(l));
+    showCenter('militaryApproval');
+  } catch(e) { addAIMsg('Could not connect.'); showCenter('militaryApproval'); }
+}
+
+function confirmMilitary() {
+  if (editingMilitaryIndex >= 0) {
+    resumeData.militaryService[editingMilitaryIndex] = {...pendingMilitary};
+    editingMilitaryIndex = -1;
+  } else {
+    resumeData.militaryService.push({...pendingMilitary});
+  }
+  pendingMilitary = {};
+  setStatus('military','done');
+  showCenter('militaryDone');
+}
+
+function renderMilitaryDone() {
+  return `<div class="done-card">
+    <span class="done-icon">✅</span>
+    <div class="done-title">Service Record Saved</div>
+    <div class="done-sub">${resumeData.militaryService.length} service record(s) on your resume.</div>
+    <div class="done-actions">
+      <button class="btn btn-ghost" onclick="showSection('military')">Add Another</button>
+      <button class="btn btn-primary btn-lg" onclick="showSection('education')">Continue to Education →</button>
+    </div>
+  </div>`;
+}
+
+function editMilitary(index) {
+  editingMilitaryIndex = index;
+  showCenter('military', resumeData.militaryService[index]);
+}
+function cancelEditMilitary() {
+  editingMilitaryIndex = -1;
+  pendingMilitary = {};
+  showSection('military');
+}
+function deleteMilitary(index) {
+  resumeData.militaryService.splice(index,1);
+  saveProgress();
+  showSection('military');
+}
+
+function renderWorkForm(pf={}) {
   const jobs = resumeData.workExperience;
-  const monthOpts = MONTHS.map(m=>`<option value="${m}">${m}</option>`).join('');
+  const isEditing = editingWorkIndex >= 0;
+  const moOpts = sel => MONTHS.map(m=>`<option value="${m}" ${m===sel?'selected':''}>${m}</option>`).join('');
   const savedList = jobs.length ? `<div class="form-card" style="margin-bottom:16px">
     <div class="form-card-hdr">💼 Saved Positions (${jobs.length})</div>
     <div class="form-card-body" style="padding-bottom:14px">
       ${sortedWorkExperience().map(({job:j,index:i})=>`<div style="display:flex;justify-content:space-between;align-items:center;gap:10px;padding:8px 0;border-bottom:1px solid var(--slate-100)">
         <div><div style="font-size:14px;font-weight:600">${escHtml(j.jobTitle)} at ${escHtml(j.employer)}</div><div style="font-size:12px;color:var(--slate-500)">${j.startMonth} ${j.startYear} – ${j.current?'Present':`${j.endMonth} ${j.endYear}`}</div></div>
-        <button class="btn btn-ghost" style="padding:6px 10px;font-size:12px" onclick="deleteWork(${i})">Delete</button>
+        <div style="display:flex;gap:6px">
+          <button class="btn btn-ghost" style="padding:6px 10px;font-size:12px" onclick="editWork(${i})">Edit</button>
+          <button class="btn btn-ghost" style="padding:6px 10px;font-size:12px" onclick="deleteWork(${i})">Delete</button>
+        </div>
       </div>`).join('')}
     </div>
   </div>` : '';
-  return `<div class="section-hdr"><div class="section-hdr-icon">💼</div><div><div class="section-hdr-title">Work Experience</div><div class="section-hdr-sub">${jobs.length?jobs.length+' position(s) saved — add another or continue':'Add your work history'}</div></div></div>
+  const subTitle = isEditing ? 'Editing a saved position' : jobs.length ? `${jobs.length} position(s) saved — add another or continue` : 'Add your work history';
+  const cardTitle = isEditing ? 'Edit Position' : jobs.length ? 'Add Another Position' : 'Position Details';
+  const dutiesLabel = isEditing ? 'Current Bullets — edit or rewrite *' : 'Describe Your Duties *';
+  const dutiesValue = isEditing ? escHtml((pf.bulletLines||[]).join('\n')) : '';
+  const footerLeft = isEditing
+    ? `<button class="btn btn-ghost" onclick="cancelEditWork()">Cancel</button>`
+    : jobs.length
+      ? `<button class="btn btn-ghost" onclick="skipToEdu()">Skip — No More Jobs</button>`
+      : `<button class="btn btn-ghost" onclick="skipToEdu()">No Work History</button>`;
+  return `<div class="section-hdr"><div class="section-hdr-icon">💼</div><div><div class="section-hdr-title">Work Experience</div><div class="section-hdr-sub">${subTitle}</div></div></div>
   ${savedList}
   <div class="form-card">
-    <div class="form-card-hdr">💼 ${jobs.length?'Add Another Position':'Position Details'}</div>
+    <div class="form-card-hdr">💼 ${cardTitle}</div>
     <div class="form-card-body">
-      <div class="f-row"><div class="f-group" id="fg-emp"><label>Employer *</label><input id="empName" placeholder="Company name"><span class="f-err">Required</span></div><div class="f-group" id="fg-jt"><label>Job Title *</label><input id="jobTitle" placeholder="Your position" onblur="refreshDutySuggestions(this.value)"><span class="f-err">Required</span></div></div>
-      <div class="f-row triple"><div class="f-group" id="fg-wcity"><label>City</label><input id="wCity" placeholder="City"><span class="f-err">Enter a valid city or leave blank.</span></div><div class="f-group" id="fg-wstate"><label>State</label><input id="wState" placeholder="PA" maxlength="2" oninput="fmtState(this)"><span class="f-err">Use a valid 2-letter state or leave blank.</span></div><div></div></div>
+      <div class="f-row"><div class="f-group" id="fg-emp"><label>Employer *</label><input id="empName" value="${escHtml(pf.employer||'')}" placeholder="Company name"><span class="f-err">Required</span></div><div class="f-group" id="fg-jt"><label>Job Title *</label><input id="jobTitle" value="${escHtml(pf.jobTitle||'')}" placeholder="Your position" onblur="refreshDutySuggestions(this.value)"><span class="f-err">Required</span></div></div>
+      <div class="f-row triple"><div class="f-group" id="fg-wcity"><label>City</label><input id="wCity" value="${escHtml(pf.city||'')}" placeholder="City"><span class="f-err">Enter a valid city or leave blank.</span></div><div class="f-group" id="fg-wstate"><label>State</label><input id="wState" value="${escHtml(pf.state||'')}" placeholder="PA" maxlength="2" oninput="fmtState(this)"><span class="f-err">Use a valid 2-letter state or leave blank.</span></div><div></div></div>
       <div class="f-row">
-        <div class="f-group" id="fg-sd"><label>Start Date *</label><div class="date-pair"><select id="startMo"><option value="">Month</option>${monthOpts}</select><input id="startYr" placeholder="Year" maxlength="4" inputmode="numeric"></div><span class="f-err">Required</span></div>
-        <div class="f-group" id="fg-ed"><label>End Date</label><div class="date-pair"><select id="endMo"><option value="">Month</option>${monthOpts}</select><input id="endYr" placeholder="Year" maxlength="4" inputmode="numeric"></div><label class="check-opt-inline"><input type="checkbox" id="curJob" onchange="toggleCurJob(this)"><span>I currently work here</span></label><span class="f-err">Enter an end date after the start date, or mark current.</span></div>
+        <div class="f-group" id="fg-sd"><label>Start Date *</label><div class="date-pair"><select id="startMo"><option value="">Month</option>${moOpts(pf.startMonth)}</select><input id="startYr" value="${escHtml(pf.startYear||'')}" placeholder="Year" maxlength="4" inputmode="numeric"></div><span class="f-err">Required</span></div>
+        <div class="f-group" id="fg-ed"><label>End Date</label><div class="date-pair"><select id="endMo" ${pf.current?'disabled':''}><option value="">Month</option>${moOpts(pf.endMonth)}</select><input id="endYr" value="${escHtml(pf.current?'':pf.endYear||'')}" placeholder="Year" maxlength="4" inputmode="numeric" ${pf.current?'disabled':''}></div><label class="check-opt-inline"><input type="checkbox" id="curJob" ${pf.current?'checked':''} onchange="toggleCurJob(this)"><span>I currently work here</span></label><span class="f-err">Enter an end date after the start date, or mark current.</span></div>
       </div>
-      <div class="f-row single"><div class="f-group" id="fg-duties"><label>Describe Your Duties *</label><textarea id="duties" rows="4" placeholder="Describe what you did — tools, equipment, tasks, responsibilities. Write naturally; I'll convert it to bullet points."></textarea><span class="f-err">Please describe your duties.</span></div></div>
+      <div class="f-row single"><div class="f-group" id="fg-duties"><label>${dutiesLabel}</label><textarea id="duties" rows="4" placeholder="Describe what you did — tools, equipment, tasks, and responsibilities.">${dutiesValue}</textarea><span class="f-err">Please describe your duties.</span></div></div>
     </div>
     <div class="form-card-footer">
-      ${jobs.length?`<button class="btn btn-ghost" onclick="skipToEdu()">Skip — No More Jobs</button>`:'<button class="btn btn-ghost" onclick="skipToEdu()">No Work History</button>'}
-      <button class="btn btn-primary" onclick="submitWork()">Generate Bullets →</button>
+      ${footerLeft}
+      <button class="btn btn-primary" onclick="submitWork()">${isEditing?'Update Bullets →':'Generate Bullets →'}</button>
     </div>
   </div>`;
 }
@@ -1126,8 +1423,8 @@ function toggleCurJob(cb) {
 
 function skipToEdu() {
   setStatus('work','done');
-  addAIMsg(`Work history saved. Let's add your education — your trade program is already pre-filled.`);
-  showSection('education');
+  addAIMsg(`Work history saved. Have you served in the military? Add your service record or skip ahead to Education.`);
+  showSection('military');
 }
 
 async function submitWork() {
@@ -1259,7 +1556,12 @@ async function regenBullets() {
 }
 
 function confirmWork() {
-  resumeData.workExperience.push({...pendingWork});
+  if (editingWorkIndex >= 0) {
+    resumeData.workExperience[editingWorkIndex] = {...pendingWork};
+    editingWorkIndex = -1;
+  } else {
+    resumeData.workExperience.push({...pendingWork});
+  }
   resumeData.workExperience.sort((a,b)=>workSortValue(b)-workSortValue(a));
   pendingWork = {};
   setStatus('work','done');
@@ -1273,7 +1575,7 @@ function renderWorkDone() {
     <div class="done-sub">You have ${resumeData.workExperience.length} position(s) on your resume.</div>
     <div class="done-actions">
       <button class="btn btn-ghost" onclick="showSection('work')">Add Another Position</button>
-      <button class="btn btn-primary btn-lg" onclick="skipToEdu()">Continue to Education →</button>
+      <button class="btn btn-primary btn-lg" onclick="showSection('military')">Continue to Military →</button>
     </div>
   </div>`;
 }
@@ -1307,11 +1609,11 @@ function renderEduForm(prefill) {
   const isInProgress = pf.gradYear === 'In Progress';
   const banner = pf.isPrefilled ? `<div class="prefill-banner">ℹ️ Pre-filled from your program. Add your graduation month/year and confirm.</div>` : '';
   const saved = resumeData.education;
-  const savedList = saved.length ? `<div class="form-card" style="margin-bottom:16px"><div class="form-card-hdr">🎓 Saved Education (${saved.length})</div><div class="form-card-body" style="padding-bottom:14px">${sortedEducation().map(({edu:e,index:i})=>`<div style="display:flex;justify-content:space-between;align-items:center;gap:10px;padding:8px 0;border-bottom:1px solid var(--slate-100)"><div><div style="font-size:14px;font-weight:600">${escHtml(e.degree)}${e.fieldOfStudy?' – '+escHtml(e.fieldOfStudy):''}</div><div style="font-size:12px;color:var(--slate-500)">${escHtml(e.school)} | ${escHtml(eduGradDate(e))}</div></div><button class="btn btn-ghost" style="padding:6px 10px;font-size:12px" onclick="deleteEdu(${i})">Delete</button></div>`).join('')}</div></div>` : '';
+  const savedList = saved.length ? `<div class="form-card" style="margin-bottom:16px"><div class="form-card-hdr">🎓 Saved Education (${saved.length})</div><div class="form-card-body" style="padding-bottom:14px">${sortedEducation().map(({edu:e,index:i})=>`<div style="display:flex;justify-content:space-between;align-items:center;gap:10px;padding:8px 0;border-bottom:1px solid var(--slate-100)"><div><div style="font-size:14px;font-weight:600">${escHtml(e.degree)}${e.fieldOfStudy?' – '+escHtml(e.fieldOfStudy):''}</div><div style="font-size:12px;color:var(--slate-500)">${escHtml(e.school)} | ${escHtml(eduGradDate(e))}</div></div><div style="display:flex;gap:6px"><button class="btn btn-ghost" style="padding:6px 10px;font-size:12px" onclick="editEdu(${i})">Edit</button><button class="btn btn-ghost" style="padding:6px 10px;font-size:12px" onclick="deleteEdu(${i})">Delete</button></div></div>`).join('')}</div></div>` : '';
   return `<div class="section-hdr"><div class="section-hdr-icon">🎓</div><div><div class="section-hdr-title">Education</div><div class="section-hdr-sub">${saved.length?saved.length+' entr(ies) saved':'Schools, degrees, and credentials'}</div></div></div>
   ${savedList}
   <div class="form-card">
-    <div class="form-card-hdr">🎓 Education Entry</div>
+    <div class="form-card-hdr">🎓 ${editingEduIndex >= 0 ? 'Edit Education Entry' : 'Education Entry'}</div>
     <div class="form-card-body">
       ${banner}
       <div class="f-row single"><div class="f-group" id="fg-sch"><label>School Name *</label><input id="schoolName" value="${escHtml(pf.school||'')}" placeholder="School or institution name"><span class="f-err">Required</span></div></div>
@@ -1326,8 +1628,13 @@ function renderEduForm(prefill) {
       </div>
     </div>
     <div class="form-card-footer">
-      ${saved.length?`<button class="btn btn-ghost" onclick="moveToCerts()">No More Education</button>`:'<button class="btn btn-ghost" onclick="moveToCerts()">Skip Education</button>'}
-      <button class="btn btn-primary" onclick="submitEdu()">Continue →</button>
+      ${editingEduIndex >= 0
+        ? `<button class="btn btn-ghost" onclick="cancelEditEdu()">Cancel</button>`
+        : saved.length
+          ? `<button class="btn btn-ghost" onclick="moveToCerts()">No More Education</button>`
+          : `<button class="btn btn-ghost" onclick="moveToCerts()">Skip Education</button>`
+      }
+      <button class="btn btn-primary" onclick="submitEdu()">${editingEduIndex >= 0 ? 'Update Entry →' : 'Continue →'}</button>
     </div>
   </div>`;
 }
@@ -1498,9 +1805,14 @@ function renderEduApproval() {
 }
 
 function confirmEdu() {
-  resumeData.education.push({...pendingEdu});
+  if (editingEduIndex >= 0) {
+    resumeData.education[editingEduIndex] = {...pendingEdu};
+    editingEduIndex = -1;
+  } else {
+    resumeData.education.push({...pendingEdu});
+  }
   resumeData.education.sort((a,b)=>eduSortValue(b)-eduSortValue(a));
-  pendingEdu={};
+  pendingEdu = {};
   setStatus('education','done');
   showCenter('eduDone');
 }
@@ -1756,7 +2068,9 @@ async function generateResume() {
     const color = COLOR_SCHEMES[selectedColor];
     const doc = await buildDocument(resumeData, selectedStyle, color);
     const blob = await docx.Packer.toBlob(doc);
-    saveAs(blob, `resume-${selectedStyle}-${selectedColor}.docx`);
+    const p=resumeData.personal;
+    const fname=[p.firstName,p.lastName].filter(Boolean).join('-')||'Resume';
+    saveAs(blob, `${fname}-Resume.docx`);
     setStatus('template','done');
     btn.disabled=false; btn.textContent='Download Again ↓';
     addAIMsg(`Your resume has been downloaded! Change the style or color anytime and click Download Again to try a different look.`);
@@ -1771,6 +2085,7 @@ function bullet(text){return new docx.Paragraph({children:[new docx.TextRun({tex
 function jobBlock(job){const items=[],loc=[job.city,job.state].filter(Boolean).join(', '),end=job.current?'Present':[job.endMonth,job.endYear].filter(Boolean).join(' '),dates=`${[job.startMonth,job.startYear].filter(Boolean).join(' ')} – ${end}`;items.push(new docx.Paragraph({spacing:{before:320,after:60},children:[new docx.TextRun({text:job.jobTitle,bold:true,size:26,color:'1a1a1a'}),new docx.TextRun({text:`  •  ${job.employer}${loc?'  •  '+loc:''}`,size:24,color:'444444'})]}));items.push(new docx.Paragraph({spacing:{before:0,after:160},children:[new docx.TextRun({text:dates,italics:true,size:22,color:'777777'})]}));(job.bulletLines||[]).forEach(b=>items.push(bullet(b)));return items;}
 function eduBlock(edu){const loc=[edu.city,edu.state].filter(Boolean).join(', '),field=edu.fieldOfStudy?` – ${edu.fieldOfStudy}`:'';return new docx.Paragraph({spacing:{before:280,after:160},children:[new docx.TextRun({text:`${edu.degree}${field}`,bold:true,size:24,color:'1a1a1a'}),new docx.TextRun({text:`  •  ${edu.school}${loc?', '+loc:''}  •  ${eduGradDate(edu)}`,size:22,color:'555555'})]})}
 function certBlock(cert){return new docx.Paragraph({spacing:{before:200,after:140},children:[new docx.TextRun({text:cert.name,bold:true,size:24}),...(cert.org||cert.year?[new docx.TextRun({text:`  —  ${[cert.org,cert.year].filter(Boolean).join(', ')}`,size:22,color:'666666'})]:[])]})}
+function militaryBlock(mil){const items=[];const loc=[mil.city,mil.state].filter(Boolean).join(', ');const end=mil.current?'Present':[mil.endMonth,mil.endYear].filter(Boolean).join(' ');const dates=`${[mil.startMonth,mil.startYear].filter(Boolean).join(' ')} – ${end}`;items.push(new docx.Paragraph({spacing:{before:320,after:60},children:[new docx.TextRun({text:mil.rank||'',bold:true,size:26,color:'1a1a1a'}),new docx.TextRun({text:`  •  ${mil.branch}${mil.jobTitle?'  •  '+mil.jobTitle:''}`,size:24,color:'444444'})]}));if(loc)items.push(new docx.Paragraph({spacing:{before:0,after:40},children:[new docx.TextRun({text:loc,italics:true,size:22,color:'777777'})]}));items.push(new docx.Paragraph({spacing:{before:0,after:160},children:[new docx.TextRun({text:dates,italics:true,size:22,color:'777777'})]}));(mil.bulletLines||[]).forEach(b=>items.push(bullet(b)));return items;}
 
 function sectionLabel(t){if(!showIcons)return t.toUpperCase();const icon=SECTION_ICONS[t]||'';return icon+t.toUpperCase();}
 
@@ -1785,6 +2100,7 @@ function buildClassic(data,color){
   const sec=t=>new docx.Paragraph({children:[new docx.TextRun({text:sectionLabel(t),bold:true,size:28,color:ac})],border:{bottom:{style:docx.BorderStyle.SINGLE,size:4,color:ac}},spacing:{before:320,after:180}});
   if(c.objective){ch.push(sec('Objective'));ch.push(bodyTxt(c.objective,{after:140}));}
   if(data.workExperience?.length){ch.push(sec('Experience'));data.workExperience.forEach(j=>jobBlock(j).forEach(q=>ch.push(q)));}
+  if(data.militaryService?.length){ch.push(sec('Military Service'));data.militaryService.forEach(m=>militaryBlock(m).forEach(q=>ch.push(q)));}
   if(data.education?.length){ch.push(sec('Education'));data.education.forEach(e=>ch.push(eduBlock(e)));}
   if(data.certifications?.length){ch.push(sec('Certifications'));data.certifications.forEach(cert=>ch.push(certBlock(cert)));}
   if(data.skills?.length){ch.push(sec('Skills'));ch.push(bodyTxt(Array.isArray(data.skills)?data.skills.join('   •   '):data.skills,{after:100}));}
@@ -1804,6 +2120,7 @@ function buildModern(data,color){
   const mainSec=t=>new docx.Paragraph({children:[new docx.TextRun({text:sectionLabel(t),bold:true,size:28,color:ac})],border:{bottom:{style:docx.BorderStyle.SINGLE,size:4,color:ac}},spacing:{before:280,after:160}});
   if(c.objective){main.push(mainSec('Objective'));main.push(bodyTxt(c.objective,{after:120}));}
   if(data.workExperience?.length){main.push(mainSec('Experience'));data.workExperience.forEach(j=>jobBlock(j).forEach(q=>main.push(q)));}
+  if(data.militaryService?.length){main.push(mainSec('Military Service'));data.militaryService.forEach(m=>militaryBlock(m).forEach(q=>main.push(q)));}
   if(data.education?.length){main.push(mainSec('Education'));data.education.forEach(e=>main.push(eduBlock(e)));}
   main.push(spacer(200));
   main.push(new docx.Paragraph({children:[new docx.TextRun({text:'References Available Upon Request',italics:true,size:20,color:'999999'})]}));
@@ -1819,6 +2136,7 @@ function buildBold(data,color){
   const sec=t=>new docx.Paragraph({spacing:{before:300,after:160},border:{left:{style:docx.BorderStyle.SINGLE,size:18,color:ac}},indent:{left:twip(.18)},children:[new docx.TextRun({text:sectionLabel(t),bold:true,size:28,color:ac})]});
   if(c.objective){ch.push(sec('Objective'));ch.push(bodyTxt(c.objective,{after:120}));}
   if(data.workExperience?.length){ch.push(sec('Experience'));data.workExperience.forEach(j=>jobBlock(j).forEach(q=>ch.push(q)));}
+  if(data.militaryService?.length){ch.push(sec('Military Service'));data.militaryService.forEach(m=>militaryBlock(m).forEach(q=>ch.push(q)));}
   if(data.education?.length){ch.push(sec('Education'));data.education.forEach(e=>ch.push(eduBlock(e)));}
   if(data.certifications?.length){ch.push(sec('Certifications'));data.certifications.forEach(cert=>ch.push(certBlock(cert)));}
   if(data.skills?.length){ch.push(sec('Skills'));ch.push(bodyTxt(Array.isArray(data.skills)?data.skills.join('   •   '):data.skills,{after:100}));}
@@ -1967,7 +2285,7 @@ function escHtml(str){if(!str)return '';const d=document.createElement('div');d.
 
 // ── Init ──────────────────────────────────────────
 window.addEventListener('load',()=>{
-  const key = HARDCODED_KEY || sessionStorage.getItem('rb_key');
+  const key = HARDCODED_KEY || localStorage.getItem('rb_key');
   if (key&&key.startsWith('sk-ant-')){
     apiKey=key;
     document.getElementById('apiKeyInput').value=key;
