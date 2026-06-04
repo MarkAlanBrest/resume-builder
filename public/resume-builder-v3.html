@@ -311,7 +311,7 @@ const TIPS = {
   work:`When describing your duties, just write naturally — don't worry about formatting. Mention specific tools, equipment, tasks, and anything you're proud of. I'll convert it into professional bullet points for you.`,
   education:`Your trade program has been pre-filled below. Confirm the details and add your graduation year. Then add your high school diploma or any other education you have.`,
   skills:`Write out every skill and certification you have — tools, equipment, software, techniques, licenses, OSHA/EPA/CDL cards, manufacturer training, anything relevant. I'll clean it up, remove duplicates, and organize it professionally.`,
-  military:`Add any military service — active duty, reserves, or National Guard. Even if your role wasn't in your trade field, employers value military experience for leadership, discipline, reliability, and hands-on skills. Add what you served and describe your duties naturally.`,
+  military:`Add your military service below — active duty, reserves, or National Guard. In the Duties box, describe your role naturally: what you did every day, equipment you operated or maintained, people you supervised or trained, and anything you're proud of. I'll turn it into professional resume bullets that highlight leadership, reliability, technical skills, and teamwork — all things trade employers value.`,
   template:`Pick the style and color that matches the field you're entering. Classic and Executive are safe for any employer. Modern works well for technical roles. Bold makes a strong first impression.`,
 };
 
@@ -323,6 +323,34 @@ const WORK_TIP_EXAMPLES = [
   {match:/building|construction/i,examples:['Measured, cut, and assembled materials for construction and repair projects.','Used hand and power tools safely while supporting framing, drywall, or finish work.','Maintained job-site organization and followed directions from supervisors and crew leads.']},
   {match:/truck|cdl|diesel|heavy equipment/i,examples:['Completed pre-trip inspections and followed safety procedures for vehicles or equipment.','Assisted with maintenance, repair, and troubleshooting of diesel or heavy equipment systems.','Documented work performed and kept tools, parts, and work areas organized.']},
   {match:/machinist|cnc|manufacturing/i,examples:['Operated or assisted with CNC machines, measuring tools, and production equipment.','Read work instructions and checked parts for accuracy using calipers or gauges.','Maintained quality standards while keeping the workstation clean and organized.']},
+];
+
+const MILITARY_DUTY_EXAMPLES = [
+  {match:/Army|Marine/i,label:'Army / Marine Corps',examples:[
+    'Performed daily vehicle checks, weapons maintenance, and equipment accountability. Conducted security patrols and supported base operations under supervision of non-commissioned officers.',
+    'Operated and maintained assigned vehicles, weapons systems, and communications equipment. Completed preventive maintenance checks, identified deficiencies, and coordinated repairs with the maintenance section.',
+    'Supervised a team of soldiers in daily mission tasks, enforced safety standards, maintained equipment accountability records, and trained junior members on proper procedures and military standards.',
+  ]},
+  {match:/Navy|Coast Guard/i,label:'Navy / Coast Guard',examples:[
+    'Stood watch, performed equipment inspections, and maintained assigned machinery and systems according to the ship maintenance schedule and safety procedures.',
+    'Operated, troubleshot, and maintained shipboard equipment or electronics. Completed work orders, documented all maintenance performed, and coordinated with division leadership.',
+    'Conducted damage control drills, maintained fire safety and emergency equipment, and supported shipboard operations as part of a coordinated deck or engineering crew.',
+  ]},
+  {match:/Air Force|Space Force/i,label:'Air Force / Space Force',examples:[
+    'Performed aircraft or equipment maintenance using technical orders and inspection checklists. Documented all servicing and discrepancies in the maintenance management system.',
+    'Operated communications, computer, or technical systems in support of mission requirements. Troubleshot faults, maintained operational logs, and coordinated with team members to restore systems.',
+    'Enforced installation security, conducted vehicle and personnel inspections, and responded to incidents following established rules of engagement and standing operating procedures.',
+  ]},
+  {match:/National Guard|Reserve/i,label:'National Guard / Reserve',examples:[
+    'Completed required drill weekends and annual training, maintaining military readiness alongside civilian employment. Participated in unit missions, equipment maintenance, and skill qualifications.',
+    'Provided support during state activations including disaster response, emergency management, and community assistance operations, coordinating with civilian agencies under leadership direction.',
+    'Maintained individual and unit readiness through regular training, physical fitness standards, and equipment accountability during part-time service commitment.',
+  ]},
+  {match:/.*/,label:'Military',examples:[
+    'Operated and maintained assigned equipment, ensuring readiness through preventive maintenance and regular inspections. Documented all work performed and reported deficiencies to leadership.',
+    'Led or supported a team in daily operational tasks, enforcing safety standards, tracking equipment accountability, and training junior personnel on proper procedures.',
+    'Completed assigned duties with a focus on mission readiness, safety compliance, and effective communication with supervisors, peers, and subordinate personnel.',
+  ]},
 ];
 
 const SKILL_CERT_TIP_EXAMPLES = [
@@ -1175,7 +1203,7 @@ function renderMilitaryForm(pf={}) {
   <div class="form-card">
     <div class="form-card-hdr">🎖️ ${cardTitle}</div>
     <div class="form-card-body">
-      <div class="f-row"><div class="f-group" id="fg-mbranch"><label>Branch *</label><select id="milBranch"><option value="">— Select Branch —</option>${branchOpts}</select><span class="f-err">Required</span></div><div class="f-group" id="fg-mrank"><label>Rank at Separation *</label><input id="milRank" value="${escHtml(pf.rank||'')}" placeholder="e.g. Sergeant (E-5), Petty Officer 2nd Class"><span class="f-err">Required</span></div></div>
+      <div class="f-row"><div class="f-group" id="fg-mbranch"><label>Branch *</label><select id="milBranch" onchange="refreshMilitarySuggestions(this.value)"><option value="">— Select Branch —</option>${branchOpts}</select><span class="f-err">Required</span></div><div class="f-group" id="fg-mrank"><label>Rank at Separation *</label><input id="milRank" value="${escHtml(pf.rank||'')}" placeholder="e.g. Sergeant (E-5), Petty Officer 2nd Class"><span class="f-err">Required</span></div></div>
       <div class="f-row single"><div class="f-group"><label>Military Job Title / MOS <span style="font-weight:400;font-size:11px">(optional)</span></label><input id="milJob" value="${escHtml(pf.jobTitle||'')}" placeholder="e.g. Automotive Mechanic, 11B Infantryman, Machinist's Mate"></div></div>
       <div class="f-row triple"><div class="f-group"><label>City</label><input id="milCity" value="${escHtml(pf.city||'')}" placeholder="Duty station city"></div><div class="f-group"><label>State</label><input id="milState" value="${escHtml(pf.state||'')}" placeholder="PA" maxlength="2" oninput="fmtState(this)"></div><div></div></div>
       <div class="f-row">
@@ -1902,15 +1930,21 @@ async function submitSkills() {
   const ci = document.getElementById('centerInner');
   ci.innerHTML = `<div style="text-align:center;padding:60px 20px;color:var(--slate-500)"><div style="font-size:32px;margin-bottom:12px">⚡</div>Organizing your skills and certifications…</div>`;
   const prog = resumeData.personal.program||'';
-  const sys = `Organize skills and certifications for a ${prog} student's resume. Clean up spelling, capitalization, duplicates, and professional wording. Return ONLY JSON with this shape: {"skills":["MIG/TIG Welding","Blueprint Reading"],"certifications":[{"name":"OSHA 10","org":"OSHA","year":""}]}. Do not invent certifications. Raw skills: "${rawSkills}" Raw certifications: "${rawCerts || 'none'}"`;
+  const sys = `You organize skills and certifications for a trade school student's resume. Return ONLY valid JSON — no explanations, no questions, no other text. Shape: {"skills":["MIG/TIG Welding","Blueprint Reading"],"certifications":[{"name":"OSHA 10","org":"OSHA","year":""}]}. Rules: clean spelling/capitalization/duplicates, make professional, do not invent certifications, omit certifications array entries that were not provided.`;
+  const userMsg = `Program: ${prog}\nRaw skills: ${rawSkills}\nRaw certifications: ${rawCerts || 'none'}`;
   try {
-    const result = await callClaude(sys,[{role:'user',content:'Organize my skills.'}]);
+    const result = await callClaude(sys,[{role:'user',content:userMsg}]);
     let data;
     try { data=JSON.parse(result.trim().replace(/^```(?:json)?\s*/i,'').replace(/\s*```$/,'')); }
-    catch { data={skills:result.split('\n').map(l=>l.replace(/^[•\-\*"\[,\]]+\s*/,'').replace(/[",\]]+$/,'').trim()).filter(l=>l.length>1),certifications:parseCertLines(rawCerts)}; }
+    catch { data={skills:result.split('\n').map(l=>l.replace(/^[•\-\*"\[,\]]+\s*/,'').replace(/[",\]]+$/,'').trim()).filter(l=>l.length>1&&l.length<=80),certifications:parseCertLines(rawCerts)}; }
     resumeData.skills = Array.isArray(data.skills) ? data.skills.map(s=>cleanProgramName(String(s).trim())).filter(Boolean) : [];
     resumeData.certifications = Array.isArray(data.certifications) ? data.certifications.map(cleanCertObject).filter(c=>c.name) : parseCertLines(rawCerts);
     resumeData.references = 'Available upon request';
+    if (!resumeData.skills.length || resumeData.skills.some(s => s.length > 80 || /\*\*/.test(s) || /^(please|for best|note:|provide|share|raw |to org)/i.test(s))) {
+      addAIMsg('There was a problem organizing your skills — please try again.');
+      showSection('skills');
+      return;
+    }
     showCenter('skillsApproval');
   } catch(e) { addAIMsg('Could not connect — try again.'); showSection('skills'); }
 }
@@ -2161,6 +2195,16 @@ function sendTip(key){
     setTimeout(()=>addDutySuggCard(),700);
   }
 
+  if(key==='military'){
+    setTimeout(()=>addAIMsg(`In the **Duties** box, describe your role naturally — equipment you operated, teams you led or supported, tasks you performed daily, and anything you're proud of. The more detail you include, the stronger your resume bullets will be.\n\nNot sure what to write? Select your branch first and I'll show you examples.`),400);
+    setTimeout(()=>{
+      const branch = document.getElementById('milBranch')?.value||'';
+      const found = MILITARY_DUTY_EXAMPLES.find(item=>branch?item.match.test(branch):false) || MILITARY_DUTY_EXAMPLES[MILITARY_DUTY_EXAMPLES.length-1];
+      addSuggestionCard('Example duty descriptions — click to use as a starting point:', found.examples, 'milDuties');
+    },800);
+    setTimeout(()=>addAIMsg(`**Tip:** Things employers value most from military service: team leadership, equipment operation and maintenance, following procedures, physical reliability, and working under pressure. Mention any of these in your duties.`),1200);
+  }
+
   if(key==='skills'){
     const program=resumeData.personal.program||'';
     const found=SKILL_CERT_TIP_EXAMPLES.find(item=>item.match.test(program))||{
@@ -2256,6 +2300,14 @@ async function refreshDutySuggestions(title){
   }catch(e){
     _dutySuggBubble.innerHTML=`<div class="sugg-label">Could not load suggestions — check your connection and try again.</div>`;
   }
+}
+
+function refreshMilitarySuggestions(branch) {
+  if (!branch) return;
+  const found = MILITARY_DUTY_EXAMPLES.find(item => item.match.test(branch)) || MILITARY_DUTY_EXAMPLES[MILITARY_DUTY_EXAMPLES.length-1];
+  const shortBranch = branch.replace('United States ','').replace(' Corps','').replace(' Force','');
+  addAIMsg(`Here are example duty descriptions for the **${shortBranch}** — click any to use as a starting point, then add your own details:`);
+  addSuggestionCard(`${shortBranch} duty examples:`, found.examples, 'milDuties');
 }
 
 function addAIMsg(text){const msgs=document.getElementById('chatMessages');if(!msgs)return;const div=document.createElement('div');div.className='chat-msg ai';div.innerHTML=`<div class="msg-lbl">AI</div><div class="msg-bubble">${escHtml(text).replace(/\*\*(.+?)\*\*/g,'<strong>$1</strong>').replace(/\n/g,'<br>')}</div>`;msgs.appendChild(div);msgs.scrollTop=msgs.scrollHeight;}
