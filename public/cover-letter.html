@@ -1,0 +1,571 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>AI Cover Letter Builder</title>
+<script src="https://unpkg.com/docx@7.8.2/build/index.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/FileSaver.js/2.0.5/FileSaver.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/mammoth/1.6.0/mammoth.browser.min.js"></script>
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --blue-900:#1e3a8a;--blue-700:#1d4ed8;--blue-100:#dbeafe;--blue-50:#eff6ff;
+  --slate-900:#0f172a;--slate-700:#334155;--slate-600:#475569;--slate-500:#64748b;
+  --slate-400:#94a3b8;--slate-300:#cbd5e1;--slate-200:#e2e8f0;--slate-100:#f1f5f9;--slate-50:#f8fafc;
+  --green-600:#16a34a;--red-600:#dc2626;--white:#ffffff;
+  --chat-w:300px;
+}
+html,body{height:100%;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;background:#64748b}
+.app{display:flex;flex-direction:column;height:100vh;max-width:1100px;margin:0 auto;box-shadow:0 0 60px rgba(0,0,0,.3)}
+.app-body{flex:1;display:flex;overflow:hidden}
+.app-header{flex-shrink:0;height:60px;background:var(--slate-900);display:flex;align-items:center;justify-content:space-between;padding:0 18px;gap:12px}
+.header-brand{display:flex;align-items:center;gap:9px}
+.header-brand span{font-size:20px}
+.header-title{font-size:16px;font-weight:700;color:var(--white)}
+.header-badge{font-size:10px;font-weight:700;color:var(--slate-400);background:rgba(255,255,255,.08);padding:2px 7px;border-radius:20px;text-transform:uppercase;letter-spacing:.5px}
+.center-panel{flex:1;overflow-y:auto;background:var(--slate-100)}
+.center-panel::-webkit-scrollbar{width:6px}
+.center-panel::-webkit-scrollbar-track{background:var(--slate-200)}
+.center-panel::-webkit-scrollbar-thumb{background:var(--slate-400);border-radius:3px}
+.center-inner{max-width:660px;margin:0 auto;padding:28px 24px}
+.right-panel{width:var(--chat-w);flex-shrink:0;background:var(--white);border-left:1px solid var(--slate-200);display:flex;flex-direction:column;overflow:hidden}
+.chat-hdr{padding:12px 14px;font-size:12px;font-weight:700;color:var(--slate-500);text-transform:uppercase;letter-spacing:.6px;border-bottom:1px solid var(--slate-100);flex-shrink:0}
+.chat-messages{flex:1;overflow-y:auto;padding:12px 10px;display:flex;flex-direction:column;gap:10px}
+.chat-messages::-webkit-scrollbar{width:4px}
+.chat-messages::-webkit-scrollbar-thumb{background:var(--slate-300);border-radius:2px}
+.chat-msg.ai .msg-lbl{font-size:10px;font-weight:700;color:var(--slate-400);text-transform:uppercase;letter-spacing:.6px;margin-bottom:3px}
+.chat-msg.ai .msg-bubble{background:var(--slate-50);border:1px solid var(--slate-200);border-radius:0 10px 10px 10px;padding:10px 12px;font-size:13px;color:var(--slate-700);line-height:1.55}
+.section-hdr{display:flex;align-items:center;gap:12px;margin-bottom:24px}
+.section-hdr-icon{width:44px;height:44px;border-radius:10px;background:var(--blue-50);display:flex;align-items:center;justify-content:center;font-size:22px;flex-shrink:0}
+.section-hdr-title{font-size:20px;font-weight:700;color:var(--slate-900)}
+.section-hdr-sub{font-size:13px;color:var(--slate-500);margin-top:2px}
+.form-card{background:var(--white);border-radius:12px;box-shadow:0 1px 8px rgba(0,0,0,.08);overflow:hidden;margin-bottom:16px}
+.form-card-hdr{background:var(--blue-900);color:var(--white);padding:12px 18px;font-size:14px;font-weight:700;display:flex;align-items:center;gap:8px}
+.form-card-body{padding:18px 18px 6px}
+.form-card-footer{padding:12px 18px 14px;display:flex;justify-content:flex-end;gap:8px;background:var(--slate-50);border-top:1px solid var(--slate-100)}
+.f-row{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:12px}
+.f-row.single{grid-template-columns:1fr}
+.f-row.triple{grid-template-columns:2fr 1fr 1fr}
+.f-group{display:flex;flex-direction:column;gap:4px}
+.f-group label{font-size:11px;font-weight:700;color:var(--slate-500);text-transform:uppercase;letter-spacing:.6px}
+.f-group input,.f-group textarea{border:1.5px solid var(--slate-200);border-radius:7px;padding:9px 11px;font-size:14px;color:var(--slate-900);background:var(--slate-50);outline:none;width:100%;font-family:inherit;transition:border-color .18s,box-shadow .18s}
+.f-group input:focus,.f-group textarea:focus{border-color:var(--blue-700);box-shadow:0 0 0 3px rgba(29,78,216,.12);background:var(--white)}
+.f-group textarea{resize:vertical;min-height:80px}
+.f-err{font-size:11px;color:var(--red-600);display:none;margin-top:1px}
+.f-group.has-error input,.f-group.has-error textarea{border-color:var(--red-600)}
+.f-group.has-error .f-err{display:block}
+.btn{border:none;border-radius:7px;padding:9px 18px;font-size:14px;font-weight:600;cursor:pointer;font-family:inherit;transition:background .15s,opacity .15s}
+.btn-primary{background:var(--blue-700);color:var(--white)}
+.btn-primary:hover{background:var(--blue-900)}
+.btn-ghost{background:var(--slate-100);color:var(--slate-700);border:1px solid var(--slate-200)}
+.btn-ghost:hover{background:var(--slate-200)}
+.btn-confirm{background:var(--green-600);color:var(--white)}
+.btn-confirm:hover{background:#15803d}
+.btn-lg{padding:11px 24px;font-size:15px}
+.btn:disabled{opacity:.45;cursor:not-allowed}
+.welcome-card{background:var(--white);border-radius:12px;box-shadow:0 1px 8px rgba(0,0,0,.08);padding:28px;margin-bottom:16px;text-align:center}
+.welcome-card h2{font-size:18px;font-weight:700;color:var(--slate-900);margin-bottom:8px}
+.welcome-card p{font-size:14px;color:var(--slate-500);margin-bottom:20px;line-height:1.6}
+.welcome-card .btn{width:100%;margin-bottom:10px}
+.data-badge{background:var(--blue-50);border:1.5px solid var(--blue-100);border-radius:8px;padding:12px 16px;margin-bottom:16px;display:flex;align-items:center;gap:10px;font-size:13px;color:var(--blue-700);font-weight:600}
+.data-badge-icon{font-size:20px;flex-shrink:0}
+.upload-drop{border:2px dashed var(--slate-300);border-radius:8px;padding:28px 20px;text-align:center;cursor:pointer;transition:border-color .2s,background .2s;margin-bottom:12px}
+.upload-drop:hover,.upload-drop.drag-over{border-color:var(--blue-700);background:var(--blue-50)}
+.upload-drop .drop-icon{font-size:30px;display:block;margin-bottom:8px}
+.upload-drop .drop-lbl{font-size:14px;color:var(--slate-600);font-weight:600}
+.upload-drop .drop-sub{font-size:12px;color:var(--slate-400);margin-top:4px}
+.upload-selected{display:flex;align-items:center;gap:10px;padding:10px 14px;background:var(--blue-50);border:1.5px solid var(--blue-100);border-radius:7px;margin-bottom:12px;font-size:13px;color:var(--blue-700);font-weight:600}
+.lookup-row{display:flex;gap:8px;align-items:flex-end;margin-bottom:12px}
+.lookup-row .f-group{flex:1;margin-bottom:0}
+.lookup-btn{flex-shrink:0;padding:9px 14px;font-size:13px;white-space:nowrap;align-self:flex-end}
+.lookup-result{background:#f0fdf4;border:1.5px solid #bbf7d0;border-radius:8px;padding:12px 14px;margin-bottom:12px;font-size:13px;color:#15803d}
+.lookup-result strong{display:block;margin-bottom:4px;font-size:12px;text-transform:uppercase;letter-spacing:.5px}
+.lookup-warn{background:#fef9c3;border:1.5px solid #fde68a;border-radius:8px;padding:10px 14px;margin-bottom:12px;font-size:12px;color:#92400e}
+.opt-label{font-size:11px;font-weight:700;color:var(--slate-500);text-transform:uppercase;letter-spacing:.6px;margin-bottom:8px}
+.color-picker-wrap{display:flex;align-items:center;gap:10px;flex-wrap:wrap}
+input[type="color"].color-input{width:42px;height:42px;border:2px solid var(--slate-200);border-radius:8px;cursor:pointer;padding:2px;background:var(--white);flex-shrink:0}
+input[type="color"].color-input::-webkit-color-swatch-wrapper{padding:0;border-radius:5px}
+input[type="color"].color-input::-webkit-color-swatch{border:none;border-radius:5px}
+.color-presets{display:flex;gap:6px;flex-wrap:wrap;align-items:center}
+.color-preset{width:26px;height:26px;border-radius:50%;cursor:pointer;border:2.5px solid transparent;transition:transform .15s,border-color .15s;box-shadow:0 1px 3px rgba(0,0,0,.2);flex-shrink:0}
+.color-preset:hover{transform:scale(1.18)}
+.color-preset.sel{border-color:var(--slate-900);transform:scale(1.12)}
+.bullet-opt{border:1.5px solid var(--slate-200);border-radius:7px;padding:7px 16px;font-size:15px;background:var(--slate-50);cursor:pointer;color:var(--slate-700);transition:border-color .15s,background .15s;font-family:inherit}
+.bullet-opt:hover{border-color:var(--slate-400);background:var(--slate-100)}
+.bullet-opt.sel{border-color:var(--blue-700);background:var(--blue-50);color:var(--blue-700);font-weight:700}
+.preview-card{background:var(--white);border-radius:12px;box-shadow:0 1px 8px rgba(0,0,0,.08);padding:28px;margin-bottom:16px}
+.preview-card h3{font-size:13px;font-weight:700;color:var(--slate-500);text-transform:uppercase;letter-spacing:.6px;margin-bottom:16px}
+.letter-preview{font-size:14px;line-height:1.7;color:var(--slate-700);white-space:pre-wrap}
+.letter-preview .lp-name{font-size:18px;font-weight:700;margin-bottom:2px}
+.letter-preview .lp-contact{font-size:13px;color:var(--slate-500);margin-bottom:8px}
+.letter-preview .lp-rule{height:2px;margin-bottom:14px;border-radius:1px}
+.letter-preview .lp-body{font-size:14px;line-height:1.75;color:var(--slate-800)}
+.letter-preview .lp-bullets{margin:8px 0 8px 16px}
+.letter-preview .lp-bullet{margin-bottom:4px}
+@media(max-width:700px){.right-panel{display:none}}
+</style>
+</head>
+<body>
+<div class="app">
+  <div class="app-header">
+    <div class="header-brand"><span>✉️</span><span class="header-title">AI Cover Letter Builder</span><span class="header-badge">Beta</span></div>
+  </div>
+  <div class="app-body">
+    <div class="center-panel"><div id="centerInner" class="center-inner"></div></div>
+    <div class="right-panel">
+      <div class="chat-hdr">💬 AI Assistant</div>
+      <div class="chat-messages" id="chatMessages"></div>
+    </div>
+  </div>
+</div>
+
+<script>
+// ── Constants ────────────────────────────────────────
+const PRESET_COLORS=['#1e3a8a','#14532d','#7f1d1d','#334155','#1c1c1c','#0f766e','#4c1d95','#9a3412','#1d4ed8','#0369a1'];
+const BULLET_OPTIONS=['•','▸','◆','–','✓'];
+const MONTHS=['January','February','March','April','May','June','July','August','September','October','November','December'];
+
+// ── State ────────────────────────────────────────────
+let resumeData = null;
+let selectedColorHex = '#1e3a8a';
+let selectedBullet = '•';
+let pendingLetter = {};
+let selectedResumeFile = null;
+let lookupResult = null;
+
+// ── Init ─────────────────────────────────────────────
+window.addEventListener('DOMContentLoaded', () => {
+  const saved = loadFromStorage();
+  if (saved && saved.personal?.firstName) {
+    resumeData = saved;
+    renderMain();
+    addAIMsg(`Resume data found for **${saved.personal.firstName} ${saved.personal.lastName||''}**. Fill in the employer details below and I'll write your cover letter.`);
+    setTimeout(()=>addAIMsg('**Tip:** Paste a few lines from the job posting into the Job Description field — the more detail you give me, the more tailored your letter will be.'),600);
+  } else {
+    showView('welcome');
+    addAIMsg(`Welcome to the AI Cover Letter Builder! I'll help you write a professional, tailored cover letter. Start by loading your saved resume data or uploading your resume file.`);
+  }
+});
+
+function loadFromStorage(){
+  try{const s=localStorage.getItem('rb_progress');return s?JSON.parse(s):null;}catch(e){return null;}
+}
+
+// ── Views ────────────────────────────────────────────
+function showView(view, data){
+  const el=document.getElementById('centerInner');
+  const views={welcome:renderWelcome,upload:renderUpload,main:renderMainView,preview:renderPreviewView};
+  const fn=views[view];
+  if(fn) el.innerHTML=fn(data);
+}
+
+function renderMain(){showView('main');}
+
+function renderWelcome(){
+  return `<div class="section-hdr"><div class="section-hdr-icon">✉️</div><div><div class="section-hdr-title">Cover Letter Builder</div><div class="section-hdr-sub">Load your resume data to get started</div></div></div>
+  <div class="welcome-card">
+    <h2>Load Saved Resume Data</h2>
+    <p>If you already built your resume on this device, I can load your name, contact info, skills, and experience automatically.</p>
+    <button class="btn btn-primary" onclick="loadSaved()">Load Saved Resume Data</button>
+    <button class="btn btn-ghost" onclick="showView('upload')">Upload a Resume File Instead</button>
+  </div>`;
+}
+
+function loadSaved(){
+  const saved=loadFromStorage();
+  if(saved&&saved.personal?.firstName){
+    resumeData=saved;
+    renderMain();
+    addAIMsg(`Loaded data for **${saved.personal.firstName} ${saved.personal.lastName||''}**. Fill in the employer info below.`);
+  } else {
+    addAIMsg('No saved resume data found on this device. Please upload your resume file instead.');
+    showView('upload');
+  }
+}
+
+function renderUpload(){
+  return `<div class="section-hdr"><div class="section-hdr-icon">📄</div><div><div class="section-hdr-title">Upload Your Resume</div><div class="section-hdr-sub">PDF, Word (.docx), or plain text (.txt)</div></div></div>
+  <div class="form-card">
+    <div class="form-card-body" style="padding-bottom:18px">
+      <div class="upload-drop" id="uploadDrop" ondragover="event.preventDefault();this.classList.add('drag-over')" ondragleave="this.classList.remove('drag-over')" ondrop="handleDrop(event)" onclick="document.getElementById('clFileInput').click()">
+        <span class="drop-icon">⬆️</span>
+        <div class="drop-lbl">Click to browse or drag and drop</div>
+        <div class="drop-sub">PDF, Word (.docx), or plain text (.txt)</div>
+      </div>
+      <div id="uploadSelected" style="display:none"></div>
+      <input type="file" id="clFileInput" accept=".pdf,.docx,.txt" style="display:none" onchange="handleFileSelect(this)">
+    </div>
+    <div class="form-card-footer">
+      <button class="btn btn-ghost" onclick="showView('welcome')">Back</button>
+      <button class="btn btn-primary" id="extractBtn" onclick="extractResume()" disabled style="opacity:.45">Extract &amp; Continue →</button>
+    </div>
+  </div>`;
+}
+
+function handleDrop(e){e.preventDefault();document.getElementById('uploadDrop').classList.remove('drag-over');if(e.dataTransfer.files[0])setUploadFile(e.dataTransfer.files[0]);}
+function handleFileSelect(inp){if(inp.files[0])setUploadFile(inp.files[0]);}
+function setUploadFile(file){
+  selectedResumeFile=file;
+  const sel=document.getElementById('uploadSelected');
+  sel.style.display='flex';sel.className='upload-selected';
+  sel.innerHTML=`<span>📎</span><span>${escHtml(file.name)}</span><span style="margin-left:auto;font-weight:400;color:var(--slate-500)">${(file.size/1024).toFixed(0)} KB</span>`;
+  const btn=document.getElementById('extractBtn');btn.disabled=false;btn.style.opacity='1';
+}
+
+async function extractResume(){
+  if(!selectedResumeFile)return;
+  const btn=document.getElementById('extractBtn');
+  btn.disabled=true;btn.textContent='Extracting…';
+  addAIMsg('Extracting your resume information — one moment…');
+  try{
+    const ext=selectedResumeFile.name.split('.').pop().toLowerCase();
+    let text='',useDoc=false,b64='';
+    if(ext==='txt') text=await readAsText(selectedResumeFile);
+    else if(ext==='pdf'){b64=await readAsBase64(selectedResumeFile);useDoc=true;}
+    else if(ext==='docx') text=await readDocx(selectedResumeFile);
+    const instruction=`Extract resume info. Return ONLY valid JSON:
+{"personal":{"firstName":"","lastName":"","email":"","phone":"","address":"","city":"","state":"","zip":"","program":""},"careerContext":{"objective":""},"workExperience":[{"employer":"","jobTitle":"","startYear":"","endYear":"","current":false,"bulletLines":[]}],"skills":[],"certifications":[{"name":""}]}`;
+    let messages;
+    if(useDoc) messages=[{role:'user',content:[{type:'document',source:{type:'base64',media_type:'application/pdf',data:b64}},{type:'text',text:instruction}]}];
+    else messages=[{role:'user',content:`${instruction}\n\nResume:\n${text}`}];
+    const raw=await callClaude('',messages,{maxTokens:3000});
+    const parsed=JSON.parse(raw.replace(/^```(?:json)?\s*/i,'').replace(/\s*```$/,''));
+    resumeData=parsed;
+    renderMain();
+    const p=parsed.personal||{};
+    addAIMsg(`Got it${p.firstName?' for '+p.firstName:''}! Fill in the employer details below.`);
+  }catch(err){
+    addAIMsg('Had trouble reading that file. Try a different format or go back and load saved data.');
+    btn.disabled=false;btn.textContent='Extract & Continue →';btn.style.opacity='1';
+  }
+}
+
+function readAsText(f){return new Promise((res,rej)=>{const r=new FileReader();r.onload=e=>res(e.target.result);r.onerror=rej;r.readAsText(f);});}
+function readAsBase64(f){return new Promise((res,rej)=>{const r=new FileReader();r.onload=e=>{const b64=btoa(new Uint8Array(e.target.result).reduce((d,b)=>d+String.fromCharCode(b),''));res(b64);};r.onerror=rej;r.readAsArrayBuffer(f);});}
+function readDocx(f){return new Promise((res,rej)=>{const r=new FileReader();r.onload=async e=>{try{const result=await mammoth.extractRawText({arrayBuffer:e.target.result});res(result.value);}catch(err){rej(err);}};r.onerror=rej;r.readAsArrayBuffer(f);});}
+
+// ── Main Form ────────────────────────────────────────
+function renderMainView(){
+  const p=resumeData?.personal||{};
+  const dataBadge=p.firstName?`<div class="data-badge"><span class="data-badge-icon">👤</span><div><strong>${escHtml(p.firstName)} ${escHtml(p.lastName||'')}</strong><br><span style="font-weight:400;color:var(--slate-500)">${escHtml(p.program||'')}${p.email?' · '+escHtml(p.email):''}</span></div><button class="btn btn-ghost" style="margin-left:auto;font-size:12px;padding:5px 10px" onclick="showView('upload')">Change</button></div>`:'';
+  const presets=PRESET_COLORS.map(hex=>`<div class="color-preset ${hex===selectedColorHex?'sel':''}" data-hex="${hex}" style="background:${hex}" onclick="pickColor('${hex}')"></div>`).join('');
+  const bullets=BULLET_OPTIONS.map((b,i)=>`<button class="bullet-opt ${b===selectedBullet?'sel':''}" id="bo-${i}" onclick="pickBullet('${b}')">${b}&nbsp;&nbsp;${['Round','Arrow','Diamond','Dash','Check'][i]}</button>`).join('');
+  return `<div class="section-hdr"><div class="section-hdr-icon">✉️</div><div><div class="section-hdr-title">Cover Letter</div><div class="section-hdr-sub">Enter employer details and generate your letter</div></div></div>
+  ${dataBadge}
+  <div class="form-card">
+    <div class="form-card-hdr">🏢 Employer Information</div>
+    <div class="form-card-body">
+      <div class="lookup-row">
+        <div class="f-group" id="fg-company">
+          <label>Company Name *</label>
+          <input id="fCompany" placeholder="e.g. AutoZone, Tri-County HVAC">
+          <span class="f-err">Enter the company name.</span>
+        </div>
+        <button class="btn btn-ghost lookup-btn" id="lookupBtn" onclick="lookupCompany()">🔍 Look Up</button>
+      </div>
+      <div id="lookupResultArea"></div>
+      <div class="f-row">
+        <div class="f-group" id="fg-jobtitle">
+          <label>Job Title Applying For *</label>
+          <input id="fJobTitle" placeholder="e.g. Automotive Technician, HVAC Installer">
+          <span class="f-err">Enter the job title.</span>
+        </div>
+        <div class="f-group">
+          <label>Hiring Manager Name <span style="font-weight:400;text-transform:none;font-size:11px">(optional)</span></label>
+          <input id="fHiringManager" placeholder="e.g. John Smith">
+        </div>
+      </div>
+      <div class="f-row">
+        <div class="f-group">
+          <label>Company City, State <span style="font-weight:400;text-transform:none;font-size:11px">(optional)</span></label>
+          <input id="fCompanyCityState" placeholder="e.g. New Castle, PA">
+        </div>
+        <div class="f-group">
+          <label>Company Phone <span style="font-weight:400;text-transform:none;font-size:11px">(optional)</span></label>
+          <input id="fCompanyPhone" placeholder="e.g. (724) 555-0100">
+        </div>
+      </div>
+      <div class="f-row single">
+        <div class="f-group">
+          <label>Job Description / Key Requirements <span style="font-weight:400;text-transform:none;font-size:11px">(optional but recommended)</span></label>
+          <textarea id="fJobDesc" rows="4" placeholder="Paste a few lines from the job posting. The more detail you provide, the more tailored your letter will be."></textarea>
+        </div>
+      </div>
+    </div>
+  </div>
+  <div class="form-card">
+    <div class="form-card-hdr">⚙️ Color &amp; Style Options</div>
+    <div class="form-card-body" style="padding-bottom:18px">
+      <div style="margin-bottom:16px">
+        <div class="opt-label">Header Color</div>
+        <div class="color-picker-wrap">
+          <input type="color" class="color-input" id="colorPickerInput" value="${selectedColorHex}" oninput="pickColor(this.value)">
+          <div class="color-presets">${presets}</div>
+        </div>
+      </div>
+      <div>
+        <div class="opt-label">Qualification Bullet Style</div>
+        <div style="display:flex;gap:8px;flex-wrap:wrap">${bullets}</div>
+      </div>
+    </div>
+    <div class="form-card-footer">
+      <button class="btn btn-primary btn-lg" onclick="generateLetter()">Generate Cover Letter →</button>
+    </div>
+  </div>`;
+}
+
+// ── Company Lookup ────────────────────────────────────
+async function lookupCompany(){
+  const company=document.getElementById('fCompany').value.trim();
+  if(!company){document.getElementById('fg-company').classList.add('has-error');return;}
+  document.getElementById('fg-company').classList.remove('has-error');
+  const btn=document.getElementById('lookupBtn');
+  btn.disabled=true;btn.textContent='Looking up…';
+  const resultArea=document.getElementById('lookupResultArea');
+  resultArea.innerHTML='';
+  const p=resumeData?.personal||{};
+  const locationHint=p.city&&p.state?`near ${p.city}, ${p.state}`:'';
+  const sys=`You look up employer contact information for cover letter writing. Return ONLY valid JSON:
+{"address":"","city":"","state":"","zip":"","phone":"","hiringManagerTitle":"","found":true}
+- Populate fields you know with reasonable confidence. Use "" for unknown.
+- found: true if you have real knowledge of this employer, false if guessing.
+- hiringManagerTitle: likely title (e.g. "Service Manager", "HR Manager") not a name.
+Company: ${company}
+${locationHint?'Location hint: '+locationHint:''}`;
+  try{
+    const raw=await callClaude(sys,[{role:'user',content:'Look up this employer.'}]);
+    const data=JSON.parse(raw.replace(/^```(?:json)?\s*/i,'').replace(/\s*```$/,''));
+    lookupResult=data;
+    const parts=[];
+    if(data.address) parts.push(data.address);
+    const csz=[data.city,data.state,data.zip].filter(Boolean).join(data.zip?', ':' ');
+    if(csz) parts.push(csz);
+    if(data.phone) parts.push(data.phone);
+    if(parts.length||data.hiringManagerTitle){
+      let html=`<div class="lookup-result"><strong>🔍 Found — click Apply to use</strong>`;
+      if(parts.length) html+=`<div>${escHtml(parts.join(' · '))}</div>`;
+      if(data.hiringManagerTitle) html+=`<div>Likely hiring contact: <strong>${escHtml(data.hiringManagerTitle)}</strong></div>`;
+      html+=`<button class="btn btn-confirm" style="margin-top:10px;padding:6px 14px;font-size:13px" onclick="applyLookup()">Apply to Form</button></div>`;
+      if(!data.found) html+=`<div class="lookup-warn">⚠ This information is based on AI knowledge and may be outdated. Please verify before sending.</div>`;
+      resultArea.innerHTML=html;
+    } else {
+      resultArea.innerHTML=`<div class="lookup-warn">⚠ No specific information found for this company. You can still continue — just fill in the address manually if needed.</div>`;
+    }
+  }catch(e){
+    resultArea.innerHTML=`<div class="lookup-warn">Could not look up company info — check your connection and try again.</div>`;
+  }
+  btn.disabled=false;btn.textContent='🔍 Look Up';
+}
+
+function applyLookup(){
+  if(!lookupResult)return;
+  const csz=[lookupResult.city,lookupResult.state].filter(Boolean).join(', ');
+  if(csz) document.getElementById('fCompanyCityState').value=csz;
+  if(lookupResult.phone) document.getElementById('fCompanyPhone').value=lookupResult.phone;
+  addAIMsg('Company info applied. Double-check the address before sending — AI data may be out of date.');
+}
+
+// ── Letter Generation ─────────────────────────────────
+function collectEmployerData(){
+  return {
+    company:document.getElementById('fCompany').value.trim(),
+    jobTitle:document.getElementById('fJobTitle').value.trim(),
+    hiringManager:document.getElementById('fHiringManager').value.trim(),
+    companyCityState:document.getElementById('fCompanyCityState').value.trim(),
+    companyPhone:document.getElementById('fCompanyPhone').value.trim(),
+    jobDesc:document.getElementById('fJobDesc').value.trim(),
+  };
+}
+
+async function generateLetter(){
+  const emp=collectEmployerData();
+  let valid=true;
+  if(!emp.company){document.getElementById('fg-company').classList.add('has-error');valid=false;}else document.getElementById('fg-company').classList.remove('has-error');
+  if(!emp.jobTitle){document.getElementById('fg-jobtitle').classList.add('has-error');valid=false;}else document.getElementById('fg-jobtitle').classList.remove('has-error');
+  if(!valid)return;
+  pendingLetter.employer=emp;
+  const ci=document.getElementById('centerInner');
+  ci.innerHTML=`<div style="text-align:center;padding:80px 20px;color:var(--slate-500)"><div style="font-size:40px;margin-bottom:14px">✍️</div><div style="font-size:16px;font-weight:600">Writing your cover letter…</div></div>`;
+  const p=resumeData?.personal||{};
+  const c=resumeData?.careerContext||{};
+  const skills=(resumeData?.skills||[]).slice(0,10).join(', ')||'hands-on technical skills';
+  const certs=(resumeData?.certifications||[]).map(x=>x.name).join(', ');
+  const workSummary=(resumeData?.workExperience||[]).slice(0,3).map(j=>`${j.jobTitle} at ${j.employer}`).join('; ')||'no prior experience listed';
+  const salutation=emp.hiringManager?`Dear ${emp.hiringManager},`:'Dear Hiring Manager,';
+  const sys=`You write professional cover letters for trade school students. Return ONLY valid JSON with no other text:
+{"salutation":"${salutation}","opening":"","qualifications":["","","",""],"closing":""}
+Rules:
+- opening: 2-3 sentences. Reference the specific job title and company name. Show genuine interest. Do NOT start with "I am writing to".
+- qualifications: exactly 4 bullets, each 12-18 words. Match the student's actual skills and experience to the job. Start each with a strong skill name or action verb.
+- closing: 2-3 sentences. Express enthusiasm, request an interview, thank them. Professional and direct.
+- Tone: professional trade school. No "I am passionate about", no fluff.
+
+Student: ${p.firstName||'Student'} ${p.lastName||''}, ${p.program||'trade'} student
+Applying for: ${emp.jobTitle} at ${emp.company}
+Salutation: ${salutation}
+Job requirements: ${emp.jobDesc||'Not provided'}
+Career objective: ${c.objective||'Seeking an entry-level position in the trade field'}
+Skills: ${skills}
+Certifications: ${certs||'None listed'}
+Work experience: ${workSummary}`;
+  try{
+    const raw=await callClaude(sys,[{role:'user',content:'Write the cover letter.'}],{maxTokens:1000});
+    const letter=JSON.parse(raw.replace(/^```(?:json)?\s*/i,'').replace(/\s*```$/,''));
+    if(!letter.opening||!Array.isArray(letter.qualifications)){throw new Error('bad response');}
+    pendingLetter.letter=letter;
+    showView('preview');
+    addAIMsg('Your cover letter is ready! Review it carefully — edit the downloaded file if anything needs adjusting before you send it.');
+  }catch(e){
+    addAIMsg('Had trouble generating the letter — please try again.');
+    renderMain();
+  }
+}
+
+// ── Preview ───────────────────────────────────────────
+function renderPreviewView(){
+  const p=resumeData?.personal||{};
+  const emp=pendingLetter.employer||{};
+  const letter=pendingLetter.letter||{};
+  const name=[p.firstName,p.lastName].filter(Boolean).join(' ')||'Your Name';
+  const cityState=[p.city,p.state].filter(Boolean).join(', ');
+  const contact=[p.email,p.phone,p.address?cityState:''].filter(Boolean).join('   |   ');
+  const today=new Date().toLocaleDateString('en-US',{year:'numeric',month:'long',day:'numeric'});
+  const empBlock=[emp.hiringManager,emp.company,emp.companyCityState].filter(Boolean).join('\n');
+  const qualHtml=(letter.qualifications||[]).map(q=>`<div class="lp-bullet">${escHtml(selectedBullet)}  ${escHtml(q)}</div>`).join('');
+  return `<div class="section-hdr"><div class="section-hdr-icon">✉️</div><div><div class="section-hdr-title">Your Cover Letter</div><div class="section-hdr-sub">Review before downloading</div></div></div>
+  <div class="preview-card">
+    <h3>Preview</h3>
+    <div class="letter-preview">
+      <div class="lp-name" style="color:${selectedColorHex}">${escHtml(name)}</div>
+      <div class="lp-contact">${escHtml(contact)}</div>
+      <div class="lp-rule" style="background:${selectedColorHex}"></div>
+      <div class="lp-body">
+        <div style="margin-bottom:14px">${escHtml(today)}</div>
+        ${empBlock?`<div style="margin-bottom:14px;white-space:pre-line">${escHtml(empBlock)}</div>`:''}
+        <div style="margin-bottom:14px">${escHtml(letter.salutation||'Dear Hiring Manager,')}</div>
+        <div style="margin-bottom:14px">${escHtml(letter.opening||'')}</div>
+        <div style="margin-bottom:8px">My qualifications for this position include:</div>
+        <div class="lp-bullets">${qualHtml}</div>
+        <div style="margin-bottom:14px;margin-top:8px">${escHtml(letter.closing||'')}</div>
+        <div style="margin-bottom:40px">Sincerely,</div>
+        <div style="font-weight:600">${escHtml(name)}</div>
+        ${p.program?`<div style="color:var(--slate-500);font-size:13px">${escHtml(p.program)}</div>`:''}
+      </div>
+    </div>
+  </div>
+  <div class="form-card">
+    <div class="form-card-footer" style="justify-content:space-between">
+      <button class="btn btn-ghost" onclick="renderMain()">← Edit Details</button>
+      <div style="display:flex;gap:8px">
+        <button class="btn btn-ghost" onclick="rewriteLetter()">Rewrite</button>
+        <button class="btn btn-confirm btn-lg" onclick="downloadLetter()">Download .docx ↓</button>
+      </div>
+    </div>
+  </div>`;
+}
+
+async function rewriteLetter(){
+  addAIMsg('Rewriting your cover letter…');
+  await generateLetter();
+}
+
+// ── Word Doc Builder ─────────────────────────────────
+function twip(inches){return Math.round(inches*1440);}
+function getColorObj(hex){
+  const clean=hex.replace('#','').toUpperCase();
+  const r=parseInt(clean.slice(0,2),16),g=parseInt(clean.slice(2,4),16),b=parseInt(clean.slice(4,6),16);
+  const lum=(0.299*r+0.587*g+0.114*b)/255;
+  return{hex,accent:clean,sideText:lum>0.55?'111111':'FFFFFF'};
+}
+
+async function downloadLetter(){
+  const p=resumeData?.personal||{};
+  const emp=pendingLetter.employer||{};
+  const letter=pendingLetter.letter||{};
+  const color=getColorObj(selectedColorHex);
+  const ac=color.accent;
+  const M=twip(1);
+  const nb={style:docx.BorderStyle.NONE,size:0,color:'FFFFFF'};
+  const name=[p.firstName,p.lastName].filter(Boolean).join(' ')||'';
+  const cityState=[p.city,p.state].filter(Boolean).join(', ');
+  const contact=[p.email,p.phone,p.address?cityState:''].filter(Boolean).join('   |   ');
+  const today=new Date().toLocaleDateString('en-US',{year:'numeric',month:'long',day:'numeric'});
+  const txt=(t,opts={})=>new docx.Paragraph({spacing:{before:0,after:opts.after||0,...(opts.spaceBefore?{before:opts.spaceBefore}:{})},children:[new docx.TextRun({text:t,...opts})]});
+  const blank=(after=200)=>new docx.Paragraph({spacing:{before:0,after}});
+  const ch=[];
+  // Name
+  ch.push(new docx.Paragraph({spacing:{before:0,after:60},children:[new docx.TextRun({text:name,bold:true,size:36,color:ac})]}));
+  // Contact
+  if(contact) ch.push(new docx.Paragraph({spacing:{before:0,after:120},children:[new docx.TextRun({text:contact,size:20,color:'666666'})]}));
+  // Rule
+  ch.push(new docx.Paragraph({border:{bottom:{style:docx.BorderStyle.SINGLE,size:8,color:ac}},spacing:{before:0,after:260}}));
+  // Date
+  ch.push(txt(today,{size:22,color:'2a2a2a',after:220}));
+  // Employer block
+  if(emp.hiringManager) ch.push(txt(emp.hiringManager,{size:22,color:'2a2a2a',after:40}));
+  if(emp.company) ch.push(txt(emp.company,{size:22,color:'2a2a2a',after:40}));
+  if(emp.companyCityState) ch.push(txt(emp.companyCityState,{size:22,color:'2a2a2a',after:40}));
+  if(emp.companyPhone) ch.push(txt(emp.companyPhone,{size:22,color:'2a2a2a',after:40}));
+  if(emp.company||emp.hiringManager) ch.push(blank(180));
+  // Salutation
+  ch.push(txt(letter.salutation||'Dear Hiring Manager,',{size:22,color:'2a2a2a',after:220}));
+  // Opening
+  ch.push(txt(letter.opening||'',{size:22,color:'2a2a2a',after:220}));
+  // Qualifications
+  ch.push(txt('My qualifications for this position include:',{size:22,color:'2a2a2a',after:120}));
+  (letter.qualifications||[]).forEach(q=>{
+    ch.push(new docx.Paragraph({indent:{left:twip(0.25)},spacing:{before:0,after:120},children:[new docx.TextRun({text:`${selectedBullet}  ${q}`,size:22,color:'2a2a2a'})]}));
+  });
+  ch.push(blank(120));
+  // Closing
+  ch.push(txt(letter.closing||'',{size:22,color:'2a2a2a',after:320}));
+  // Sign-off
+  ch.push(txt('Sincerely,',{size:22,color:'2a2a2a',after:320}));
+  ch.push(new docx.Paragraph({spacing:{before:0,after:40},children:[new docx.TextRun({text:name,bold:true,size:22,color:'2a2a2a'})]}));
+  if(p.program) ch.push(txt(p.program,{size:20,color:'777777'}));
+  const doc=new docx.Document({sections:[{properties:{page:{margin:{top:M,bottom:M,left:M,right:M}}},children:ch}]});
+  const blob=await docx.Packer.toBlob(doc);
+  const fname=[p.firstName,p.lastName].filter(Boolean).join('-')||'Cover-Letter';
+  saveAs(blob,`${fname}-Cover-Letter.docx`);
+  addAIMsg(`Downloaded! Open the file in Word to make any final edits before sending. Good luck! 🎉`);
+}
+
+// ── Options ───────────────────────────────────────────
+function pickColor(hex){
+  selectedColorHex=hex;
+  const inp=document.getElementById('colorPickerInput');
+  if(inp) inp.value=hex;
+  document.querySelectorAll('.color-preset').forEach(el=>el.classList.toggle('sel',el.dataset.hex===hex));
+}
+
+function pickBullet(char){
+  selectedBullet=char;
+  document.querySelectorAll('.bullet-opt').forEach((el,i)=>{el.classList.toggle('sel',BULLET_OPTIONS[i]===char);});
+}
+
+// ── Claude API ────────────────────────────────────────
+async function callClaude(system,messages,opts){
+  const body={model:'claude-sonnet-4-6',max_tokens:(opts&&opts.maxTokens)||2048,messages};
+  if(system) body.system=system;
+  const controller=new AbortController();
+  const timer=setTimeout(()=>controller.abort(),40000);
+  try{
+    const res=await fetch('/api/claude',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(body),signal:controller.signal});
+    if(!res.ok){const e=await res.json().catch(()=>({}));throw new Error(e.error||`Server error ${res.status}`);}
+    const data=await res.json();
+    return data.content[0].text;
+  }finally{clearTimeout(timer);}
+}
+
+// ── Helpers ───────────────────────────────────────────
+function escHtml(str){if(!str)return '';const d=document.createElement('div');d.appendChild(document.createTextNode(String(str)));return d.innerHTML;}
+function addAIMsg(text){
+  const msgs=document.getElementById('chatMessages');if(!msgs)return;
+  const div=document.createElement('div');div.className='chat-msg ai';
+  div.innerHTML=`<div class="msg-lbl">AI</div><div class="msg-bubble">${escHtml(text).replace(/\*\*(.+?)\*\*/g,'<strong>$1</strong>').replace(/\n/g,'<br>')}</div>`;
+  msgs.appendChild(div);msgs.scrollTop=msgs.scrollHeight;
+}
+</script>
+</body>
+</html>
