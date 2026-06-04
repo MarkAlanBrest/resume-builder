@@ -385,7 +385,7 @@ let pendingCert = {};
 let selectedStyle = 'classic';
 let selectedColor = 'navy';
 let selectedBullet = '•';
-let showIcons = false;
+let showIcons = true;
 let selectedResumeFile = null;
 
 // ── API Key ───────────────────────────────────────
@@ -1103,7 +1103,7 @@ function renderWorkForm() {
   <div class="form-card">
     <div class="form-card-hdr">💼 ${jobs.length?'Add Another Position':'Position Details'}</div>
     <div class="form-card-body">
-      <div class="f-row"><div class="f-group" id="fg-emp"><label>Employer *</label><input id="empName" placeholder="Company name"><span class="f-err">Required</span></div><div class="f-group" id="fg-jt"><label>Job Title *</label><input id="jobTitle" placeholder="Your position"><span class="f-err">Required</span></div></div>
+      <div class="f-row"><div class="f-group" id="fg-emp"><label>Employer *</label><input id="empName" placeholder="Company name"><span class="f-err">Required</span></div><div class="f-group" id="fg-jt"><label>Job Title *</label><input id="jobTitle" placeholder="Your position" onblur="refreshDutySuggestions(this.value)"><span class="f-err">Required</span></div></div>
       <div class="f-row triple"><div class="f-group" id="fg-wcity"><label>City</label><input id="wCity" placeholder="City"><span class="f-err">Enter a valid city or leave blank.</span></div><div class="f-group" id="fg-wstate"><label>State</label><input id="wState" placeholder="PA" maxlength="2" oninput="fmtState(this)"><span class="f-err">Use a valid 2-letter state or leave blank.</span></div><div></div></div>
       <div class="f-row">
         <div class="f-group" id="fg-sd"><label>Start Date *</label><div class="date-pair"><select id="startMo"><option value="">Month</option>${monthOpts}</select><input id="startYr" placeholder="Year" maxlength="4" inputmode="numeric"></div><span class="f-err">Required</span></div>
@@ -1863,11 +1863,8 @@ function sendTip(key){
   }
 
   if(key==='work'){
-    const program=resumeData.personal.program||'';
-    const found=WORK_TIP_EXAMPLES.find(item=>item.match.test(program));
-    const examples=found?found.examples:['Completed assigned tasks safely while following all workplace procedures.','Used hand tools, power tools, and equipment to carry out daily responsibilities.','Maintained a clean work area and communicated clearly with supervisors and coworkers.'];
-    setTimeout(()=>addAIMsg(`Write naturally — describe the tools you used, what you built or fixed, who you worked with, and anything you're proud of. I'll turn it into professional bullet points.`),300);
-    setTimeout(()=>addSuggestionCard('Job duty examples — click to use as a starting point:',examples,'duties'),700);
+    setTimeout(()=>addAIMsg(`Write naturally — describe what you did, the tools you used, and anything you're proud of. I'll turn it into professional bullet points. Enter your job title first and I'll generate suggestions specific to that role.`),300);
+    setTimeout(()=>addDutySuggCard(),700);
   }
 }
 
@@ -1914,6 +1911,41 @@ function applySuggestion(idx){
   el.style.transition='border-color .3s';
   el.style.borderColor='var(--blue-700)';
   setTimeout(()=>{el.style.borderColor='';},1200);
+}
+
+let _dutySuggBubble=null;
+
+function addDutySuggCard(){
+  const msgs=document.getElementById('chatMessages');
+  if(!msgs)return;
+  const div=document.createElement('div');
+  div.className='chat-msg ai';
+  div.innerHTML=`<div class="msg-lbl">Suggestions</div><div class="msg-bubble sugg-card"><div class="sugg-label">Enter a job title above to get duty suggestions for that specific role.</div></div>`;
+  msgs.appendChild(div);
+  _dutySuggBubble=div.querySelector('.sugg-card');
+  msgs.scrollTop=msgs.scrollHeight;
+}
+
+async function refreshDutySuggestions(title){
+  if(!_dutySuggBubble||!title||title.trim().length<3||!apiKey)return;
+  const t=title.trim();
+  _dutySuggBubble.innerHTML=`<div class="sugg-label">Getting suggestions for "${escHtml(t)}"…</div>`;
+  try{
+    const sys=`Generate exactly 3 job duty suggestions for a "${t}" position on a resume. Return ONLY a JSON array of 3 strings. Each: 1 sentence, 12–20 words, strong past-tense action verb, no "I", no bullets. Example: ["Managed daily operations...", "Assisted customers...", "Operated machinery..."]`;
+    const raw=await callClaude(sys,[{role:'user',content:'Generate duty suggestions.'}]);
+    const items=JSON.parse(raw.trim().replace(/^```(?:json)?\s*/i,'').replace(/\s*```$/,''));
+    if(!Array.isArray(items)||!items.length)throw new Error('bad');
+    const itemsHtml=items.slice(0,3).map(text=>{
+      const idx=_suggPool.length;
+      _suggPool.push({text:String(text).trim(),targetId:'duties'});
+      return `<div class="sugg-item" onclick="applySuggestion(${idx})"><span class="sugg-text">${escHtml(String(text).trim())}</span><button class="sugg-use" onclick="event.stopPropagation();applySuggestion(${idx})">Use ↵</button></div>`;
+    }).join('');
+    _dutySuggBubble.innerHTML=`<div class="sugg-label">Suggestions for "${escHtml(t)}" — click to use:</div>${itemsHtml}`;
+    const msgs=document.getElementById('chatMessages');
+    if(msgs)msgs.scrollTop=msgs.scrollHeight;
+  }catch(e){
+    _dutySuggBubble.innerHTML=`<div class="sugg-label">Could not load suggestions. Check your API key and try again.</div>`;
+  }
 }
 
 function addAIMsg(text){const msgs=document.getElementById('chatMessages');if(!msgs)return;const div=document.createElement('div');div.className='chat-msg ai';div.innerHTML=`<div class="msg-lbl">AI</div><div class="msg-bubble">${escHtml(text).replace(/\*\*(.+?)\*\*/g,'<strong>$1</strong>').replace(/\n/g,'<br>')}</div>`;msgs.appendChild(div);msgs.scrollTop=msgs.scrollHeight;}
