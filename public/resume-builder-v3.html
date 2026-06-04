@@ -2071,14 +2071,11 @@ function renderTemplateConfig() {
   <div style="border:2px solid #facc15;border-radius:8px;padding:18px;margin-bottom:16px;background:#fef9c3;">
     <div style="font-weight:bold;color:#92400e;margin-bottom:10px;font-size:15px;">⚠ Important: Review Before Using</div>
     <p style="margin-bottom:12px;font-size:14px;color:#78350f;line-height:1.5;">This resume was generated using AI. You must carefully review, edit, and approve all content before using it. Do not assume the information is correct. Verify dates, employers, skills, and all details to ensure the resume is accurate and professional.</p>
-    <label style="display:flex;align-items:flex-start;gap:10px;font-size:14px;font-weight:600;color:#78350f;cursor:pointer;">
+    <label style="display:flex;align-items:flex-start;gap:10px;font-size:14px;font-weight:600;color:#78350f;cursor:pointer;margin-bottom:14px;">
       <input type="checkbox" id="reviewConfirmed" onchange="document.getElementById('genBtn').disabled=!this.checked;document.getElementById('genBtn').style.opacity=this.checked?'1':'0.45'" style="margin-top:2px;width:16px;height:16px;accent-color:#eab308;flex-shrink:0;">
       I understand that I must review and edit this resume before using it.
     </label>
-  </div>
-  <div class="form-card">
-    <div class="form-card-hdr" style="background:var(--green-600)">📥 Generate</div>
-    <div class="form-card-footer">
+    <div style="display:flex;justify-content:flex-end;">
       <button class="btn btn-primary btn-lg" id="genBtn" onclick="generateResume()" disabled style="opacity:0.45">Generate &amp; Download ↓</button>
     </div>
   </div>`;
