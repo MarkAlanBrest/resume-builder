@@ -1410,7 +1410,7 @@ function renderWorkForm(pf={}) {
     </div>
     <div class="form-card-footer">
       ${footerLeft}
-      <button class="btn btn-primary" onclick="submitWork()">${isEditing?'Update Bullets →':'Generate Bullets →'}</button>
+      <button class="btn btn-primary" onclick="submitWork()">${isEditing?'Update Work History →':'Construct Work History →'}</button>
     </div>
   </div>`;
 }
@@ -2169,7 +2169,7 @@ async function callClaude(system,messages,raw=false){const body={model:'claude-s
 
 // ── Right Panel Chat ──────────────────────────────
 function sendTip(key){
-  const tip=key==='skills'?buildSkillsCertsTip():key!=='work'?TIPS[key]:null;
+  const tip=key==='skills'?TIPS.skills:key!=='work'?TIPS[key]:null;
   if(tip)setTimeout(()=>addAIMsg(tip),300);
 
   if(key==='career'){
@@ -2183,6 +2183,16 @@ function sendTip(key){
   if(key==='work'){
     setTimeout(()=>addAIMsg(`Write naturally — describe what you did, the tools you used, and anything you're proud of. I'll turn it into professional bullet points. Enter your job title first and I'll generate suggestions specific to that role.`),300);
     setTimeout(()=>addDutySuggCard(),700);
+  }
+
+  if(key==='skills'){
+    const program=resumeData.personal.program||'';
+    const found=SKILL_CERT_TIP_EXAMPLES.find(item=>item.match.test(program))||{
+      skills:['Safety procedures','Hand and power tools','Customer service','Teamwork','Problem solving','Time management'],
+      certs:['OSHA 10','First Aid/CPR','Forklift Certification']
+    };
+    setTimeout(()=>addSuggestionCard(`Suggested skills for ${program||'your program'} — click to add:`,found.skills,'skillsDump','append'),600);
+    setTimeout(()=>addSuggestionCard('Suggested certifications — click to add:',found.certs,'certsDump','append'),900);
   }
 }
 
@@ -2204,15 +2214,16 @@ function buildSkillsCertsTip() {
 
 const _suggPool=[];
 
-function addSuggestionCard(label,items,targetId){
+function addSuggestionCard(label,items,targetId,mode='replace'){
   const msgs=document.getElementById('chatMessages');
   if(!msgs)return;
   const div=document.createElement('div');
   div.className='chat-msg ai';
+  const btnLabel=mode==='append'?'+ Add':'Use ↵';
   const itemsHtml=items.map(text=>{
     const idx=_suggPool.length;
-    _suggPool.push({text,targetId});
-    return `<div class="sugg-item" onclick="applySuggestion(${idx})"><span class="sugg-text">${escHtml(text)}</span><button class="sugg-use" onclick="event.stopPropagation();applySuggestion(${idx})">Use ↵</button></div>`;
+    _suggPool.push({text,targetId,mode});
+    return `<div class="sugg-item" onclick="applySuggestion(${idx})"><span class="sugg-text">${escHtml(text)}</span><button class="sugg-use" onclick="event.stopPropagation();applySuggestion(${idx})">${btnLabel}</button></div>`;
   }).join('');
   div.innerHTML=`<div class="msg-lbl">Suggestions</div><div class="msg-bubble sugg-card"><div class="sugg-label">${escHtml(label)}</div>${itemsHtml}</div>`;
   msgs.appendChild(div);
@@ -2224,7 +2235,12 @@ function applySuggestion(idx){
   if(!s)return;
   const el=document.getElementById(s.targetId);
   if(!el)return;
-  el.value=s.text;
+  if(s.mode==='append'){
+    const cur=el.value.trim();
+    el.value=cur?cur+'\n'+s.text:s.text;
+  } else {
+    el.value=s.text;
+  }
   el.focus();
   el.style.transition='border-color .3s';
   el.style.borderColor='var(--blue-700)';
