@@ -2240,7 +2240,8 @@ function buildBold(data,color){
 function buildExecutive(data,color){
   const p=data.personal,c=data.careerContext,ac=color.accent,M=twip(.85),ch=[];
   const cityStateZip=[[p.city,p.state].filter(Boolean).join(', '),p.zip].filter(Boolean).join(' ');const addrLine=[p.address,cityStateZip].filter(Boolean).join(', ');const cl=[p.email,p.phone,addrLine].filter(Boolean).join('  |  ');
-  ch.push(new docx.Paragraph({tabStops:[{type:docx.TabStopType.RIGHT,position:twip(6.8)}],spacing:{before:0,after:80},children:[new docx.TextRun({text:`${p.firstName} ${p.lastName}`.trim(),bold:true,size:48,color:'111111'}),new docx.TextRun({text:'\t'+cl,size:22,color:'666666'})]}));
+  ch.push(new docx.Paragraph({spacing:{before:0,after:40},children:[new docx.TextRun({text:`${p.firstName} ${p.lastName}`.trim(),bold:true,size:48,color:'111111'})]}));
+  ch.push(new docx.Paragraph({spacing:{before:0,after:100},children:[new docx.TextRun({text:cl,size:22,color:'666666'})]}));
   ch.push(new docx.Paragraph({border:{bottom:{style:docx.BorderStyle.THICK,size:14,color:ac}},spacing:{before:0,after:160}}));
   const sec=t=>new docx.Paragraph({tabStops:[{type:docx.TabStopType.RIGHT,position:twip(6.8)}],spacing:{before:300,after:160},children:[new docx.TextRun({text:sectionLabel(t),bold:true,size:26,color:'111111'})],border:{bottom:{style:docx.BorderStyle.SINGLE,size:2,color:'cccccc'}}});
   if(c.objective){ch.push(sec('Professional Summary'));ch.push(bodyTxt(c.objective,{after:120}));}
