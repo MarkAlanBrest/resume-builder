@@ -94,6 +94,15 @@ input[type="color"].color-input::-webkit-color-swatch{border:none;border-radius:
 .bullet-opt{border:1.5px solid var(--slate-200);border-radius:7px;padding:7px 16px;font-size:15px;background:var(--slate-50);cursor:pointer;color:var(--slate-700);transition:border-color .15s,background .15s;font-family:inherit}
 .bullet-opt:hover{border-color:var(--slate-400);background:var(--slate-100)}
 .bullet-opt.sel{border-color:var(--blue-700);background:var(--blue-50);color:var(--blue-700);font-weight:700}
+.sugg-card{padding:10px 12px}
+.sugg-label{font-size:11px;font-weight:700;color:var(--slate-500);text-transform:uppercase;letter-spacing:.5px;margin-bottom:8px}
+.sugg-item{display:flex;align-items:center;gap:8px;padding:7px 8px;border-radius:6px;border:1.5px solid var(--slate-200);background:var(--slate-50);margin-bottom:6px;cursor:pointer;transition:border-color .15s}
+.sugg-item:hover{border-color:var(--blue-700);background:var(--blue-50)}
+.sugg-item:last-child{margin-bottom:0}
+.sugg-hint{font-size:10px;font-weight:700;color:var(--slate-400);text-transform:uppercase;letter-spacing:.4px;margin-bottom:2px}
+.sugg-text{font-size:13px;color:var(--slate-700);flex:1}
+.sugg-use{flex-shrink:0;border:1.5px solid var(--slate-300);border-radius:5px;background:var(--white);padding:4px 10px;font-size:12px;font-weight:600;cursor:pointer;color:var(--slate-600);font-family:inherit}
+.sugg-use:hover{border-color:var(--blue-700);color:var(--blue-700)}
 .approval-card{background:var(--white);border-radius:12px;box-shadow:0 1px 8px rgba(0,0,0,.08);overflow:hidden;margin-bottom:16px}
 .approval-hdr{background:var(--green-600);color:var(--white);padding:12px 18px;font-size:14px;font-weight:700;display:flex;align-items:center;gap:8px}
 .approval-body{padding:8px 18px 4px}
@@ -129,7 +138,6 @@ const MONTHS=['January','February','March','April','May','June','July','August',
 let resumeData = null;
 let pendingLetter = {};
 let selectedResumeFile = null;
-let lookupResult = null;
 
 // ── Init ─────────────────────────────────────────────
 window.addEventListener('DOMContentLoaded', () => {
@@ -249,26 +257,40 @@ function renderMainView(){
   return `<div class="section-hdr"><div class="section-hdr-icon">✉️</div><div><div class="section-hdr-title">Cover Letter</div><div class="section-hdr-sub">Enter employer details and generate your letter</div></div></div>
   ${dataBadge}
   <div class="form-card">
-    <div class="form-card-hdr">🏢 Employer Information</div>
+    <div class="form-card-hdr">🔗 Job Posting URL <span style="font-weight:400;font-size:12px;opacity:.8">(optional — auto-fills everything)</span></div>
     <div class="form-card-body">
       <div class="lookup-row">
+        <div class="f-group" style="margin-bottom:0;flex:1">
+          <label>Paste the job posting URL</label>
+          <input id="fJobUrl" placeholder="https://www.indeed.com/viewjob?..." style="font-size:13px">
+        </div>
+        <button class="btn btn-ghost lookup-btn" id="urlExtractBtn" onclick="extractFromUrl()">Extract →</button>
+      </div>
+    </div>
+  </div>
+  <div class="form-card">
+    <div class="form-card-hdr">🏢 Employer Information</div>
+    <div class="form-card-body">
+      <div class="f-row">
         <div class="f-group" id="fg-company">
           <label>Company Name *</label>
-          <input id="fCompany" placeholder="e.g. AutoZone, Tri-County HVAC">
+          <input id="fCompany" placeholder="e.g. AutoZone, Tri-County HVAC" onblur="refreshEmployerSuggestions(this.value)">
           <span class="f-err">Enter the company name.</span>
         </div>
-        <button class="btn btn-ghost lookup-btn" id="lookupBtn" onclick="lookupCompany()">🔍 Look Up</button>
-      </div>
-      <div id="lookupResultArea"></div>
-      <div class="f-row">
         <div class="f-group" id="fg-jobtitle">
           <label>Job Title Applying For *</label>
-          <input id="fJobTitle" placeholder="e.g. Automotive Technician, HVAC Installer">
+          <input id="fJobTitle" placeholder="e.g. Automotive Technician">
           <span class="f-err">Enter the job title.</span>
         </div>
+      </div>
+      <div class="f-row">
         <div class="f-group">
           <label>Hiring Manager Name <span style="font-weight:400;text-transform:none;font-size:11px">(optional)</span></label>
           <input id="fHiringManager" placeholder="e.g. John Smith">
+        </div>
+        <div class="f-group">
+          <label>Company Phone <span style="font-weight:400;text-transform:none;font-size:11px">(optional)</span></label>
+          <input id="fCompanyPhone" placeholder="e.g. (724) 555-0100">
         </div>
       </div>
       <div class="f-row single">
@@ -283,14 +305,14 @@ function renderMainView(){
           <input id="fCompanyCityState" placeholder="e.g. New Castle, PA">
         </div>
         <div class="f-group">
-          <label>Company Phone <span style="font-weight:400;text-transform:none;font-size:11px">(optional)</span></label>
-          <input id="fCompanyPhone" placeholder="e.g. (724) 555-0100">
+          <label>ZIP Code <span style="font-weight:400;text-transform:none;font-size:11px">(optional)</span></label>
+          <input id="fCompanyZip" placeholder="e.g. 16101" maxlength="5" inputmode="numeric">
         </div>
       </div>
       <div class="f-row single">
         <div class="f-group">
           <label>Job Description / Key Requirements <span style="font-weight:400;text-transform:none;font-size:11px">(optional but recommended)</span></label>
-          <textarea id="fJobDesc" rows="4" placeholder="Paste a few lines from the job posting. The more detail you provide, the more tailored your letter will be."></textarea>
+          <textarea id="fJobDesc" rows="4" placeholder="Paste key requirements from the job posting — the more detail, the more tailored your letter will be."></textarea>
         </div>
       </div>
     </div>
@@ -300,56 +322,88 @@ function renderMainView(){
   </div>`;
 }
 
-// ── Company Lookup ────────────────────────────────────
-async function lookupCompany(){
-  const company=document.getElementById('fCompany').value.trim();
-  if(!company){document.getElementById('fg-company').classList.add('has-error');return;}
-  document.getElementById('fg-company').classList.remove('has-error');
-  const btn=document.getElementById('lookupBtn');
-  btn.disabled=true;btn.textContent='Looking up…';
-  const resultArea=document.getElementById('lookupResultArea');
-  resultArea.innerHTML='';
-  const p=resumeData?.personal||{};
-  const locationHint=p.city&&p.state?`near ${p.city}, ${p.state}`:'';
-  const sys=`You look up employer contact information for cover letter writing. Return ONLY valid JSON:
-{"address":"","city":"","state":"","zip":"","phone":"","hiringManagerTitle":"","found":true}
-- Populate fields you know with reasonable confidence. Use "" for unknown.
-- found: true if you have real knowledge of this employer, false if guessing.
-- hiringManagerTitle: likely title (e.g. "Service Manager", "HR Manager") not a name.
-Company: ${company}
-${locationHint?'Location hint: '+locationHint:''}`;
+// ── URL Extraction ────────────────────────────────────
+async function extractFromUrl(){
+  const url=document.getElementById('fJobUrl').value.trim();
+  if(!url){addAIMsg('Paste a job posting URL first.');return;}
+  const btn=document.getElementById('urlExtractBtn');
+  btn.disabled=true;btn.textContent='Fetching…';
+  addAIMsg('Fetching the job posting — one moment…');
   try{
-    const raw=await callClaude(sys,[{role:'user',content:'Look up this employer.'}]);
+    const fetchRes=await fetch('/api/fetch-url',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({url})});
+    if(!fetchRes.ok){const e=await fetchRes.json().catch(()=>({}));throw new Error(e.error||'fetch failed');}
+    const{text}=await fetchRes.json();
+    const sys=`Extract job posting details. Return ONLY valid JSON:
+{"company":"","jobTitle":"","street":"","cityState":"","zip":"","phone":"","description":""}
+- company: employer/company name
+- jobTitle: the specific position being hired for
+- street: company street address if present, else ""
+- cityState: city and state (e.g. "Pittsburgh, PA"), else ""
+- zip: ZIP code if present, else ""
+- phone: company phone number if present, else ""
+- description: key requirements and qualifications, max 250 words`;
+    const raw=await callClaude(sys,[{role:'user',content:text}],{maxTokens:600});
     const data=JSON.parse(raw.replace(/^```(?:json)?\s*/i,'').replace(/\s*```$/,''));
-    lookupResult=data;
-    const parts=[];
-    if(data.address) parts.push(data.address);
-    const csz=[data.city,data.state,data.zip].filter(Boolean).join(data.zip?', ':' ');
-    if(csz) parts.push(csz);
-    if(data.phone) parts.push(data.phone);
-    if(parts.length||data.hiringManagerTitle){
-      let html=`<div class="lookup-result"><strong>🔍 Found — click Apply to use</strong>`;
-      if(parts.length) html+=`<div>${escHtml(parts.join(' · '))}</div>`;
-      if(data.hiringManagerTitle) html+=`<div>Likely hiring contact: <strong>${escHtml(data.hiringManagerTitle)}</strong></div>`;
-      html+=`<button class="btn btn-confirm" style="margin-top:10px;padding:6px 14px;font-size:13px" onclick="applyLookup()">Apply to Form</button></div>`;
-      if(!data.found) html+=`<div class="lookup-warn">⚠ This information is based on AI knowledge and may be outdated. Please verify before sending.</div>`;
-      resultArea.innerHTML=html;
-    } else {
-      resultArea.innerHTML=`<div class="lookup-warn">⚠ No specific information found for this company. You can still continue — just fill in the address manually if needed.</div>`;
-    }
+    let filled=[];
+    if(data.company){document.getElementById('fCompany').value=data.company;filled.push('company');}
+    if(data.jobTitle){document.getElementById('fJobTitle').value=data.jobTitle;filled.push('job title');}
+    if(data.street) document.getElementById('fCompanyStreet').value=data.street;
+    if(data.cityState){document.getElementById('fCompanyCityState').value=data.cityState;filled.push('location');}
+    if(data.zip) document.getElementById('fCompanyZip').value=data.zip;
+    if(data.phone) document.getElementById('fCompanyPhone').value=data.phone;
+    if(data.description){document.getElementById('fJobDesc').value=data.description;filled.push('job description');}
+    addAIMsg(`Extracted ${filled.join(', ')||'info'} from the posting. Review the fields and fill in anything I missed, then generate your letter.`);
   }catch(e){
-    resultArea.innerHTML=`<div class="lookup-warn">Could not look up company info — check your connection and try again.</div>`;
+    addAIMsg(`Could not fetch that URL — the site may block automated access. Paste the job description manually instead. (${e.message})`);
   }
-  btn.disabled=false;btn.textContent='🔍 Look Up';
+  btn.disabled=false;btn.textContent='Extract →';
 }
 
-function applyLookup(){
-  if(!lookupResult)return;
-  if(lookupResult.address) document.getElementById('fCompanyStreet').value=lookupResult.address;
-  const csz=[lookupResult.city,lookupResult.state].filter(Boolean).join(', ');
-  if(csz) document.getElementById('fCompanyCityState').value=csz;
-  if(lookupResult.phone) document.getElementById('fCompanyPhone').value=lookupResult.phone;
-  addAIMsg('Company info applied. Double-check the address before sending — AI data may be out of date.');
+// ── Employer Chat Suggestions ─────────────────────────
+let _lastSuggestedCompany='';
+async function refreshEmployerSuggestions(company){
+  company=company.trim();
+  if(!company||company.length<4||company===_lastSuggestedCompany)return;
+  _lastSuggestedCompany=company;
+  const p=resumeData?.personal||{};
+  const locationHint=p.city&&p.state?`near ${p.city}, ${p.state}`:'';
+  const sys=`Return employer contact info for a cover letter. ONLY valid JSON:
+{"street":"","cityState":"","zip":"","phone":"","hiringManagerTitle":"","confident":true}
+- Fill fields you know with reasonable confidence. Use "" for unknown.
+- confident: true if you have solid knowledge of this employer, false if uncertain.
+- hiringManagerTitle: the likely hiring contact title for this type of company (not a name).
+Company: ${company}${locationHint?'\nLocation: '+locationHint:''}`;
+  try{
+    const raw=await callClaude(sys,[{role:'user',content:'Suggest contact info.'}]);
+    const data=JSON.parse(raw.replace(/^```(?:json)?\s*/i,'').replace(/\s*```$/,''));
+    const items=[];
+    if(data.street) items.push({hint:'Street Address',text:data.street,field:'fCompanyStreet'});
+    if(data.cityState) items.push({hint:'City, State',text:data.cityState,field:'fCompanyCityState'});
+    if(data.zip) items.push({hint:'ZIP',text:data.zip,field:'fCompanyZip'});
+    if(data.phone) items.push({hint:'Phone',text:data.phone,field:'fCompanyPhone'});
+    if(data.hiringManagerTitle) items.push({hint:'Likely Hiring Contact',text:data.hiringManagerTitle,field:null});
+    if(!items.length)return;
+    const msgs=document.getElementById('chatMessages');if(!msgs)return;
+    const div=document.createElement('div');div.className='chat-msg ai';
+    const rows=items.map(item=>{
+      const btn=item.field?`<button class="sugg-use" onclick="event.stopPropagation();applyField('${item.field}','${item.text.replace(/'/g,"\\'")}')" >+ Add</button>`:'';
+      return `<div class="sugg-item"${item.field?` onclick="applyField('${item.field}','${item.text.replace(/'/g,"\\'")}')"`:''}>
+        <div style="flex:1"><div class="sugg-hint">${escHtml(item.hint)}</div><div class="sugg-text">${escHtml(item.text)}</div></div>${btn}</div>`;
+    }).join('');
+    div.innerHTML=`<div class="msg-lbl">Suggestions for ${escHtml(company)}</div>
+      <div class="msg-bubble sugg-card">
+        <div class="sugg-label">Click + Add to apply to form</div>${rows}
+        ${!data.confident?'<div style="font-size:11px;color:var(--slate-400);margin-top:8px">⚠ Verify before sending</div>':''}
+      </div>`;
+    msgs.appendChild(div);msgs.scrollTop=msgs.scrollHeight;
+  }catch(e){/* silently skip if suggestions fail */}
+}
+
+function applyField(fieldId,value){
+  const el=document.getElementById(fieldId);if(!el)return;
+  el.value=value;
+  el.style.transition='border-color .3s';el.style.borderColor='var(--blue-700)';
+  setTimeout(()=>{el.style.borderColor='';},1200);
 }
 
 // ── Letter Generation ─────────────────────────────────
@@ -360,6 +414,7 @@ function collectEmployerData(){
     hiringManager:document.getElementById('fHiringManager').value.trim(),
     companyStreet:document.getElementById('fCompanyStreet').value.trim(),
     companyCityState:document.getElementById('fCompanyCityState').value.trim(),
+    companyZip:document.getElementById('fCompanyZip').value.trim(),
     companyPhone:document.getElementById('fCompanyPhone').value.trim(),
     jobDesc:document.getElementById('fJobDesc').value.trim(),
   };
@@ -481,7 +536,8 @@ async function downloadLetter(){
   if(emp.hiringManager) ch.push(para(emp.hiringManager,{after:40}));
   if(emp.company) ch.push(para(emp.company,{after:40}));
   if(emp.companyStreet) ch.push(para(emp.companyStreet,{after:40}));
-  if(emp.companyCityState) ch.push(para(emp.companyCityState,{after:40}));
+  const empCityLine=[emp.companyCityState,emp.companyZip].filter(Boolean).join(' ');
+  if(empCityLine) ch.push(para(empCityLine,{after:40}));
   if(emp.companyPhone) ch.push(para(emp.companyPhone,{after:40}));
   if(emp.company) ch.push(blank(280));
   // ── Salutation ──
