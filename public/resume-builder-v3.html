@@ -671,7 +671,7 @@ async function submitPersonal() {
     addAIMsg(`Thanks ${p.firstName}! Your contact info is saved. Let's build your career profile next.`);
     showSection('career');
   } catch(e) {
-    addAIMsg('I could not complete the spelling and address review. Please check your connection or API key, then try Continue again.');
+    addAIMsg('I could not complete the review — please check your internet connection and try Continue again.');
   } finally {
     if (btn && currentSection === 'personal') { btn.disabled = false; btn.textContent = 'Continue →'; }
   }
@@ -908,7 +908,7 @@ async function submitCareer() {
     resumeData.careerContext = career;
     generateObjective();
   } catch(e) {
-    addAIMsg('I could not complete the career profile spelling and professionalism review. Please check your connection or API key, then try Continue again.');
+    addAIMsg('I could not complete the career profile spelling and professionalism review. Please check your internet connection and try Continue again.');
   } finally {
     if (btn && currentSection === 'career') { btn.disabled = false; btn.textContent = 'Continue →'; }
   }
@@ -2253,7 +2253,7 @@ async function refreshDutySuggestions(title){
     const msgs=document.getElementById('chatMessages');
     if(msgs)msgs.scrollTop=msgs.scrollHeight;
   }catch(e){
-    _dutySuggBubble.innerHTML=`<div class="sugg-label">Could not load suggestions. Check your API key and try again.</div>`;
+    _dutySuggBubble.innerHTML=`<div class="sugg-label">Could not load suggestions — check your connection and try again.</div>`;
   }
 }
 
