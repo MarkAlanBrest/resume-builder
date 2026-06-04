@@ -174,6 +174,9 @@ html,body{height:100%;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Ro
 .color-swatch{width:30px;height:30px;border-radius:50%;cursor:pointer;border:3px solid transparent;transition:transform .15s,border-color .15s;box-shadow:0 1px 4px rgba(0,0,0,.2)}
 .color-swatch:hover{transform:scale(1.12)}
 .color-swatch.sel{border-color:var(--slate-900);transform:scale(1.15)}
+.bullet-opt{border:1.5px solid var(--slate-200);border-radius:7px;padding:7px 16px;font-size:15px;background:var(--slate-50);cursor:pointer;color:var(--slate-700);transition:border-color .15s,background .15s;font-family:inherit}
+.bullet-opt:hover{border-color:var(--slate-400);background:var(--slate-100)}
+.bullet-opt.sel{border-color:var(--blue-700);background:var(--blue-50);color:var(--blue-700);font-weight:700}
 
 /* ── Right Panel (AI Chat) ── */
 .right-panel{width:var(--chat-w);flex-shrink:0;display:flex;flex-direction:column;background:var(--slate-50);border-left:1px solid var(--slate-200);transition:width .25s ease;overflow:hidden}
@@ -283,6 +286,9 @@ const CAMPUSES = {
 const MONTHS = ['January','February','March','April','May','June','July','August','September','October','November','December'];
 
 // ── Color Schemes ────────────────────────────────
+const BULLET_OPTIONS = ['•','▸','◆','–','✓'];
+const SECTION_ICONS = {Objective:'🎯 ',Experience:'💼 ',Education:'🎓 ',Certifications:'📜 ',Skills:'⚡ '};
+
 const COLOR_SCHEMES = {
   navy:    {label:'Navy',    hex:'#1e3a8a',accent:'1e3a8a',sideText:'FFFFFF'},
   green:   {label:'Forest',  hex:'#14532d',accent:'14532d',sideText:'FFFFFF'},
@@ -349,6 +355,8 @@ let pendingEdu  = {};
 let pendingCert = {};
 let selectedStyle = 'classic';
 let selectedColor = 'navy';
+let selectedBullet = '•';
+let showIcons = false;
 let selectedResumeFile = null;
 
 // ── API Key ───────────────────────────────────────
@@ -1652,6 +1660,16 @@ function renderTemplateConfig() {
     <div class="form-card-hdr">🎨 Color Scheme</div>
     <div class="form-card-body" style="padding-bottom:18px"><div class="color-row">${swatches}</div></div>
   </div>
+  <div class="form-card">
+    <div class="form-card-hdr">⚙️ Resume Options</div>
+    <div class="form-card-body" style="padding-bottom:16px">
+      <div style="margin-bottom:16px">
+        <div style="font-size:11px;font-weight:700;color:var(--slate-500);text-transform:uppercase;letter-spacing:.6px;margin-bottom:8px">Bullet Style</div>
+        <div style="display:flex;gap:8px;flex-wrap:wrap">${BULLET_OPTIONS.map((b,i)=>`<button class="bullet-opt ${b===selectedBullet?'sel':''}" id="bo-${i}" onclick="pickBullet('${b}')">${b}&nbsp;&nbsp;${['Round','Arrow','Diamond','Dash','Check'][i]}</button>`).join('')}</div>
+      </div>
+      <label class="check-opt-inline"><input type="checkbox" id="iconsToggle" ${showIcons?'checked':''} onchange="toggleIcons(this.checked)">Show icons next to section headings</label>
+    </div>
+  </div>
   <div style="border:2px solid #facc15;border-radius:8px;padding:18px;margin-bottom:16px;background:#fef9c3;">
     <div style="font-weight:bold;color:#92400e;margin-bottom:10px;font-size:15px;">⚠ Important: Review Before Using</div>
     <p style="margin-bottom:12px;font-size:14px;color:#78350f;line-height:1.5;">This resume was generated using AI. You must carefully review, edit, and approve all content before using it. Do not assume the information is correct. Verify dates, employers, skills, and all details to ensure the resume is accurate and professional.</p>
@@ -1681,6 +1699,13 @@ function pickColor(k) {
   document.getElementById(`sw-${k}`).classList.add('sel');
   STYLES.forEach(s=>{ const el=document.getElementById(`sp-${s.id}`); if(el) el.innerHTML=buildPreviewHTML(s.id,k); });
 }
+
+function pickBullet(char){
+  selectedBullet=char;
+  document.querySelectorAll('.bullet-opt').forEach((el,i)=>{el.classList.toggle('sel',BULLET_OPTIONS[i]===char);});
+}
+
+function toggleIcons(val){showIcons=val;}
 
 // Mini CSS previews
 function buildPreviewHTML(style,colorKey) {
@@ -1713,20 +1738,22 @@ async function generateResume() {
 const twip = n => docx.convertInchesToTwip(n);
 function spacer(a=200){return new docx.Paragraph({spacing:{before:0,after:a}})}
 function bodyTxt(text,opts={}){return new docx.Paragraph({children:[new docx.TextRun({text,size:opts.size||24,color:opts.color||'2a2a2a',italics:opts.italic||false})],indent:opts.indent?{left:twip(opts.indent)}:undefined,spacing:{before:0,after:opts.after!==undefined?opts.after:200,line:288,lineRule:'auto'},alignment:opts.align||docx.AlignmentType.LEFT})}
-function bullet(text){return new docx.Paragraph({children:[new docx.TextRun({text:`•  ${text}`,size:22,color:'2a2a2a'})],indent:{left:twip(0.22)},spacing:{before:0,after:160,line:276,lineRule:'auto'}})}
+function bullet(text){return new docx.Paragraph({children:[new docx.TextRun({text:`${selectedBullet}  ${text}`,size:22,color:'2a2a2a'})],indent:{left:twip(0.22)},spacing:{before:0,after:160,line:276,lineRule:'auto'}})}
 function jobBlock(job){const items=[],loc=[job.city,job.state].filter(Boolean).join(', '),end=job.current?'Present':[job.endMonth,job.endYear].filter(Boolean).join(' '),dates=`${[job.startMonth,job.startYear].filter(Boolean).join(' ')} – ${end}`;items.push(new docx.Paragraph({spacing:{before:320,after:60},children:[new docx.TextRun({text:job.jobTitle,bold:true,size:26,color:'1a1a1a'}),new docx.TextRun({text:`  •  ${job.employer}${loc?'  •  '+loc:''}`,size:24,color:'444444'})]}));items.push(new docx.Paragraph({spacing:{before:0,after:160},children:[new docx.TextRun({text:dates,italics:true,size:22,color:'777777'})]}));(job.bulletLines||[]).forEach(b=>items.push(bullet(b)));return items;}
 function eduBlock(edu){const loc=[edu.city,edu.state].filter(Boolean).join(', '),field=edu.fieldOfStudy?` – ${edu.fieldOfStudy}`:'';return new docx.Paragraph({spacing:{before:280,after:160},children:[new docx.TextRun({text:`${edu.degree}${field}`,bold:true,size:24,color:'1a1a1a'}),new docx.TextRun({text:`  •  ${edu.school}${loc?', '+loc:''}  •  ${eduGradDate(edu)}`,size:22,color:'555555'})]})}
 function certBlock(cert){return new docx.Paragraph({spacing:{before:200,after:140},children:[new docx.TextRun({text:cert.name,bold:true,size:24}),...(cert.org||cert.year?[new docx.TextRun({text:`  —  ${[cert.org,cert.year].filter(Boolean).join(', ')}`,size:22,color:'666666'})]:[])]})}
+
+function sectionLabel(t){if(!showIcons)return t.toUpperCase();const icon=SECTION_ICONS[t]||'';return icon+t.toUpperCase();}
 
 async function buildDocument(data,style,color){const builders={classic:buildClassic,modern:buildModern,bold:buildBold,executive:buildExecutive};const sortedData={...data,workExperience:[...(data.workExperience||[])].sort((a,b)=>workSortValue(b)-workSortValue(a)),education:[...(data.education||[])].sort((a,b)=>eduSortValue(b)-eduSortValue(a))};return (builders[style]||buildClassic)(sortedData,color);}
 
 function buildClassic(data,color){
   const p=data.personal,c=data.careerContext,ac=color.accent,M=twip(1),ch=[];
   ch.push(new docx.Paragraph({alignment:docx.AlignmentType.CENTER,spacing:{before:0,after:80},children:[new docx.TextRun({text:`${p.firstName} ${p.lastName}`.trim(),bold:true,size:48,color:'111111'})]}));
-  const contact=[p.email,p.phone,[p.city,p.state].filter(Boolean).join(', ')].filter(Boolean).join('   |   ');
+  const cityStateZip=[[p.city,p.state].filter(Boolean).join(', '),p.zip].filter(Boolean).join(' ');const addrLine=[p.address,cityStateZip].filter(Boolean).join(', ');const contact=[p.email,p.phone,addrLine].filter(Boolean).join('   |   ');
   if(contact)ch.push(new docx.Paragraph({alignment:docx.AlignmentType.CENTER,spacing:{before:0,after:180},children:[new docx.TextRun({text:contact,size:22,color:'555555'})]}));
   ch.push(new docx.Paragraph({border:{bottom:{style:docx.BorderStyle.SINGLE,size:8,color:ac}},spacing:{before:0,after:160}}));
-  const sec=t=>new docx.Paragraph({children:[new docx.TextRun({text:t.toUpperCase(),bold:true,size:28,color:ac})],border:{bottom:{style:docx.BorderStyle.SINGLE,size:4,color:ac}},spacing:{before:320,after:180}});
+  const sec=t=>new docx.Paragraph({children:[new docx.TextRun({text:sectionLabel(t),bold:true,size:28,color:ac})],border:{bottom:{style:docx.BorderStyle.SINGLE,size:4,color:ac}},spacing:{before:320,after:180}});
   if(c.objective){ch.push(sec('Objective'));ch.push(bodyTxt(c.objective,{after:140}));}
   if(data.workExperience?.length){ch.push(sec('Experience'));data.workExperience.forEach(j=>jobBlock(j).forEach(q=>ch.push(q)));}
   if(data.education?.length){ch.push(sec('Education'));data.education.forEach(e=>ch.push(eduBlock(e)));}
@@ -1741,11 +1768,11 @@ function buildModern(data,color){
   const p=data.personal,c=data.careerContext,ac=color.accent,st=color.sideText,side=[],main=[];
   const sideContact=st==='FFFFFF'?'CCE4FF':'CCCCCC';
   side.push(new docx.Paragraph({spacing:{before:0,after:100},children:[new docx.TextRun({text:`${p.firstName} ${p.lastName}`.trim(),bold:true,size:36,color:st})]}));
-  [p.email,p.phone,[p.city,p.state].filter(Boolean).join(', ')].filter(Boolean).forEach(line=>side.push(new docx.Paragraph({spacing:{before:0,after:60},children:[new docx.TextRun({text:line,size:21,color:sideContact})]})));
-  const sideSec=t=>new docx.Paragraph({children:[new docx.TextRun({text:t.toUpperCase(),bold:true,size:24,color:st})],border:{bottom:{style:docx.BorderStyle.SINGLE,size:3,color:st==='FFFFFF'?'6699CC':'777777'}},spacing:{before:280,after:120}});
+  const cityStateZip=[[p.city,p.state].filter(Boolean).join(', '),p.zip].filter(Boolean).join(' ');[p.email,p.phone,p.address,cityStateZip].filter(Boolean).forEach(line=>side.push(new docx.Paragraph({spacing:{before:0,after:60},children:[new docx.TextRun({text:line,size:21,color:sideContact})]})));
+  const sideSec=t=>new docx.Paragraph({children:[new docx.TextRun({text:sectionLabel(t),bold:true,size:24,color:st})],border:{bottom:{style:docx.BorderStyle.SINGLE,size:3,color:st==='FFFFFF'?'6699CC':'777777'}},spacing:{before:280,after:120}});
   if(data.skills?.length){side.push(sideSec('Skills'));(Array.isArray(data.skills)?data.skills:[data.skills]).forEach(s=>side.push(new docx.Paragraph({spacing:{before:0,after:70},children:[new docx.TextRun({text:`•  ${s}`,size:21,color:sideContact})]})));}
   if(data.certifications?.length){side.push(sideSec('Certifications'));data.certifications.forEach(cert=>side.push(new docx.Paragraph({spacing:{before:0,after:70},children:[new docx.TextRun({text:cert.name,size:21,color:sideContact})]})));}
-  const mainSec=t=>new docx.Paragraph({children:[new docx.TextRun({text:t.toUpperCase(),bold:true,size:28,color:ac})],border:{bottom:{style:docx.BorderStyle.SINGLE,size:4,color:ac}},spacing:{before:280,after:160}});
+  const mainSec=t=>new docx.Paragraph({children:[new docx.TextRun({text:sectionLabel(t),bold:true,size:28,color:ac})],border:{bottom:{style:docx.BorderStyle.SINGLE,size:4,color:ac}},spacing:{before:280,after:160}});
   if(c.objective){main.push(mainSec('Objective'));main.push(bodyTxt(c.objective,{after:120}));}
   if(data.workExperience?.length){main.push(mainSec('Experience'));data.workExperience.forEach(j=>jobBlock(j).forEach(q=>main.push(q)));}
   if(data.education?.length){main.push(mainSec('Education'));data.education.forEach(e=>main.push(eduBlock(e)));}
@@ -1757,10 +1784,10 @@ function buildModern(data,color){
 
 function buildBold(data,color){
   const p=data.personal,c=data.careerContext,ac=color.accent,st=color.sideText,bm=twip(.75),nb={style:docx.BorderStyle.NONE,size:0,color:'FFFFFF'};
-  const contact=[p.email,p.phone,[p.city,p.state].filter(Boolean).join(', ')].filter(Boolean).join('   |   ');
+  const cityStateZip=[[p.city,p.state].filter(Boolean).join(', '),p.zip].filter(Boolean).join(' ');const addrLine=[p.address,cityStateZip].filter(Boolean).join(', ');const contact=[p.email,p.phone,addrLine].filter(Boolean).join('   |   ');
   const hdr=new docx.Table({width:{size:100,type:docx.WidthType.PERCENTAGE},borders:{top:nb,bottom:nb,left:nb,right:nb,insideH:nb,insideV:nb},rows:[new docx.TableRow({children:[new docx.TableCell({shading:{fill:ac,type:docx.ShadingType.CLEAR,color:'auto'},margins:{top:twip(.35),bottom:twip(.3),left:twip(.75),right:twip(.75)},children:[new docx.Paragraph({spacing:{before:0,after:60},children:[new docx.TextRun({text:`${p.firstName} ${p.lastName}`.trim(),bold:true,size:52,color:st})]}),new docx.Paragraph({spacing:{before:0,after:0},children:[new docx.TextRun({text:contact,size:22,color:st==='FFFFFF'?'CCE4FF':'BBBBBB'})]})]})]})]});
   const ch=[hdr];
-  const sec=t=>new docx.Paragraph({spacing:{before:300,after:160},border:{left:{style:docx.BorderStyle.SINGLE,size:18,color:ac}},indent:{left:twip(.18)},children:[new docx.TextRun({text:t.toUpperCase(),bold:true,size:28,color:ac})]});
+  const sec=t=>new docx.Paragraph({spacing:{before:300,after:160},border:{left:{style:docx.BorderStyle.SINGLE,size:18,color:ac}},indent:{left:twip(.18)},children:[new docx.TextRun({text:sectionLabel(t),bold:true,size:28,color:ac})]});
   if(c.objective){ch.push(sec('Objective'));ch.push(bodyTxt(c.objective,{after:120}));}
   if(data.workExperience?.length){ch.push(sec('Experience'));data.workExperience.forEach(j=>jobBlock(j).forEach(q=>ch.push(q)));}
   if(data.education?.length){ch.push(sec('Education'));data.education.forEach(e=>ch.push(eduBlock(e)));}
@@ -1773,10 +1800,10 @@ function buildBold(data,color){
 
 function buildExecutive(data,color){
   const p=data.personal,c=data.careerContext,ac=color.accent,M=twip(.85),ch=[];
-  const cl=[p.email,p.phone,[p.city,p.state].filter(Boolean).join(', ')].filter(Boolean).join('  |  ');
+  const cityStateZip=[[p.city,p.state].filter(Boolean).join(', '),p.zip].filter(Boolean).join(' ');const addrLine=[p.address,cityStateZip].filter(Boolean).join(', ');const cl=[p.email,p.phone,addrLine].filter(Boolean).join('  |  ');
   ch.push(new docx.Paragraph({tabStops:[{type:docx.TabStopType.RIGHT,position:twip(6.8)}],spacing:{before:0,after:80},children:[new docx.TextRun({text:`${p.firstName} ${p.lastName}`.trim(),bold:true,size:48,color:'111111'}),new docx.TextRun({text:'\t'+cl,size:22,color:'666666'})]}));
   ch.push(new docx.Paragraph({border:{bottom:{style:docx.BorderStyle.THICK,size:14,color:ac}},spacing:{before:0,after:160}}));
-  const sec=t=>new docx.Paragraph({tabStops:[{type:docx.TabStopType.RIGHT,position:twip(6.8)}],spacing:{before:300,after:160},children:[new docx.TextRun({text:t.toUpperCase(),bold:true,size:26,color:'111111'})],border:{bottom:{style:docx.BorderStyle.SINGLE,size:2,color:'cccccc'}}});
+  const sec=t=>new docx.Paragraph({tabStops:[{type:docx.TabStopType.RIGHT,position:twip(6.8)}],spacing:{before:300,after:160},children:[new docx.TextRun({text:sectionLabel(t),bold:true,size:26,color:'111111'})],border:{bottom:{style:docx.BorderStyle.SINGLE,size:2,color:'cccccc'}}});
   if(c.objective){ch.push(sec('Professional Summary'));ch.push(bodyTxt(c.objective,{after:120}));}
   if(data.workExperience?.length){ch.push(sec('Experience'));data.workExperience.forEach(job=>{const loc=[job.city,job.state].filter(Boolean).join(', '),end=job.current?'Present':[job.endMonth,job.endYear].filter(Boolean).join(' '),dates=`${[job.startMonth,job.startYear].filter(Boolean).join(' ')} – ${end}`;ch.push(new docx.Paragraph({tabStops:[{type:docx.TabStopType.RIGHT,position:twip(6.8)}],spacing:{before:280,after:60},children:[new docx.TextRun({text:`${job.jobTitle}  •  ${job.employer}${loc?', '+loc:''}`,bold:true,size:26,color:'1a1a1a'}),new docx.TextRun({text:'\t'+dates,italics:true,size:22,color:'888888'})]}));(job.bulletLines||[]).forEach(b=>ch.push(bullet(b)));});}
   if(data.education?.length){ch.push(sec('Education'));data.education.forEach(e=>ch.push(eduBlock(e)));}
