@@ -2225,7 +2225,7 @@ function buildBold(data,color){
   const cityStateZip=[[p.city,p.state].filter(Boolean).join(', '),p.zip].filter(Boolean).join(' ');const addrLine=[p.address,cityStateZip].filter(Boolean).join(', ');const contact=[p.email,p.phone,addrLine].filter(Boolean).join('   |   ');
   const hdr=new docx.Table({width:{size:100,type:docx.WidthType.PERCENTAGE},borders:{top:nb,bottom:nb,left:nb,right:nb,insideH:nb,insideV:nb},rows:[new docx.TableRow({children:[new docx.TableCell({shading:{fill:ac,type:docx.ShadingType.CLEAR,color:'auto'},margins:{top:twip(.35),bottom:twip(.3),left:twip(.75),right:twip(.75)},children:[new docx.Paragraph({spacing:{before:0,after:60},children:[new docx.TextRun({text:`${p.firstName} ${p.lastName}`.trim(),bold:true,size:52,color:st})]}),new docx.Paragraph({spacing:{before:0,after:0},children:[new docx.TextRun({text:contact,size:22,color:st==='FFFFFF'?'CCE4FF':'BBBBBB'})]})]})]})]});
   const ch=[hdr];
-  const sec=t=>new docx.Paragraph({spacing:{before:300,after:160},border:{left:{style:docx.BorderStyle.SINGLE,size:18,color:ac}},indent:{left:twip(.18)},children:[new docx.TextRun({text:sectionLabel(t),bold:true,size:28,color:ac})]});
+  const sec=t=>new docx.Paragraph({spacing:{before:300,after:160},children:[new docx.TextRun({text:sectionLabel(t),bold:true,size:28,color:ac})]});
   if(c.objective){ch.push(sec('Objective'));ch.push(bodyTxt(c.objective,{after:120}));}
   if(data.workExperience?.length){ch.push(sec('Experience'));data.workExperience.forEach(j=>jobBlock(j).forEach(q=>ch.push(q)));}
   if(data.militaryService?.length){ch.push(sec('Military Service'));data.militaryService.forEach(m=>militaryBlock(m).forEach(q=>ch.push(q)));}
