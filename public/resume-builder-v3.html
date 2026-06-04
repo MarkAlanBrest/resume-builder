@@ -2070,12 +2070,12 @@ function renderTemplateConfig() {
   const iconSetBtns = Object.entries(ICON_SETS).map(([k,s])=>`<button class="icon-set-btn ${k===selectedIconSet?'sel':''}" id="is-${k}" onclick="pickIconSet('${k}')">${s.preview}</button>`).join('');
   return `<div class="section-hdr"><div class="section-hdr-icon">📄</div><div><div class="section-hdr-title">Build Your Resume</div><div class="section-hdr-sub">Choose a style and options, then generate</div></div></div>
   <div class="form-card">
-    <div class="form-card-hdr">🎨 Style</div>
-    <div class="form-card-body" style="padding-bottom:14px"><div class="style-grid">${styleBtns}</div></div>
-  </div>
-  <div class="form-card">
-    <div class="form-card-hdr">⚙️ Color &amp; Options</div>
+    <div class="form-card-hdr">🎨 Style, Color &amp; Options</div>
     <div class="form-card-body" style="padding-bottom:18px">
+      <div style="margin-bottom:18px">
+        <div class="opt-label">Style</div>
+        <div class="style-grid">${styleBtns}</div>
+      </div>
       <div style="margin-bottom:16px">
         <div class="opt-label">Color</div>
         <div class="color-picker-wrap">
@@ -2087,21 +2087,21 @@ function renderTemplateConfig() {
         <div class="opt-label">Bullet Style</div>
         <div style="display:flex;gap:8px;flex-wrap:wrap">${bulletBtns}</div>
       </div>
-      <div>
+      <div style="margin-bottom:20px">
         <div class="opt-label">Section Icons</div>
         <div class="icon-set-btns">${iconSetBtns}</div>
       </div>
-    </div>
-  </div>
-  <div style="border:2px solid #facc15;border-radius:8px;padding:18px;margin-bottom:16px;background:#fef9c3;">
-    <div style="font-weight:bold;color:#92400e;margin-bottom:10px;font-size:15px;">⚠ Important: Review Before Using</div>
-    <p style="margin-bottom:12px;font-size:14px;color:#78350f;line-height:1.5;">This resume was generated using AI. You must carefully review, edit, and approve all content before using it. Do not assume the information is correct. Verify dates, employers, skills, and all details to ensure the resume is accurate and professional.</p>
-    <label style="display:flex;align-items:flex-start;gap:10px;font-size:14px;font-weight:600;color:#78350f;cursor:pointer;margin-bottom:14px;">
-      <input type="checkbox" id="reviewConfirmed" onchange="document.getElementById('genBtn').disabled=!this.checked;document.getElementById('genBtn').style.opacity=this.checked?'1':'0.45'" style="margin-top:2px;width:16px;height:16px;accent-color:#eab308;flex-shrink:0;">
-      I understand that I must review and edit this resume before using it.
-    </label>
-    <div style="display:flex;justify-content:flex-end;">
-      <button class="btn btn-primary btn-lg" id="genBtn" onclick="generateResume()" disabled style="opacity:0.45">Generate &amp; Download ↓</button>
+      <div style="border:2px solid #facc15;border-radius:8px;padding:16px;background:#fef9c3;">
+        <div style="font-weight:bold;color:#92400e;margin-bottom:8px;font-size:15px;">⚠ Important: Review Before Using</div>
+        <p style="margin-bottom:12px;font-size:14px;color:#78350f;line-height:1.5;">This resume was generated using AI. You must carefully review, edit, and approve all content before using it. Do not assume the information is correct. Verify dates, employers, skills, and all details to ensure the resume is accurate and professional.</p>
+        <label style="display:flex;align-items:flex-start;gap:10px;font-size:14px;font-weight:600;color:#78350f;cursor:pointer;margin-bottom:14px;">
+          <input type="checkbox" id="reviewConfirmed" onchange="document.getElementById('genBtn').disabled=!this.checked;document.getElementById('genBtn').style.opacity=this.checked?'1':'0.45'" style="margin-top:2px;width:16px;height:16px;accent-color:#eab308;flex-shrink:0;">
+          I understand that I must review and edit this resume before using it.
+        </label>
+        <div style="display:flex;justify-content:flex-end;">
+          <button class="btn btn-primary btn-lg" id="genBtn" onclick="generateResume()" disabled style="opacity:0.45">Generate &amp; Download ↓</button>
+        </div>
+      </div>
     </div>
   </div>`;
 }
