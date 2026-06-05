@@ -2230,14 +2230,52 @@ async function generateResume() {
   btn.disabled=true; btn.textContent='Building resume…';
   try {
     const color = getColorObj(selectedColorHex);
-    const doc = await buildDocument(resumeData, selectedStyle, color);
+    let buildData = resumeData;
+
+    // Auto-generate a Training Experience block when employment is weak
+    const weakEmployment = (resumeData.workExperience||[]).length < 2;
+    const tradeEdu = (resumeData.education||[]).find(e=>e.school||e.degree)||resumeData.education?.[0];
+    if (weakEmployment && tradeEdu) {
+      btn.textContent = 'Building training section…';
+      const program = resumeData.personal.program || tradeEdu.fieldOfStudy || tradeEdu.degree || 'Trade Program';
+      const school  = tradeEdu.school || resumeData.personal.campus || 'Trade School';
+      const inProgress = tradeEdu.gradYear === 'In Progress' || !tradeEdu.gradYear;
+      const tense = inProgress ? 'present tense — student is currently enrolled' : 'past tense — student has completed the program';
+      const sys = `Write exactly 4 professional resume bullet points for a trade school student's Training Experience section. Program: ${program}. School: ${school}. Use ${tense}. Each bullet must start with a strong action verb. Focus on hands-on technical skills, equipment operated, safety practices, and shop responsibilities specific to ${program}. Return only the 4 bullets, one per line, no bullet characters, no numbering, no labels.`;
+      try {
+        const r = await callClaude(sys,[{role:'user',content:'Write the training experience bullets.'}]);
+        const bullets = r.trim().split('\n').map(l=>l.replace(/^[•\-\*\d.)\s]+/,'')).filter(l=>l.length>8).slice(0,5);
+        if (bullets.length) {
+          const gradYr = inProgress ? '' : (tradeEdu.gradYear||'');
+          const startYr = gradYr ? String(Number(gradYr)-1) : String(new Date().getFullYear()-1);
+          buildData = {
+            ...resumeData,
+            trainingEntry: {
+              jobTitle: program,
+              employer: school,
+              city: tradeEdu.city||'',
+              state: tradeEdu.state||'',
+              startMonth: 'September',
+              startYear: startYr,
+              endMonth: inProgress ? '' : (tradeEdu.gradMonth||''),
+              endYear: gradYr,
+              current: inProgress,
+              bulletLines: bullets,
+            }
+          };
+        }
+      } catch(e) { /* AI failed — proceed without training section */ }
+    }
+
+    btn.textContent = 'Building resume…';
+    const doc = await buildDocument(buildData, selectedStyle, color);
     const blob = await docx.Packer.toBlob(doc);
     const p=resumeData.personal;
     const fname=[p.firstName,p.lastName].filter(Boolean).join('-')||'Resume';
     saveAs(blob, `${fname}-Resume.docx`);
     setStatus('template','done');
     btn.disabled=false; btn.textContent='Download Again ↓';
-    addAIMsg(`Your resume has been downloaded! Change the style or color anytime and click Download Again to try a different look.`);
+    addAIMsg(`Your resume has been downloaded!${buildData.trainingEntry?' A training experience section was automatically added based on your program.':''} Change the style or color anytime and click Download Again to try a different look.`);
   } catch(err) { btn.disabled=false; btn.textContent='Generate & Download ↓'; addAIMsg(`Error generating file: ${err.message}`); console.error(err); }
 }
 
@@ -2262,7 +2300,13 @@ function skillsCertsGrid(items){
   return new docx.Table({width:{size:100,type:docx.WidthType.PERCENTAGE},borders:{top:nb,bottom:nb,left:nb,right:nb,insideH:nb,insideV:nb},rows:col1.map((item,i)=>new docx.TableRow({children:[mkCell(item),mkCell(col2[i]||'')]}))});
 }
 
-async function buildDocument(data,style,color){const builders={classic:buildClassic,modern:buildModern,bold:buildBold,executive:buildExecutive,flip:buildFlip,'top-left':buildTopLeft,'top-right':buildTopRight,split:buildSplit};const sortedData={...data,workExperience:[...(data.workExperience||[])].sort((a,b)=>workSortValue(b)-workSortValue(a)),education:[...(data.education||[])].sort((a,b)=>eduSortValue(b)-eduSortValue(a))};return (builders[style]||buildClassic)(sortedData,color);}
+async function buildDocument(data,style,color){
+  const builders={classic:buildClassic,modern:buildModern,bold:buildBold,executive:buildExecutive,flip:buildFlip,'top-left':buildTopLeft,'top-right':buildTopRight,split:buildSplit};
+  const sortedWork=[...(data.workExperience||[])].sort((a,b)=>workSortValue(b)-workSortValue(a));
+  if(data.trainingEntry) sortedWork.push(data.trainingEntry); // always last, after real jobs
+  const sortedData={...data,workExperience:sortedWork,education:[...(data.education||[])].sort((a,b)=>eduSortValue(b)-eduSortValue(a))};
+  return (builders[style]||buildClassic)(sortedData,color);
+}
 
 function buildClassic(data,color){
   const p=data.personal,c=data.careerContext,ac=color.accent,M=twip(1),ch=[];
