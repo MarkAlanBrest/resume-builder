@@ -2399,7 +2399,7 @@ function sendTip(key){
     setTimeout(()=>{
       const branch = document.getElementById('milBranch')?.value||'';
       const found = MILITARY_DUTY_EXAMPLES.find(item=>branch?item.match.test(branch):false) || MILITARY_DUTY_EXAMPLES[MILITARY_DUTY_EXAMPLES.length-1];
-      addSuggestionCard('Example duty descriptions — click to use as a starting point:', found.examples, 'milDuties');
+      addSuggestionCard('Example duty descriptions — click to add:', found.examples, 'milDuties', 'append');
     },800);
     setTimeout(()=>addAIMsg(`**Tip:** Things employers value most from military service: team leadership, equipment operation and maintenance, following procedures, physical reliability, and working under pressure. Mention any of these in your duties.`),1200);
   }
@@ -2490,7 +2490,7 @@ async function refreshDutySuggestions(title){
     if(!Array.isArray(items)||!items.length)throw new Error('bad');
     const itemsHtml=items.slice(0,3).map(text=>{
       const idx=_suggPool.length;
-      _suggPool.push({text:String(text).trim(),targetId:'duties'});
+      _suggPool.push({text:String(text).trim(),targetId:'duties',mode:'append'});
       return `<div class="sugg-item" onclick="applySuggestion(${idx})"><span class="sugg-text">${escHtml(String(text).trim())}</span><button class="sugg-use" onclick="event.stopPropagation();applySuggestion(${idx})">Use ↵</button></div>`;
     }).join('');
     _dutySuggBubble.innerHTML=`<div class="sugg-label">Suggestions for "${escHtml(t)}" — click to use:</div>${itemsHtml}`;
@@ -2506,7 +2506,7 @@ function refreshMilitarySuggestions(branch) {
   const found = MILITARY_DUTY_EXAMPLES.find(item => item.match.test(branch)) || MILITARY_DUTY_EXAMPLES[MILITARY_DUTY_EXAMPLES.length-1];
   const shortBranch = branch.replace('United States ','').replace(' Corps','').replace(' Force','');
   addAIMsg(`Here are example duty descriptions for the **${shortBranch}** — click any to use as a starting point, then add your own details:`);
-  addSuggestionCard(`${shortBranch} duty examples:`, found.examples, 'milDuties');
+  addSuggestionCard(`${shortBranch} duty examples:`, found.examples, 'milDuties', 'append');
 }
 
 function addAIMsg(text){const msgs=document.getElementById('chatMessages');if(!msgs)return;const div=document.createElement('div');div.className='chat-msg ai';div.innerHTML=`<div class="msg-lbl">AI</div><div class="msg-bubble">${escHtml(text).replace(/\*\*(.+?)\*\*/g,'<strong>$1</strong>').replace(/\n/g,'<br>')}</div>`;msgs.appendChild(div);msgs.scrollTop=msgs.scrollHeight;}
