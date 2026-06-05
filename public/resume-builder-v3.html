@@ -14,7 +14,7 @@
   --slate-900:#0f172a;--slate-700:#334155;--slate-600:#475569;--slate-500:#64748b;
   --slate-400:#94a3b8;--slate-300:#cbd5e1;--slate-200:#e2e8f0;--slate-100:#f1f5f9;--slate-50:#f8fafc;
   --green-600:#16a34a;--green-700:#15803d;--red-600:#dc2626;--white:#ffffff;
-  --nav-w:540px;--chat-w:900px;
+  --nav-w:195px;--chat-w:900px;
 }
 html,body{height:100%;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;background:#64748b}
 
@@ -228,10 +228,10 @@ input[type="color"].color-input::-webkit-color-swatch{border:none;border-radius:
 .chat-send svg{width:15px;height:15px;fill:var(--white);margin-left:1px}
 
 /* ── Responsive ── */
-@media(max-width:2400px){:root{--nav-w:400px;--chat-w:660px}}
-@media(max-width:1800px){:root{--nav-w:300px;--chat-w:500px}}
-@media(max-width:1300px){:root{--nav-w:240px;--chat-w:380px}}
-@media(max-width:1000px){:root{--nav-w:200px;--chat-w:280px}}
+@media(max-width:2400px){:root{--nav-w:190px;--chat-w:660px}}
+@media(max-width:1800px){:root{--nav-w:185px;--chat-w:500px}}
+@media(max-width:1300px){:root{--nav-w:180px;--chat-w:380px}}
+@media(max-width:1000px){:root{--nav-w:175px;--chat-w:280px}}
 @media(max-width:900px){:root{--chat-w:260px}}
 @media(max-width:700px){.right-panel{width:0!important}.left-nav{width:44px}.nav-label,.nav-check,.nav-heading{display:none}.nav-item{justify-content:center;padding:8px 0}}
 @media(max-width:480px){:root{--nav-w:44px}}
@@ -2515,7 +2515,7 @@ function showChatTyping(){const msgs=document.getElementById('chatMessages');if(
 
 function hideChatTyping(){const el=document.getElementById('chatTyping');if(el)el.remove();isAIThinking=false;}
 
-async function sendChat(){const inp=document.getElementById('chatInput');const text=inp.value.trim();if(!text||isAIThinking)return;inp.value='';autoResizeChat(inp);const um=document.createElement('div');um.className='chat-msg user';um.innerHTML=`<div class="msg-lbl" style="text-align:right">You</div><div class="msg-bubble">${escHtml(text)}</div>`;document.getElementById('chatMessages').appendChild(um);document.getElementById('chatMessages').scrollTop=document.getElementById('chatMessages').scrollHeight;isAIThinking=true;showChatTyping();const p=resumeData.personal;const sys=`You are a resume assistant helping ${p.firstName||'a student'} build their resume. They are on the ${currentSection||'start'} section. Answer questions helpfully and briefly — 2–3 sentences max. Do not use filler phrases.`;chatHistory.push({role:'user',content:text});try{const reply=await callClaude(sys,chatHistory.slice(-8));hideChatTyping();chatHistory.push({role:'assistant',content:reply});addAIMsg(reply);}catch(e){hideChatTyping();addAIMsg('Sorry, I had trouble connecting. Please try again.');}}
+async function sendChat(){const inp=document.getElementById('chatInput');const text=inp.value.trim();if(!text||isAIThinking)return;inp.value='';autoResizeChat(inp);const um=document.createElement('div');um.className='chat-msg user';um.innerHTML=`<div class="msg-lbl" style="text-align:right">You</div><div class="msg-bubble">${escHtml(text)}</div>`;document.getElementById('chatMessages').appendChild(um);document.getElementById('chatMessages').scrollTop=document.getElementById('chatMessages').scrollHeight;isAIThinking=true;showChatTyping();const p=resumeData.personal;const sys=`You are a resume assistant helping ${p.firstName||'a student'} build their resume. They are enrolled at a trade school. Be genuinely helpful — not just for resume questions but for anything that helps them complete their resume accurately.\n\nYou CAN and SHOULD:\n- Look up employer names, addresses, cities, and states from your training knowledge\n- Find school or campus addresses\n- Help format dates, job titles, and descriptions\n- Suggest professional wording for duties and skills\n- Answer any question that helps the student fill in accurate resume information\n\nCurrent section: ${currentSection||'start'}. Be direct and complete. If you know the address or information, give it. Do not refuse helpful requests. Do not use filler phrases.`;chatHistory.push({role:'user',content:text});try{const reply=await callClaude(sys,chatHistory.slice(-8));hideChatTyping();chatHistory.push({role:'assistant',content:reply});addAIMsg(reply);}catch(e){hideChatTyping();addAIMsg('Sorry, I had trouble connecting. Please try again.');}}
 
 function handleChatKey(e){if(e.key==='Enter'&&!e.shiftKey){e.preventDefault();sendChat();}}
 function autoResizeChat(el){el.style.height='auto';el.style.height=Math.min(el.scrollHeight,90)+'px';}
