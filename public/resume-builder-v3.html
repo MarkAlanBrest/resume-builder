@@ -106,10 +106,10 @@ html,body{height:100%;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Ro
 .btn-primary{background:var(--blue-900);color:var(--white)}
 .btn-primary:hover{background:var(--blue-800);transform:translateY(-1px);box-shadow:0 4px 14px rgba(30,58,138,.28)}
 .btn-primary:disabled{background:var(--slate-300);cursor:not-allowed;transform:none;box-shadow:none}
-.btn-ghost{background:var(--white);color:var(--slate-600);border:1.5px solid var(--slate-200)}
-.btn-ghost:hover{border-color:var(--slate-400);background:var(--slate-50)}
-.btn-confirm{background:var(--green-600);color:var(--white)}
-.btn-confirm:hover{background:var(--green-700);transform:translateY(-1px)}
+.btn-ghost{background:var(--blue-900);color:var(--white);border:none}
+.btn-ghost:hover{background:var(--blue-800);transform:translateY(-1px);box-shadow:0 4px 14px rgba(30,58,138,.28)}
+.btn-confirm{background:var(--blue-900);color:var(--white)}
+.btn-confirm:hover{background:var(--blue-800);transform:translateY(-1px);box-shadow:0 4px 14px rgba(30,58,138,.28)}
 .btn-lg{padding:12px 28px;font-size:15px}
 
 /* ── Approval Card ── */
@@ -127,6 +127,19 @@ html,body{height:100%;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Ro
 .bullet-list li{display:flex;gap:8px;padding:5px 0;font-size:14px;color:var(--slate-800);line-height:1.5;border-bottom:1px solid var(--slate-100)}
 .bullet-list li:last-child{border-bottom:none}
 .bullet-list li::before{content:'•';color:var(--blue-700);font-weight:700;flex-shrink:0}
+
+/* ── Editable bullet/item rows ── */
+.ebl-item{display:flex;align-items:flex-start;gap:8px;padding:5px 0;border-bottom:1px solid var(--slate-100)}
+.ebl-item:last-child{border-bottom:none}
+.ebl-dot{color:var(--blue-700);font-weight:700;flex-shrink:0;padding-top:2px}
+.ebl-text{flex:1;font-size:14px;color:var(--slate-800);line-height:1.5}
+.ebl-input{flex:1;border:1.5px solid var(--blue-700);border-radius:5px;padding:3px 8px;font-size:13px;font-family:inherit;outline:none}
+.ebl-actions{display:flex;gap:3px;flex-shrink:0;padding-top:1px}
+.ebl-btn{background:none;border:1px solid var(--slate-200);border-radius:4px;padding:2px 7px;font-size:11px;cursor:pointer;color:var(--slate-500);font-family:inherit;line-height:1.5}
+.ebl-btn:hover{background:var(--slate-100)}
+.ebl-btn.del:hover{background:#fee2e2;border-color:#fca5a5;color:#dc2626}
+.ebl-btn.save{color:#16a34a;border-color:#16a34a}
+.ebl-btn.save:hover{background:#dcfce7}
 
 /* ── Done card ── */
 .done-card{background:var(--white);border-radius:12px;box-shadow:0 1px 8px rgba(0,0,0,.08);padding:28px 24px;text-align:center;margin-bottom:16px}
@@ -708,7 +721,7 @@ function renderPersonalForm() {
       </div>
     </div>
     <div class="form-card-footer">
-      <button class="btn btn-primary" onclick="submitPersonal()">Continue →</button>
+      <button class="btn btn-primary" onclick="submitPersonal()">Build →</button>
     </div>
   </div>`;
 }
@@ -752,7 +765,7 @@ async function submitPersonal() {
   } catch(e) {
     addAIMsg('I could not complete the review — please check your internet connection and try Continue again.');
   } finally {
-    if (btn && currentSection === 'personal') { btn.disabled = false; btn.textContent = 'Continue →'; }
+    if (btn && currentSection === 'personal') { btn.disabled = false; btn.textContent = 'Build →'; }
   }
 }
 
@@ -958,7 +971,7 @@ function renderCareerForm() {
       </div>
     </div>
     <div class="form-card-footer">
-      <button class="btn btn-primary" onclick="submitCareer()">Continue →</button>
+      <button class="btn btn-primary" onclick="submitCareer()">Build →</button>
     </div>
   </div>`;
 }
@@ -989,7 +1002,7 @@ async function submitCareer() {
   } catch(e) {
     addAIMsg('I could not complete the career profile spelling and professionalism review. Please check your internet connection and try Continue again.');
   } finally {
-    if (btn && currentSection === 'career') { btn.disabled = false; btn.textContent = 'Continue →'; }
+    if (btn && currentSection === 'career') { btn.disabled = false; btn.textContent = 'Build →'; }
   }
 }
 
@@ -1092,7 +1105,10 @@ function renderObjectiveApproval() {
   <div class="approval-card">
     <div class="approval-hdr">✓ Objective — Review</div>
     <div class="approval-body">
-      <div class="a-row" style="display:block;padding:12px 0"><span class="a-value" style="font-size:15px;line-height:1.65">${escHtml(obj)}</span></div>
+      <div class="a-row" style="display:block;padding:12px 0" id="obj-view">
+        <span class="a-value" style="font-size:15px;line-height:1.65">${escHtml(obj)}</span>
+        <button class="ebl-btn" style="margin-top:8px;display:inline-block" onclick="editObjectiveInline()">✏ Edit</button>
+      </div>
       <div class="a-row" style="padding:8px 0"><span style="font-size:12px;font-weight:600;color:${lengthColor}">${lengthMsg}</span></div>
     </div>
     <div class="approval-footer">
@@ -1266,7 +1282,7 @@ function renderMilitaryForm(pf={}) {
     </div>
     <div class="form-card-footer">
       ${footerLeft}
-      <button class="btn btn-primary" onclick="submitMilitary()">${isEditing?'Update Bullets →':'Generate Bullets →'}</button>
+      <button class="btn btn-primary" onclick="submitMilitary()">${isEditing?'Update Bullets →':'Build →'}</button>
     </div>
   </div>`;
 }
@@ -1345,8 +1361,7 @@ function renderMilitaryApproval() {
   const m = pendingMilitary;
   const loc = [m.city,m.state].filter(Boolean).join(', ');
   const dates = `${m.startMonth} ${m.startYear} – ${m.current?'Present':`${m.endMonth} ${m.endYear}`}`;
-  const bullets = (m.bulletLines||[]).map(b=>`<li>${escHtml(b)}</li>`).join('');
-  return `<div class="section-hdr"><div class="section-hdr-icon">🎖️</div><div><div class="section-hdr-title">Military Service</div><div class="section-hdr-sub">Review before saving</div></div></div>
+  return `<div class="section-hdr"><div class="section-hdr-icon">🎖️</div><div><div class="section-hdr-title">Military Service</div><div class="section-hdr-sub">Review before saving — click ✏ to edit a bullet, ✕ to delete</div></div></div>
   <div class="approval-card">
     <div class="approval-hdr">✓ Service Record — Review</div>
     <div class="approval-body">
@@ -1354,10 +1369,10 @@ function renderMilitaryApproval() {
       <div class="a-row"><span class="a-label">Rank</span><span class="a-value">${escHtml(m.rank)}${m.jobTitle?' — '+escHtml(m.jobTitle):''}</span></div>
       ${loc?`<div class="a-row"><span class="a-label">Location</span><span class="a-value">${escHtml(loc)}</span></div>`:''}
       <div class="a-row"><span class="a-label">Dates</span><span class="a-value">${escHtml(dates)}</span></div>
-      <div class="a-row" style="display:block;padding-top:8px"><ul class="bullet-list">${bullets}</ul></div>
+      <div class="a-row" style="display:block;padding-top:8px"><div id="ebl-mil-list">${renderEditableBullets('mil',m.bulletLines)}</div></div>
     </div>
     <div class="approval-footer">
-      <button class="btn btn-ghost" onclick="showSection('military')">Edit</button>
+      <button class="btn btn-ghost" onclick="showSection('military')">Edit Form</button>
       <button class="btn btn-ghost" onclick="regenMilitaryBullets()">Rewrite</button>
       <button class="btn btn-confirm" onclick="confirmMilitary()">Looks Good ✓</button>
     </div>
@@ -1456,7 +1471,7 @@ function renderWorkForm(pf={}) {
     </div>
     <div class="form-card-footer">
       ${footerLeft}
-      <button class="btn btn-primary" onclick="submitWork()">${isEditing?'Update Work History →':'Construct Work History →'}</button>
+      <button class="btn btn-primary" onclick="submitWork()">${isEditing?'Update Work History →':'Build →'}</button>
     </div>
   </div>`;
 }
@@ -1496,7 +1511,7 @@ async function submitWork() {
     addAIMsg('I could not complete the work experience spelling and professionalism review. Please check your connection or API key, then try again.');
     return;
   } finally {
-    if (btn && currentSection === 'work') { btn.disabled = false; btn.textContent = 'Generate Bullets →'; }
+    if (btn && currentSection === 'work') { btn.disabled = false; btn.textContent = 'Build →'; }
   }
 
   pendingWork = work;
@@ -1572,22 +1587,62 @@ function renderWorkApproval() {
   const j = pendingWork;
   const loc = [j.city,j.state].filter(Boolean).join(', ');
   const dates = `${j.startMonth} ${j.startYear} – ${j.current?'Present':`${j.endMonth} ${j.endYear}`}`;
-  const bullets = (j.bulletLines||[]).map(b=>`<li>${escHtml(b)}</li>`).join('');
-  return `<div class="section-hdr"><div class="section-hdr-icon">💼</div><div><div class="section-hdr-title">Work Experience</div><div class="section-hdr-sub">Review before saving</div></div></div>
+  return `<div class="section-hdr"><div class="section-hdr-icon">💼</div><div><div class="section-hdr-title">Work Experience</div><div class="section-hdr-sub">Review before saving — click ✏ to edit a bullet, ✕ to delete</div></div></div>
   <div class="approval-card">
     <div class="approval-hdr">✓ Position — Review</div>
     <div class="approval-body">
       <div class="a-row"><span class="a-label">Job Title</span><span class="a-value">${escHtml(j.jobTitle)}</span></div>
       <div class="a-row"><span class="a-label">Employer</span><span class="a-value">${escHtml(j.employer)}${loc?' — '+escHtml(loc):''}</span></div>
       <div class="a-row"><span class="a-label">Dates</span><span class="a-value">${escHtml(dates)}</span></div>
-      <div class="a-row" style="display:block;padding-top:10px"><span class="a-label" style="display:block;margin-bottom:6px">Bullets</span><ul class="bullet-list">${bullets}</ul></div>
+      <div class="a-row" style="display:block;padding-top:10px"><span class="a-label" style="display:block;margin-bottom:6px">Bullets</span><div id="ebl-work-list">${renderEditableBullets('work',j.bulletLines)}</div></div>
     </div>
     <div class="approval-footer">
-      <button class="btn btn-ghost" onclick="showSection('work')">Edit</button>
+      <button class="btn btn-ghost" onclick="showSection('work')">Edit Form</button>
       <button class="btn btn-ghost" onclick="regenBullets()">Rewrite Bullets</button>
       <button class="btn btn-confirm" onclick="confirmWork()">Looks Good ✓</button>
     </div>
   </div>`;
+}
+
+// ── Inline edit helpers for approval screens ─────────────────
+function _bulletArr(src){
+  if(src==='work')return pendingWork.bulletLines||(pendingWork.bulletLines=[]);
+  if(src==='mil')return pendingMilitary.bulletLines||(pendingMilitary.bulletLines=[]);
+  if(src==='skill')return resumeData.skills||(resumeData.skills=[]);
+  return [];
+}
+function _bulletRerender(src){
+  if(src==='work')showCenter('workApproval');
+  else if(src==='mil')showCenter('militaryApproval');
+  else if(src==='skill')showCenter('skillsApproval');
+}
+function renderEditableBullets(src,lines){
+  if(!lines||!lines.length)return '<div style="font-size:13px;color:var(--slate-400);padding:6px 0">No bullets yet.</div>';
+  return lines.map((b,i)=>`<div class="ebl-item" id="ebl-${src}-${i}"><span class="ebl-dot">•</span><span class="ebl-text">${escHtml(b)}</span><span class="ebl-actions"><button class="ebl-btn" onclick="editBullet('${src}',${i})">✏</button><button class="ebl-btn del" onclick="deleteBullet('${src}',${i})">✕</button></span></div>`).join('');
+}
+function deleteBullet(src,idx){_bulletArr(src).splice(idx,1);_bulletRerender(src);}
+function editBullet(src,idx){
+  const item=document.getElementById(`ebl-${src}-${idx}`);if(!item)return;
+  const val=_bulletArr(src)[idx]||'';
+  item.innerHTML=`<span class="ebl-dot">•</span><input class="ebl-input" id="ebl-inp-${src}-${idx}" value="${escHtml(val)}"><span class="ebl-actions"><button class="ebl-btn save" onclick="saveBullet('${src}',${idx})">✓</button><button class="ebl-btn" onclick="_bulletRerender('${src}')">✕</button></span>`;
+  document.getElementById(`ebl-inp-${src}-${idx}`).focus();
+}
+function saveBullet(src,idx){
+  const inp=document.getElementById(`ebl-inp-${src}-${idx}`);if(!inp)return;
+  const v=inp.value.trim();if(v)_bulletArr(src)[idx]=v;
+  _bulletRerender(src);
+}
+function deleteCert(idx){resumeData.certifications.splice(idx,1);showCenter('skillsApproval');}
+function editObjectiveInline(){
+  const el=document.getElementById('obj-view');if(!el)return;
+  const obj=resumeData.careerContext.objective||'';
+  el.innerHTML=`<textarea id="obj-inp" style="width:100%;min-height:90px;border:1.5px solid var(--blue-700);border-radius:6px;padding:8px;font-size:14px;font-family:inherit;resize:vertical;line-height:1.5;outline:none;box-sizing:border-box">${escHtml(obj)}</textarea><div style="display:flex;gap:8px;margin-top:6px"><button class="ebl-btn save" onclick="saveObjectiveInline()">✓ Save</button><button class="ebl-btn" onclick="showCenter('objectiveApproval')">Cancel</button></div>`;
+  document.getElementById('obj-inp').focus();
+}
+function saveObjectiveInline(){
+  const inp=document.getElementById('obj-inp');if(!inp)return;
+  const v=inp.value.trim();if(v)resumeData.careerContext.objective=v;
+  showCenter('objectiveApproval');
 }
 
 async function regenBullets() {
@@ -1708,7 +1763,7 @@ function renderEduForm(prefill) {
           ? `<button class="btn btn-ghost" onclick="moveToCerts()">No More Education</button>`
           : `<button class="btn btn-ghost" onclick="moveToCerts()">Skip Education</button>`
       }
-      <button class="btn btn-primary" onclick="submitEdu()">${editingEduIndex >= 0 ? 'Update Entry →' : 'Continue →'}</button>
+      <button class="btn btn-primary" onclick="submitEdu()">${editingEduIndex >= 0 ? 'Update Entry →' : 'Build →'}</button>
     </div>
   </div>`;
 }
@@ -1747,7 +1802,7 @@ async function submitEdu() {
   } catch(e) {
     addAIMsg('I could not complete the education spelling and professionalism review. Please check your connection or API key, then try again.');
   } finally {
-    if (btn && currentSection === 'education') { btn.disabled = false; btn.textContent = 'Continue →'; }
+    if (btn && currentSection === 'education') { btn.disabled = false; btn.textContent = 'Build →'; }
   }
 }
 
@@ -1993,7 +2048,7 @@ function renderSkillsForm() {
   </div>
   <div class="form-card">
     <div class="form-card-footer">
-      <button class="btn btn-primary" onclick="submitSkills()">Organize Skills & Certs →</button>
+      <button class="btn btn-primary" onclick="submitSkills()">Build →</button>
     </div>
   </div>`;
 }
@@ -2042,17 +2097,19 @@ function cleanCertObject(cert) {
 }
 
 function renderSkillsApproval() {
-  const items = resumeData.skills.map(s=>`<li>${escHtml(s)}</li>`).join('');
-  const certItems = resumeData.certifications.map(c=>`<li>${escHtml([c.name,c.org,c.year].filter(Boolean).join(', '))}</li>`).join('');
-  return `<div class="section-hdr"><div class="section-hdr-icon">⚡</div><div><div class="section-hdr-title">Skills &amp; Certifications</div><div class="section-hdr-sub">Review your organized lists</div></div></div>
+  const skillItems = renderEditableBullets('skill', resumeData.skills);
+  const certItems = resumeData.certifications.length
+    ? resumeData.certifications.map((c,i)=>`<div class="ebl-item"><span class="ebl-dot">•</span><span class="ebl-text">${escHtml([c.name,c.org,c.year].filter(Boolean).join(', '))}</span><span class="ebl-actions"><button class="ebl-btn del" onclick="deleteCert(${i})">✕</button></span></div>`).join('')
+    : '<span class="a-value" style="font-size:13px;color:var(--slate-400)">No certifications listed.</span>';
+  return `<div class="section-hdr"><div class="section-hdr-icon">⚡</div><div><div class="section-hdr-title">Skills &amp; Certifications</div><div class="section-hdr-sub">Click ✏ to edit a skill, ✕ to remove any item</div></div></div>
   <div class="two-panel-grid">
     <div class="approval-card">
       <div class="approval-hdr">✓ Skills — Review</div>
-      <div class="approval-body"><div class="a-row" style="display:block;padding-top:8px"><ul class="bullet-list">${items}</ul></div></div>
+      <div class="approval-body"><div class="a-row" style="display:block;padding-top:8px">${skillItems}</div></div>
     </div>
     <div class="approval-card">
       <div class="approval-hdr">✓ Certifications — Review</div>
-      <div class="approval-body"><div class="a-row" style="display:block;padding-top:8px">${certItems?`<ul class="bullet-list">${certItems}</ul>`:'<span class="a-value">No certifications listed.</span>'}</div></div>
+      <div class="approval-body"><div class="a-row" style="display:block;padding-top:8px">${certItems}</div></div>
     </div>
   </div>
   <div class="approval-card"><div class="approval-footer"><button class="btn btn-ghost" onclick="showSection('skills')">Edit</button><button class="btn btn-confirm" onclick="confirmSkills()">Looks Good ✓</button></div></div>`;
