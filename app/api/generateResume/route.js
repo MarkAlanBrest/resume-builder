@@ -1,10 +1,3 @@
-console.log(
-  "TEST PATH:",
-  require("fs").existsSync(
-    require("path").join(process.cwd(), "lib", "styleguides2", "masterStyleGuide.js")
-  )
-);
-
 import fs from "fs";
 import path from "path";
 import PizZip from "pizzip";
@@ -289,7 +282,6 @@ const zip = new PizZip(content);
       delimiters: { start: "{", end: "}" },
     });
 const safeData = sanitizeAllStrings(body.finalData);
-console.log(JSON.stringify(safeData, null, 2));
 doc.setData(safeData);
 
 
@@ -486,7 +478,6 @@ objectives: body.careerContext?.objectives || "",
     : []
 };
 
-console.log("🔥 AI CALL STARTING — TASKS SENT:", aiInput.workExperience);
 
     const completion = await openai.chat.completions.create({
       model: "gpt-4o",
@@ -669,7 +660,6 @@ REQUIRED OUTPUT (JSON):
 
 let raw = completion.choices[0].message.content || "";
 
-console.log("🔥 AI RAW OUTPUT:", raw);
 
 // 🔥 STRIP MARKDOWN CODE FENCES
 raw = raw.replace(/```json/g, "").replace(/```/g, "").trim();
