@@ -519,9 +519,16 @@ function showCenter(view, data) {
   else el.innerHTML = `<div style="padding:40px;color:var(--slate-400)">Coming soon.</div>`;
 }
 
+function clearChat() {
+  const msgs = document.getElementById('chatMessages');
+  if (msgs) msgs.innerHTML = '';
+  chatHistory = [];
+}
+
 function showSection(key) {
   currentSection = key;
   renderLeftNav();
+  clearChat();
   if (key === 'personal') { showCenter('personal'); sendTip('personal'); }
   else if (key === 'career') { showCenter('career'); sendTip('career'); }
   else if (key === 'work') { showCenter('work'); sendTip('work'); }
