@@ -252,6 +252,20 @@ input[type="color"].color-input::-webkit-color-swatch{border:none;border-radius:
 @media(max-width:900px){:root{--chat-w:260px}}
 @media(max-width:700px){.right-panel{width:0!important}.left-nav{width:44px}.nav-label,.nav-check,.nav-heading{display:none}.nav-item{justify-content:center;padding:8px 0}}
 @media(max-width:480px){:root{--nav-w:44px}}
+
+/* ── Resume Review Card (chat panel) ── */
+.rv-hdr{background:var(--blue-900);color:#fff;padding:8px 12px;font-size:12px;font-weight:700;display:flex;align-items:center;gap:6px}
+.rv-body{padding:10px 12px;background:#fff;border:1px solid var(--slate-200);border-top:none}
+.rv-meter-row{display:flex;align-items:center;gap:10px;padding:7px 10px;background:var(--slate-50);border:1px solid var(--slate-100);border-radius:6px;margin-bottom:10px}
+.rv-track{flex:1;height:8px;background:var(--slate-200);border-radius:4px;overflow:hidden}
+.rv-bar{height:100%;border-radius:4px;width:0%;transition:width .9s cubic-bezier(.4,0,.2,1)}
+.rv-lbl{font-size:12px;font-weight:700;white-space:nowrap}
+.rv-sect-lbl{font-size:10px;font-weight:700;color:var(--slate-400);text-transform:uppercase;letter-spacing:.5px;margin-bottom:5px}
+.rv-list{list-style:none;padding:0;margin:0}
+.rv-li{display:flex;gap:7px;align-items:flex-start;padding:5px 0;border-bottom:1px solid var(--slate-100);font-size:12px;line-height:1.5;color:var(--slate-700)}
+.rv-li:last-child{border-bottom:none}
+.rv-li-icon{flex-shrink:0;font-size:13px}
+.rv-sep{height:1px;background:var(--slate-100);margin:8px 0}
 </style>
 </head>
 <body>
@@ -2488,6 +2502,7 @@ async function callClaude(system,messages,opts){
 function sendTip(key){
   const tip=key==='skills'?TIPS.skills:key!=='work'?TIPS[key]:null;
   if(tip)setTimeout(()=>addAIMsg(tip),300);
+  if(key==='template')setTimeout(()=>runResumeReview(),700);
 
   if(key==='career'){
     const program=resumeData.personal.program||'';
@@ -2632,6 +2647,106 @@ function autoResizeChat(el){el.style.height='auto';el.style.height=Math.min(el.s
 function toggleChat(){const rp=document.getElementById('rightPanel');const btn=document.querySelector('.rp-toggle');const collapsed=rp.classList.toggle('collapsed');btn.textContent=collapsed?'▶':'◀';}
 
 // ── Utilities ─────────────────────────────────────
+// ── Resume Review (pre-build quality check) ──────────────
+async function runResumeReview() {
+  const msgs = document.getElementById('chatMessages');
+  if (!msgs) return;
+
+  showChatTyping();
+
+  const jobs    = resumeData.workExperience || [];
+  const program = (resumeData.personal || {}).program || '';
+
+  const workSummary = jobs.length === 0
+    ? 'No work experience entered.'
+    : jobs.map((j, i) => {
+        const bullets = (j.bulletLines || []).map(b => '  • ' + b).join('\n');
+        return `Job ${i + 1}: ${j.jobTitle} at ${j.employer}\n${bullets || '  (no bullets)'}`;
+      }).join('\n\n');
+
+  const sys = `You are a friendly career advisor reviewing a trade school student's resume.
+The resume was AI-assisted so it should already be solid. Find 2-3 optional improvements.
+Be encouraging. Return ONLY valid JSON.`;
+
+  const msg = `Review this student's work experience for their resume.
+Program: ${program}
+
+Work Experience:
+${workSummary}
+
+Return ONLY this JSON — no other text:
+{
+  "readinessScore": <number 75-95>,
+  "readinessLabel": "<Ready to Build|Looking Good|Strong>",
+  "working": ["specific strength 1", "specific strength 2"],
+  "suggestions": ["optional tip 1", "optional tip 2"]
+}
+
+Rules:
+- readinessScore: 85-95 for strong work, 75-84 for decent. AI helped write it so min 75.
+- working: 2-3 concrete observations. Reference specific employers/jobs when possible.
+- suggestions: 2-3 optional tips. Start each with "Consider..." or "You might...". 1 sentence max.`;
+
+  try {
+    const raw   = await callClaude(sys, [{ role: 'user', content: msg }], { maxTokens: 600 });
+    hideChatTyping();
+    const match = raw.match(/\{[\s\S]*\}/);
+    if (!match) throw new Error('no json');
+    addReviewCard(JSON.parse(match[0]));
+  } catch(e) {
+    hideChatTyping();
+    // Silent fallback — do nothing extra, the tip text is already shown
+  }
+}
+
+function addReviewCard(review) {
+  const msgs = document.getElementById('chatMessages');
+  if (!msgs) return;
+
+  const score    = Math.min(95, Math.max(60, review.readinessScore || 82));
+  const label    = escHtml(review.readinessLabel || 'Looking Good');
+  const barGrad  = score >= 84 ? 'linear-gradient(90deg,#15803d,#22c55e)'
+                 : score >= 75 ? 'linear-gradient(90deg,#1d4ed8,#60a5fa)'
+                 :               'linear-gradient(90deg,#d97706,#fbbf24)';
+  const lblClr   = score >= 84 ? '#15803d' : score >= 75 ? '#1d4ed8' : '#d97706';
+
+  const uid = 'rvb_' + Date.now();
+
+  const workingHtml = (review.working || []).slice(0, 3)
+    .map(w => `<li class="rv-li"><span class="rv-li-icon">✅</span><span>${escHtml(w)}</span></li>`)
+    .join('');
+
+  const suggHtml = (review.suggestions || []).slice(0, 3)
+    .map(s => `<li class="rv-li"><span class="rv-li-icon">💡</span><span>${escHtml(s)}</span></li>`)
+    .join('');
+
+  const div = document.createElement('div');
+  div.className = 'chat-msg ai';
+  div.innerHTML = `
+    <div class="msg-lbl">Resume Review</div>
+    <div class="msg-bubble" style="padding:0;overflow:hidden;border-radius:10px 10px 10px 3px">
+      <div class="rv-hdr">✨ Resume Review</div>
+      <div class="rv-body">
+        <div class="rv-sect-lbl">Resume Strength</div>
+        <div class="rv-meter-row">
+          <div class="rv-track"><div class="rv-bar" id="${uid}" style="background:${barGrad}"></div></div>
+          <div class="rv-lbl" style="color:${lblClr}">${label}</div>
+        </div>
+        ${workingHtml ? `<div class="rv-sect-lbl">What's Working</div><ul class="rv-list">${workingHtml}</ul>` : ''}
+        ${suggHtml    ? `<div class="rv-sep"></div><div class="rv-sect-lbl">Opportunities</div><ul class="rv-list">${suggHtml}</ul>` : ''}
+      </div>
+    </div>`;
+
+  msgs.appendChild(div);
+  msgs.scrollTop = msgs.scrollHeight;
+
+  // Animate the strength bar in
+  setTimeout(() => {
+    const bar = document.getElementById(uid);
+    if (bar) bar.style.width = score + '%';
+  }, 180);
+}
+
 function escHtml(str){if(!str)return '';const d=document.createElement('div');d.appendChild(document.createTextNode(String(str)));return d.innerHTML;}
 
 // ── Init ──────────────────────────────────────────
