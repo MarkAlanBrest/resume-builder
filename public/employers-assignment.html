@@ -1,0 +1,952 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Employers Section Assignment</title>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --primary:      #1e40af;
+      --primary-lt:   #3b82f6;
+      --primary-bg:   #eff6ff;
+      --primary-bd:   #bfdbfe;
+      --success:      #15803d;
+      --success-bg:   #f0fdf4;
+      --success-bd:   #bbf7d0;
+      --warn:         #92400e;
+      --warn-bg:      #fffbeb;
+      --warn-bd:      #fde68a;
+      --red:          #b91c1c;
+      --red-bg:       #fef2f2;
+      --g900: #111827; --g800: #1f2937; --g700: #374151; --g600: #4b5563;
+      --g500: #6b7280; --g400: #9ca3af; --g300: #d1d5db; --g200: #e5e7eb;
+      --g100: #f3f4f6; --g50:  #f9fafb; --white: #ffffff;
+    }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', sans-serif;
+      background: var(--g100);
+      color: var(--g900);
+      line-height: 1.6;
+      min-height: 100vh;
+    }
+
+    /* ── Header ─────────────────────────────────────────────── */
+    .hdr {
+      background: var(--primary);
+      color: var(--white);
+      padding: 18px 24px;
+    }
+    .hdr-inner {
+      max-width: 780px;
+      margin: 0 auto;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+    .hdr h1 { font-size: 18px; font-weight: 700; }
+    .hdr-sub { font-size: 13px; opacity: 0.75; margin-top: 2px; }
+    .hdr-badge {
+      background: rgba(255,255,255,0.18);
+      border-radius: 20px;
+      padding: 4px 13px;
+      font-size: 12px;
+      font-weight: 700;
+      letter-spacing: 0.5px;
+      white-space: nowrap;
+    }
+
+    /* ── Progress bar ───────────────────────────────────────── */
+    .prog-bar { height: 4px; background: rgba(255,255,255,0.25); }
+    .prog-fill { height: 100%; background: #93c5fd; transition: width 0.4s ease; width: 0%; }
+
+    /* ── Step tabs ──────────────────────────────────────────── */
+    .tabs-wrap {
+      background: var(--white);
+      border-bottom: 1px solid var(--g200);
+      padding: 0 24px;
+      overflow-x: auto;
+    }
+    .tabs { max-width: 780px; margin: 0 auto; display: flex; }
+    .tab {
+      padding: 14px 18px;
+      font-size: 13px;
+      font-weight: 500;
+      color: var(--g500);
+      border-bottom: 3px solid transparent;
+      white-space: nowrap;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      cursor: default;
+      user-select: none;
+    }
+    .tab.active { color: var(--primary); border-bottom-color: var(--primary); font-weight: 600; }
+    .tab.done   { color: var(--success); }
+    .tab-num {
+      width: 21px; height: 21px; border-radius: 50%;
+      background: var(--g200); color: var(--g600);
+      display: inline-flex; align-items: center; justify-content: center;
+      font-size: 11px; font-weight: 700; flex-shrink: 0;
+    }
+    .tab.active .tab-num { background: var(--primary); color: var(--white); }
+    .tab.done   .tab-num { background: var(--success);  color: var(--white); }
+
+    /* ── Main layout ────────────────────────────────────────── */
+    .main { max-width: 780px; margin: 0 auto; padding: 32px 24px 64px; }
+
+    /* ── Cards ──────────────────────────────────────────────── */
+    .card {
+      background: var(--white);
+      border: 1px solid var(--g200);
+      border-radius: 12px;
+      padding: 28px;
+      margin-bottom: 20px;
+    }
+    .card-title    { font-size: 16px; font-weight: 700; margin-bottom: 4px; }
+    .card-subtitle { font-size: 14px; color: var(--g500); margin-bottom: 22px; }
+
+    /* ── Info boxes ─────────────────────────────────────────── */
+    .info-box {
+      border-radius: 10px;
+      padding: 18px 22px;
+      margin-bottom: 22px;
+    }
+    .info-box.blue  { background: var(--primary-bg); border: 1px solid var(--primary-bd); }
+    .info-box.green { background: var(--success-bg); border: 1px solid var(--success-bd); }
+    .info-box h2 { font-size: 14px; font-weight: 700; margin-bottom: 10px; }
+    .info-box.blue  h2 { color: var(--primary); }
+    .info-box.green h2 { color: var(--success); }
+    .info-box ul { padding-left: 18px; font-size: 14px; color: var(--g700); line-height: 1.85; }
+    .info-box p  { font-size: 14px; color: var(--g700); font-weight: 500; }
+
+    /* ── Form ───────────────────────────────────────────────── */
+    .field { margin-bottom: 18px; }
+    label {
+      display: block;
+      font-size: 13px;
+      font-weight: 600;
+      color: var(--g700);
+      margin-bottom: 5px;
+    }
+    input[type="text"],
+    input[type="month"] {
+      width: 100%;
+      padding: 10px 14px;
+      border: 1.5px solid var(--g300);
+      border-radius: 8px;
+      font-size: 14px;
+      color: var(--g900);
+      background: var(--white);
+      font-family: inherit;
+      transition: border-color 0.15s, box-shadow 0.15s;
+    }
+    input:focus {
+      outline: none;
+      border-color: var(--primary-lt);
+      box-shadow: 0 0 0 3px rgba(59,130,246,0.12);
+    }
+    input:disabled { background: var(--g50); color: var(--g400); cursor: not-allowed; }
+    .field-hint { font-size: 12px; color: var(--g500); margin-top: 4px; }
+    .form-2col { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+    .check-label {
+      display: flex; align-items: center; gap: 8px;
+      font-size: 13px; font-weight: 500; color: var(--g700);
+      cursor: pointer; margin-top: 8px;
+    }
+    input[type="checkbox"] { width: 15px; height: 15px; accent-color: var(--primary); cursor: pointer; }
+
+    /* ── Duty rows ──────────────────────────────────────────── */
+    .duty-row { margin-bottom: 18px; }
+    .duty-row-input {
+      display: flex; gap: 8px; align-items: center;
+    }
+    .duty-n {
+      width: 28px; font-weight: 700; font-size: 14px;
+      color: var(--g400); flex-shrink: 0; text-align: center;
+    }
+    .duty-row-input input { flex: 1; }
+    .btn-check {
+      background: var(--primary-bg);
+      color: var(--primary);
+      border: 1.5px solid var(--primary-bd);
+      padding: 9px 14px;
+      border-radius: 8px;
+      font-size: 13px;
+      font-weight: 600;
+      cursor: pointer;
+      white-space: nowrap;
+      flex-shrink: 0;
+      transition: background 0.15s;
+    }
+    .btn-check:hover   { background: #dbeafe; }
+    .btn-check:disabled { opacity: 0.45; cursor: not-allowed; }
+
+    .coach-bubble {
+      margin: 8px 0 0 36px;
+      padding: 11px 15px;
+      border-radius: 8px;
+      font-size: 13px;
+      line-height: 1.6;
+      animation: fadeUp 0.2s ease;
+    }
+    .coach-bubble.loading { background: var(--g100); border: 1px solid var(--g200); color: var(--g500); }
+    .coach-bubble.info    { background: var(--primary-bg); border: 1px solid var(--primary-bd); color: #1e3a8a; }
+
+    .btn-add-duty {
+      width: 100%; margin-top: 4px;
+      background: none;
+      border: 2px dashed var(--g300);
+      color: var(--g500);
+      padding: 10px;
+      border-radius: 8px;
+      font-size: 13px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.15s;
+    }
+    .btn-add-duty:hover {
+      border-color: var(--primary-lt);
+      color: var(--primary);
+      background: var(--primary-bg);
+    }
+
+    /* ── Buttons ────────────────────────────────────────────── */
+    .btn {
+      padding: 11px 26px;
+      border-radius: 8px;
+      font-size: 14px;
+      font-weight: 600;
+      cursor: pointer;
+      border: none;
+      transition: all 0.15s;
+    }
+    .btn-primary   { background: var(--primary); color: var(--white); }
+    .btn-primary:hover  { background: #1e3a8a; }
+    .btn-primary:disabled { background: var(--g400); cursor: not-allowed; }
+    .btn-secondary { background: var(--white); color: var(--g700); border: 1.5px solid var(--g300); }
+    .btn-secondary:hover { background: var(--g50); border-color: var(--g400); }
+    .btn-success   { background: var(--success); color: var(--white); }
+    .btn-success:hover { background: #166534; }
+    .btn-row { display: flex; gap: 12px; align-items: center; margin-top: 24px; flex-wrap: wrap; }
+
+    /* ── Grade card ─────────────────────────────────────────── */
+    .grade-card {
+      background: var(--white);
+      border: 2px solid var(--g200);
+      border-radius: 14px;
+      padding: 32px;
+      margin-bottom: 20px;
+    }
+    .grade-hdr {
+      display: flex; align-items: center; gap: 24px;
+      padding-bottom: 24px; margin-bottom: 24px;
+      border-bottom: 1px solid var(--g200);
+    }
+    .grade-circle {
+      width: 88px; height: 88px; border-radius: 50%;
+      display: flex; flex-direction: column;
+      align-items: center; justify-content: center;
+      flex-shrink: 0;
+    }
+    .grade-circle .gl { font-size: 36px; font-weight: 800; line-height: 1; }
+    .grade-circle .gp { font-size: 12px; font-weight: 600; opacity: 0.75; margin-top: 2px; }
+    .gc-a { background: #dcfce7; color: #15803d; }
+    .gc-b { background: #dbeafe; color: #1d4ed8; }
+    .gc-c { background: #fef9c3; color: #854d0e; }
+    .gc-d { background: #ffedd5; color: #c2410c; }
+    .gc-f { background: #fee2e2; color: #b91c1c; }
+    .grade-summary h3 { font-size: 20px; font-weight: 700; margin-bottom: 6px; }
+    .grade-summary .strengths { color: var(--success); font-weight: 600; font-size: 14px; }
+    .grade-summary .score-line { font-size: 14px; color: var(--g600); margin-top: 4px; }
+
+    .rubric-section-title { font-size: 13px; font-weight: 700; color: var(--g600); text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 16px; }
+    .rubric-row { margin-bottom: 15px; }
+    .rubric-row-top { display: flex; justify-content: space-between; align-items: center; margin-bottom: 5px; }
+    .rubric-lbl { font-size: 13px; font-weight: 600; color: var(--g700); }
+    .rubric-wt  { font-size: 12px; color: var(--g400); }
+    .rubric-sc  { font-size: 13px; font-weight: 700; }
+    .rubric-track { height: 8px; background: var(--g200); border-radius: 4px; overflow: hidden; margin-bottom: 4px; }
+    .rubric-fill  { height: 100%; border-radius: 4px; transition: width 0.7s ease; }
+    .rubric-fb    { font-size: 12px; color: var(--g600); line-height: 1.5; }
+
+    .tip-box {
+      background: var(--warn-bg); border: 1px solid var(--warn-bd);
+      border-radius: 8px; padding: 14px 16px; margin-top: 20px;
+    }
+    .tip-box .tip-lbl { font-size: 11px; font-weight: 700; color: #92400e; text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 5px; }
+    .tip-box p { font-size: 13px; color: #78350f; line-height: 1.55; }
+
+    /* ── Submission ─────────────────────────────────────────── */
+    .submission-ta {
+      width: 100%; min-height: 300px;
+      padding: 16px;
+      border: 1.5px solid var(--g300);
+      border-radius: 8px;
+      font-family: 'Courier New', Courier, monospace;
+      font-size: 13px;
+      line-height: 1.75;
+      color: var(--g800);
+      background: var(--g50);
+      resize: vertical;
+    }
+    .copy-ok { font-size: 13px; font-weight: 600; color: var(--success); opacity: 0; transition: opacity 0.3s; margin-left: 10px; }
+    .copy-ok.show { opacity: 1; }
+
+    .import-cta {
+      background: linear-gradient(135deg, #1e40af, #3b82f6);
+      border-radius: 12px; padding: 22px 26px;
+      color: var(--white);
+      display: flex; align-items: center; justify-content: space-between; gap: 16px;
+      margin-top: 24px;
+    }
+    .import-cta h3 { font-size: 15px; font-weight: 700; margin-bottom: 4px; }
+    .import-cta p  { font-size: 13px; opacity: 0.82; }
+    .btn-import {
+      background: var(--white); color: var(--primary);
+      border: none; padding: 10px 20px; border-radius: 8px;
+      font-size: 14px; font-weight: 700; cursor: pointer; white-space: nowrap;
+      flex-shrink: 0; transition: background 0.15s;
+    }
+    .btn-import:hover { background: #f0f9ff; }
+    .btn-import.saved { background: #dcfce7; color: var(--success); }
+
+    /* ── Loading ────────────────────────────────────────────── */
+    .loading-card { text-align: center; padding: 52px 32px; }
+    .loading-card .lc-icon { font-size: 36px; margin-bottom: 12px; }
+    .loading-card .lc-title { font-size: 17px; font-weight: 600; margin-bottom: 6px; }
+    .loading-card .lc-sub   { font-size: 14px; color: var(--g500); }
+    .spinner {
+      display: inline-block;
+      width: 28px; height: 28px;
+      border: 3px solid rgba(0,0,0,0.1);
+      border-top-color: var(--primary);
+      border-radius: 50%;
+      animation: spin 0.75s linear infinite;
+      margin-top: 20px;
+    }
+    .btn-spinner {
+      display: inline-block;
+      width: 14px; height: 14px;
+      border: 2px solid rgba(255,255,255,0.35);
+      border-top-color: var(--white);
+      border-radius: 50%;
+      animation: spin 0.75s linear infinite;
+      vertical-align: middle;
+      margin-right: 6px;
+    }
+
+    /* ── Error ──────────────────────────────────────────────── */
+    .err-msg { font-size: 13px; color: var(--red); margin-top: 10px; display: none; }
+
+    /* ── Animations ─────────────────────────────────────────── */
+    @keyframes spin    { to { transform: rotate(360deg); } }
+    @keyframes fadeUp  { from { opacity: 0; transform: translateY(-5px); } to { opacity: 1; transform: translateY(0); } }
+
+    /* ── Hidden ─────────────────────────────────────────────── */
+    [hidden] { display: none !important; }
+
+    /* ── Responsive ─────────────────────────────────────────── */
+    @media (max-width: 600px) {
+      .main { padding: 20px 16px 48px; }
+      .form-2col { grid-template-columns: 1fr; }
+      .grade-hdr { flex-direction: column; align-items: flex-start; gap: 16px; }
+      .import-cta { flex-direction: column; }
+    }
+  </style>
+</head>
+<body>
+
+<!-- ── Header ──────────────────────────────────────────────── -->
+<div class="hdr">
+  <div class="hdr-inner">
+    <div>
+      <h1>Work Experience Assignment</h1>
+      <div class="hdr-sub">Resume Writing — Employers Section</div>
+    </div>
+    <span class="hdr-badge">AI Graded</span>
+  </div>
+</div>
+<div class="prog-bar"><div class="prog-fill" id="progFill"></div></div>
+
+<!-- ── Step tabs ───────────────────────────────────────────── -->
+<div class="tabs-wrap">
+  <div class="tabs">
+    <div class="tab active" id="tab1"><span class="tab-num">1</span> Job Info</div>
+    <div class="tab"        id="tab2"><span class="tab-num">2</span> Job Duties</div>
+    <div class="tab"        id="tab3"><span class="tab-num">3</span> Grade</div>
+    <div class="tab"        id="tab4"><span class="tab-num">4</span> Submit</div>
+  </div>
+</div>
+
+<!-- ── Main ────────────────────────────────────────────────── -->
+<main class="main">
+
+  <!-- ════ STEP 1: Info ══════════════════════════════════════ -->
+  <div id="step1">
+    <div class="info-box blue">
+      <h2>📋 Assignment Instructions</h2>
+      <ul>
+        <li>Think of a real job you've held (current or past)</li>
+        <li>Fill in the employer details below, then move to Step 2</li>
+        <li>In Step 2 you'll write 3–5 job duties — the AI will coach each one as you go</li>
+        <li>The AI will grade your finished work against a rubric</li>
+        <li>In Step 4 your submission is auto-filled — just copy and paste it in</li>
+      </ul>
+    </div>
+
+    <div class="card">
+      <div class="card-title">Your Name</div>
+      <div class="card-subtitle">Appears on your submission</div>
+      <div class="field">
+        <label for="studentName">Full Name</label>
+        <input type="text" id="studentName" placeholder="e.g., Alex Johnson" autocomplete="name">
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-title">Employer Information</div>
+      <div class="card-subtitle">Enter details for one job you want to use on your resume</div>
+
+      <div class="field">
+        <label for="employer">Employer / Company Name <span style="color:#dc2626">*</span></label>
+        <input type="text" id="employer" placeholder="e.g., Johnson's Auto Repair">
+      </div>
+
+      <div class="field">
+        <label for="jobTitle">Job Title <span style="color:#dc2626">*</span></label>
+        <input type="text" id="jobTitle" placeholder="e.g., Automotive Technician">
+      </div>
+
+      <div class="form-2col">
+        <div class="field">
+          <label for="startDate">Start Date</label>
+          <input type="month" id="startDate">
+        </div>
+        <div class="field">
+          <label for="endDate">End Date</label>
+          <input type="month" id="endDate">
+          <label class="check-label" style="margin-top:10px;">
+            <input type="checkbox" id="currentJob" onchange="toggleCurrent()">
+            I currently work here
+          </label>
+        </div>
+      </div>
+
+      <div class="err-msg" id="step1Err">Please enter both Employer and Job Title before continuing.</div>
+    </div>
+
+    <div class="btn-row">
+      <button class="btn btn-primary" onclick="goStep2()">Continue to Job Duties →</button>
+    </div>
+  </div>
+
+  <!-- ════ STEP 2: Duties ════════════════════════════════════ -->
+  <div id="step2" hidden>
+
+    <div class="card">
+      <div class="card-title" id="dutiesTitle">Job Duties</div>
+      <div class="card-subtitle">Write what you actually did at this job. The AI will coach each duty individually.</div>
+
+      <div class="info-box blue" style="margin-bottom:22px;">
+        <h2>💡 How to Write a Strong Job Duty</h2>
+        <ul>
+          <li><strong>Start with an action verb:</strong> Maintained, Operated, Installed, Inspected, Assisted…</li>
+          <li><strong>Be specific:</strong> Name the tools, equipment, or processes you used</li>
+          <li><strong>Skip "I":</strong> Write "Diagnosed brake issues" not "I diagnosed brake issues"</li>
+          <li><strong>Add a detail or result:</strong> "Performed oil changes on 8–10 vehicles per shift"</li>
+        </ul>
+      </div>
+
+      <div id="dutiesContainer"></div>
+
+      <button class="btn-add-duty" id="addDutyBtn" onclick="addDuty()">+ Add Another Duty</button>
+
+      <div class="err-msg" id="step2Err">Please write at least 3 job duties before grading.</div>
+    </div>
+
+    <div class="btn-row">
+      <button class="btn btn-secondary" onclick="goStep1()">← Back</button>
+      <button class="btn btn-primary" id="gradeBtn" onclick="startGrading()">Grade My Work →</button>
+    </div>
+  </div>
+
+  <!-- ════ STEP 3: Grade ═════════════════════════════════════ -->
+  <div id="step3" hidden>
+
+    <!-- Loading state -->
+    <div class="card loading-card" id="loadingCard">
+      <div class="lc-icon">📝</div>
+      <div class="lc-title">Grading your assignment…</div>
+      <div class="lc-sub">The AI is reviewing your job duties against the rubric.</div>
+      <div><div class="spinner"></div></div>
+    </div>
+
+    <!-- Result -->
+    <div class="grade-card" id="gradeCard" hidden>
+      <div class="grade-hdr">
+        <div class="grade-circle" id="gradeCircle">
+          <div class="gl" id="gradeLetter">B</div>
+          <div class="gp" id="gradePoints">83 pts</div>
+        </div>
+        <div class="grade-summary">
+          <h3 id="gradeHeadline">Good Work!</h3>
+          <div class="strengths" id="gradeStrengths"></div>
+          <div class="score-line" id="gradeScoreLine"></div>
+        </div>
+      </div>
+
+      <div class="rubric-section-title">Rubric Breakdown</div>
+
+      <div class="rubric-row">
+        <div class="rubric-row-top">
+          <span class="rubric-lbl">Action Verbs</span>
+          <span class="rubric-wt">25%</span>
+          <span class="rubric-sc" id="sc-actionVerbs"></span>
+        </div>
+        <div class="rubric-track"><div class="rubric-fill" id="bar-actionVerbs" style="width:0%"></div></div>
+        <div class="rubric-fb" id="fb-actionVerbs"></div>
+      </div>
+
+      <div class="rubric-row">
+        <div class="rubric-row-top">
+          <span class="rubric-lbl">Specificity</span>
+          <span class="rubric-wt">25%</span>
+          <span class="rubric-sc" id="sc-specificity"></span>
+        </div>
+        <div class="rubric-track"><div class="rubric-fill" id="bar-specificity" style="width:0%"></div></div>
+        <div class="rubric-fb" id="fb-specificity"></div>
+      </div>
+
+      <div class="rubric-row">
+        <div class="rubric-row-top">
+          <span class="rubric-lbl">Professionalism</span>
+          <span class="rubric-wt">20%</span>
+          <span class="rubric-sc" id="sc-professionalism"></span>
+        </div>
+        <div class="rubric-track"><div class="rubric-fill" id="bar-professionalism" style="width:0%"></div></div>
+        <div class="rubric-fb" id="fb-professionalism"></div>
+      </div>
+
+      <div class="rubric-row">
+        <div class="rubric-row-top">
+          <span class="rubric-lbl">Completeness</span>
+          <span class="rubric-wt">20%</span>
+          <span class="rubric-sc" id="sc-completeness"></span>
+        </div>
+        <div class="rubric-track"><div class="rubric-fill" id="bar-completeness" style="width:0%"></div></div>
+        <div class="rubric-fb" id="fb-completeness"></div>
+      </div>
+
+      <div class="rubric-row">
+        <div class="rubric-row-top">
+          <span class="rubric-lbl">Relevance to Job Title</span>
+          <span class="rubric-wt">10%</span>
+          <span class="rubric-sc" id="sc-relevance"></span>
+        </div>
+        <div class="rubric-track"><div class="rubric-fill" id="bar-relevance" style="width:0%"></div></div>
+        <div class="rubric-fb" id="fb-relevance"></div>
+      </div>
+
+      <div class="tip-box">
+        <div class="tip-lbl">Top Suggestion</div>
+        <p id="topSuggestion"></p>
+      </div>
+    </div>
+
+    <div class="btn-row" id="gradeActions" hidden>
+      <button class="btn btn-secondary" onclick="goStep2()">← Revise My Duties</button>
+      <button class="btn btn-primary"   onclick="goStep4()">Generate Submission →</button>
+    </div>
+  </div>
+
+  <!-- ════ STEP 4: Submit ════════════════════════════════════ -->
+  <div id="step4" hidden>
+
+    <div class="info-box green">
+      <p>✅ Your assignment is complete! Your submission has been auto-filled below. Copy it and paste it into the assignment submission box.</p>
+    </div>
+
+    <div class="card">
+      <div class="card-title">Your Submission</div>
+      <div class="card-subtitle">Auto-filled with your completed work — ready to copy and paste.</div>
+      <label style="margin-bottom:8px;">Assignment Submission Text:</label>
+      <textarea class="submission-ta" id="submissionText" readonly></textarea>
+      <div class="btn-row">
+        <button class="btn btn-success" onclick="copySubmission()">Copy to Clipboard</button>
+        <span class="copy-ok" id="copyOk">✓ Copied!</span>
+      </div>
+    </div>
+
+    <div class="import-cta">
+      <div>
+        <h3>Save to Your Resume Builder</h3>
+        <p>Import this entry into the resume builder — no retyping needed.</p>
+      </div>
+      <button class="btn-import" id="importBtn" onclick="saveToResume()">Save for My Resume</button>
+    </div>
+
+  </div>
+
+</main>
+
+<script>
+  /* ── State ──────────────────────────────────────────────── */
+  let duties    = [];   // [{ text, coaching }]
+  let gradeData = null;
+  let isCurrent = false;
+
+  /* ── Init ───────────────────────────────────────────────── */
+  window.addEventListener('load', () => {
+    // Restore draft
+    try {
+      const d = JSON.parse(localStorage.getItem('empAssign_draft') || '{}');
+      if (d.studentName) document.getElementById('studentName').value = d.studentName;
+      if (d.employer)    document.getElementById('employer').value    = d.employer;
+      if (d.jobTitle)    document.getElementById('jobTitle').value    = d.jobTitle;
+      if (d.startDate)   document.getElementById('startDate').value   = d.startDate;
+      if (d.endDate)     document.getElementById('endDate').value     = d.endDate;
+      if (d.isCurrent) {
+        document.getElementById('currentJob').checked = true;
+        toggleCurrent();
+      }
+    } catch(e) {}
+
+    // Seed 3 duty rows
+    for (let i = 0; i < 3; i++) addDuty();
+  });
+
+  function toggleCurrent() {
+    isCurrent = document.getElementById('currentJob').checked;
+    const el = document.getElementById('endDate');
+    el.disabled = isCurrent;
+    if (isCurrent) el.value = '';
+  }
+
+  /* ── Duties ─────────────────────────────────────────────── */
+  function addDuty() {
+    if (duties.length >= 5) return;
+    const i = duties.length;
+    duties.push({ text: '', coaching: null });
+
+    const wrap = document.createElement('div');
+    wrap.className = 'duty-row';
+    wrap.id = 'dr' + i;
+    wrap.innerHTML = `
+      <div class="duty-row-input">
+        <div class="duty-n">${i + 1}.</div>
+        <input type="text" id="di${i}"
+          placeholder="e.g., Performed oil changes and tire rotations on customer vehicles"
+          oninput="duties[${i}].text=this.value; clearCoach(${i})">
+        <button class="btn-check" id="cb${i}" onclick="coach(${i})">Check It</button>
+      </div>
+      <div id="bubble${i}"></div>`;
+    document.getElementById('dutiesContainer').appendChild(wrap);
+
+    if (duties.length >= 5) document.getElementById('addDutyBtn').style.display = 'none';
+  }
+
+  function clearCoach(i) {
+    duties[i].coaching = null;
+    document.getElementById('bubble' + i).innerHTML = '';
+    const cb = document.getElementById('cb' + i);
+    if (cb) { cb.textContent = 'Check It'; cb.disabled = false; }
+  }
+
+  async function coach(i) {
+    const duty = duties[i].text.trim();
+    if (!duty) return;
+
+    const employer  = document.getElementById('employer').value.trim();
+    const jobTitle  = document.getElementById('jobTitle').value.trim();
+    const cb     = document.getElementById('cb'     + i);
+    const bubble = document.getElementById('bubble' + i);
+
+    cb.disabled = true;
+    cb.innerHTML = '<span class="btn-spinner"></span>Checking…';
+    bubble.className = 'coach-bubble loading';
+    bubble.textContent = 'Reviewing this duty…';
+
+    try {
+      const text = await callAPI(
+        'You are a friendly, concise resume writing coach for a trade school student.',
+        `The student wrote this job duty for "${jobTitle}" at "${employer}":\n"${duty}"\n\nGive coaching in 2–3 sentences:\n1. What is strong about it (or encourage them if it needs work)\n2. One specific improvement if needed — or confirm it looks great\n\nFocus on: action verbs, specificity, professional tone. Be warm and brief.`,
+        280
+      );
+      duties[i].coaching = text;
+      bubble.className  = 'coach-bubble info';
+      bubble.textContent = text;
+      cb.textContent = '✓ Checked';
+    } catch(e) {
+      bubble.className  = 'coach-bubble loading';
+      bubble.textContent = 'Could not reach AI. Make sure the app is running locally.';
+      cb.disabled = false;
+      cb.textContent = 'Try Again';
+    }
+  }
+
+  /* ── Navigation ─────────────────────────────────────────── */
+  function showStep(n) {
+    [1,2,3,4].forEach(s => {
+      const el  = document.getElementById('step' + s);
+      const tab = document.getElementById('tab'  + s);
+      if (el)  el.hidden = (s !== n);
+      if (tab) tab.className = 'tab' + (s === n ? ' active' : s < n ? ' done' : '');
+    });
+    const pct = [0, 25, 50, 75, 100];
+    document.getElementById('progFill').style.width = pct[n] + '%';
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  }
+
+  function goStep1() { showStep(1); }
+
+  function goStep2() {
+    const employer = document.getElementById('employer').value.trim();
+    const jobTitle = document.getElementById('jobTitle').value.trim();
+    if (!employer || !jobTitle) {
+      document.getElementById('step1Err').style.display = 'block';
+      return;
+    }
+    document.getElementById('step1Err').style.display = 'none';
+    document.getElementById('dutiesTitle').textContent = `Job Duties — ${jobTitle} at ${employer}`;
+    saveDraft();
+    showStep(2);
+  }
+
+  async function startGrading() {
+    const filled = duties.filter(d => d.text.trim());
+    if (filled.length < 3) {
+      document.getElementById('step2Err').style.display = 'block';
+      return;
+    }
+    document.getElementById('step2Err').style.display = 'none';
+    showStep(3);
+    await doGrade();
+  }
+
+  function goStep4() {
+    showStep(4);
+    fillSubmission();
+  }
+
+  /* ── Grading ────────────────────────────────────────────── */
+  async function doGrade() {
+    const employer  = document.getElementById('employer').value.trim();
+    const jobTitle  = document.getElementById('jobTitle').value.trim();
+    const start     = fmtMonthYear(document.getElementById('startDate').value);
+    const end       = isCurrent ? 'Present' : fmtMonthYear(document.getElementById('endDate').value);
+    const dutyList  = duties.filter(d => d.text.trim()).map((d, i) => `${i+1}. ${d.text.trim()}`).join('\n');
+
+    const prompt = `Grade this trade school student's resume work experience entry.
+
+Employer: ${employer}
+Title:    ${jobTitle}
+Dates:    ${start} to ${end}
+Duties:
+${dutyList}
+
+Return ONLY valid JSON — no other text:
+{
+  "scores": {
+    "actionVerbs": 0-100,
+    "specificity": 0-100,
+    "professionalism": 0-100,
+    "completeness": 0-100,
+    "relevance": 0-100
+  },
+  "feedback": {
+    "actionVerbs": "1-2 sentence feedback",
+    "specificity": "1-2 sentence feedback",
+    "professionalism": "1-2 sentence feedback",
+    "completeness": "1-2 sentence feedback",
+    "relevance": "1-2 sentence feedback"
+  },
+  "strengths": "1-2 sentences on what they did well",
+  "topSuggestion": "The single most important improvement"
+}
+
+Scoring guide:
+- actionVerbs (25%): Duties start with strong action verbs (Maintained, Operated, Assisted…). No verb = low score.
+- specificity (25%): Specific tools, quantities, processes named. Vague = low.
+- professionalism (20%): No "I" or first person. No slang. Proper capitalization.
+- completeness (20%): 3+ duties present and employer/title filled in.
+- relevance (10%): Duties make sense for the stated job title.`;
+
+    try {
+      const raw   = await callAPI('You are a resume writing instructor. Return only valid JSON.', prompt, 900);
+      const match = raw.match(/\{[\s\S]*\}/);
+      if (!match) throw new Error('No JSON');
+      gradeData = JSON.parse(match[0]);
+      renderGrade(gradeData);
+    } catch(e) {
+      document.getElementById('loadingCard').innerHTML = `
+        <div class="lc-icon">⚠️</div>
+        <div class="lc-title" style="color:#b91c1c">Grading failed</div>
+        <div class="lc-sub" style="margin-bottom:20px">Could not parse the AI response. Try again.</div>
+        <button class="btn btn-secondary" onclick="goStep2()">← Go Back</button>`;
+    }
+  }
+
+  function renderGrade(data) {
+    const weights = { actionVerbs: .25, specificity: .25, professionalism: .20, completeness: .20, relevance: .10 };
+    let overall = 0;
+    for (const [k, w] of Object.entries(weights)) overall += (data.scores[k] || 0) * w;
+    overall = Math.round(overall);
+    data.overall = overall;
+
+    const grade = overall >= 90 ? 'A' : overall >= 80 ? 'B' : overall >= 70 ? 'C' : overall >= 60 ? 'D' : 'F';
+    data.grade  = grade;
+
+    // Circle
+    const circle = document.getElementById('gradeCircle');
+    circle.className = 'grade-circle gc-' + grade.toLowerCase();
+    document.getElementById('gradeLetter').textContent = grade;
+    document.getElementById('gradePoints').textContent = overall + ' pts';
+
+    // Headline
+    const headlines = { A: 'Excellent Work!', B: 'Good Work!', C: 'Decent Start!', D: 'Needs More Detail', F: 'Keep Practicing' };
+    document.getElementById('gradeHeadline').textContent  = headlines[grade] || 'Graded';
+    document.getElementById('gradeStrengths').textContent = data.strengths || '';
+    document.getElementById('gradeScoreLine').textContent = `Overall: ${overall}/100 — Grade: ${grade}`;
+
+    // Bars
+    const cats   = ['actionVerbs','specificity','professionalism','completeness','relevance'];
+    const clrFor = s => s >= 85 ? '#15803d' : s >= 70 ? '#2563eb' : s >= 55 ? '#d97706' : '#dc2626';
+    cats.forEach(c => {
+      const s   = data.scores[c] || 0;
+      const clr = clrFor(s);
+      const sc  = document.getElementById('sc-'  + c);
+      const bar = document.getElementById('bar-' + c);
+      const fb  = document.getElementById('fb-'  + c);
+      sc.textContent  = s + '/100';
+      sc.style.color  = clr;
+      bar.style.width      = s + '%';
+      bar.style.background = clr;
+      fb.textContent  = (data.feedback || {})[c] || '';
+    });
+
+    document.getElementById('topSuggestion').textContent = data.topSuggestion || '';
+
+    document.getElementById('loadingCard').hidden = true;
+    document.getElementById('gradeCard').hidden   = false;
+    document.getElementById('gradeActions').hidden = false;
+  }
+
+  /* ── Submission text ────────────────────────────────────── */
+  function fillSubmission() {
+    const name     = document.getElementById('studentName').value.trim() || 'Student';
+    const employer = document.getElementById('employer').value.trim();
+    const title    = document.getElementById('jobTitle').value.trim();
+    const start    = fmtMonthYear(document.getElementById('startDate').value);
+    const end      = isCurrent ? 'Present' : fmtMonthYear(document.getElementById('endDate').value);
+    const filled   = duties.filter(d => d.text.trim());
+    const today    = new Date().toLocaleDateString('en-US', { year:'numeric', month:'long', day:'numeric' });
+
+    const lines = [
+      'RESUME WRITING ASSIGNMENT — EMPLOYERS SECTION',
+      '='.repeat(46),
+      `Student:   ${name}`,
+      `Submitted: ${today}`,
+      '',
+      'EMPLOYER ENTRY',
+      '-'.repeat(40),
+      `Company:   ${employer}`,
+      `Title:     ${title}`,
+      `Dates:     ${start}${end ? ' – ' + end : ''}`,
+      '',
+      'JOB DUTIES',
+      '-'.repeat(40),
+    ];
+    filled.forEach((d, i) => lines.push(`${i+1}. ${d.text.trim()}`));
+
+    if (gradeData) {
+      lines.push('', 'AI GRADE REPORT', '-'.repeat(40));
+      lines.push(`Overall Score: ${gradeData.overall}/100  |  Grade: ${gradeData.grade}`);
+      lines.push('');
+      lines.push('Rubric Breakdown:');
+      lines.push(`  Action Verbs (25%):    ${gradeData.scores.actionVerbs}/100`);
+      lines.push(`  Specificity (25%):     ${gradeData.scores.specificity}/100`);
+      lines.push(`  Professionalism (20%): ${gradeData.scores.professionalism}/100`);
+      lines.push(`  Completeness (20%):    ${gradeData.scores.completeness}/100`);
+      lines.push(`  Relevance (10%):       ${gradeData.scores.relevance}/100`);
+      lines.push('');
+      lines.push(`Strengths:       ${gradeData.strengths}`);
+      lines.push(`Top Suggestion:  ${gradeData.topSuggestion}`);
+    }
+
+    document.getElementById('submissionText').value = lines.join('\n');
+  }
+
+  function copySubmission() {
+    const ta = document.getElementById('submissionText');
+    navigator.clipboard.writeText(ta.value).catch(() => {
+      ta.select(); document.execCommand('copy');
+    }).then(() => {}).catch(() => {});
+    const ok = document.getElementById('copyOk');
+    ok.classList.add('show');
+    setTimeout(() => ok.classList.remove('show'), 2500);
+  }
+
+  /* ── Save to resume builder ─────────────────────────────── */
+  function saveToResume() {
+    const employer = document.getElementById('employer').value.trim();
+    const title    = document.getElementById('jobTitle').value.trim();
+    const start    = document.getElementById('startDate').value;
+    const end      = isCurrent ? '' : document.getElementById('endDate').value;
+    const tasks    = duties.filter(d => d.text.trim()).map(d => d.text.trim()).join('\n');
+
+    const entry = { employer, title, start, end, tasks, isCurrent,
+      grade: gradeData?.grade, score: gradeData?.overall, savedAt: new Date().toISOString() };
+
+    // Append / replace in array
+    const list = JSON.parse(localStorage.getItem('employerAssignment') || '[]');
+    const idx  = list.findIndex(e => e.employer === employer && e.title === title);
+    if (idx >= 0) list[idx] = entry; else list.push(entry);
+    localStorage.setItem('employerAssignment', JSON.stringify(list));
+
+    const btn = document.getElementById('importBtn');
+    btn.textContent = '✓ Saved!';
+    btn.classList.add('saved');
+  }
+
+  /* ── Draft save ─────────────────────────────────────────── */
+  function saveDraft() {
+    localStorage.setItem('empAssign_draft', JSON.stringify({
+      studentName: document.getElementById('studentName').value.trim(),
+      employer:    document.getElementById('employer').value.trim(),
+      jobTitle:    document.getElementById('jobTitle').value.trim(),
+      startDate:   document.getElementById('startDate').value,
+      endDate:     document.getElementById('endDate').value,
+      isCurrent
+    }));
+  }
+
+  /* ── Claude API ─────────────────────────────────────────── */
+  async function callAPI(system, userMsg, maxTokens) {
+    const res = await fetch('/api/claude', {
+      method:  'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body:    JSON.stringify({
+        model:      'claude-sonnet-4-6',
+        max_tokens: maxTokens || 500,
+        system,
+        messages: [{ role: 'user', content: userMsg }]
+      })
+    });
+    if (!res.ok) throw new Error('API ' + res.status);
+    const data = await res.json();
+    return data.content?.[0]?.text || '';
+  }
+
+  /* ── Helpers ────────────────────────────────────────────── */
+  function fmtMonthYear(val) {
+    if (!val) return '';
+    const [y, m] = val.split('-');
+    const months = ['','Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+    return `${months[parseInt(m, 10)]} ${y}`;
+  }
+</script>
+</body>
+</html>
