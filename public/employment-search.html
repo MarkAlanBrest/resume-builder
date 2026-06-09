@@ -215,32 +215,10 @@ html,body{height:100%;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Ro
       <div class="rp-links">
         <div class="rp-links-toggle" onclick="toggleLinks()">
           <span class="rp-links-label">🔗 Job Search Sites &amp; Local Help Wanted</span>
-          <span class="rp-links-arrow" id="linksArrow">▾</span>
+          <span class="rp-links-arrow open" id="linksArrow">▾</span>
         </div>
-        <div class="rp-links-body" id="linksBody">
-          <div class="link-group-lbl">National Job Boards</div>
-          <div class="link-chips">
-            <a class="chip nat" href="https://www.indeed.com" target="_blank" rel="noopener">📌 Indeed</a>
-            <a class="chip nat" href="https://www.linkedin.com/jobs/" target="_blank" rel="noopener">💼 LinkedIn</a>
-            <a class="chip nat" href="https://www.ziprecruiter.com" target="_blank" rel="noopener">⚡ ZipRecruiter</a>
-            <a class="chip nat" href="https://www.glassdoor.com/Job/index.htm" target="_blank" rel="noopener">🏢 Glassdoor</a>
-            <a class="chip nat" href="https://www.monster.com" target="_blank" rel="noopener">👾 Monster</a>
-            <a class="chip nat" href="https://www.careerbuilder.com" target="_blank" rel="noopener">🔨 CareerBuilder</a>
-            <a class="chip nat" href="https://www.simplyhired.com" target="_blank" rel="noopener">✅ SimplyHired</a>
-            <a class="chip nat" href="https://www.usajobs.gov" target="_blank" rel="noopener">🇺🇸 USAJobs</a>
-          </div>
-          <div class="link-group-lbl">Trade &amp; State</div>
-          <div class="link-chips">
-            <a class="chip trd" href="https://www.pacareerlink.pa.gov/jponline/" target="_blank" rel="noopener">🏛 PA CareerLink</a>
-            <a class="chip trd" href="https://joinhandshake.com" target="_blank" rel="noopener">🤝 Handshake</a>
-            <a class="chip trd" href="https://www.tradesmenintl.com/find-work/" target="_blank" rel="noopener">🔧 Tradesmen Intl</a>
-          </div>
-          <div class="link-group-lbl">Local Help Wanted</div>
-          <div class="link-chips">
-            <a class="chip loc" href="https://www.vindy.com" target="_blank" rel="noopener">📰 Vindicator</a>
-            <a class="chip loc" href="https://www.ncnewsonline.com" target="_blank" rel="noopener">📰 New Castle News</a>
-            <a class="chip loc" href="https://www.sharonherald.com" target="_blank" rel="noopener">📰 Sharon Herald</a>
-          </div>
+        <div class="rp-links-body open" id="linksBody">
+          <div id="linksInner"></div>
         </div>
       </div>
       <div class="chat-messages" id="chatMessages"></div>
@@ -296,6 +274,7 @@ window.addEventListener('DOMContentLoaded', () => {
     if (saved?.personal?.firstName) studentName  = (saved.personal.firstName+' '+(saved.personal.lastName||'')).trim();
   } catch(e) {}
   renderLeftNav();
+  renderLinks();
   show('info');
   setTimeout(()=> addAIMsg(
     `Welcome to the Employment Search Assignment! I'm here to answer questions and grade your work.\n\n**What you need to do:**\n• Open the **🔗 Job Search Sites** panel and browse real job boards\n• Find at least **3 job postings** — each from a **different website**\n• Fill in every field with your own words — I won't write your responses\n• Submit for grading and download your assignment\n\nQuestions? Just ask.`
@@ -305,6 +284,59 @@ window.addEventListener('DOMContentLoaded', () => {
 function toggleLinks() {
   const b=document.getElementById('linksBody'), a=document.getElementById('linksArrow');
   const open=b.classList.toggle('open'); a.classList.toggle('open',open);
+}
+
+function renderLinks() {
+  const inner = document.getElementById('linksInner');
+  if (!inner) return;
+  const term = studentProgram || '';
+  const q    = term ? encodeURIComponent(term) : '';
+
+  const SITE_DATA = [
+    // national — search URLs pre-filled with student's program
+    {name:'Indeed',         icon:'📌', type:'nat',
+      url: q ? `https://www.indeed.com/jobs?q=${q}` : 'https://www.indeed.com'},
+    {name:'LinkedIn',       icon:'💼', type:'nat',
+      url: q ? `https://www.linkedin.com/jobs/search/?keywords=${q}` : 'https://www.linkedin.com/jobs/'},
+    {name:'ZipRecruiter',   icon:'⚡', type:'nat',
+      url: q ? `https://www.ziprecruiter.com/jobs/search?search=${q}` : 'https://www.ziprecruiter.com'},
+    {name:'Glassdoor',      icon:'🏢', type:'nat',
+      url: q ? `https://www.glassdoor.com/Job/jobs.htm?sc.keyword=${q}` : 'https://www.glassdoor.com/Job/index.htm'},
+    {name:'Monster',        icon:'👾', type:'nat',
+      url: q ? `https://www.monster.com/jobs/search?q=${q}` : 'https://www.monster.com'},
+    {name:'CareerBuilder',  icon:'🔨', type:'nat',
+      url: q ? `https://www.careerbuilder.com/jobs?keywords=${q}` : 'https://www.careerbuilder.com'},
+    {name:'SimplyHired',    icon:'✅', type:'nat',
+      url: q ? `https://www.simplyhired.com/search?q=${q}` : 'https://www.simplyhired.com'},
+    {name:'USAJobs',        icon:'🇺🇸', type:'nat',
+      url: q ? `https://www.usajobs.gov/search/results/?k=${q}` : 'https://www.usajobs.gov'},
+    // trade
+    {name:'PA CareerLink',  icon:'🏛', type:'trd',
+      url:'https://www.pacareerlink.pa.gov/jponline/'},
+    {name:'Handshake',      icon:'🤝', type:'trd',
+      url: q ? `https://joinhandshake.com/jobs?query=${q}` : 'https://joinhandshake.com'},
+    {name:'Tradesmen Intl', icon:'🔧', type:'trd',
+      url:'https://www.tradesmenintl.com/find-work/'},
+    // local — no structured search param, link to site directly
+    {name:'Vindicator',     icon:'📰', type:'loc', url:'https://www.vindy.com'},
+    {name:'New Castle News',icon:'📰', type:'loc', url:'https://www.ncnewsonline.com'},
+    {name:'Sharon Herald',  icon:'📰', type:'loc', url:'https://www.sharonherald.com'},
+  ];
+
+  const byType = {nat:[], trd:[], loc:[]};
+  SITE_DATA.forEach(s => byType[s.type].push(s));
+  const labels = {nat:'National Job Boards', trd:'Trade &amp; State', loc:'Local Help Wanted'};
+
+  const searchNote = term
+    ? `<div style="font-size:11px;color:var(--blue-700);background:var(--blue-50);border:1px solid var(--blue-100);border-radius:5px;padding:5px 8px;margin-bottom:8px">🔍 Searching for: <strong>${escHtml(term)}</strong></div>`
+    : `<div style="font-size:11px;color:var(--slate-500);margin-bottom:8px">Enter your program on the info screen to pre-fill searches.</div>`;
+
+  inner.innerHTML = searchNote + ['nat','trd','loc'].map(type =>
+    `<div class="link-group-lbl">${labels[type]}</div>
+    <div class="link-chips">${byType[type].map(s =>
+      `<a class="chip ${type}" href="${s.url}" target="_blank" rel="noopener">${s.icon} ${escHtml(s.name)}</a>`
+    ).join('')}</div>`
+  ).join('');
 }
 
 // ── Nav ───────────────────────────────────────────────
@@ -368,6 +400,7 @@ function submitInfo() {
   if(!studentProgram){const pi=document.getElementById('progInput');if(!pi?.value.trim()){pi.closest('.fg').classList.add('err');document.getElementById('progErr').style.display='block';ok=false;}else{pi.closest('.fg').classList.remove('err');studentProgram=pi.value.trim();}}
   if(!ok)return;
   studentName=name;
+  renderLinks();
   setStatus('info','done');setStatus('jobs','active');
   addAIMsg(`Got it, **${studentName.split(' ')[0]}**! Open the **🔗 Job Search Sites** panel and start browsing. Find a job you like, then fill in the **Job 1** tab with what you found.\n\nRemember: each job must come from a **different site**.`);
   show('jobs');
