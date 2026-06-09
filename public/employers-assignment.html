@@ -627,6 +627,13 @@
 
   <!-- Grade result -->
   <div id="gradingResult" hidden>
+    <div class="card" style="display:flex; align-items:center; justify-content:space-between; gap:20px; flex-wrap:wrap;">
+      <div style="font-size:16px; font-weight:700; color:var(--g900);">You must download and submit your work in Canvas to receive credit.</div>
+      <button onclick="downloadPDF()" style="background:var(--blue); color:#fff; font-size:15px; font-weight:700; padding:13px 30px; border-radius:8px; border:none; cursor:pointer; font-family:inherit; white-space:nowrap; flex-shrink:0;">
+        ⬇ Download Assignment
+      </button>
+    </div>
+
     <div class="card">
       <div class="grade-hdr">
         <div class="grade-circle" id="gradeCircle">
@@ -649,12 +656,6 @@
       </div>
     </div>
 
-    <div class="card" style="display:flex; align-items:center; justify-content:space-between; gap:20px; flex-wrap:wrap;">
-      <div style="font-size:16px; font-weight:700; color:var(--g900);">You must download and submit your work in Canvas to receive credit.</div>
-      <button onclick="downloadPDF()" style="background:var(--blue); color:#fff; font-size:15px; font-weight:700; padding:13px 30px; border-radius:8px; border:none; cursor:pointer; font-family:inherit; white-space:nowrap; flex-shrink:0;">
-        ⬇ Download Assignment
-      </button>
-    </div>
   </div>
 </div>
 
@@ -1087,7 +1088,7 @@ function showGradeResult() {
   const headlines = { A:'Excellent Work!', B:'Good Work!', C:'Nice Start!', D:'Needs Improvement', F:'Keep Practicing' };
   document.getElementById('gradeHeadline').textContent  = g.headline || headlines[ltr] || 'Graded';
   document.getElementById('gradeStrengths').textContent = g.strengths || '';
-  document.getElementById('gradeScoreLine').textContent = `Overall: ${g.overall}/100 — Grade: ${ltr}`;
+  document.getElementById('gradeScoreLine').textContent = `Score: ${g.overall}/100`;
   document.getElementById('gradeSummary').textContent   = g.summary || '';
 
   // Rubric bars
@@ -1270,7 +1271,7 @@ function downloadPDF() {
   pdf.setFontSize(13);
   pdf.setFont('helvetica', 'bold');
   pdf.setTextColor(10, 10, 10);
-  pdf.text('Overall Score: ' + (g.overall || 0) + '/100   |   Grade: ' + ltr, pageW / 2, y, { align:'center' });
+  pdf.text('Score: ' + (g.overall || 0) + ' / 100', pageW / 2, y, { align:'center' });
   y += 20;
 
   // Rubric rows
