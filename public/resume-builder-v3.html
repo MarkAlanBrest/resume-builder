@@ -352,6 +352,7 @@ const SECTIONS = [
   {key:'work',          label:'Work Experience', icon:'💼'},
   {key:'military',      label:'Military',        icon:'🎖️'},
   {key:'education',     label:'Education',       icon:'🎓'},
+  {key:'volunteer',     label:'Volunteer',       icon:'🤝'},
   {key:'skills',        label:'Skills & Certs',  icon:'⚡'},
   {key:'template',      label:'Build Resume',    icon:'📄'},
 ];
@@ -364,6 +365,7 @@ const TIPS = {
   education:`Your trade program has been pre-filled below. Confirm the details and add your graduation year. Then add your high school diploma or any other education you have.`,
   skills:`Write out every skill and certification you have — tools, equipment, software, techniques, licenses, OSHA/EPA/CDL cards, manufacturer training, anything relevant. I'll clean it up, remove duplicates, and organize it professionally.`,
   military:`Add your military service below — active duty, reserves, or National Guard. In the Duties box, describe your role naturally: what you did every day, equipment you operated or maintained, people you supervised or trained, and anything you're proud of. I'll turn it into professional resume bullets that highlight leadership, reliability, technical skills, and teamwork — all things trade employers value.`,
+  volunteer:`Add any volunteer work, community service, church activities, or unpaid experience. Even informal roles count — helping at events, working with youth groups, assisting neighbors. Describe what you did and I'll write professional bullets for it.`,
   template:`Pick the style and color that matches the field you're entering. Classic and Executive are safe for any employer. Modern works well for technical roles. Bold makes a strong first impression.`,
 };
 
@@ -442,7 +444,7 @@ let chatHistory = [];
 let isAIThinking = false;
 
 const resumeData = {
-  personal:{},careerContext:{},workExperience:[],militaryService:[],education:[],certifications:[],skills:[],references:'Available upon request'
+  personal:{},careerContext:{},workExperience:[],militaryService:[],education:[],volunteer:[],certifications:[],skills:[],references:'Available upon request'
 };
 const sectionStatus = {};
 SECTIONS.forEach(s => sectionStatus[s.key] = 'pending');
@@ -451,9 +453,11 @@ SECTIONS.forEach(s => sectionStatus[s.key] = 'pending');
 let pendingWork = {};
 let pendingEdu  = {};
 let pendingMilitary = {};
-let editingWorkIndex     = -1;
-let editingEduIndex      = -1;
-let editingMilitaryIndex = -1;
+let pendingVolunteer = {};
+let editingWorkIndex      = -1;
+let editingEduIndex       = -1;
+let editingMilitaryIndex  = -1;
+let editingVolunteerIndex = -1;
 let pendingCert = {};
 let selectedStyle = 'classic';
 let selectedColorHex = '#1e3a8a';
@@ -562,6 +566,9 @@ function showCenter(view, data) {
     education:         renderEduForm,
     eduApproval:    renderEduApproval,
     eduDone:        renderEduDone,
+    volunteer:          renderVolunteerForm,
+    volunteerApproval:  renderVolunteerApproval,
+    volunteerDone:      renderVolunteerDone,
     skills:         renderSkillsForm,
     skillsApproval: renderSkillsApproval,
     template:       renderTemplateConfig,
@@ -625,6 +632,7 @@ function startFresh() {
   resumeData.workExperience=[];
   resumeData.militaryService=[];
   resumeData.education=[];
+  resumeData.volunteer=[];
   resumeData.certifications=[];
   resumeData.skills=[];
   resumeData.references='Available upon request';
@@ -644,6 +652,7 @@ function continueProgress() {
   if (saved.workExperience?.length || saved.militaryService?.length || saved.education?.length) setStatus('work','done');
   if (saved.militaryService?.length || saved.education?.length) setStatus('military','done');
   if (saved.education?.length)                             setStatus('education','done');
+  if (saved.volunteer?.length)                              setStatus('volunteer','done');
   if (saved.skills?.length || saved.certifications?.length) {
     setStatus('skills','done');
     setStatus('certifications','done');
@@ -2098,6 +2107,194 @@ function moveToSkills() {
   showSection('skills');
 }
 
+// ── Volunteer ─────────────────────────────────────
+function renderVolunteerForm(pf={}) {
+  const vols = resumeData.volunteer || [];
+  const listHtml = vols.length ? `<div class="approval-card" style="margin-bottom:16px">
+    <div class="approval-hdr">🤝 Volunteer Entries Added</div>
+    <div class="approval-body">
+      ${vols.map((v,i)=>`<div class="a-row">
+        <div style="flex:1"><span style="font-weight:600;font-size:14px">${escHtml(v.role||'Volunteer')}</span><span style="color:var(--slate-500);font-size:13px"> — ${escHtml(v.organization)}</span></div>
+        <div style="display:flex;gap:6px">
+          <button class="ebl-btn" onclick="editVolunteer(${i})">Edit</button>
+          <button class="ebl-btn del" onclick="deleteVolunteer(${i})">✕</button>
+        </div>
+      </div>`).join('')}
+    </div>
+    <div class="approval-footer">
+      <button class="btn btn-confirm" onclick="showSection('skills')">Continue to Skills →</button>
+    </div>
+  </div>` : '';
+
+  return `<div class="section-hdr"><div class="section-hdr-icon">🤝</div><div><div class="section-hdr-title">Volunteer Experience</div><div class="section-hdr-sub">Optional — skip if you have none</div></div></div>
+  ${listHtml}
+  <div class="form-card">
+    <div class="form-card-hdr">🤝 ${vols.length ? 'Add Another' : 'Add Volunteer Experience'}</div>
+    <div class="form-card-body">
+      <div class="f-row">
+        <div class="f-group" id="fg-vorg"><label>Organization <span style="color:var(--red-600)">*</span></label><input id="vOrg" value="${escHtml(pf.organization||'')}" placeholder="e.g., St. Mary's Food Bank"><span class="f-err">Required</span></div>
+        <div class="f-group"><label>Your Role</label><input id="vRole" value="${escHtml(pf.role||'')}" placeholder="e.g., Crew Member, Mentor, Helper"></div>
+      </div>
+      <div class="f-row">
+        <div class="f-group"><label>City</label><input id="vCity" value="${escHtml(pf.city||'')}" placeholder="City"></div>
+        <div class="f-group"><label>State</label><input id="vState" value="${escHtml(pf.state||'')}" placeholder="PA" maxlength="2" oninput="this.value=this.value.toUpperCase()"></div>
+      </div>
+      <div class="f-row">
+        <div class="f-group"><label>Start</label>
+          <div class="date-pair">
+            <select id="vStartMo">${MONTHS.map(m=>`<option value="${m}" ${(pf.startMonth===m)?'selected':''}>${m}</option>`).join('')}</select>
+            <input id="vStartYr" value="${escHtml(pf.startYear||'')}" placeholder="Year" maxlength="4">
+          </div>
+        </div>
+        <div class="f-group"><label>End</label>
+          <div class="date-pair">
+            <select id="vEndMo" ${pf.current?'disabled':''}>${MONTHS.map(m=>`<option value="${m}" ${(pf.endMonth===m)?'selected':''}>${m}</option>`).join('')}</select>
+            <input id="vEndYr" value="${escHtml(pf.current?'':pf.endYear||'')}" placeholder="Year" maxlength="4" ${pf.current?'disabled':''}>
+          </div>
+          <label class="check-opt-inline" style="margin-top:6px"><input type="checkbox" id="vCurrent" ${pf.current?'checked':''} onchange="toggleVolunteerCurrent()"> Still volunteering here</label>
+        </div>
+      </div>
+      <div class="f-row single">
+        <div class="f-group" id="fg-vduties"><label>What did you do there?</label>
+          <textarea id="vDuties" rows="4" placeholder="Describe your role naturally — sorted donations, worked with youth, helped set up events, assisted with construction... I'll turn it into professional bullet points.">${escHtml(pf.duties||'')}</textarea>
+        </div>
+      </div>
+      <div class="form-card-footer">
+        <button class="btn btn-ghost" onclick="skipVolunteer()">Skip / Done</button>
+        <button class="btn btn-primary" onclick="buildVolunteer()">Build →</button>
+      </div>
+    </div>
+  </div>`;
+}
+
+function toggleVolunteerCurrent() {
+  const chk = document.getElementById('vCurrent');
+  ['vEndMo','vEndYr'].forEach(id => { const el=document.getElementById(id); if(el){el.disabled=chk.checked; if(chk.checked)el.value='';} });
+}
+
+function editVolunteer(i) {
+  editingVolunteerIndex = i;
+  showCenter('volunteer', resumeData.volunteer[i]);
+}
+
+function deleteVolunteer(i) {
+  resumeData.volunteer.splice(i,1);
+  if (!resumeData.volunteer.length) setStatus('volunteer','pending');
+  saveProgress();
+  showSection('volunteer');
+}
+
+function skipVolunteer() {
+  editingVolunteerIndex = -1;
+  showSection('skills');
+}
+
+async function buildVolunteer() {
+  const org    = document.getElementById('vOrg').value.trim();
+  const duties = document.getElementById('vDuties').value.trim();
+  if (!org) { const fg=document.getElementById('fg-vorg'); fg.classList.add('has-error'); return; }
+  document.getElementById('fg-vorg').classList.remove('has-error');
+
+  const current = document.getElementById('vCurrent').checked;
+  pendingVolunteer = {
+    organization: org,
+    role:         document.getElementById('vRole').value.trim(),
+    city:         document.getElementById('vCity').value.trim(),
+    state:        document.getElementById('vState').value.trim().toUpperCase(),
+    startMonth:   document.getElementById('vStartMo').value,
+    startYear:    document.getElementById('vStartYr').value.trim(),
+    endMonth:     current ? '' : document.getElementById('vEndMo').value,
+    endYear:      current ? 'Present' : document.getElementById('vEndYr').value.trim(),
+    current,
+    duties,
+  };
+
+  if (!duties) {
+    pendingVolunteer.bulletLines = [`Volunteered with ${org} in a support role`];
+    showCenter('volunteerApproval');
+    return;
+  }
+
+  document.getElementById('centerInner').innerHTML = `<div style="text-align:center;padding:60px 20px;color:var(--slate-500)"><div style="font-size:32px;margin-bottom:12px">⚙️</div>Writing bullet points…</div>`;
+  const sys = `Write 2–4 concise resume bullet points for volunteer experience. Organization: ${org}. Role: ${pendingVolunteer.role||'Volunteer'}. Description: "${duties}". Each bullet starts with a strong action verb, past tense. Each line starts with •. Return only the bullet points.`;
+  try {
+    const r = await callClaude(sys,[{role:'user',content:'Write the bullet points.'}]);
+    pendingVolunteer.bulletLines = r.trim().split('\n').map(l=>l.trim().replace(/^[•\-\*]\s*/,'')).filter(l=>l.length>0);
+    showCenter('volunteerApproval');
+  } catch(e) { addAIMsg('Could not connect — please try again.'); showSection('volunteer'); }
+}
+
+function renderVolunteerApproval() {
+  const v = pendingVolunteer;
+  const loc = [v.city,v.state].filter(Boolean).join(', ');
+  const end = v.current ? 'Present' : [v.endMonth,v.endYear].filter(Boolean).join(' ');
+  const dates = [[v.startMonth,v.startYear].filter(Boolean).join(' '),end].filter(Boolean).join(' – ');
+  return `<div class="section-hdr"><div class="section-hdr-icon">🤝</div><div><div class="section-hdr-title">Review Volunteer Entry</div><div class="section-hdr-sub">Edit any bullet — click ✏ to change, ✕ to remove</div></div></div>
+  <div class="approval-card">
+    <div class="approval-hdr">🤝 ${escHtml(v.role||'Volunteer')} — ${escHtml(v.organization)}</div>
+    <div class="approval-body">
+      <div class="a-row"><span class="a-label">Org</span><span class="a-value">${escHtml(v.organization)}</span></div>
+      ${v.role?`<div class="a-row"><span class="a-label">Role</span><span class="a-value">${escHtml(v.role)}</span></div>`:''}
+      ${loc?`<div class="a-row"><span class="a-label">Location</span><span class="a-value">${escHtml(loc)}</span></div>`:''}
+      ${dates?`<div class="a-row"><span class="a-label">Dates</span><span class="a-value">${escHtml(dates)}</span></div>`:''}
+      <div style="padding:10px 0 4px">
+        <div style="font-size:11px;font-weight:700;color:var(--slate-400);text-transform:uppercase;letter-spacing:.5px;margin-bottom:8px">Bullet Points</div>
+        <div id="vBulletList">
+          ${(v.bulletLines||[]).map((b,i)=>`<div class="ebl-item">
+            <span class="ebl-dot">•</span>
+            <span class="ebl-text" id="vbt${i}">${escHtml(b)}</span>
+            <div class="ebl-actions">
+              <button class="ebl-btn" onclick="editVBullet(${i})">✏</button>
+              <button class="ebl-btn del" onclick="removeVBullet(${i})">✕</button>
+            </div>
+          </div>`).join('')}
+        </div>
+      </div>
+    </div>
+    <div class="approval-footer">
+      <button class="btn btn-ghost" onclick="showSection('volunteer')">← Redo</button>
+      <button class="btn btn-confirm" onclick="saveVolunteer()">Save →</button>
+    </div>
+  </div>`;
+}
+
+function editVBullet(i) {
+  const el = document.getElementById('vbt'+i);
+  if (!el) return;
+  const cur = pendingVolunteer.bulletLines[i];
+  el.parentElement.innerHTML = `<span class="ebl-dot">•</span><input class="ebl-input" id="vbi${i}" value="${escHtml(cur)}"><div class="ebl-actions"><button class="ebl-btn save" onclick="saveVBullet(${i})">Save</button></div>`;
+  document.getElementById('vbi'+i)?.focus();
+}
+
+function saveVBullet(i) {
+  const val = document.getElementById('vbi'+i)?.value.trim();
+  if (val) pendingVolunteer.bulletLines[i] = val;
+  showCenter('volunteerApproval');
+}
+
+function removeVBullet(i) {
+  pendingVolunteer.bulletLines.splice(i,1);
+  showCenter('volunteerApproval');
+}
+
+function saveVolunteer() {
+  if (editingVolunteerIndex >= 0) {
+    resumeData.volunteer[editingVolunteerIndex] = {...pendingVolunteer};
+    editingVolunteerIndex = -1;
+  } else {
+    resumeData.volunteer.push({...pendingVolunteer});
+  }
+  pendingVolunteer = {};
+  setStatus('volunteer','done');
+  saveProgress();
+  showCenter('volunteerDone');
+  addAIMsg(`Volunteer experience saved! Add another or continue to Skills.`);
+}
+
+function renderVolunteerDone() {
+  return renderVolunteerForm();
+}
+
 // ── Skills & References ───────────────────────────
 function renderSkillsForm() {
   const existing = Array.isArray(resumeData.skills) && resumeData.skills.length ? resumeData.skills.join(', ') : '';
@@ -2301,23 +2498,28 @@ async function generateResume() {
     const color = getColorObj(selectedColorHex);
     let buildData = resumeData;
 
-    // Auto-generate an Education Skills section when employment is weak
+    // Add Education Skills section when employment is weak
     const weakEmployment = (resumeData.workExperience||[]).length < 2;
     const tradeEdu = (resumeData.education||[]).find(e=>e.school||e.degree)||resumeData.education?.[0];
     if (weakEmployment && tradeEdu) {
-      btn.textContent = 'Building education skills section…';
-      const program = resumeData.personal.program || tradeEdu.fieldOfStudy || tradeEdu.degree || 'Trade Program';
-      const school  = tradeEdu.school || 'Trade School';
-      const inProgress = tradeEdu.gradYear === 'In Progress' || !tradeEdu.gradYear;
-      const tense = inProgress ? 'present tense — student is currently enrolled' : 'past tense — student has completed the program';
-      const sys = `Write a single professional paragraph (4–6 sentences) for an "Education Skills" section on a trade school student's resume. Program: ${program}. School: ${school}. Use ${tense}. Describe the hands-on technical skills, equipment, safety practices, and competencies the student gained through the program. Write in implied first person — no "I" or the student's name. Professional resume language only. Return only the paragraph, no labels or headings.`;
-      try {
-        const r = await callClaude(sys,[{role:'user',content:'Write the education skills paragraph.'}]);
-        const para = r.trim().replace(/^["']|["']$/g,'');
-        if (para.length > 40) {
-          buildData = {...resumeData, educationSkills: para};
-        }
-      } catch(e) { /* AI failed — proceed without education skills section */ }
+      // Use student's own written paragraph from the employers assignment if available
+      const savedPara = localStorage.getItem('empAssign_skillsPara');
+      if (savedPara && savedPara.trim().length > 40) {
+        buildData = {...resumeData, educationSkills: savedPara.trim()};
+      } else {
+        // Fall back to AI-generated paragraph
+        btn.textContent = 'Building education skills section…';
+        const program = resumeData.personal.program || tradeEdu.fieldOfStudy || tradeEdu.degree || 'Trade Program';
+        const school  = tradeEdu.school || 'Trade School';
+        const inProgress = tradeEdu.gradYear === 'In Progress' || !tradeEdu.gradYear;
+        const tense = inProgress ? 'present tense — student is currently enrolled' : 'past tense — student has completed the program';
+        const sys = `Write a single professional paragraph (4–6 sentences) for an "Education Skills" section on a trade school student's resume. Program: ${program}. School: ${school}. Use ${tense}. Describe the hands-on technical skills, equipment, safety practices, and competencies the student gained through the program. Write in implied first person — no "I" or the student's name. Professional resume language only. Return only the paragraph, no labels or headings.`;
+        try {
+          const r = await callClaude(sys,[{role:'user',content:'Write the education skills paragraph.'}]);
+          const para = r.trim().replace(/^["']|["']$/g,'');
+          if (para.length > 40) buildData = {...resumeData, educationSkills: para};
+        } catch(e) { /* AI failed — proceed without education skills section */ }
+      }
     }
 
     btn.textContent = 'Building resume…';
@@ -2341,6 +2543,8 @@ function jobBlock(job){const items=[],loc=[job.city,job.state].filter(Boolean).j
 function eduBlock(edu){const loc=[edu.city,edu.state].filter(Boolean).join(', '),field=edu.fieldOfStudy?`, ${edu.fieldOfStudy}`:'';return new docx.Paragraph({spacing:{before:280,after:160},children:[new docx.TextRun({text:`${edu.degree}${field}`,bold:true,size:24,color:'1a1a1a'}),new docx.TextRun({text:`, ${edu.school}${loc?', '+loc:''}${eduGradDate(edu)?', '+eduGradDate(edu):''}`,size:22,color:'555555'})]})}
 function certBlock(cert){return new docx.Paragraph({spacing:{before:200,after:140},children:[new docx.TextRun({text:cert.name,bold:true,size:24}),...(cert.org||cert.year?[new docx.TextRun({text:`  —  ${[cert.org,cert.year].filter(Boolean).join(', ')}`,size:22,color:'666666'})]:[])]})}
 function militaryBlock(mil){const items=[];const loc=[mil.city,mil.state].filter(Boolean).join(', ');const end=mil.current?'Present':[mil.endMonth,mil.endYear].filter(Boolean).join(' ');const dates=`${[mil.startMonth,mil.startYear].filter(Boolean).join(' ')} – ${end}`;items.push(new docx.Paragraph({spacing:{before:320,after:60},children:[new docx.TextRun({text:mil.rank||'',bold:true,size:26,color:'1a1a1a'}),new docx.TextRun({text:`, ${mil.branch}${mil.jobTitle?', '+mil.jobTitle:''}`,size:24,color:'444444'})]}));if(loc)items.push(new docx.Paragraph({spacing:{before:0,after:40},children:[new docx.TextRun({text:loc,italics:true,size:22,color:'777777'})]}));items.push(new docx.Paragraph({spacing:{before:0,after:160},children:[new docx.TextRun({text:dates,italics:true,size:22,color:'777777'})]}));(mil.bulletLines||[]).forEach(b=>items.push(bullet(b)));return items;}
+
+function volunteerBlock(v){const items=[],loc=[v.city,v.state].filter(Boolean).join(', '),end=v.current?'Present':[v.endMonth,v.endYear].filter(Boolean).join(' '),dates=[[v.startMonth,v.startYear].filter(Boolean).join(' '),end].filter(Boolean).join(' – ');items.push(new docx.Paragraph({spacing:{before:320,after:60},children:[new docx.TextRun({text:v.role||'Volunteer',bold:true,size:26,color:'1a1a1a'}),new docx.TextRun({text:`, ${v.organization}${loc?', '+loc:''}`,size:24,color:'444444'})]}));if(dates)items.push(new docx.Paragraph({spacing:{before:0,after:160},children:[new docx.TextRun({text:dates,italics:true,size:22,color:'777777'})]}));(v.bulletLines||[]).forEach(b=>items.push(bullet(b)));return items;}
 
 function sectionLabel(t){const icons=ICON_SETS[selectedIconSet]?.icons||{};return (icons[t]||'')+t.toUpperCase();}
 
@@ -2370,6 +2574,7 @@ function buildClassic(data,color){
   if(data.workExperience?.length){ch.push(sec('Experience'));data.workExperience.forEach(j=>jobBlock(j).forEach(q=>ch.push(q)));}
   if(data.militaryService?.length){ch.push(sec('Military Service'));data.militaryService.forEach(m=>militaryBlock(m).forEach(q=>ch.push(q)));}
   if(data.education?.length){ch.push(sec('Education'));data.education.forEach(e=>ch.push(eduBlock(e)));}
+  if(data.volunteer?.length){ch.push(sec('Volunteer'));data.volunteer.forEach(v=>volunteerBlock(v).forEach(q=>ch.push(q)));}
   if(data.educationSkills){ch.push(sec('Education Skills'));ch.push(bodyTxt(data.educationSkills,{after:140}));}
   const _sc=scItems(data);if(_sc.length){ch.push(sec(scLabel(data)));ch.push(skillsCertsGrid(_sc));}
   ch.push(spacer(200));
@@ -2388,6 +2593,7 @@ function buildModern(data,color){
   if(data.workExperience?.length){main.push(mainSec('Experience'));data.workExperience.forEach(j=>jobBlock(j).forEach(q=>main.push(q)));}
   if(data.militaryService?.length){main.push(mainSec('Military Service'));data.militaryService.forEach(m=>militaryBlock(m).forEach(q=>main.push(q)));}
   if(data.education?.length){main.push(mainSec('Education'));data.education.forEach(e=>main.push(eduBlock(e)));}
+  if(data.volunteer?.length){main.push(mainSec('Volunteer'));data.volunteer.forEach(v=>volunteerBlock(v).forEach(q=>main.push(q)));}
   if(data.educationSkills){main.push(mainSec('Education Skills'));main.push(bodyTxt(data.educationSkills,{after:120}));}
   main.push(spacer(200));
   const nb={style:docx.BorderStyle.NONE,size:0,color:'FFFFFF'};
@@ -2404,6 +2610,7 @@ function buildBold(data,color){
   if(data.workExperience?.length){ch.push(sec('Experience'));data.workExperience.forEach(j=>jobBlock(j).forEach(q=>ch.push(q)));}
   if(data.militaryService?.length){ch.push(sec('Military Service'));data.militaryService.forEach(m=>militaryBlock(m).forEach(q=>ch.push(q)));}
   if(data.education?.length){ch.push(sec('Education'));data.education.forEach(e=>ch.push(eduBlock(e)));}
+  if(data.volunteer?.length){ch.push(sec('Volunteer'));data.volunteer.forEach(v=>volunteerBlock(v).forEach(q=>ch.push(q)));}
   if(data.educationSkills){ch.push(sec('Education Skills'));ch.push(bodyTxt(data.educationSkills,{after:120}));}
   const _sc=scItems(data);if(_sc.length){ch.push(sec(scLabel(data)));ch.push(skillsCertsGrid(_sc));}
   ch.push(spacer(200));
@@ -2420,6 +2627,7 @@ function buildExecutive(data,color){
   if(c.objective){ch.push(sec('Professional Summary'));ch.push(bodyTxt(c.objective,{after:120}));}
   if(data.workExperience?.length){ch.push(sec('Experience'));data.workExperience.forEach(job=>{const loc=[job.city,job.state].filter(Boolean).join(', '),end=job.current?'Present':[job.endMonth,job.endYear].filter(Boolean).join(' '),dates=`${[job.startMonth,job.startYear].filter(Boolean).join(' ')} – ${end}`;ch.push(new docx.Paragraph({tabStops:[{type:docx.TabStopType.RIGHT,position:twip(6.8)}],spacing:{before:280,after:60},children:[new docx.TextRun({text:`${job.jobTitle}, ${job.employer}${loc?', '+loc:''}`,bold:true,size:26,color:'1a1a1a'}),new docx.TextRun({text:'\t'+dates,italics:true,size:22,color:'888888'})]}));(job.bulletLines||[]).forEach(b=>ch.push(bullet(b)));});}
   if(data.education?.length){ch.push(sec('Education'));data.education.forEach(e=>ch.push(eduBlock(e)));}
+  if(data.volunteer?.length){ch.push(sec('Volunteer'));data.volunteer.forEach(v=>volunteerBlock(v).forEach(q=>ch.push(q)));}
   if(data.educationSkills){ch.push(sec('Education Skills'));ch.push(bodyTxt(data.educationSkills,{after:120}));}
   const _sc=scItems(data);if(_sc.length){ch.push(sec(scLabel(data)));ch.push(skillsCertsGrid(_sc));}
   ch.push(spacer(200));
@@ -2442,6 +2650,7 @@ function buildFlip(data,color){
   if(c.objective){main.push(mainSec('Objective'));main.push(bodyTxt(c.objective,{after:120}));}
   if(data.workExperience?.length){main.push(mainSec('Experience'));data.workExperience.forEach(j=>jobBlock(j).forEach(q=>main.push(q)));}
   if(data.militaryService?.length){main.push(mainSec('Military Service'));data.militaryService.forEach(m=>militaryBlock(m).forEach(q=>main.push(q)));}
+  if(data.volunteer?.length){main.push(mainSec('Volunteer'));data.volunteer.forEach(v=>volunteerBlock(v).forEach(q=>main.push(q)));}
   if(data.educationSkills){main.push(mainSec('Education Skills'));main.push(bodyTxt(data.educationSkills,{after:120}));}
   main.push(spacer(200));
   return new docx.Document({sections:[{properties:{page:{margin:{top:0,bottom:0,left:0,right:0}}},children:[new docx.Table({width:{size:100,type:docx.WidthType.PERCENTAGE},borders:{top:nb,bottom:nb,left:nb,right:nb,insideH:nb,insideV:nb},rows:[new docx.TableRow({children:[new docx.TableCell({width:{size:twip(5.0),type:docx.WidthType.DXA},margins:{top:twip(.4),bottom:twip(.4),left:twip(.4),right:twip(.3)},children:main}),new docx.TableCell({width:{size:twip(2.5),type:docx.WidthType.DXA},shading:{fill:ac,type:docx.ShadingType.CLEAR,color:'auto'},margins:{top:twip(.45),bottom:twip(.45),left:twip(.25),right:twip(.3)},children:side})]})]})]},]});
@@ -2464,6 +2673,7 @@ function buildTopLeft(data,color){
   if(c.objective){main.push(mainSec('Objective'));main.push(bodyTxt(c.objective,{after:120}));}
   if(data.workExperience?.length){main.push(mainSec('Experience'));data.workExperience.forEach(j=>jobBlock(j).forEach(q=>main.push(q)));}
   if(data.militaryService?.length){main.push(mainSec('Military Service'));data.militaryService.forEach(m=>militaryBlock(m).forEach(q=>main.push(q)));}
+  if(data.volunteer?.length){main.push(mainSec('Volunteer'));data.volunteer.forEach(v=>volunteerBlock(v).forEach(q=>main.push(q)));}
   if(data.educationSkills){main.push(mainSec('Education Skills'));main.push(bodyTxt(data.educationSkills,{after:120}));}
   main.push(spacer(200));
   const bodyRow=new docx.TableRow({children:[new docx.TableCell({width:{size:twip(2.3),type:docx.WidthType.DXA},shading:{fill:'EEEEEE',type:docx.ShadingType.CLEAR,color:'auto'},margins:{top:twip(.35),bottom:twip(.35),left:twip(.3),right:twip(.25)},children:side}),new docx.TableCell({width:{size:twip(5.2),type:docx.WidthType.DXA},margins:{top:twip(.35),bottom:twip(.35),left:twip(.35),right:twip(.4)},children:main})]});
@@ -2483,6 +2693,7 @@ function buildTopRight(data,color){
   if(c.objective){main.push(mainSec('Objective'));main.push(bodyTxt(c.objective,{after:120}));}
   if(data.workExperience?.length){main.push(mainSec('Experience'));data.workExperience.forEach(j=>jobBlock(j).forEach(q=>main.push(q)));}
   if(data.militaryService?.length){main.push(mainSec('Military Service'));data.militaryService.forEach(m=>militaryBlock(m).forEach(q=>main.push(q)));}
+  if(data.volunteer?.length){main.push(mainSec('Volunteer'));data.volunteer.forEach(v=>volunteerBlock(v).forEach(q=>main.push(q)));}
   if(data.educationSkills){main.push(mainSec('Education Skills'));main.push(bodyTxt(data.educationSkills,{after:120}));}
   main.push(spacer(200));
   const side=[];
@@ -2509,6 +2720,7 @@ function buildSplit(data,color){
   if(data.workExperience?.length){leftCol.push(mkSec('Experience'));data.workExperience.forEach(j=>jobBlock(j).forEach(q=>leftCol.push(q)));}
   if(data.militaryService?.length){rightCol.push(mkSec('Military Service'));data.militaryService.forEach(m=>militaryBlock(m).forEach(q=>rightCol.push(q)));}
   if(data.education?.length){rightCol.push(mkSec('Education'));data.education.forEach(e=>rightCol.push(eduBlock(e)));}
+  if(data.volunteer?.length){rightCol.push(mkSec('Volunteer'));data.volunteer.forEach(v=>volunteerBlock(v).forEach(q=>rightCol.push(q)));}
   if(data.educationSkills){rightCol.push(mkSec('Education Skills'));rightCol.push(bodyTxt(data.educationSkills,{after:100}));}
   const _sc=scItems(data);if(_sc.length){rightCol.push(mkSec(scLabel(data)));_sc.forEach(s=>rightCol.push(new docx.Paragraph({spacing:{before:0,after:80},children:[new docx.TextRun({text:`${selectedBullet} ${s}`,size:22,color:'2a2a2a'})]})));}
   const mkCell=items=>new docx.TableCell({borders:{top:nb,bottom:nb,left:nb,right:nb},margins:{top:twip(.25),bottom:twip(.2),left:twip(.15),right:twip(.15)},children:items.length?items:[new docx.Paragraph({})]});
@@ -2558,6 +2770,10 @@ function sendTip(key){
     const workItems=found?found.workSearch:['I want to work in a skilled trade where I can apply my hands-on training.','I am looking for an entry-level position where I can learn from experienced tradespeople.','I want a job that lets me use the skills I developed in my program right away.'];
     setTimeout(()=>addSuggestionCard('What are you looking for in a job?',workItems,'workSearch'),600);
     setTimeout(()=>addSuggestionCard('What sets you apart?',STANDOUT_SUGGESTIONS,'standout'),900);
+  }
+
+  if(key==='volunteer'){
+    setTimeout(()=>addAIMsg(TIPS.volunteer),300);
   }
 
   if(key==='work'){
