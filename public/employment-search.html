@@ -107,8 +107,20 @@ html,body{height:100%;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Ro
 .tab-check{display:none;font-size:11px;color:var(--green-600)}
 .tab-dot{width:7px;height:7px;border-radius:50%;background:var(--amber-600);flex-shrink:0;display:none}
 .job-tab.in-progress .tab-dot{display:block}
-.add-tab-btn{padding:10px 14px;font-size:12px;font-weight:700;cursor:pointer;border:1.5px dashed var(--slate-300);border-bottom:none;border-radius:8px 8px 0 0;background:transparent;color:var(--slate-400);transition:all .15s;white-space:nowrap;user-select:none}
-.add-tab-btn:hover{border-color:var(--blue-400);color:var(--blue-700);background:var(--blue-50)}
+.job-tab.submit-tab{margin-left:auto;background:var(--blue-700);color:#fff;border-color:var(--blue-700)}
+.job-tab.submit-tab:hover{background:var(--blue-900);border-color:var(--blue-900)}
+.job-tab.submit-tab.disabled{background:var(--slate-200);color:var(--slate-400);border-color:var(--slate-200);cursor:not-allowed}
+.submit-banner{background:var(--blue-700);border-radius:10px;padding:18px 20px;margin-bottom:20px;display:flex;align-items:center;gap:16px;justify-content:space-between}
+.submit-banner-icon{font-size:32px;flex-shrink:0}
+.submit-banner-text{flex:1}
+.submit-banner-title{font-size:16px;font-weight:800;color:#fff;margin-bottom:3px}
+.submit-banner-sub{font-size:13px;color:rgba(255,255,255,.8)}
+.submit-banner-btn{background:#fff;color:var(--blue-700);border:none;border-radius:8px;padding:12px 20px;font-size:14px;font-weight:800;cursor:pointer;white-space:nowrap;flex-shrink:0;transition:all .15s}
+.submit-banner-btn:hover{background:var(--blue-50);transform:scale(1.02)}
+.submit-steps{display:flex;gap:10px;margin-bottom:20px;flex-wrap:wrap}
+.submit-step{flex:1;min-width:140px;background:var(--slate-50);border:1.5px solid var(--slate-200);border-radius:9px;padding:14px 14px;text-align:center}
+.submit-step-num{width:28px;height:28px;border-radius:50%;background:var(--blue-700);color:#fff;font-size:13px;font-weight:800;display:flex;align-items:center;justify-content:center;margin:0 auto 8px}
+.submit-step-text{font-size:12px;font-weight:600;color:var(--slate-700);line-height:1.4}
 .job-tab-panel{background:var(--white);border:1.5px solid var(--slate-200);border-radius:0 8px 8px 8px;padding:20px 20px 0}
 
 /* ── Form fields ── */
@@ -582,19 +594,15 @@ function renderJobsInto(container) {
       <span class="tab-check">✓</span>
     </div>`;
   }).join('');
-  const addTabBtn = jobSlots.length < 6
-    ? `<button class="add-tab-btn" onclick="addTab()">+ Add Job</button>`
-    : '';
+  const submitTabCls = canSubmit ? 'submit-tab' : 'submit-tab disabled';
+  const submitTab = `<div class="job-tab ${submitTabCls}" onclick="${canSubmit?'goToGrade()':''}">📊 Submit for Grade</div>`;
 
   container.innerHTML = `
-    <div style="background:var(--blue-900);border-radius:12px;padding:18px 22px;margin-bottom:18px;display:flex;align-items:center;justify-content:space-between;gap:16px">
-      <div>
-        <div style="font-size:11px;font-weight:700;color:var(--blue-400);text-transform:uppercase;letter-spacing:.8px;margin-bottom:4px">Research Project</div>
-        <div style="font-size:20px;font-weight:800;color:var(--white)">Research Job Opportunities</div>
-      </div>
-      ${submitBtn}
+    <div style="background:var(--blue-900);border-radius:12px;padding:18px 22px;margin-bottom:18px">
+      <div style="font-size:11px;font-weight:700;color:var(--blue-400);text-transform:uppercase;letter-spacing:.8px;margin-bottom:4px">Research Project</div>
+      <div style="font-size:20px;font-weight:800;color:var(--white)">Research Job Opportunities</div>
     </div>
-    <div class="job-tabs">${tabs}${addTabBtn}</div>
+    <div class="job-tabs">${tabs}${submitTab}</div>
     <div class="job-tab-panel" id="jobTabPanel"></div>`;
 
   renderTabForm();
@@ -708,13 +716,6 @@ function switchTab(i) {
   if (ci) renderJobsInto(ci);
 }
 
-function addTab() {
-  jobSlots.push(emptyJob());
-  jobComplete.push(false);
-  activeTab = jobSlots.length - 1;
-  const ci  = document.getElementById('centerInner');
-  if (ci) renderJobsInto(ci);
-}
 
 // ── Save / Validate current tab ───────────────────────
 function saveCurrentJob() {
@@ -747,9 +748,12 @@ function saveCurrentJob() {
   else setStatus('jobs','active');
 
   const srcLeft = Math.max(0,3-uSrc.length);
-  addAIMsg(`Saved **Job ${activeTab+1}: ${j.title}** at ${j.company} (${j.location}) — found on ${j.source}.\n\n${jobComplete.filter(Boolean).length<3?`${3-doneCount} more job${3-doneCount===1?'':'s'} needed.`:''}${srcLeft>0?` Still need ${srcLeft} more different site${srcLeft>1?'s':''}.`:doneCount>=3?' All set — click Submit for Grade!':''}`);
+  addAIMsg(`Saved **Job ${activeTab+1}: ${j.title}** at ${j.company} (${j.location}) — found on ${j.source}.\n\n${doneCount<3?`${3-doneCount} more job${3-doneCount===1?'':'s'} needed.`:''}${srcLeft>0?` Still need ${srcLeft} more different site${srcLeft>1?'s':''}.`:doneCount>=3?' All 3 jobs saved — click **📊 Submit for Grade** when ready!':''}`);
 
-  // Re-render to update tab state
+  // Auto-advance to next tab, or enable submit tab if all done
+  if (activeTab < 2) {
+    activeTab++;
+  }
   const ci=document.getElementById('centerInner');
   if(ci) renderJobsInto(ci);
 }
@@ -784,7 +788,7 @@ function renderGrade() {
     {key:'completeness',    label:'Completeness',      weight:'25%'},
     {key:'programRelevance',label:'Program Relevance', weight:'25%'},
     {key:'effort',          label:'Effort & Detail',   weight:'25%'},
-    {key:'reflection',      label:'Self-Reflection',   weight:'25%'},
+    {key:'reflection',      label:'Company Research',  weight:'25%'},
   ];
   const rubricRows=rubric.map(r=>{
     const sc=g.scores?.[r.key]??75, fb=g.feedback?.[r.key]??'';
@@ -801,8 +805,20 @@ function renderGrade() {
     : '';
 
   const doneJobs = jobSlots.filter((_,i)=>jobComplete[i]);
-  return `<div class="sec-hdr"><div class="sec-hdr-icon">📊</div><div><div class="sec-hdr-title">Your Grade</div><div class="sec-hdr-sub">Based on ${doneJobs.length} saved job${doneJobs.length===1?'':'s'}</div></div></div>
-  <div class="dl-bar"><div class="dl-bar-text">Download and submit in Canvas for credit.</div><button class="dl-btn" onclick="downloadPDF()">⬇ Download PDF</button></div>
+  return `
+  <div class="submit-banner">
+    <div class="submit-banner-icon">📄</div>
+    <div class="submit-banner-text">
+      <div class="submit-banner-title">Download your PDF report to get your grade</div>
+      <div class="submit-banner-sub">Your grade is NOT recorded until you upload the PDF in Canvas.</div>
+    </div>
+    <button class="submit-banner-btn" onclick="downloadPDF()">⬇ Download PDF Report</button>
+  </div>
+  <div class="submit-steps">
+    <div class="submit-step"><div class="submit-step-num">1</div><div class="submit-step-text">Click <strong>Download PDF Report</strong> above</div></div>
+    <div class="submit-step"><div class="submit-step-num">2</div><div class="submit-step-text">Open <strong>Canvas</strong> and find this assignment</div></div>
+    <div class="submit-step"><div class="submit-step-num">3</div><div class="submit-step-text"><strong>Upload the PDF</strong> to submit for your grade</div></div>
+  </div>
   ${srcNote}
   <div class="grade-card">
     <div class="grade-hdr">
@@ -815,7 +831,7 @@ function renderGrade() {
   </div>
   <div style="display:flex;gap:10px;justify-content:flex-end;margin-top:8px">
     <button class="btn btn-ghost" onclick="show('jobs')">← Edit Jobs</button>
-    <button class="btn btn-primary" onclick="downloadPDF()">Download PDF</button>
+    <button class="btn btn-primary" onclick="downloadPDF()">⬇ Download PDF Report</button>
   </div>`;
 }
 
@@ -845,7 +861,7 @@ Grade on 4 criteria (0-100, 25% each):
 - completeness: All required fields filled with real content? Locations included? URL provided when possible? Word counts meaningful (40-50+ word minimums)?
 - programRelevance: Jobs relate to the student's trade program? Credit for related fields.
 - effort: Written responses thorough and show genuine thought? Reward effort and specificity over writing quality.
-- reflection: Honest self-awareness about current skills and what still needs development?
+- reflection: Did the student research the company? Did they describe what the company does, its size, location, or anything notable from their website? Reward genuine independent research.
 
 Be fair and generous — trade school students may not be strong writers. Genuine effort on all fields = at least 80. Score below 70 only for clearly minimal, fake, or off-topic responses. Note in feedback if they used multiple sources — that's the whole point of this assignment.
 
@@ -880,8 +896,8 @@ function gradeJS() {
     if(relTerms.some(t=>[j.title,j.requirements].join(' ').toLowerCase().includes(t))) rel=Math.min(100,rel+8);
     const rw=wcCount(j.requirements);
     eff+=rw>=40?88:rw>=20?72:55;
-    const reflW=wcCount(j.whyInterested)+wcCount(j.skillsMatch);
-    refl+=reflW>=80?88:reflW>=40?74:58;
+    const reflW=wcCount(j.skillsNeeded);
+    refl+=reflW>=40?88:reflW>=20?74:reflW>5?58:45;
   });
   const n=doneJobs.length||1;
   comp=Math.round(comp/n); eff=Math.round(eff/n); refl=Math.round(refl/n); rel=Math.min(95,rel);
@@ -891,7 +907,7 @@ function gradeJS() {
   const grade=overall>=90?'A':overall>=80?'B':overall>=70?'C':overall>=60?'D':'F';
   return{grade,overall,
     scores:{completeness:comp,programRelevance:rel,effort:eff,reflection:refl},
-    feedback:{completeness:comp>=85?'All fields filled with solid detail.':'Some fields were brief — more detail helps the score.',programRelevance:rel>=80?'Good job choice alignment.':'Try to focus on jobs directly in your trade area.',effort:eff>=85?'Great detail in job requirements.':'More detail in the requirements field will improve this.',reflection:refl>=85?'Thoughtful self-assessment.':'Be more specific about what you have and what you need to develop.'},
+    feedback:{completeness:comp>=85?'All fields filled with solid detail.':'Some fields were brief — more detail helps the score.',programRelevance:rel>=80?'Good job choice alignment.':'Try to focus on jobs directly in your trade area.',effort:eff>=85?'Great detail in job requirements.':'More detail in the requirements field will improve this.',reflection:refl>=85?'Good company research — you showed you looked into the employer.':'Visit the company website and write more about what they do and what stood out.'},
     strengths:`You documented ${doneJobs.length} job${doneJobs.length>1?'s':''} from ${uSrc.length} source${uSrc.length>1?'s':''}.`,
     improvements:overall<80?'Expand written responses to meet the word count minimums in every field.':'Consider adding more jobs for a stronger submission.',
     encouragement:grade==='A'?'Excellent job searching!':grade==='B'?'Great work!':grade==='C'?'Good effort — more detail would push this higher.':'Keep working on it.',
@@ -945,7 +961,7 @@ function downloadPDF() {
     fld('Key Requirements',j.requirements);
     fld('Why Interested',j.whyInterested);
     fld('Skills I Have',j.skillsMatch);
-    if(j.skillsNeeded) fld('Skills to Develop',j.skillsNeeded);
+    if(j.skillsNeeded) fld('Company Research',j.skillsNeeded);
     if(j.wouldApply) fld('Would Apply?',j.wouldApply);
     y+=4;
   });
