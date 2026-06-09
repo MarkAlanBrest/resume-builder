@@ -473,11 +473,49 @@ function clearProgress(){
 }
 
 
+// ── Assignment Import ─────────────────────────────
+function loadAssignmentJobs() {
+  try {
+    const raw = localStorage.getItem('employerAssignment');
+    if (!raw) return [];
+    const saved = JSON.parse(raw);
+    if (!Array.isArray(saved) || !saved.length) return [];
+    return saved.map(j => {
+      const [sy, sm] = (j.start || '').split('-');
+      const [ey, em] = (j.end   || '').split('-');
+      const startMonth = sm ? MONTHS[parseInt(sm,10)-1] || '' : '';
+      const startYear  = sy || '';
+      const endMonth   = em ? MONTHS[parseInt(em,10)-1] || '' : '';
+      const endYear    = j.isCurrent ? 'Present' : (ey || '');
+      const bulletLines = (j.tasks || '').split('\n').map(b => b.trim()).filter(Boolean);
+      return {
+        employer: j.employer || '', jobTitle: j.title || '',
+        city: j.city || '', state: j.state || '',
+        startMonth, startYear, endMonth, endYear,
+        current: !!j.isCurrent,
+        duties: bulletLines.join('\n'),
+        bulletLines,
+        _fromAssignment: true
+      };
+    });
+  } catch(e) { return []; }
+}
+
+function importAssignmentIfNeeded() {
+  if (resumeData.workExperience?.length) return 0;
+  const jobs = loadAssignmentJobs();
+  if (!jobs.length) return 0;
+  resumeData.workExperience = jobs;
+  setStatus('work', 'done');
+  return jobs.length;
+}
+
 // ── App Start ─────────────────────────────────────
 function startApp() {
   renderLeftNav();
   showCenter('welcome');
-  addAIMsg(`Welcome! I'm your AI resume assistant. I'll guide you through each section and answer any questions you have. Click **Start Fresh** to begin, or upload an existing resume to get started faster.`);
+  const hasAssignment = !!localStorage.getItem('employerAssignment');
+  addAIMsg(`Welcome! I'm your AI resume assistant. I'll guide you through each section and answer any questions you have.${hasAssignment ? '\n\n**Your Work Experience Assignment was found** — your jobs will be automatically loaded into the Work Experience section.' : ' Click **Start Fresh** to begin, or upload an existing resume to get started faster.'}`);
 }
 
 // ── Left Nav ──────────────────────────────────────
@@ -555,14 +593,21 @@ function showSection(key) {
 
 // ── Welcome ───────────────────────────────────────
 function renderWelcome() {
-  const saved = loadProgress();
-  const hasSaved = !!(saved && (saved.personal?.firstName || saved.workExperience?.length));
-  const savedName = saved?.personal?.firstName ? ` for ${escHtml(saved.personal.firstName)}` : '';
+  const saved          = loadProgress();
+  const hasSaved       = !!(saved && (saved.personal?.firstName || saved.workExperience?.length));
+  const savedName      = saved?.personal?.firstName ? ` for ${escHtml(saved.personal.firstName)}` : '';
+  const assignJobs     = loadAssignmentJobs();
+  const assignBanner   = assignJobs.length
+    ? `<div class="prefill-banner" style="margin:0 0 16px;text-align:left;background:#f0fdf4;border-color:#bbf7d0;color:#15803d">
+        💼 <strong>${assignJobs.length} job${assignJobs.length>1?'s':''} from your Work Experience Assignment</strong> will be automatically added to your resume.
+      </div>`
+    : '';
   return `<div class="welcome-card">
     <span class="welcome-icon">🎓</span>
     <div class="welcome-title">Build Your Professional Resume</div>
     <div class="welcome-sub">I'll guide you through each section. Fill out the forms in this panel, ask me questions in the chat, and I'll generate a polished resume when you're done.</div>
-    ${hasSaved ? `<div class="prefill-banner" style="margin:0 0 20px;text-align:left">📋 Saved progress found${savedName}. Continue where you left off or start over.</div>` : ''}
+    ${hasSaved ? `<div class="prefill-banner" style="margin:0 0 16px;text-align:left">📋 Saved progress found${savedName}. Continue where you left off or start over.</div>` : ''}
+    ${assignBanner}
     <div class="welcome-actions">
       ${hasSaved ? `<button class="btn btn-primary btn-lg" onclick="continueProgress()">Continue Where I Left Off</button>` : ''}
       <button class="btn ${hasSaved ? 'btn-ghost' : 'btn-primary'} btn-lg" onclick="startFresh()">${hasSaved ? 'Start Over' : 'Start Fresh'}</button>
@@ -584,6 +629,8 @@ function startFresh() {
   resumeData.skills=[];
   resumeData.references='Available upon request';
   SECTIONS.forEach(s=>sectionStatus[s.key]='pending');
+  const imported = importAssignmentIfNeeded();
+  if (imported) addAIMsg(`✅ **${imported} job${imported>1?'s':''} imported** from your Work Experience Assignment and added to the Work Experience section. You can review and edit them there.`);
   renderLeftNav();
   showSection('personal');
 }
@@ -601,8 +648,9 @@ function continueProgress() {
     setStatus('skills','done');
     setStatus('certifications','done');
   }
+  const imported = importAssignmentIfNeeded();
   const name = saved.personal?.firstName ? `, ${saved.personal.firstName}` : '';
-  addAIMsg(`Welcome back${name}! I've restored your progress. Use the menu on the left to pick up where you left off.`);
+  addAIMsg(`Welcome back${name}! I've restored your progress.${imported ? ` Also loaded **${imported} job${imported>1?'s':''}** from your Work Experience Assignment.` : ''} Use the menu on the left to pick up where you left off.`);
   if      (!saved.personal?.firstName)          showSection('personal');
   else if (!saved.careerContext?.objective)      showSection('career');
   else if (!saved.workExperience?.length && !saved.militaryService?.length && !saved.education?.length) showSection('work');
@@ -2513,8 +2561,13 @@ function sendTip(key){
   }
 
   if(key==='work'){
-    setTimeout(()=>addAIMsg(`Write naturally — describe what you did, the tools you used, and anything you're proud of. I'll turn it into professional bullet points. Enter your job title first and I'll generate suggestions specific to that role.`),300);
-    setTimeout(()=>addDutySuggCard(),700);
+    const imported = resumeData.workExperience?.filter(j=>j._fromAssignment);
+    if(imported?.length){
+      setTimeout(()=>addAIMsg(`✅ **${imported.length} job${imported.length>1?'s':''} imported from your Work Experience Assignment** — already loaded below. Review the bullet points, make any edits, then add more jobs if needed.`),300);
+    } else {
+      setTimeout(()=>addAIMsg(`Write naturally — describe what you did, the tools you used, and anything you're proud of. I'll turn it into professional bullet points. Enter your job title first and I'll generate suggestions specific to that role.`),300);
+      setTimeout(()=>addDutySuggCard(),700);
+    }
   }
 
   if(key==='military'){
