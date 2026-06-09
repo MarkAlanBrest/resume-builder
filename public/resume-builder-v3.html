@@ -2197,10 +2197,10 @@ function renderVolunteerForm(pf={}) {
           <textarea id="vDuties" rows="4" placeholder="Describe your role naturally — sorted donations, worked with youth, helped set up events, assisted with construction... I'll turn it into professional bullet points.">${escHtml(pf.duties||'')}</textarea>
         </div>
       </div>
-      <div class="form-card-footer">
-        <button class="btn btn-ghost" onclick="skipVolunteer()">Skip / Done</button>
-        <button class="btn btn-primary" onclick="buildVolunteer()">Build →</button>
-      </div>
+    </div>
+    <div class="form-card-footer">
+      <button class="btn btn-ghost" onclick="skipVolunteer()">Skip / Done</button>
+      <button class="btn btn-primary" onclick="buildVolunteer()">Build →</button>
     </div>
   </div>`;
 }
@@ -2254,10 +2254,11 @@ async function buildVolunteer() {
   }
 
   document.getElementById('centerInner').innerHTML = `<div style="text-align:center;padding:60px 20px;color:var(--slate-500)"><div style="font-size:32px;margin-bottom:12px">⚙️</div>Writing bullet points…</div>`;
-  const sys = `Write 2–4 concise resume bullet points for volunteer experience. Organization: ${org}. Role: ${pendingVolunteer.role||'Volunteer'}. Description: "${duties}". Each bullet starts with a strong action verb, past tense. Each line starts with •. Return only the bullet points.`;
+  const prog = resumeData.personal.program || '';
+  const sys = `Write 3–4 polished, professional resume bullet points for volunteer experience on a trade school student's resume${prog?' studying '+prog:''}. Organization: ${org}. Role: ${pendingVolunteer.role||'Volunteer'}. The student described what they did: "${duties}". Use the description to write strong, specific bullets that highlight real contributions, skills used, and impact. Each bullet starts with a strong past-tense action verb. No "I", no bullet characters. Plain text, one bullet per line.`;
   try {
     const r = await callClaude(sys,[{role:'user',content:'Write the bullet points.'}]);
-    pendingVolunteer.bulletLines = r.trim().split('\n').map(l=>l.trim().replace(/^[•\-\*]\s*/,'')).filter(l=>l.length>0);
+    pendingVolunteer.bulletLines = r.trim().split('\n').map(l=>l.trim().replace(/^[•\-\*]\s*/,'')).filter(l=>l.length>0).map(l=>cleanCareerText(l));
     showCenter('volunteerApproval');
   } catch(e) { addAIMsg('Could not connect — please try again.'); showSection('volunteer'); }
 }
