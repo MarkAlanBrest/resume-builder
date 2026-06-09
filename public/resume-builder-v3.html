@@ -2537,8 +2537,8 @@ async function generateResume() {
     const color = getColorObj(selectedColorHex);
     let buildData = resumeData;
 
-    // Add Education Skills section when employment is weak
-    const weakEmployment = (resumeData.workExperience||[]).length < 2;
+    // Add Skills Learned section only when student has no work history at all
+    const weakEmployment = (resumeData.workExperience||[]).length === 0;
     const tradeEdu = (resumeData.education||[]).find(e=>e.school||e.degree)||resumeData.education?.[0];
     if (weakEmployment && tradeEdu) {
       btn.textContent = 'Building education skills section…';
