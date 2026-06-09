@@ -590,7 +590,7 @@ function showSection(key) {
   clearChat();
   if (key === 'personal') { showCenter('personal'); sendTip('personal'); }
   else if (key === 'career') { showCenter('career'); sendTip('career'); }
-  else if (key === 'work') { showCenter('work'); sendTip('work'); }
+  else if (key === 'work') { importAssignmentIfNeeded(); showCenter('work'); sendTip('work'); }
   else if (key === 'military') { showCenter('military'); sendTip('military'); }
   else if (key === 'education') { showCenter('education'); sendTip('education'); }
   else if (key === 'certifications') { showSection('skills'); }
