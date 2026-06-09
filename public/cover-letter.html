@@ -636,9 +636,17 @@ function showLetterPreview() {
       ${parasHtml}
       <div style="font-size:13px;color:var(--slate-700);margin-top:4px;margin-bottom:12px">Sincerely,<br><strong>${escHtml(name)}</strong></div>
     </div>
-    <div class="form-card-footer">
-      <button class="btn btn-ghost" onclick="generateLetter()">🔄 Rewrite</button>
-      <button class="btn btn-confirm btn-lg" onclick="downloadLetter()">Download .docx ↓</button>
+    <div style="border:2px solid #facc15;border-radius:0 0 12px 12px;padding:16px 18px;background:#fef9c3;">
+      <div style="font-weight:700;color:#92400e;margin-bottom:8px;font-size:15px;">⚠ Important: Review Before Using</div>
+      <p style="margin-bottom:12px;font-size:14px;color:#78350f;line-height:1.5;">This cover letter was generated using AI. You must carefully review, edit, and approve all content before sending it. Verify the employer details, job title, and every paragraph to ensure accuracy and professionalism.</p>
+      <label style="display:flex;align-items:flex-start;gap:10px;font-size:14px;font-weight:600;color:#78350f;cursor:pointer;margin-bottom:14px;">
+        <input type="checkbox" id="clReviewConfirmed" onchange="document.getElementById('clDownloadBtn').disabled=!this.checked;document.getElementById('clDownloadBtn').style.opacity=this.checked?'1':'0.45'" style="margin-top:2px;width:16px;height:16px;accent-color:#eab308;flex-shrink:0;">
+        I understand that I must review and edit this cover letter before sending it.
+      </label>
+      <div style="display:flex;justify-content:space-between;align-items:center;">
+        <button class="btn btn-ghost" onclick="generateLetter()">🔄 Rewrite</button>
+        <button class="btn btn-confirm btn-lg" id="clDownloadBtn" onclick="downloadLetter()" disabled style="opacity:0.45">Download .docx ↓</button>
+      </div>
     </div>
   </div>`;
 }
