@@ -169,34 +169,6 @@
       .welcome-card { padding:32px 20px; }
     }
 
-    /* ── Print styles ────────────────────────────── */
-    @media print {
-      body > * { display:none !important; }
-      #printArea { display:block !important; }
-    }
-    #printArea { display:none; }
-
-    .print-doc { max-width:680px; margin:0 auto; padding:32px; font-family:'Times New Roman',serif; font-size:12pt; color:#000; }
-    .print-header { text-align:center; border-bottom:2px solid #000; padding-bottom:14px; margin-bottom:20px; }
-    .print-header h1 { font-size:18pt; margin-bottom:4px; }
-    .print-header p  { font-size:11pt; color:#444; }
-    .print-id { border:2px solid #000; padding:14px 20px; text-align:center; margin:18px 0; }
-    .print-id .pi-label { font-size:9pt; font-weight:bold; text-transform:uppercase; letter-spacing:1px; }
-    .print-id .pi-code  { font-size:20pt; font-weight:bold; font-family:monospace; letter-spacing:3px; margin:4px 0; }
-    .print-id .pi-note  { font-size:9pt; color:#666; }
-    .print-sec { margin-top:18px; }
-    .print-sec-title { font-size:11pt; font-weight:bold; text-transform:uppercase; border-bottom:1px solid #000; padding-bottom:4px; margin-bottom:10px; letter-spacing:.5px; }
-    .print-job { margin-bottom:14px; page-break-inside:avoid; }
-    .print-job-hdr { font-size:12pt; font-weight:bold; }
-    .print-job-sub { font-size:10pt; color:#444; margin:2px 0 6px; }
-    .print-job ul  { padding-left:18px; font-size:10pt; line-height:1.8; }
-    .print-para { font-size:11pt; line-height:1.7; }
-    .print-rubric { margin-top:10px; }
-    .print-rubric-row { display:flex; justify-content:space-between; font-size:10pt; border-bottom:1px solid #ddd; padding:4px 0; }
-    .print-rubric-row .pr-lbl { font-weight:bold; }
-    .print-rubric-row .pr-fb  { color:#444; flex:1; margin-left:12px; }
-    .print-grade-line { font-size:13pt; font-weight:bold; text-align:center; margin:12px 0; }
-    .print-footer { margin-top:24px; border-top:1px solid #000; padding-top:12px; font-size:9pt; text-align:center; color:#666; font-style:italic; }
   </style>
 </head>
 <body>
@@ -450,25 +422,39 @@
 
     <div class="card">
       <div class="card-title">Submission Receipt</div>
-      <div class="card-sub">Your submission has been recorded. Write down your Submission ID and keep a copy of your PDF — you'll need to turn it in to receive credit.</div>
 
       <div class="sub-id-box">
         <div class="sub-id-label">Submission ID</div>
         <div class="sub-id-code" id="subIdDisplay">—</div>
-        <div class="sub-id-note">Keep this ID for your records — it's how your instructor can verify your submission.</div>
+        <div class="sub-id-note">Your instructor uses this ID to verify your submission — it is embedded in your PDF.</div>
       </div>
 
-      <div class="info green">
-        <h3>📥 Next Steps</h3>
-        <ul>
-          <li>Click <strong>Download PDF</strong> below to save your submission</li>
-          <li>Hand in the PDF to your instructor for credit</li>
-          <li>Your work has been saved and will be automatically used when you build your resume</li>
+      <!-- Download CTA -->
+      <div style="background:#1e40af; border-radius:12px; padding:24px 28px; margin:20px 0; text-align:center;">
+        <div style="font-size:15px; font-weight:700; color:#fff; margin-bottom:6px;">Step 1 — Download Your PDF</div>
+        <div style="font-size:13px; color:rgba(255,255,255,.8); margin-bottom:18px;">Your completed assignment with your grade and submission ID is ready to download.</div>
+        <button class="btn btn-lg" onclick="downloadPDF()" style="background:#fff; color:#1e40af; font-weight:800; font-size:15px; padding:14px 36px; border-radius:8px; cursor:pointer; border:none; font-family:inherit;">
+          ⬇ Download PDF Submission
+        </button>
+      </div>
+
+      <!-- Submit instruction -->
+      <div style="background:#fef9c3; border:2px solid #fde047; border-radius:12px; padding:20px 24px; margin:20px 0;">
+        <div style="font-size:15px; font-weight:800; color:#713f12; margin-bottom:10px;">⚠ Step 2 — You Must Submit the PDF to Get Credit</div>
+        <p style="font-size:14px; color:#78350f; line-height:1.6; margin-bottom:10px;">
+          Completing this assignment on screen <strong>does not automatically give you a grade.</strong>
+          You must download the PDF above and hand it in to your instructor.
+        </p>
+        <ul style="font-size:14px; color:#78350f; padding-left:20px; line-height:2;">
+          <li>Download the PDF using the button above</li>
+          <li>Submit the PDF to your instructor or upload it to your class portal</li>
+          <li>Your instructor will use your <strong>Submission ID</strong> to confirm it is your original work</li>
         </ul>
       </div>
 
-      <div class="btn-row">
-        <button class="btn btn-primary btn-lg" onclick="downloadPDF()">⬇ Download PDF Submission</button>
+      <div class="info green" style="margin-bottom:0;">
+        <h3>✅ Your Work Is Saved</h3>
+        <p>Your jobs and skills information have been saved to this device and will be available to import when you build your resume — no need to retype anything.</p>
       </div>
     </div>
   </div>
@@ -476,15 +462,7 @@
 
 </main>
 
-<!-- ══════════════════════════════════════════════
-     PRINT AREA (only rendered during print)
-══════════════════════════════════════════════════ -->
-<div id="printArea">
-  <div class="print-doc" id="printDoc">
-    <!-- Generated dynamically before printing -->
-  </div>
-</div>
-
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
 <script>
 /* ── State ──────────────────────────────────────────────── */
 let studentName   = '';
@@ -918,85 +896,205 @@ function showGradeResult() {
   document.getElementById('subIdDisplay').textContent = submissionId;
 }
 
-/* ── PDF Download ──────────────────────────────────────── */
+/* ── PDF Download (jsPDF) ──────────────────────────────── */
 function downloadPDF() {
-  buildPrintDoc();
-  window.print();
-}
+  const { jsPDF } = window.jspdf;
+  const pdf     = new jsPDF({ unit:'pt', format:'letter' });
+  const pageW   = pdf.internal.pageSize.getWidth();
+  const pageH   = pdf.internal.pageSize.getHeight();
+  const margin  = 54;
+  const cw      = pageW - margin * 2;
+  const today   = new Date().toLocaleDateString('en-US', { year:'numeric', month:'long', day:'numeric' });
+  const g       = gradeResult || {};
+  const ltr     = (g.grade || 'B').toUpperCase()[0];
+  let y = 0;
 
-function buildPrintDoc() {
-  const doc   = document.getElementById('printDoc');
-  const today = new Date().toLocaleDateString('en-US', { year:'numeric', month:'long', day:'numeric' });
-  const g     = gradeResult;
-  const ltr   = (g?.grade || '—').toUpperCase()[0];
-
-  let contentHtml = '';
-
-  if (currentPath === 'nowork') {
-    const para = document.getElementById('skillsParagraph').value.trim();
-    contentHtml = `
-      <div class="print-sec">
-        <div class="print-sec-title">Skills &amp; Training Paragraph</div>
-        <p class="print-para">${esc(para)}</p>
-      </div>`;
-  } else {
-    contentHtml = `
-      <div class="print-sec">
-        <div class="print-sec-title">Work Experience Entries</div>
-        ${jobs.map(j => {
-          const loc     = [j.city, j.state].filter(Boolean).join(', ');
-          const dateStr = j.current ? `${fmtMonth(j.start)} – Present` : `${fmtMonth(j.start)}${j.end ? ' – ' + fmtMonth(j.end) : ''}`;
-          return `
-            <div class="print-job">
-              <div class="print-job-hdr">${esc(j.title)}</div>
-              <div class="print-job-sub">${esc(j.employer)}${loc ? ' — ' + esc(loc) : ''} | ${esc(dateStr)}</div>
-              <ul>${j.bullets.map(b => `<li>${esc(b)}</li>`).join('')}</ul>
-            </div>`;
-        }).join('')}
-      </div>`;
+  function checkPage(need) {
+    if (y + need > pageH - 48) { pdf.addPage(); y = margin; }
   }
 
-  const keys    = g?._rubricKeys    || [];
-  const labels  = g?._rubricLabels  || [];
-  const weights = g?._rubricWeights || [];
-  const rubricHtml = keys.map((k, i) => {
-    const score = (g?.scores || {})[k] || 0;
-    const fb    = (g?.feedback || {})[k] || '';
-    return `<div class="print-rubric-row"><span class="pr-lbl">${esc(labels[i] || k)} (${weights[i] || ''}): ${score}/100</span><span class="pr-fb">${esc(fb)}</span></div>`;
-  }).join('');
+  function text(str, x, opts = {}) {
+    const { size=11, style='normal', color=[30,30,30], align='left', maxW=cw } = opts;
+    pdf.setFontSize(size);
+    pdf.setFont('helvetica', style);
+    pdf.setTextColor(...color);
+    const lines = pdf.splitTextToSize(String(str || ''), maxW);
+    pdf.text(lines, x, y, { align });
+    y += lines.length * size * 1.45;
+    return lines.length;
+  }
 
-  doc.innerHTML = `
-    <div class="print-header">
-      <h1>Work Experience Assignment</h1>
-      <p>Resume Writing Program &nbsp;|&nbsp; ${today}</p>
-    </div>
+  function sectionHdr(label) {
+    checkPage(28);
+    y += 6;
+    pdf.setFontSize(8.5);
+    pdf.setFont('helvetica', 'bold');
+    pdf.setTextColor(100, 100, 100);
+    pdf.text(label.toUpperCase(), margin, y);
+    y += 4;
+    pdf.setDrawColor(180, 180, 180);
+    pdf.line(margin, y, pageW - margin, y);
+    y += 13;
+  }
 
-    <table style="width:100%; font-size:11pt; border-collapse:collapse; margin-bottom:10px;">
-      <tr>
-        <td><strong>Student:</strong> ${esc(studentName)}</td>
-        <td style="text-align:right"><strong>Path:</strong> ${currentPath === 'nowork' ? 'No Work History (Skills Paragraph)' : 'Work History (' + jobs.length + ' job' + (jobs.length !== 1 ? 's' : '') + ')'}</td>
-      </tr>
-    </table>
+  // ── Blue header band ──
+  pdf.setFillColor(30, 64, 175);
+  pdf.rect(0, 0, pageW, 60, 'F');
+  pdf.setFontSize(16);
+  pdf.setFont('helvetica', 'bold');
+  pdf.setTextColor(255, 255, 255);
+  pdf.text('Work Experience Assignment', margin, 26);
+  pdf.setFontSize(10);
+  pdf.setFont('helvetica', 'normal');
+  pdf.text('Resume Writing Program  |  ' + today, margin, 44);
 
-    <div class="print-id">
-      <div class="pi-label">Submission ID — Do Not Alter</div>
-      <div class="pi-code">${esc(submissionId)}</div>
-      <div class="pi-note">This ID verifies the authenticity of your submission. Your instructor will use it to locate your work.</div>
-    </div>
+  y = 84;
 
-    ${contentHtml}
+  // ── Student / path row ──
+  pdf.setFontSize(10);
+  pdf.setFont('helvetica', 'normal');
+  pdf.setTextColor(50, 50, 50);
+  pdf.text('Student: ' + studentName, margin, y);
+  const pathLabel = currentPath === 'nowork'
+    ? 'Path: No Work History (Skills Paragraph)'
+    : 'Path: Work History (' + jobs.length + ' job' + (jobs.length !== 1 ? 's' : '') + ')';
+  pdf.text(pathLabel, pageW - margin, y, { align:'right' });
+  y += 22;
 
-    <div class="print-sec">
-      <div class="print-sec-title">Grade &amp; Rubric</div>
-      <div class="print-grade-line">Overall Score: ${g?.overall || '—'}/100 &nbsp;|&nbsp; Grade: ${ltr}</div>
-      <div class="print-rubric">${rubricHtml}</div>
-      <p style="font-size:10pt; margin-top:10px; font-style:italic;">${esc(g?.summary || '')}</p>
-    </div>
+  // ── Submission ID box ──
+  pdf.setDrawColor(0, 0, 0);
+  pdf.setLineWidth(1.5);
+  pdf.rect(margin, y, cw, 62);
+  pdf.setFontSize(8);
+  pdf.setFont('helvetica', 'bold');
+  pdf.setTextColor(100, 100, 100);
+  pdf.text('SUBMISSION ID — DO NOT ALTER', pageW / 2, y + 15, { align:'center' });
+  pdf.setFontSize(20);
+  pdf.setFont('helvetica', 'bold');
+  pdf.setTextColor(30, 64, 175);
+  pdf.text(submissionId, pageW / 2, y + 37, { align:'center' });
+  pdf.setFontSize(8);
+  pdf.setFont('helvetica', 'normal');
+  pdf.setTextColor(120, 120, 120);
+  pdf.text('Your instructor uses this ID to verify your submission. Keep this PDF for your records.', pageW / 2, y + 53, { align:'center' });
+  y += 80;
 
-    <div class="print-footer">
-      This document was generated by the Resume Writing Program AI Assignment System.<br>
-      Submit this PDF to your instructor to receive credit for this assignment. | Submission ID: ${esc(submissionId)}
-    </div>`;
+  // ── Content ──
+  if (currentPath === 'nowork') {
+    const para = document.getElementById('skillsParagraph').value.trim();
+    sectionHdr('Skills & Training Paragraph');
+    pdf.setFontSize(11);
+    pdf.setFont('helvetica', 'normal');
+    pdf.setTextColor(30, 30, 30);
+    const paraLines = pdf.splitTextToSize(para, cw);
+    paraLines.forEach(line => {
+      checkPage(16);
+      pdf.text(line, margin, y);
+      y += 15.5;
+    });
+    y += 6;
+  } else {
+    sectionHdr('Work Experience Entries');
+    jobs.forEach((j, idx) => {
+      checkPage(60);
+      const loc     = [j.city, j.state].filter(Boolean).join(', ');
+      const dateStr = j.current
+        ? fmtMonth(j.start) + ' – Present'
+        : fmtMonth(j.start) + (j.end ? ' – ' + fmtMonth(j.end) : '');
+
+      pdf.setFontSize(12);
+      pdf.setFont('helvetica', 'bold');
+      pdf.setTextColor(10, 10, 10);
+      pdf.text(j.title, margin, y);
+      y += 15;
+
+      pdf.setFontSize(9.5);
+      pdf.setFont('helvetica', 'normal');
+      pdf.setTextColor(80, 80, 80);
+      pdf.text(j.employer + (loc ? '  —  ' + loc : '') + '   |   ' + dateStr, margin, y);
+      y += 14;
+
+      j.bullets.forEach(b => {
+        checkPage(16);
+        const bLines = pdf.splitTextToSize('•  ' + b, cw - 14);
+        pdf.setFontSize(10);
+        pdf.setFont('helvetica', 'normal');
+        pdf.setTextColor(30, 30, 30);
+        pdf.text(bLines, margin + 10, y);
+        y += bLines.length * 14;
+      });
+
+      if (idx < jobs.length - 1) {
+        y += 6;
+        pdf.setDrawColor(220, 220, 220);
+        pdf.line(margin, y, pageW - margin, y);
+        y += 12;
+      } else {
+        y += 10;
+      }
+    });
+  }
+
+  // ── Grade & Rubric ──
+  sectionHdr('Grade & Rubric');
+
+  // Grade line
+  checkPage(24);
+  pdf.setFontSize(13);
+  pdf.setFont('helvetica', 'bold');
+  pdf.setTextColor(10, 10, 10);
+  pdf.text('Overall Score: ' + (g.overall || 0) + '/100   |   Grade: ' + ltr, pageW / 2, y, { align:'center' });
+  y += 20;
+
+  // Rubric rows
+  const rKeys    = g._rubricKeys    || [];
+  const rLabels  = g._rubricLabels  || [];
+  const rWeights = g._rubricWeights || [];
+  rKeys.forEach((k, i) => {
+    checkPage(36);
+    const score = (g.scores || {})[k] || 0;
+    const fb    = (g.feedback || {})[k] || '';
+    pdf.setFontSize(10);
+    pdf.setFont('helvetica', 'bold');
+    pdf.setTextColor(10, 10, 10);
+    pdf.text((rLabels[i] || k) + ' (' + (rWeights[i] || '') + '): ' + score + '/100', margin, y);
+    y += 13;
+    pdf.setFontSize(9);
+    pdf.setFont('helvetica', 'normal');
+    pdf.setTextColor(80, 80, 80);
+    const fbLines = pdf.splitTextToSize(fb, cw);
+    pdf.text(fbLines, margin, y);
+    y += fbLines.length * 12 + 8;
+  });
+
+  if (g.summary) {
+    checkPage(28);
+    y += 4;
+    pdf.setFontSize(9);
+    pdf.setFont('helvetica', 'italic');
+    pdf.setTextColor(100, 100, 100);
+    const sumLines = pdf.splitTextToSize(g.summary, cw);
+    pdf.text(sumLines, margin, y);
+    y += sumLines.length * 12;
+  }
+
+  // ── Footer on every page ──
+  const pageCount = pdf.internal.getNumberOfPages();
+  for (let p = 1; p <= pageCount; p++) {
+    pdf.setPage(p);
+    const fy = pageH - 28;
+    pdf.setDrawColor(200, 200, 200);
+    pdf.line(margin, fy - 6, pageW - margin, fy - 6);
+    pdf.setFontSize(7.5);
+    pdf.setFont('helvetica', 'normal');
+    pdf.setTextColor(160, 160, 160);
+    pdf.text('Work Experience Assignment — Resume Writing Program', margin, fy);
+    pdf.text('Submission ID: ' + submissionId + '   |   Page ' + p + ' of ' + pageCount, pageW - margin, fy, { align:'right' });
+  }
+
+  // ── Save file ──
+  const safeName = studentName.replace(/[^a-z0-9]/gi, '-').toLowerCase();
+  pdf.save('work-experience-assignment-' + safeName + '-' + submissionId + '.pdf');
 }
 
 /* ── API call ──────────────────────────────────────────── */
