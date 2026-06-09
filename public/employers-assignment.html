@@ -263,66 +263,171 @@
 </div>
 
 <!-- ══════════════════════════════════════════════
-     SCREEN 2A — No Work History Form
+     SCREEN 2A-HELP — No Work History Instructions
 ══════════════════════════════════════════════════ -->
-<div id="screenNoWork" hidden>
-  <div class="info green">
-    <h3>📌 What You're Doing in This Assignment</h3>
-    <p>Since you haven't held a job yet, you'll write a paragraph describing the skills, techniques, and knowledge you gained through your trade school program. This is completely normal — many trade school students are entering the workforce for the first time.</p>
+<div id="screenNoWorkHelp" hidden>
+
+  <!-- CTA banner -->
+  <div style="background:var(--blue); border-radius:12px; padding:28px 32px; text-align:center; margin-bottom:24px;">
+    <div style="font-size:22px; font-weight:800; color:#fff; margin-bottom:8px;">Before You Begin</div>
+    <div style="font-size:15px; color:rgba(255,255,255,.8); margin-bottom:24px; max-width:520px; margin-left:auto; margin-right:auto;">Review the directions, examples, and grading criteria below. When you're ready, click the button to start writing your paragraph.</div>
+    <button onclick="startNoWorkForm()" style="background:#fff; color:var(--blue); font-size:16px; font-weight:800; padding:16px 44px; border-radius:10px; border:none; cursor:pointer; font-family:inherit; box-shadow:0 4px 12px rgba(0,0,0,.15);">
+      Start Assignment →
+    </button>
   </div>
 
-  <div class="card">
-    <div class="card-title">Skills & Training Paragraph</div>
-    <div class="card-sub">Write a paragraph in your own words about what you learned in your program. Be specific and honest — this will be used to build the Skills section of your resume.</div>
+  <!-- Help button bar -->
+  <div style="display:flex; gap:10px; margin-bottom:16px; flex-wrap:wrap;">
+    <button class="help-tab active" id="nw-tab-directions" onclick="openNoWorkTab('directions')">📋 Directions</button>
+    <button class="help-tab" id="nw-tab-examples"   onclick="openNoWorkTab('examples')">✏️ See Examples</button>
+    <button class="help-tab" id="nw-tab-rubric"     onclick="openNoWorkTab('rubric')">📊 Grading Criteria</button>
+  </div>
 
-    <div class="info blue" style="margin-bottom:22px">
-      <h3>✏️ What to Write About</h3>
-      <ul>
-        <li><strong>Tools and equipment</strong> you learned to use (name them specifically)</li>
-        <li><strong>Techniques and skills</strong> you practiced in class or the shop</li>
-        <li><strong>Safety procedures</strong> and industry standards you were trained on</li>
-        <li><strong>Hands-on tasks</strong> you can perform on your own</li>
-        <li><strong>Soft skills</strong> developed: teamwork, attention to detail, time management</li>
-      </ul>
+  <!-- Directions panel -->
+  <div id="nw-panel-directions" class="help-panel">
+    <div class="help-panel-inner">
+      <div class="hp-title">📋 How to Complete This Assignment</div>
+
+      <div class="hp-section-lbl">What You're Doing</div>
+      <p class="hp-p">Since you haven't held a job yet, you'll write one paragraph describing the skills, techniques, and knowledge you gained through your trade school program. This is completely normal — many students are entering the workforce for the first time. Your paragraph will be used to build the Skills section of your resume, so write it carefully and honestly.</p>
+
+      <div class="hp-rule">
+        <div class="hp-rule-title">Rule 1 — Be Specific, Not General</div>
+        <p class="hp-p">Name the actual tools, equipment, software, and procedures you were trained on. A vague paragraph says very little. A specific paragraph gives employers real information about what you can do.</p>
+        <div class="hp-compare">
+          <div class="hp-weak"><span class="hp-badge weak">Weak</span> I learned how to work on cars and use tools in my program.</div>
+          <div class="hp-strong"><span class="hp-badge strong">Strong</span> During my Automotive Technology program, I trained on hydraulic lifts, diagnostic scan tools, and performed oil changes, brake inspections, and tire rotations on shop vehicles.</div>
+        </div>
+      </div>
+
+      <div class="hp-rule">
+        <div class="hp-rule-title">Rule 2 — Only Write What You Actually Learned</div>
+        <p class="hp-p">Do not exaggerate or include skills you were not trained on. This paragraph goes directly on your resume. If an employer asks you about something you listed, you need to be able to back it up. Accuracy protects your professional reputation.</p>
+      </div>
+
+      <div class="hp-rule">
+        <div class="hp-rule-title">Rule 3 — Cover All Areas of Your Training</div>
+        <p class="hp-p">Think through everything you were taught — not just the main technical skills. Include:</p>
+        <div class="hp-vlist" style="margin-top:10px;">
+          <span>Tools &amp; Equipment</span><span>Techniques &amp; Procedures</span><span>Safety Standards</span><span>Hands-On Practice</span><span>Teamwork</span><span>Industry Software</span><span>Measurements &amp; Calculations</span><span>Customer Service</span>
+        </div>
+      </div>
+
+      <div class="hp-rule">
+        <div class="hp-rule-title">Rule 4 — Aim for Length and Detail</div>
+        <p class="hp-p">A strong paragraph is at least 5–8 sentences. Short, thin paragraphs score lower — not because of strict word counts, but because they suggest you didn't fully describe your training. Take your time and think through everything you covered in your program.</p>
+      </div>
+
+      <div class="hp-rule">
+        <div class="hp-rule-title">Rule 5 — Write Professionally</div>
+        <p class="hp-p">Write in clear, complete sentences. Avoid slang. You don't need perfect grammar — minor mistakes are fine — but the writing should be readable and professional. Think of it as something a future employer might read.</p>
+      </div>
     </div>
+  </div>
 
-    <div class="info amber">
-      <h3>⚠ Important: Be Accurate</h3>
-      <p>Write only about what you actually learned in your program. Do not exaggerate or include skills you haven't been trained on. This paragraph will be used directly in your resume — accuracy is essential for your professional reputation.</p>
+  <!-- Examples panel -->
+  <div id="nw-panel-examples" class="help-panel" hidden>
+    <div class="help-panel-inner">
+      <div class="hp-title">✏️ Example Paragraphs by Program</div>
+      <p class="hp-p" style="margin-bottom:18px;">These are examples of strong skills paragraphs. Use them as a guide — write about <em>your</em> actual training in your own words. Do not copy these.</p>
+
+      <div class="hp-eg-group">
+        <div class="hp-eg-label">Automotive Technology</div>
+        <p class="hp-p" style="background:var(--g50); border:1px solid var(--g200); border-radius:8px; padding:14px 16px;">During my Automotive Technology program, I developed hands-on skills in vehicle maintenance and repair. I learned to perform oil changes, tire rotations, and multi-point inspections on shop vehicles. I trained on hydraulic lifts, diagnostic scan tools, and torque wrenches to complete assigned tasks safely and accurately. I also studied engine systems, brake components, and suspension fundamentals. In addition to technical skills, I followed OSHA shop safety procedures throughout the program and developed strong attention to detail while working on live vehicles.</p>
+      </div>
+
+      <div class="hp-eg-group">
+        <div class="hp-eg-label">Electrical / Construction Trades</div>
+        <p class="hp-p" style="background:var(--g50); border:1px solid var(--g200); border-radius:8px; padding:14px 16px;">Through my Electrical Technology program, I gained practical experience in residential and commercial wiring, outlet installation, and circuit breaker panel work. I learned to read and interpret wiring diagrams and blueprints to plan and complete electrical installations. I trained with hand tools, power tools, conduit benders, and volt meters. My coursework also covered the National Electrical Code (NEC), grounding and bonding procedures, and workplace safety practices. I developed problem-solving skills by troubleshooting wiring issues in lab simulations throughout the program.</p>
+      </div>
+
+      <div class="hp-eg-group">
+        <div class="hp-eg-label">Medical Assistant / Healthcare</div>
+        <p class="hp-p" style="background:var(--g50); border:1px solid var(--g200); border-radius:8px; padding:14px 16px;">My Medical Assistant training provided me with both clinical and administrative skills used in a healthcare setting. On the clinical side, I practiced taking vital signs, performing venipuncture, preparing examination rooms, and assisting with minor procedures under instructor supervision. I also learned to use Electronic Health Record (EHR) software for scheduling and patient documentation. Administratively, I studied medical coding, insurance billing, and HIPAA compliance. Throughout the program, I developed strong patient communication skills and learned to maintain professionalism and confidentiality in all interactions.</p>
+      </div>
+
+      <div class="hp-eg-group">
+        <div class="hp-eg-label">Cosmetology / Barbering</div>
+        <p class="hp-p" style="background:var(--g50); border:1px solid var(--g200); border-radius:8px; padding:14px 16px;">During my Cosmetology program, I completed training in hair cutting, coloring, chemical treatments, and styling for a variety of hair types and textures. I practiced precision cuts using shears and clippers, and learned to formulate and apply color and highlights using professional products. I also studied skin care, nail care, and sanitation protocols required by the state board. I logged over 1,200 clinic hours working with real clients under instructor supervision, which helped me build strong customer service and time management skills in a fast-paced salon environment.</p>
+      </div>
     </div>
+  </div>
 
-    <div class="card" style="background:var(--g50); border-color:var(--g200); margin-bottom:0;">
-      <div style="font-size:13px; font-weight:700; color:var(--g600); text-transform:uppercase; letter-spacing:.5px; margin-bottom:12px;">Grading Rubric — What You'll Be Scored On</div>
-      <div style="display:grid; grid-template-columns:1fr 1fr; gap:10px; font-size:13px;">
-        <div style="padding:10px 14px; background:#fff; border:1px solid var(--g200); border-radius:8px;">
-          <div style="font-weight:700; margin-bottom:2px;">Specific Skills Named <span style="color:var(--g400); font-weight:400;">(35%)</span></div>
-          <div style="color:var(--g500); font-size:12px;">Did you name actual tools, techniques, or procedures from your program?</div>
+  <!-- Rubric panel -->
+  <div id="nw-panel-rubric" class="help-panel" hidden>
+    <div class="help-panel-inner">
+      <div class="hp-title">📊 How This Assignment Is Graded</div>
+      <p class="hp-p" style="margin-bottom:18px;">Your paragraph is scored on four categories. A detailed, specific paragraph written in your own words will earn a B or better.</p>
+
+      <div class="hp-rub-row">
+        <div class="hp-rub-hdr"><span class="hp-rub-name">Specific Skills Named</span><span class="hp-rub-wt">35%</span></div>
+        <p class="hp-p">Did you name actual tools, equipment, techniques, or procedures from your program? Generic language scores lower. Specific names score higher.</p>
+        <div class="hp-rub-scale">
+          <div class="sc-item sc-a">A — Real tools, techniques, and procedures named</div>
+          <div class="sc-item sc-b">B — Some specifics, could name more</div>
+          <div class="sc-item sc-d">D/F — Entirely vague with no real details</div>
         </div>
-        <div style="padding:10px 14px; background:#fff; border:1px solid var(--g200); border-radius:8px;">
-          <div style="font-weight:700; margin-bottom:2px;">Program Relevance <span style="color:var(--g400); font-weight:400;">(25%)</span></div>
-          <div style="color:var(--g500); font-size:12px;">Does your content relate to your trade school program?</div>
+      </div>
+
+      <div class="hp-rub-row">
+        <div class="hp-rub-hdr"><span class="hp-rub-name">Program Relevance</span><span class="hp-rub-wt">25%</span></div>
+        <p class="hp-p">Does your paragraph describe things you actually learned in your trade school program? Off-topic or unrelated content scores lower.</p>
+        <div class="hp-rub-scale">
+          <div class="sc-item sc-a">A — Clearly describes program training</div>
+          <div class="sc-item sc-b">B — Mostly on topic with minor gaps</div>
+          <div class="sc-item sc-d">D/F — Not related to trade school training</div>
         </div>
-        <div style="padding:10px 14px; background:#fff; border:1px solid var(--g200); border-radius:8px;">
-          <div style="font-weight:700; margin-bottom:2px;">Effort &amp; Length <span style="color:var(--g400); font-weight:400;">(25%)</span></div>
-          <div style="color:var(--g500); font-size:12px;">Is the paragraph complete and detailed? Aim for at least 5–8 sentences.</div>
+      </div>
+
+      <div class="hp-rub-row">
+        <div class="hp-rub-hdr"><span class="hp-rub-name">Effort &amp; Length</span><span class="hp-rub-wt">25%</span></div>
+        <p class="hp-p">Is the paragraph thorough and detailed? Aim for at least 5–8 complete sentences. Short or thin paragraphs suggest low effort.</p>
+        <div class="hp-rub-scale">
+          <div class="sc-item sc-a">A — 5+ sentences with real detail</div>
+          <div class="sc-item sc-b">B — A few sentences but could go deeper</div>
+          <div class="sc-item sc-d">D/F — One or two sentences with no substance</div>
         </div>
-        <div style="padding:10px 14px; background:#fff; border:1px solid var(--g200); border-radius:8px;">
-          <div style="font-weight:700; font-size:12px; margin-bottom:2px;">Professional Language <span style="color:var(--g400); font-weight:400;">(15%)</span></div>
-          <div style="color:var(--g500); font-size:12px;">Clear and professional writing. Avoid slang.</div>
+      </div>
+
+      <div class="hp-rub-row">
+        <div class="hp-rub-hdr"><span class="hp-rub-name">Professional Language</span><span class="hp-rub-wt">15%</span></div>
+        <p class="hp-p">Clear, professional writing. Minor grammar mistakes are fine. Avoid slang or very casual language.</p>
+        <div class="hp-rub-scale">
+          <div class="sc-item sc-a">A — Clear and professional throughout</div>
+          <div class="sc-item sc-b">B — Minor grammar issues, mostly readable</div>
+          <div class="sc-item sc-d">D/F — Heavy slang or very hard to understand</div>
         </div>
       </div>
     </div>
+  </div>
 
-    <div class="field" style="margin-top:22px">
-      <label for="skillsParagraph">Your Skills &amp; Training Paragraph <span class="req">*</span></label>
-      <textarea id="skillsParagraph" rows="8" placeholder="Example: During my Automotive Technology program at Lincoln Tech, I developed hands-on skills in vehicle maintenance and repair. I learned to perform oil changes, brake inspections, and tire rotations using professional shop equipment. I also gained experience with diagnostic scan tools to identify engine fault codes. In addition to technical skills, I was trained on OSHA shop safety procedures and proper disposal of hazardous materials..."></textarea>
+  <!-- Bottom Start button -->
+  <div style="text-align:center; padding:8px 0 4px;">
+    <button onclick="startNoWorkForm()" style="background:var(--blue); color:#fff; font-size:15px; font-weight:700; padding:14px 40px; border-radius:10px; border:none; cursor:pointer; font-family:inherit;">
+      Start Assignment →
+    </button>
+  </div>
+
+</div>
+
+<!-- ══════════════════════════════════════════════
+     SCREEN 2A-FORM — No Work History Paragraph
+══════════════════════════════════════════════════ -->
+<div id="screenNoWork" hidden>
+  <div class="card">
+    <div class="card-title">Skills &amp; Training Paragraph</div>
+    <div class="card-sub">Write a paragraph in your own words about what you learned in your program. Be specific and honest — this will be used on your resume.</div>
+
+    <div class="field">
+      <label for="skillsParagraph">Your paragraph <span class="req">*</span></label>
+      <textarea id="skillsParagraph" rows="10" placeholder="Example: During my Automotive Technology program at Lincoln Tech, I developed hands-on skills in vehicle maintenance and repair. I learned to perform oil changes, brake inspections, and tire rotations using professional shop equipment. I also gained experience with diagnostic scan tools to identify engine fault codes. In addition to technical skills, I was trained on OSHA shop safety procedures and proper disposal of hazardous materials..."></textarea>
       <div class="field-hint" id="wordCount">0 words — aim for at least 50</div>
     </div>
 
     <div id="noworkErr" class="err-msg">Please write your skills paragraph before submitting.</div>
 
     <div class="btn-row">
-      <button class="btn btn-secondary" onclick="goBack()">← Back</button>
+      <button class="btn btn-secondary" onclick="show('screenNoWorkHelp')">← Back</button>
       <button class="btn btn-primary btn-lg" onclick="submitNoWork()">Submit for Grading →</button>
     </div>
   </div>
@@ -672,7 +777,7 @@ let submissionId  = null;
 let gradeResult   = null;
 
 /* ── Screen navigation ─────────────────────────────────── */
-const SCREENS = ['screenWelcome','screenNoWork','screenWorkHelp','screenWorkForm','screenJobsReview','screenGrading'];
+const SCREENS = ['screenWelcome','screenNoWorkHelp','screenNoWork','screenWorkHelp','screenWorkForm','screenJobsReview','screenGrading'];
 function show(id) {
   SCREENS.forEach(s => {
     const el = document.getElementById(s);
@@ -691,6 +796,14 @@ function openTab(name) {
   });
 }
 
+function openNoWorkTab(name) {
+  ['directions','examples','rubric'].forEach(t => {
+    document.getElementById('nw-panel-' + t).hidden = (t !== name);
+    const btn = document.getElementById('nw-tab-' + t);
+    if (btn) btn.classList.toggle('active', t === name);
+  });
+}
+
 function choosePath(path) {
   const name = document.getElementById('studentName').value.trim();
   if (!name) {
@@ -703,10 +816,14 @@ function choosePath(path) {
   currentPath = path;
 
   if (path === 'nowork') {
-    show('screenNoWork');
+    show('screenNoWorkHelp');
   } else {
     show('screenWorkHelp');
   }
+}
+
+function startNoWorkForm() {
+  show('screenNoWork');
 }
 
 function startWorkForm() {
