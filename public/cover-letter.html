@@ -108,9 +108,7 @@ html,body{height:100%;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Ro
 .f-err{font-size:11px;color:var(--red-600);display:none;margin-top:1px}
 .f-group.has-error input,.f-group.has-error textarea{border-color:var(--red-600)}
 .f-group.has-error .f-err{display:block}
-.lookup-row{display:flex;gap:8px;align-items:flex-end;margin-bottom:12px}
-.lookup-row .f-group{flex:1;margin-bottom:0}
-.lookup-btn{flex-shrink:0;padding:9px 14px;font-size:13px;white-space:nowrap;align-self:flex-end}
+
 
 /* ── Buttons ── */
 .btn{border:none;border-radius:7px;padding:9px 18px;font-size:14px;font-weight:600;cursor:pointer;font-family:inherit;transition:background .15s,opacity .15s}
@@ -249,7 +247,7 @@ function sendTip(key) {
     personal: personalData.firstName
       ? `I've pre-filled your contact info from your saved resume (**${personalData.firstName} ${personalData.lastName}**). Confirm it looks right and continue.`
       : 'Fill in your contact details — these appear at the top of your cover letter.',
-    company: 'Enter the company name and job title. Paste a job posting URL to auto-fill everything, or type details in manually. The more job description you include, the more tailored your letter will be.',
+    company: 'Fill in the employer details. Not sure of the address or phone number? Ask me in the chat — just type something like "What is the address for AutoZone in New Castle PA?" The more job description you paste in, the more tailored your letter will be.',
     letter: 'I\'ll use your resume skills, experience, and program to write a targeted cover letter. Click **Generate Cover Letter** when you\'re ready.',
   };
   if (tips[key]) setTimeout(() => addAIMsg(tips[key]), 300);
@@ -414,18 +412,6 @@ function renderCompanyForm() {
   const e = employerData;
   return `<div class="section-hdr"><div class="section-hdr-icon">🏢</div><div><div class="section-hdr-title">Company Info</div><div class="section-hdr-sub">Employer details and the job you're applying for</div></div></div>
   <div class="form-card">
-    <div class="form-card-hdr">🔗 Job Posting URL <span style="font-weight:400;font-size:12px;opacity:.8">(optional — auto-fills everything)</span></div>
-    <div class="form-card-body">
-      <div class="lookup-row">
-        <div class="f-group" style="margin-bottom:0;flex:1">
-          <label>Paste the job posting URL</label>
-          <input id="fJobUrl" value="${escHtml(e.jobUrl||'')}" placeholder="https://www.indeed.com/viewjob?..." style="font-size:13px">
-        </div>
-        <button class="btn btn-ghost lookup-btn" id="urlExtractBtn" onclick="extractFromUrl()">Extract →</button>
-      </div>
-    </div>
-  </div>
-  <div class="form-card">
     <div class="form-card-hdr">🏢 Employer Details</div>
     <div class="form-card-body">
       <div class="f-row">
@@ -492,7 +478,6 @@ function submitCompany() {
   if (!jobTitle) { document.getElementById('fg-jobtitle').classList.add('has-error'); valid=false; } else document.getElementById('fg-jobtitle').classList.remove('has-error');
   if (!valid) return;
   employerData = {
-    jobUrl:         document.getElementById('fJobUrl').value.trim(),
     company, jobTitle,
     hiringManager:  document.getElementById('fHiringManager').value.trim(),
     companyPhone:   document.getElementById('fCompanyPhone').value.trim(),
@@ -507,29 +492,6 @@ function submitCompany() {
   showSection('letter');
 }
 
-// ── URL Extraction ────────────────────────────────────
-async function extractFromUrl() {
-  const url = document.getElementById('fJobUrl').value.trim();
-  if (!url) { addAIMsg('Paste a job posting URL first.'); return; }
-  const btn = document.getElementById('urlExtractBtn');
-  btn.disabled = true; btn.textContent = 'Fetching…';
-  addAIMsg('Fetching the job posting — one moment…');
-  try {
-    const fetchRes = await fetch('/api/fetch-url', {method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({url})});
-    if (!fetchRes.ok) { const e=await fetchRes.json().catch(()=>({})); throw new Error(e.error||'fetch failed'); }
-    const {text} = await fetchRes.json();
-    const sys = `Extract job posting details. Return ONLY valid JSON:\n{"company":"","jobTitle":"","street":"","city":"","state":"","zip":"","phone":"","description":""}\n- description: key requirements, max 250 words`;
-    const raw = await callClaude(sys,[{role:'user',content:text}],{maxTokens:600});
-    const data = JSON.parse(raw.replace(/^```(?:json)?\s*/i,'').replace(/\s*```$/,''));
-    const map = [['fCompany',data.company],['fJobTitle',data.jobTitle],['fCompanyStreet',data.street],['fCompanyCity',data.city],['fCompanyState',data.state],['fCompanyZip',data.zip],['fCompanyPhone',data.phone],['fJobDesc',data.description]];
-    const filled = [];
-    map.forEach(([id,val])=>{ if(val){ const el=document.getElementById(id); if(el){ el.value=val; if(id==='fCompany'||id==='fJobTitle') filled.push(val); } } });
-    addAIMsg(`Extracted from the posting${filled.length?' — found '+filled.join(' at '):''}.  Review the fields and continue.`);
-  } catch(e) {
-    addAIMsg(`Could not fetch that URL — the site may block access. Paste the job description manually. (${e.message})`);
-  }
-  btn.disabled = false; btn.textContent = 'Extract →';
-}
 
 // ── Employer Suggestions ──────────────────────────────
 async function refreshEmployerSuggestions(company) {
