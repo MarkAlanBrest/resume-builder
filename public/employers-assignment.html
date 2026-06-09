@@ -223,6 +223,36 @@ html,body{height:100%;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Ro
 .download-btn{background:var(--white);color:var(--blue-900);border:none;border-radius:7px;padding:10px 22px;font-size:14px;font-weight:700;cursor:pointer;font-family:inherit;white-space:nowrap;transition:background .15s}
 .download-btn:hover{background:var(--blue-50)}
 
+/* ── Right panel help tabs ── */
+.rp-tabs{display:flex;gap:4px;padding:8px 10px;background:var(--slate-50);border-bottom:1px solid var(--slate-200);flex-shrink:0}
+.rp-tab{flex:1;padding:6px 4px;border:1.5px solid var(--slate-200);border-radius:6px;background:var(--white);font-size:11px;font-weight:700;cursor:pointer;color:var(--slate-500);font-family:inherit;transition:all .15s;text-align:center}
+.rp-tab:hover{border-color:var(--blue-400);color:var(--blue-700);background:var(--blue-50)}
+.rp-tab.active{background:var(--blue-900);color:var(--white);border-color:var(--blue-900)}
+.rp-tab-panel{flex-shrink:0;max-height:280px;overflow-y:auto;background:var(--white);border-bottom:1px solid var(--slate-200);padding:14px 12px;font-size:12px;line-height:1.65;color:var(--slate-700)}
+.rp-tab-panel.hidden{display:none}
+.rp-tab-panel::-webkit-scrollbar{width:6px}
+.rp-tab-panel::-webkit-scrollbar-thumb{background:var(--slate-300);border-radius:3px}
+.rtp-h{font-size:12px;font-weight:700;color:var(--blue-900);margin:10px 0 5px}
+.rtp-h:first-child{margin-top:0}
+.rtp-rule{background:var(--slate-50);border:1px solid var(--slate-200);border-radius:7px;padding:9px 11px;margin-bottom:8px}
+.rtp-rule-title{font-size:11px;font-weight:700;color:var(--blue-700);margin-bottom:4px}
+.rtp-tags{display:flex;flex-wrap:wrap;gap:4px;margin-top:6px}
+.rtp-tag{background:var(--blue-50);color:var(--blue-700);border:1px solid var(--blue-100);border-radius:20px;padding:2px 8px;font-size:10px;font-weight:600}
+.rtp-eg{background:var(--slate-50);border:1px solid var(--slate-200);border-radius:7px;padding:9px 11px;margin-bottom:8px}
+.rtp-eg-lbl{font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.5px;color:var(--slate-400);margin-bottom:5px}
+.rtp-eg ul{padding-left:14px;margin:0}
+.rtp-eg li{margin-bottom:3px;font-size:11px;color:var(--slate-700)}
+.rtp-rub{background:var(--slate-50);border:1px solid var(--slate-200);border-radius:7px;padding:9px 11px;margin-bottom:8px}
+.rtp-rub-hdr{display:flex;justify-content:space-between;align-items:center;margin-bottom:5px}
+.rtp-rub-name{font-size:12px;font-weight:700;color:var(--slate-800)}
+.rtp-rub-wt{font-size:10px;font-weight:700;background:var(--blue-50);color:var(--blue-700);padding:2px 7px;border-radius:20px}
+.rtp-rub-sc{display:flex;flex-direction:column;gap:3px}
+.rtp-sc{font-size:10px;font-weight:600;padding:3px 8px;border-radius:4px}
+.rtp-sc-a{background:#dcfce7;color:#15803d}
+.rtp-sc-b{background:var(--blue-50);color:var(--blue-700)}
+.rtp-sc-d{background:var(--red-bg);color:var(--red-600)}
+.right-panel.collapsed .rp-tabs,.right-panel.collapsed .rp-tab-panel{display:none}
+
 /* ── Responsive ── */
 @media(max-width:1200px){:root{--chat-w:300px}}
 @media(max-width:900px){:root{--chat-w:260px;--nav-w:175px}}
@@ -423,6 +453,12 @@ html,body{height:100%;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Ro
       <span class="rp-title">💬 AI Assistant</span>
       <button class="rp-toggle" onclick="toggleChat()" title="Collapse">◀</button>
     </div>
+    <div class="rp-tabs">
+      <button class="rp-tab" data-tab="directions" onclick="showRpTab('directions')">📋 Directions</button>
+      <button class="rp-tab" data-tab="examples"   onclick="showRpTab('examples')">✏️ Examples</button>
+      <button class="rp-tab" data-tab="rubric"      onclick="showRpTab('rubric')">📊 Rubric</button>
+    </div>
+    <div class="rp-tab-panel hidden" id="rpTabPanel"></div>
     <div class="chat-messages" id="chatMessages"></div>
     <div class="chat-input-area">
       <div class="chat-input-row">
@@ -533,17 +569,163 @@ function goBack() {
   renderLeftNav();
 }
 
-/* ── Chat: auto-send directions ─────────────────── */
+/* ── Right panel tabs ───────────────────────────── */
+let activeRpTab = null;
+
+function showRpTab(tab) {
+  const panel = document.getElementById('rpTabPanel');
+  const tabs  = document.querySelectorAll('.rp-tab');
+  if (activeRpTab === tab) {
+    activeRpTab = null;
+    panel.classList.add('hidden');
+    tabs.forEach(t => t.classList.remove('active'));
+    return;
+  }
+  activeRpTab = tab;
+  tabs.forEach(t => t.classList.toggle('active', t.dataset.tab === tab));
+  panel.innerHTML = getRpContent(tab);
+  panel.classList.remove('hidden');
+  panel.scrollTop = 0;
+}
+
+function getRpContent(tab) {
+  const nw = currentPath === 'nowork';
+  if (tab === 'directions') return nw ? rpNoWorkDirections() : rpWorkDirections();
+  if (tab === 'examples')   return nw ? rpNoWorkExamples()   : rpWorkExamples();
+  if (tab === 'rubric')     return nw ? rpNoWorkRubric()     : rpWorkRubric();
+  return '';
+}
+
+// Refresh tab content when path is chosen
+function refreshRpTab() { if (activeRpTab) { document.getElementById('rpTabPanel').innerHTML = getRpContent(activeRpTab); } }
+
+/* Work path content */
+function rpWorkDirections() {
+  return `<div class="rtp-rule">
+    <div class="rtp-rule-title">Rule 1 — Always Start With an Action Verb</div>
+    Every bullet must begin with a verb. Never start with "I" or "Was responsible for."
+    <div class="rtp-tags"><span class="rtp-tag">Maintained</span><span class="rtp-tag">Operated</span><span class="rtp-tag">Performed</span><span class="rtp-tag">Assisted</span><span class="rtp-tag">Inspected</span><span class="rtp-tag">Cleaned</span><span class="rtp-tag">Handled</span><span class="rtp-tag">Processed</span><span class="rtp-tag">Completed</span><span class="rtp-tag">Trained</span></div>
+  </div>
+  <div class="rtp-rule">
+    <div class="rtp-rule-title">Rule 2 — Be Specific, Not Vague</div>
+    Name actual tools, equipment, or tasks. <em>"Operated hydraulic lifts and scan tools"</em> beats <em>"used equipment."</em>
+  </div>
+  <div class="rtp-rule">
+    <div class="rtp-rule-title">Rule 3 — Add Numbers When You Can</div>
+    Even a rough estimate helps. <em>"Served 40+ customers per shift"</em> is stronger than <em>"served customers."</em>
+  </div>
+  <div class="rtp-rule">
+    <div class="rtp-rule-title">Rule 4 — 3 Bullets Required Per Job</div>
+    Bullets 1–3 are required. Bullets 4–5 are optional but raise your score.
+  </div>`;
+}
+
+function rpWorkExamples() {
+  return `<div class="rtp-eg"><div class="rtp-eg-lbl">Automotive / Mechanical</div><ul>
+    <li>Performed oil changes, tire rotations, and multi-point inspections on 8–10 vehicles per shift</li>
+    <li>Operated hydraulic lifts, diagnostic scan tools, and tire mounting equipment</li>
+    <li>Maintained a clean work bay and followed all OSHA shop safety procedures</li>
+  </ul></div>
+  <div class="rtp-eg"><div class="rtp-eg-lbl">Retail / Customer Service</div><ul>
+    <li>Processed customer transactions and returns using a POS register system</li>
+    <li>Stocked and rotated product inventory across 12 departments</li>
+    <li>Assisted customers with product selection and answered questions about store policies</li>
+  </ul></div>
+  <div class="rtp-eg"><div class="rtp-eg-lbl">Construction / Trades</div><ul>
+    <li>Assisted journeyman electrician with residential wiring and outlet installation</li>
+    <li>Operated hand and power tools including drills, circular saws, and nail guns</li>
+    <li>Maintained a safe and clean job site in compliance with OSHA standards</li>
+  </ul></div>
+  <div class="rtp-eg"><div class="rtp-eg-lbl">Food Service</div><ul>
+    <li>Prepared and served food orders for up to 80 customers per shift</li>
+    <li>Operated kitchen equipment including fryers, grills, and commercial dishwashers</li>
+    <li>Cleaned and sanitized surfaces per health regulations at end of each shift</li>
+  </ul></div>`;
+}
+
+function rpWorkRubric() {
+  return `<div class="rtp-rub"><div class="rtp-rub-hdr"><span class="rtp-rub-name">Completeness</span><span class="rtp-rub-wt">25%</span></div>
+    <p style="font-size:11px;margin-bottom:5px">All required fields filled: employer, title, start date, and 3+ bullets.</p>
+    <div class="rtp-rub-sc"><span class="rtp-sc rtp-sc-a">A — All fields complete, 3+ bullets</span><span class="rtp-sc rtp-sc-b">B — Minor optional field missing</span><span class="rtp-sc rtp-sc-d">D/F — Required fields blank</span></div>
+  </div>
+  <div class="rtp-rub"><div class="rtp-rub-hdr"><span class="rtp-rub-name">Action Verbs</span><span class="rtp-rub-wt">25%</span></div>
+    <p style="font-size:11px;margin-bottom:5px">Each bullet starts with a strong action verb.</p>
+    <div class="rtp-rub-sc"><span class="rtp-sc rtp-sc-a">A — Most/all bullets start with action verbs</span><span class="rtp-sc rtp-sc-b">B — About half use action verbs</span><span class="rtp-sc rtp-sc-d">D/F — Bullets start with "I" or no verb</span></div>
+  </div>
+  <div class="rtp-rub"><div class="rtp-rub-hdr"><span class="rtp-rub-name">Specificity &amp; Detail</span><span class="rtp-rub-wt">25%</span></div>
+    <p style="font-size:11px;margin-bottom:5px">Bullets describe actual tasks, tools, or equipment.</p>
+    <div class="rtp-rub-sc"><span class="rtp-sc rtp-sc-a">A — Specific tools, tasks, or numbers named</span><span class="rtp-sc rtp-sc-b">B — Reasonable detail, could be more specific</span><span class="rtp-sc rtp-sc-d">D/F — Generic one or two word bullets</span></div>
+  </div>
+  <div class="rtp-rub"><div class="rtp-rub-hdr"><span class="rtp-rub-name">Professionalism</span><span class="rtp-rub-wt">25%</span></div>
+    <p style="font-size:11px;margin-bottom:5px">No slang, no "I", clear writing. Minor grammar is fine.</p>
+    <div class="rtp-rub-sc"><span class="rtp-sc rtp-sc-a">A — Professional tone, no "I", clear</span><span class="rtp-sc rtp-sc-b">B — Minor grammar issues, mostly professional</span><span class="rtp-sc rtp-sc-d">D/F — Heavy slang or hard to understand</span></div>
+  </div>`;
+}
+
+/* No Work path content */
+function rpNoWorkDirections() {
+  return `<div class="rtp-rule">
+    <div class="rtp-rule-title">Rule 1 — Be Specific, Not General</div>
+    Name actual tools, equipment, software, and procedures. A vague paragraph says very little.
+  </div>
+  <div class="rtp-rule">
+    <div class="rtp-rule-title">Rule 2 — Cover All Areas of Your Training</div>
+    <div class="rtp-tags"><span class="rtp-tag">Tools &amp; Equipment</span><span class="rtp-tag">Techniques</span><span class="rtp-tag">Safety Standards</span><span class="rtp-tag">Hands-On Practice</span><span class="rtp-tag">Industry Software</span><span class="rtp-tag">Teamwork</span></div>
+  </div>
+  <div class="rtp-rule">
+    <div class="rtp-rule-title">Rule 3 — Aim for 5–8 Sentences</div>
+    Short paragraphs score lower. Take your time and think through everything you covered.
+  </div>
+  <div class="rtp-rule">
+    <div class="rtp-rule-title">Rule 4 — Write Professionally</div>
+    Complete sentences, no slang. Minor grammar mistakes are fine — just keep it readable.
+  </div>
+  <div class="rtp-rule">
+    <div class="rtp-rule-title">Rule 5 — Only Write What You Actually Learned</div>
+    This paragraph goes directly on your resume. If an employer asks about it, you need to back it up.
+  </div>`;
+}
+
+function rpNoWorkExamples() {
+  return `<div class="rtp-eg"><div class="rtp-eg-lbl">Automotive Technology</div>
+    <p style="font-size:11px;line-height:1.6">During my Automotive Technology program, I developed hands-on skills in vehicle maintenance and repair. I learned to perform oil changes, tire rotations, and multi-point inspections on shop vehicles. I trained on hydraulic lifts, diagnostic scan tools, and torque wrenches. I also studied engine systems, brake components, and suspension fundamentals. Throughout the program I followed OSHA shop safety procedures and developed strong attention to detail.</p>
+  </div>
+  <div class="rtp-eg"><div class="rtp-eg-lbl">Electrical Technology</div>
+    <p style="font-size:11px;line-height:1.6">Through my Electrical Technology program, I gained experience in residential and commercial wiring, outlet installation, and circuit breaker panel work. I learned to read wiring diagrams and blueprints. I trained with hand tools, power tools, conduit benders, and volt meters. My coursework also covered the NEC, grounding procedures, and workplace safety. I developed problem-solving skills by troubleshooting wiring issues in lab simulations.</p>
+  </div>
+  <div class="rtp-eg"><div class="rtp-eg-lbl">Welding / HVAC / Construction</div>
+    <p style="font-size:11px;line-height:1.6">During my [Program] training, I developed practical skills in [main tasks]. I worked with [tools and equipment] to complete assigned projects. I also learned [techniques or safety practices]. Throughout the program I followed all safety standards and developed my ability to [teamwork/communication skill]. I am prepared to apply these skills in an entry-level position.</p>
+  </div>`;
+}
+
+function rpNoWorkRubric() {
+  return `<div class="rtp-rub"><div class="rtp-rub-hdr"><span class="rtp-rub-name">Specific Skills Named</span><span class="rtp-rub-wt">35%</span></div>
+    <p style="font-size:11px;margin-bottom:5px">Did you name real tools, equipment, or procedures?</p>
+    <div class="rtp-rub-sc"><span class="rtp-sc rtp-sc-a">A — Real tools and techniques named</span><span class="rtp-sc rtp-sc-b">B — Some specifics, could name more</span><span class="rtp-sc rtp-sc-d">D/F — Entirely vague</span></div>
+  </div>
+  <div class="rtp-rub"><div class="rtp-rub-hdr"><span class="rtp-rub-name">Program Relevance</span><span class="rtp-rub-wt">25%</span></div>
+    <p style="font-size:11px;margin-bottom:5px">Does it describe your actual trade school training?</p>
+    <div class="rtp-rub-sc"><span class="rtp-sc rtp-sc-a">A — Clearly describes program training</span><span class="rtp-sc rtp-sc-b">B — Mostly on topic, minor gaps</span><span class="rtp-sc rtp-sc-d">D/F — Not related to trade school</span></div>
+  </div>
+  <div class="rtp-rub"><div class="rtp-rub-hdr"><span class="rtp-rub-name">Effort &amp; Length</span><span class="rtp-rub-wt">25%</span></div>
+    <p style="font-size:11px;margin-bottom:5px">Aim for at least 5–8 complete sentences.</p>
+    <div class="rtp-rub-sc"><span class="rtp-sc rtp-sc-a">A — 5+ sentences with real detail</span><span class="rtp-sc rtp-sc-b">B — A few sentences, could go deeper</span><span class="rtp-sc rtp-sc-d">D/F — One or two sentences</span></div>
+  </div>
+  <div class="rtp-rub"><div class="rtp-rub-hdr"><span class="rtp-rub-name">Professional Language</span><span class="rtp-rub-wt">15%</span></div>
+    <p style="font-size:11px;margin-bottom:5px">Clear, professional writing. Minor grammar is fine.</p>
+    <div class="rtp-rub-sc"><span class="rtp-sc rtp-sc-a">A — Clear and professional</span><span class="rtp-sc rtp-sc-b">B — Minor grammar, mostly readable</span><span class="rtp-sc rtp-sc-d">D/F — Heavy slang or hard to read</span></div>
+  </div>`;
+}
+
+/* Chat: brief welcome when path chosen */
 function sendDirectionsWork() {
-  setTimeout(() => {
-    addAIMsg(`Hi ${studentName}! Here are the directions for this assignment:\n\n**What to do:** Enter your work history for each job. Fill in the employer, job title, dates, and bullet points describing what you did. A good job entry has 3–5 solid bullet points.\n\n**Writing great bullet points:**\n• **Start with an action verb** — Maintained, Operated, Performed, Assisted, Cleaned. Never start with "I."\n• **Be specific** — name actual tools or tasks. "Operated hydraulic lifts and scan tools" beats "used equipment."\n• **Add numbers when you can** — "Served 40+ customers per shift" is stronger.\n• **3 bullets per job are required**, 4–5 is even better.\n\nFill in the form on the left. Ask me anything — I can help you write bullet points or describe a job!`);
-  }, 600);
+  refreshRpTab();
+  setTimeout(() => addAIMsg(`Hi ${studentName}! Use the **Directions**, **Examples**, and **Rubric** tabs above to review before you start. Fill in the form on the left and ask me anything — I can help you write bullet points!`), 400);
 }
 
 function sendDirectionsNoWork() {
-  setTimeout(() => {
-    addAIMsg(`Hi ${studentName}! Here are the directions for this assignment:\n\n**What to do:** Write one paragraph describing the skills, tools, and knowledge you gained in your trade school program. This goes directly on your resume.\n\n**Tips for a strong paragraph:**\n• **Name specific tools and equipment** — "hydraulic lifts, diagnostic scan tools" not just "tools"\n• **Cover all areas** — techniques, procedures, safety standards, software, teamwork\n• **Aim for 5–8 sentences** — more detail earns a higher score\n• **Write professionally** — complete sentences, no slang\n\nType your paragraph in the form on the left. Ask me if you need help thinking through what to include from your program!`);
-  }, 600);
+  refreshRpTab();
+  setTimeout(() => addAIMsg(`Hi ${studentName}! Use the **Directions**, **Examples**, and **Rubric** tabs above to review before you start. Type your paragraph in the form on the left and ask me anything!`), 400);
 }
 
 /* ── No Work path ───────────────────────────────── */
