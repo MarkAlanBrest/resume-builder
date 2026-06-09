@@ -52,14 +52,10 @@ html,body{height:100%;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Ro
 .right-panel{width:var(--chat-w);flex-shrink:0;display:flex;flex-direction:column;background:var(--white);border-left:1px solid var(--slate-200);overflow:hidden}
 .chat-hdr{padding:12px 14px;font-size:12px;font-weight:700;color:var(--slate-500);text-transform:uppercase;letter-spacing:.6px;border-bottom:1px solid var(--slate-100);flex-shrink:0}
 
-/* ── Right panel links section ── */
-.rp-links{flex-shrink:0;border-bottom:1px solid var(--slate-200);background:var(--slate-50)}
-.rp-links-toggle{display:flex;align-items:center;justify-content:space-between;cursor:pointer;user-select:none;padding:9px 12px}
-.rp-links-label{font-size:11px;font-weight:700;color:var(--slate-600)}
-.rp-links-arrow{font-size:11px;color:var(--slate-400);transition:transform .2s}
-.rp-links-arrow.open{transform:rotate(180deg)}
-.rp-links-body{padding:0 12px 10px;display:none}
-.rp-links-body.open{display:block}
+/* ── Right panel site dropdown ── */
+.rp-site-row{flex-shrink:0;padding:8px 10px;border-bottom:1px solid var(--slate-200);background:var(--slate-50)}
+.rp-site-row select{width:100%;padding:7px 9px;font-size:12px;font-family:inherit;border:1.5px solid var(--slate-200);border-radius:7px;background:var(--white);color:var(--slate-700);cursor:pointer;outline:none}
+.rp-site-row select:focus{border-color:var(--blue-400)}
 .link-group-lbl{font-size:10px;font-weight:700;color:var(--slate-400);text-transform:uppercase;letter-spacing:.5px;margin:8px 0 5px}
 .link-chips{display:flex;flex-wrap:wrap;gap:4px}
 .chip{display:inline-flex;align-items:center;gap:3px;padding:3px 8px;border-radius:20px;font-size:11px;font-weight:600;text-decoration:none;transition:all .15s;white-space:nowrap;border:1.5px solid transparent}
@@ -149,13 +145,13 @@ html,body{height:100%;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Ro
 /* ── Grade card ── */
 .grade-card{background:var(--white);border-radius:12px;box-shadow:0 1px 8px rgba(0,0,0,.08);overflow:hidden;margin-bottom:16px}
 .grade-hdr{display:flex;align-items:center;gap:16px;padding:20px 22px;border-bottom:1px solid var(--slate-100)}
-.grade-circle{width:72px;height:72px;border-radius:50%;display:flex;flex-direction:column;align-items:center;justify-content:center;flex-shrink:0}
-.grade-circle.A{background:#dcfce7;border:3px solid #16a34a}
-.grade-circle.B{background:#dbeafe;border:3px solid #2563eb}
-.grade-circle.C{background:#fef9c3;border:3px solid #ca8a04}
-.grade-circle.D,.grade-circle.F{background:#fee2e2;border:3px solid #dc2626}
-.grade-letter{font-size:28px;font-weight:900;line-height:1}
-.grade-pts{font-size:11px;font-weight:700;color:var(--slate-500)}
+.grade-circle{width:82px;height:82px;border-radius:50%;display:flex;flex-direction:column;align-items:center;justify-content:center;flex-shrink:0;background:var(--blue-50);border:3px solid var(--blue-700)}
+.grade-circle.hi{background:#dcfce7;border-color:#16a34a}
+.grade-circle.lo{background:#fee2e2;border-color:#dc2626}
+.grade-score{font-size:24px;font-weight:900;color:var(--blue-700);line-height:1}
+.grade-circle.hi .grade-score{color:#15803d}
+.grade-circle.lo .grade-score{color:#dc2626}
+.grade-denom{font-size:11px;font-weight:700;color:var(--slate-400)}
 .grade-hdr-r h3{font-size:17px;font-weight:700;color:var(--slate-900);margin-bottom:4px}
 .grade-hdr-r p{font-size:13px;color:var(--slate-500);line-height:1.5}
 .rubric-row{display:flex;align-items:center;gap:12px;padding:10px 22px;border-bottom:1px solid var(--slate-100)}
@@ -240,14 +236,10 @@ html,body{height:100%;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Ro
     <!-- Right panel: links + AI chat -->
     <div class="right-panel">
       <div class="chat-hdr">💬 AI Grading Assistant</div>
-      <div class="rp-links">
-        <div class="rp-links-toggle" onclick="toggleLinks()">
-          <span class="rp-links-label">🔗 Job Search Sites &amp; Local Help Wanted</span>
-          <span class="rp-links-arrow open" id="linksArrow">▾</span>
-        </div>
-        <div class="rp-links-body open" id="linksBody">
-          <div id="linksInner"></div>
-        </div>
+      <div class="rp-site-row">
+        <select id="siteSelect" onchange="openJobSite(this)">
+          <option value="">🔗 Open a Job Search Site…</option>
+        </select>
       </div>
       <div class="rp-tabs">
         <button class="rp-tab" onclick="showRpTab('directions')">📋 Directions</button>
@@ -367,9 +359,8 @@ function loadTestData() {
   show('jobs');
 }
 
-function toggleLinks() {
-  const b=document.getElementById('linksBody'), a=document.getElementById('linksArrow');
-  const open=b.classList.toggle('open'); a.classList.toggle('open',open);
+function openJobSite(sel) {
+  if (sel.value) { window.open(sel.value, '_blank', 'noopener'); sel.value = ''; }
 }
 
 // ── Right-panel tabs ──────────────────────────────────
@@ -491,56 +482,34 @@ function rpRubric() {
 }
 
 function renderLinks() {
-  const inner = document.getElementById('linksInner');
-  if (!inner) return;
-  const term = studentProgram || '';
-  const q    = term ? encodeURIComponent(term) : '';
+  const sel = document.getElementById('siteSelect');
+  if (!sel) return;
+  const q = studentProgram ? encodeURIComponent(studentProgram) : '';
 
   const SITE_DATA = [
-    // national — search URLs pre-filled with student's program
-    {name:'Indeed',         icon:'📌', type:'nat',
-      url: q ? `https://www.indeed.com/jobs?q=${q}` : 'https://www.indeed.com'},
-    {name:'LinkedIn',       icon:'💼', type:'nat',
-      url: q ? `https://www.linkedin.com/jobs/search/?keywords=${q}` : 'https://www.linkedin.com/jobs/'},
-    {name:'ZipRecruiter',   icon:'⚡', type:'nat',
-      url: q ? `https://www.ziprecruiter.com/jobs/search?search=${q}` : 'https://www.ziprecruiter.com'},
-    {name:'Glassdoor',      icon:'🏢', type:'nat',
-      url: q ? `https://www.glassdoor.com/Job/jobs.htm?sc.keyword=${q}` : 'https://www.glassdoor.com/Job/index.htm'},
-    {name:'Monster',        icon:'👾', type:'nat',
-      url: q ? `https://www.monster.com/jobs/search?q=${q}` : 'https://www.monster.com'},
-    {name:'CareerBuilder',  icon:'🔨', type:'nat',
-      url: q ? `https://www.careerbuilder.com/jobs?keywords=${q}` : 'https://www.careerbuilder.com'},
-    {name:'SimplyHired',    icon:'✅', type:'nat',
-      url: q ? `https://www.simplyhired.com/search?q=${q}` : 'https://www.simplyhired.com'},
-    {name:'USAJobs',        icon:'🇺🇸', type:'nat',
-      url: q ? `https://www.usajobs.gov/search/results/?k=${q}` : 'https://www.usajobs.gov'},
-    // trade
-    {name:'PA CareerLink',  icon:'🏛', type:'trd',
-      url:'https://www.pacareerlink.pa.gov/jponline/'},
-    {name:'Handshake',      icon:'🤝', type:'trd',
-      url: q ? `https://joinhandshake.com/jobs?query=${q}` : 'https://joinhandshake.com'},
-    {name:'Tradesmen Intl', icon:'🔧', type:'trd',
-      url:'https://www.tradesmenintl.com/find-work/'},
-    // local — no structured search param, link to site directly
-    {name:'Vindicator',     icon:'📰', type:'loc', url:'https://www.vindy.com'},
-    {name:'New Castle News',icon:'📰', type:'loc', url:'https://www.ncnewsonline.com'},
-    {name:'Sharon Herald',  icon:'📰', type:'loc', url:'https://www.sharonherald.com'},
+    {name:'Indeed',         group:'National Job Boards', url: q ? `https://www.indeed.com/jobs?q=${q}` : 'https://www.indeed.com'},
+    {name:'LinkedIn',       group:'National Job Boards', url: q ? `https://www.linkedin.com/jobs/search/?keywords=${q}` : 'https://www.linkedin.com/jobs/'},
+    {name:'ZipRecruiter',   group:'National Job Boards', url: q ? `https://www.ziprecruiter.com/jobs/search?search=${q}` : 'https://www.ziprecruiter.com'},
+    {name:'Glassdoor',      group:'National Job Boards', url: q ? `https://www.glassdoor.com/Job/jobs.htm?sc.keyword=${q}` : 'https://www.glassdoor.com/Job/index.htm'},
+    {name:'Monster',        group:'National Job Boards', url: q ? `https://www.monster.com/jobs/search?q=${q}` : 'https://www.monster.com'},
+    {name:'CareerBuilder',  group:'National Job Boards', url: q ? `https://www.careerbuilder.com/jobs?keywords=${q}` : 'https://www.careerbuilder.com'},
+    {name:'SimplyHired',    group:'National Job Boards', url: q ? `https://www.simplyhired.com/search?q=${q}` : 'https://www.simplyhired.com'},
+    {name:'USAJobs',        group:'National Job Boards', url: q ? `https://www.usajobs.gov/search/results/?k=${q}` : 'https://www.usajobs.gov'},
+    {name:'PA CareerLink',  group:'Trade & State',       url:'https://www.pacareerlink.pa.gov/jponline/'},
+    {name:'Handshake',      group:'Trade & State',       url: q ? `https://joinhandshake.com/jobs?query=${q}` : 'https://joinhandshake.com'},
+    {name:'Tradesmen Intl', group:'Trade & State',       url:'https://www.tradesmenintl.com/find-work/'},
+    {name:'Vindicator',     group:'Local Help Wanted',   url:'https://www.vindy.com'},
+    {name:'New Castle News',group:'Local Help Wanted',   url:'https://www.ncnewsonline.com'},
+    {name:'Sharon Herald',  group:'Local Help Wanted',   url:'https://www.sharonherald.com'},
   ];
 
-  const byType = {nat:[], trd:[], loc:[]};
-  SITE_DATA.forEach(s => byType[s.type].push(s));
-  const labels = {nat:'National Job Boards', trd:'Trade &amp; State', loc:'Local Help Wanted'};
+  const groups = {};
+  SITE_DATA.forEach(s => { (groups[s.group] = groups[s.group]||[]).push(s); });
 
-  const searchNote = term
-    ? `<div style="font-size:11px;color:var(--blue-700);background:var(--blue-50);border:1px solid var(--blue-100);border-radius:5px;padding:5px 8px;margin-bottom:8px">🔍 Searching for: <strong>${escHtml(term)}</strong></div>`
-    : `<div style="font-size:11px;color:var(--slate-500);margin-bottom:8px">Enter your program on the info screen to pre-fill searches.</div>`;
-
-  inner.innerHTML = searchNote + ['nat','trd','loc'].map(type =>
-    `<div class="link-group-lbl">${labels[type]}</div>
-    <div class="link-chips">${byType[type].map(s =>
-      `<a class="chip ${type}" href="${s.url}" target="_blank" rel="noopener">${s.icon} ${escHtml(s.name)}</a>`
-    ).join('')}</div>`
-  ).join('');
+  sel.innerHTML = `<option value="">🔗 Open a Job Search Site…</option>` +
+    Object.entries(groups).map(([label, sites]) =>
+      `<optgroup label="${label}">${sites.map(s => `<option value="${s.url}">${s.name}</option>`).join('')}</optgroup>`
+    ).join('');
 }
 
 // ── Nav ───────────────────────────────────────────────
@@ -838,7 +807,8 @@ function renderGrade() {
     return `<div class="loading-ctr"><div style="font-size:36px;margin-bottom:14px">📊</div><div style="font-size:17px;font-weight:600;margin-bottom:6px">Grading your assignment…</div><div style="font-size:14px;color:var(--slate-500)">Reviewing ${doneJobs.length} saved job entries.</div><div class="spinner"></div></div>`;
   }
   const g  = gradeResult;
-  const gc = g.grade==='A'?'A':g.grade==='B'?'B':g.grade==='C'?'C':'D';
+  const sc = g.overall||75;
+  const gc = sc>=85?'hi':sc<70?'lo':'';
   const rubric=[
     {key:'completeness',    label:'Completeness',      weight:'25%'},
     {key:'programRelevance',label:'Program Relevance', weight:'25%'},
@@ -877,7 +847,7 @@ function renderGrade() {
   ${srcNote}
   <div class="grade-card">
     <div class="grade-hdr">
-      <div class="grade-circle ${gc}"><div class="grade-letter">${g.grade||'B'}</div><div class="grade-pts">${g.overall||75}/100</div></div>
+      <div class="grade-circle ${gc}"><div class="grade-score">${sc}</div><div class="grade-denom">/ 100</div></div>
       <div class="grade-hdr-r"><h3>${gradeLabel(g.overall||75)}</h3><p>${escHtml(g.encouragement||'Good work.')}</p></div>
     </div>
     ${rubricRows}
@@ -918,10 +888,14 @@ Grade on 4 criteria (0-100, 25% each):
 - effort: Written responses thorough and show genuine thought? Reward effort and specificity over writing quality.
 - reflection: Did the student research the company? Did they describe what the company does, its size, location, or anything notable from their website? Reward genuine independent research.
 
-Be fair and generous — trade school students may not be strong writers. Genuine effort on all fields = at least 80. Score below 70 only for clearly minimal, fake, or off-topic responses. Note in feedback if they used multiple sources — that's the whole point of this assignment.
+Scoring guidelines — be generous, this is a trade school assignment:
+- A student who filled every field with real content and meets word minimums should score 85–92.
+- Only go below 75 if fields are clearly incomplete, fake, or way under the word minimums.
+- Reward effort and specificity over polished writing quality.
+- Using 3 different job sites is the whole point — note it positively in feedback.
 
-Return ONLY valid JSON:
-{"grade":"B","overall":82,"scores":{"completeness":85,"programRelevance":80,"effort":82,"reflection":80},"feedback":{"completeness":"","programRelevance":"","effort":"","reflection":""},"strengths":"","improvements":"","encouragement":""}`;
+Return ONLY valid JSON (no letter grade, just points):
+{"overall":85,"scores":{"completeness":88,"programRelevance":85,"effort":85,"reflection":82},"feedback":{"completeness":"","programRelevance":"","effort":"","reflection":""},"strengths":"","improvements":"","encouragement":""}`;
 
     const raw=await callAPI(sys,'Grade this assignment.');
     const match=raw.match(/\{[\s\S]*\}/);
@@ -936,36 +910,47 @@ Return ONLY valid JSON:
   localStorage.setItem('empSearch_submission',JSON.stringify({studentName,studentProgram,jobs:doneJobsFinal,gradeResult,submittedAt:new Date().toISOString()}));
   setStatus('grade','done');
   show('grade');
-  addAIMsg(`Grade: **${gradeResult.grade} (${gradeResult.overall}/100)**. ${gradeResult.encouragement||''}\n\nDownload the PDF and submit in Canvas.`);
+  addAIMsg(`Score: **${gradeResult.overall}/100** — ${gradeResult.encouragement||'Good work.'}\n\nDownload the PDF and submit in Canvas.`);
 }
 
 // ── Fallback grader ───────────────────────────────────
 function gradeJS() {
   const doneJobs=jobSlots.filter((_,i)=>jobComplete[i]);
-  let comp=0, rel=75, eff=0, refl=0;
+  let comp=0, rel=80, eff=0, refl=0;
   const prog=(studentProgram||'').toLowerCase();
   const relTerms=prog.split(/\s+/).filter(w=>w.length>3);
   doneJobs.forEach(j=>{
+    // Completeness: all key fields present
     const filled=[j.title,j.company,j.location,j.source,j.requirements,j.whyInterested,j.skillsMatch].filter(f=>f&&f.trim().length>2).length;
-    comp+=(filled/7)*100;
-    if(relTerms.some(t=>[j.title,j.requirements].join(' ').toLowerCase().includes(t))) rel=Math.min(100,rel+8);
-    const rw=wcCount(j.requirements);
-    eff+=rw>=40?88:rw>=20?72:55;
-    const reflW=wcCount(j.skillsNeeded);
-    refl+=reflW>=40?88:reflW>=20?74:reflW>5?58:45;
+    const hasUrl = j.url && j.url.trim().length > 5;
+    comp += Math.min(100, (filled/7)*95 + (hasUrl?5:0));
+    // Program relevance
+    if(relTerms.some(t=>[j.title,j.requirements].join(' ').toLowerCase().includes(t))) rel=Math.min(100,rel+6);
+    // Effort: word counts on requirements + reflections
+    const rw=wcCount(j.requirements), ww=wcCount(j.whyInterested), mw=wcCount(j.skillsMatch);
+    const totalWords=rw+ww+mw;
+    eff+=totalWords>=160?92:totalWords>=100?85:totalWords>=60?75:62;
+    // Company research
+    const cw=wcCount(j.skillsNeeded);
+    refl+=cw>=50?92:cw>=30?85:cw>=15?75:cw>3?65:50;
   });
   const n=doneJobs.length||1;
-  comp=Math.round(comp/n); eff=Math.round(eff/n); refl=Math.round(refl/n); rel=Math.min(95,rel);
+  comp=Math.round(comp/n); eff=Math.round(eff/n); refl=Math.round(refl/n); rel=Math.min(97,rel);
   const uSrc=uniqueSources();
-  if(uSrc.length>=3) comp=Math.min(100,comp+5);
-  const overall=Math.round(comp*.25+rel*.25+eff*.25+refl*.25);
-  const grade=overall>=90?'A':overall>=80?'B':overall>=70?'C':overall>=60?'D':'F';
-  return{grade,overall,
+  // Bonus for using multiple sources — core goal of the assignment
+  if(uSrc.length>=3) { comp=Math.min(100,comp+5); rel=Math.min(100,rel+3); }
+  const overall=Math.max(60, Math.round(comp*.25+rel*.25+eff*.25+refl*.25));
+  return{overall,
     scores:{completeness:comp,programRelevance:rel,effort:eff,reflection:refl},
-    feedback:{completeness:comp>=85?'All fields filled with solid detail.':'Some fields were brief — more detail helps the score.',programRelevance:rel>=80?'Good job choice alignment.':'Try to focus on jobs directly in your trade area.',effort:eff>=85?'Great detail in job requirements.':'More detail in the requirements field will improve this.',reflection:refl>=85?'Good company research — you showed you looked into the employer.':'Visit the company website and write more about what they do and what stood out.'},
-    strengths:`You documented ${doneJobs.length} job${doneJobs.length>1?'s':''} from ${uSrc.length} source${uSrc.length>1?'s':''}.`,
-    improvements:overall<80?'Expand written responses to meet the word count minimums in every field.':'Consider adding more jobs for a stronger submission.',
-    encouragement:grade==='A'?'Excellent job searching!':grade==='B'?'Great work!':grade==='C'?'Good effort — more detail would push this higher.':'Keep working on it.',
+    feedback:{
+      completeness:comp>=90?'All fields complete with good detail.':comp>=80?'Fields are filled in — adding a job URL would push this higher.':'Some fields need more content.',
+      programRelevance:rel>=85?'Great job choosing positions in your trade area.':'Try to pick jobs that connect directly to your program.',
+      effort:eff>=88?'Thorough responses — you clearly put in the work.':eff>=78?'Good effort overall. More detail in your written responses would help.':'Expand your written responses — aim for the word count minimums in every field.',
+      reflection:refl>=88?'Strong company research — you went beyond just the job listing.':refl>=75?'Good start on company research. Add a few more specific details from their website.':'Visit the company website and describe what they do, how big they are, and what stood out.',
+    },
+    strengths:`You researched ${doneJobs.length} job${doneJobs.length>1?'s':''} from ${uSrc.length} different source${uSrc.length>1?'s':''} — that\'s the whole point of this assignment.`,
+    improvements:overall<82?'Focus on expanding written responses to meet the word count targets in every field.':'Strong work. Make sure each company research section mentions specific details from their website.',
+    encouragement:overall>=90?'Excellent work!':overall>=83?'Great job!':overall>=75?'Good effort — a little more detail in your responses would push this higher.':'Keep working at it — more detail in each field will improve your score.',
   };
 }
 
@@ -990,11 +975,11 @@ function downloadPDF() {
     const g=gradeResult;
     sec('Grade Summary');
     doc.setFontSize(22);doc.setFont('helvetica','bold');doc.setTextColor(30,58,138);
-    doc.text(`${g.grade}  (${g.overall}/100)`,M,y);y+=8;
+    doc.text(`${g.overall} / 100`,M,y);y+=8;
     doc.setFontSize(10);doc.setFont('helvetica','normal');doc.setTextColor(60,60,60);
     if(g.encouragement){doc.splitTextToSize(g.encouragement,W).forEach(l=>{chk(6);doc.text(l,M,y);y+=5;});}
     y+=3;
-    [{key:'completeness',label:'Completeness'},{key:'programRelevance',label:'Program Relevance'},{key:'effort',label:'Effort & Detail'},{key:'reflection',label:'Self-Reflection'}].forEach(r=>{
+    [{key:'completeness',label:'Completeness'},{key:'programRelevance',label:'Program Relevance'},{key:'effort',label:'Effort & Detail'},{key:'reflection',label:'Company Research'}].forEach(r=>{
       const sc=g.scores?.[r.key]??75,fb=g.feedback?.[r.key]??'';
       chk(10);doc.setFontSize(9);doc.setFont('helvetica','bold');doc.setTextColor(80,80,80);
       doc.text(`${r.label}: ${sc}/100`,M,y);
