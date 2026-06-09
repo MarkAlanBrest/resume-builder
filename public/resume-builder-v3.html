@@ -2566,7 +2566,7 @@ async function generateResume() {
     saveAs(blob, `${fname}-Resume.docx`);
     setStatus('template','done');
     btn.disabled=false; btn.textContent='Download Again ↓';
-    addAIMsg(`Your resume has been downloaded!${buildData.educationSkills?' An Education Skills section was automatically added based on your program.':''} Change the style or color anytime and click Download Again to try a different look.`);
+    addAIMsg(`Your resume has been downloaded!${buildData.educationSkills?' A Skills Learned section was automatically added based on your program.':''} Change the style or color anytime and click Download Again to try a different look.`);
   } catch(err) { btn.disabled=false; btn.textContent='Generate & Download ↓'; addAIMsg(`Error generating file: ${err.message}`); console.error(err); }
 }
 
@@ -2609,8 +2609,9 @@ function buildClassic(data,color){
   if(c.objective){ch.push(sec('Objective'));ch.push(bodyTxt(c.objective,{after:140}));}
   if(data.workExperience?.length){ch.push(sec('Experience'));data.workExperience.forEach(j=>jobBlock(j).forEach(q=>ch.push(q)));}
   if(data.militaryService?.length){ch.push(sec('Military Service'));data.militaryService.forEach(m=>militaryBlock(m).forEach(q=>ch.push(q)));}
-  if(data.educationSkills){ch.push(sec('Education'));if(data.education?.length){const e=data.education[0];const sub=[e.school,[e.city,e.state].filter(Boolean).join(', '),eduGradDate(e)].filter(Boolean).join(' · ');if(sub)ch.push(bodyTxt(sub,{size:20,italic:true,color:'666666',after:80}));}ch.push(bodyTxt(data.educationSkills,{after:140}));}else if(data.education?.length){ch.push(sec('Education'));data.education.forEach(e=>ch.push(eduBlock(e)));}
+  if(data.education?.length){ch.push(sec('Education'));data.education.forEach(e=>ch.push(eduBlock(e)));}
   if(data.volunteer?.length){ch.push(sec('Volunteer'));data.volunteer.forEach(v=>volunteerBlock(v).forEach(q=>ch.push(q)));}
+  if(data.educationSkills){ch.push(sec('Skills Learned'));ch.push(bodyTxt(data.educationSkills,{after:140}));}
   const _sc=scItems(data);if(_sc.length){ch.push(sec(scLabel(data)));ch.push(skillsCertsGrid(_sc));}
   ch.push(spacer(200));
   return new docx.Document({sections:[{properties:{page:{margin:{top:M,bottom:M,left:M,right:M}}},children:ch}]});
@@ -2627,8 +2628,9 @@ function buildModern(data,color){
   if(c.objective){main.push(mainSec('Objective'));main.push(bodyTxt(c.objective,{after:120}));}
   if(data.workExperience?.length){main.push(mainSec('Experience'));data.workExperience.forEach(j=>jobBlock(j).forEach(q=>main.push(q)));}
   if(data.militaryService?.length){main.push(mainSec('Military Service'));data.militaryService.forEach(m=>militaryBlock(m).forEach(q=>main.push(q)));}
-  if(data.educationSkills){main.push(mainSec('Education'));if(data.education?.length){const e=data.education[0];const sub=[e.school,[e.city,e.state].filter(Boolean).join(', '),eduGradDate(e)].filter(Boolean).join(' · ');if(sub)main.push(bodyTxt(sub,{size:20,italic:true,color:'666666',after:80}));}main.push(bodyTxt(data.educationSkills,{after:120}));}else if(data.education?.length){main.push(mainSec('Education'));data.education.forEach(e=>main.push(eduBlock(e)));}
+  if(data.education?.length){main.push(mainSec('Education'));data.education.forEach(e=>main.push(eduBlock(e)));}
   if(data.volunteer?.length){main.push(mainSec('Volunteer'));data.volunteer.forEach(v=>volunteerBlock(v).forEach(q=>main.push(q)));}
+  if(data.educationSkills){main.push(mainSec('Skills Learned'));main.push(bodyTxt(data.educationSkills,{after:120}));}
   main.push(spacer(200));
   const nb={style:docx.BorderStyle.NONE,size:0,color:'FFFFFF'};
   return new docx.Document({sections:[{properties:{page:{margin:{top:0,bottom:0,left:0,right:0}}},children:[new docx.Table({width:{size:100,type:docx.WidthType.PERCENTAGE},borders:{top:nb,bottom:nb,left:nb,right:nb,insideH:nb,insideV:nb},rows:[new docx.TableRow({children:[new docx.TableCell({width:{size:twip(2.5),type:docx.WidthType.DXA},shading:{fill:ac,type:docx.ShadingType.CLEAR,color:'auto'},margins:{top:twip(.45),bottom:twip(.45),left:twip(.3),right:twip(.25)},children:side}),new docx.TableCell({width:{size:twip(5.0),type:docx.WidthType.DXA},margins:{top:twip(.4),bottom:twip(.4),left:twip(.35),right:twip(.35)},children:main})]})]})]},]});
@@ -2643,8 +2645,9 @@ function buildBold(data,color){
   if(c.objective){ch.push(sec('Objective'));ch.push(bodyTxt(c.objective,{after:120}));}
   if(data.workExperience?.length){ch.push(sec('Experience'));data.workExperience.forEach(j=>jobBlock(j).forEach(q=>ch.push(q)));}
   if(data.militaryService?.length){ch.push(sec('Military Service'));data.militaryService.forEach(m=>militaryBlock(m).forEach(q=>ch.push(q)));}
-  if(data.educationSkills){ch.push(sec('Education'));if(data.education?.length){const e=data.education[0];const sub=[e.school,[e.city,e.state].filter(Boolean).join(', '),eduGradDate(e)].filter(Boolean).join(' · ');if(sub)ch.push(bodyTxt(sub,{size:20,italic:true,color:'666666',after:80}));}ch.push(bodyTxt(data.educationSkills,{after:120}));}else if(data.education?.length){ch.push(sec('Education'));data.education.forEach(e=>ch.push(eduBlock(e)));}
+  if(data.education?.length){ch.push(sec('Education'));data.education.forEach(e=>ch.push(eduBlock(e)));}
   if(data.volunteer?.length){ch.push(sec('Volunteer'));data.volunteer.forEach(v=>volunteerBlock(v).forEach(q=>ch.push(q)));}
+  if(data.educationSkills){ch.push(sec('Skills Learned'));ch.push(bodyTxt(data.educationSkills,{after:120}));}
   const _sc=scItems(data);if(_sc.length){ch.push(sec(scLabel(data)));ch.push(skillsCertsGrid(_sc));}
   ch.push(spacer(200));
   return new docx.Document({sections:[{properties:{page:{margin:{top:0,bottom:bm,left:bm,right:bm}}},children:ch}]});
@@ -2659,8 +2662,9 @@ function buildExecutive(data,color){
   const sec=t=>new docx.Paragraph({tabStops:[{type:docx.TabStopType.RIGHT,position:twip(6.8)}],spacing:{before:300,after:160},children:[new docx.TextRun({text:sectionLabel(t),bold:true,size:26,color:'111111'})],border:{bottom:{style:docx.BorderStyle.SINGLE,size:2,color:'cccccc'}}});
   if(c.objective){ch.push(sec('Professional Summary'));ch.push(bodyTxt(c.objective,{after:120}));}
   if(data.workExperience?.length){ch.push(sec('Experience'));data.workExperience.forEach(job=>{const loc=[job.city,job.state].filter(Boolean).join(', '),end=job.current?'Present':[job.endMonth,job.endYear].filter(Boolean).join(' '),dates=`${[job.startMonth,job.startYear].filter(Boolean).join(' ')} – ${end}`;ch.push(new docx.Paragraph({tabStops:[{type:docx.TabStopType.RIGHT,position:twip(6.8)}],spacing:{before:280,after:60},children:[new docx.TextRun({text:`${job.jobTitle}, ${job.employer}${loc?', '+loc:''}`,bold:true,size:26,color:'1a1a1a'}),new docx.TextRun({text:'\t'+dates,italics:true,size:22,color:'888888'})]}));(job.bulletLines||[]).forEach(b=>ch.push(bullet(b)));});}
-  if(data.educationSkills){ch.push(sec('Education'));if(data.education?.length){const e=data.education[0];const sub=[e.school,[e.city,e.state].filter(Boolean).join(', '),eduGradDate(e)].filter(Boolean).join(' · ');if(sub)ch.push(bodyTxt(sub,{size:20,italic:true,color:'666666',after:80}));}ch.push(bodyTxt(data.educationSkills,{after:120}));}else if(data.education?.length){ch.push(sec('Education'));data.education.forEach(e=>ch.push(eduBlock(e)));}
+  if(data.education?.length){ch.push(sec('Education'));data.education.forEach(e=>ch.push(eduBlock(e)));}
   if(data.volunteer?.length){ch.push(sec('Volunteer'));data.volunteer.forEach(v=>volunteerBlock(v).forEach(q=>ch.push(q)));}
+  if(data.educationSkills){ch.push(sec('Skills Learned'));ch.push(bodyTxt(data.educationSkills,{after:120}));}
   const _sc=scItems(data);if(_sc.length){ch.push(sec(scLabel(data)));ch.push(skillsCertsGrid(_sc));}
   ch.push(spacer(200));
   return new docx.Document({sections:[{properties:{page:{margin:{top:M,bottom:M,left:M,right:M}}},children:ch}]});
@@ -2677,13 +2681,13 @@ function buildFlip(data,color){
   const sideSec=t=>new docx.Paragraph({children:[new docx.TextRun({text:sectionLabel(t),bold:true,size:22,color:st})],border:{bottom:{style:docx.BorderStyle.SINGLE,size:3,color:st==='FFFFFF'?'6699CC':'777777'}},spacing:{before:260,after:120}});
   const _sc=scItems(data);
   if(_sc.length){side.push(sideSec(scLabel(data)));_sc.forEach(s=>side.push(new docx.Paragraph({spacing:{before:0,after:70},children:[new docx.TextRun({text:`• ${s}`,size:20,color:sideContact})]})));}
-  if(data.education?.length && !data.educationSkills){side.push(sideSec('Education'));data.education.forEach(e=>{const f=e.fieldOfStudy?`, ${e.fieldOfStudy}`:'';const loc=[e.city,e.state].filter(Boolean).join(', ');side.push(new docx.Paragraph({spacing:{before:0,after:60},children:[new docx.TextRun({text:`${e.degree}${f}`,bold:true,size:20,color:st})]}));side.push(new docx.Paragraph({spacing:{before:0,after:80},children:[new docx.TextRun({text:[e.school,loc,eduGradDate(e)].filter(Boolean).join(', '),size:19,color:sideContact})]}));});}
+  if(data.education?.length){side.push(sideSec('Education'));data.education.forEach(e=>{const f=e.fieldOfStudy?`, ${e.fieldOfStudy}`:'';const loc=[e.city,e.state].filter(Boolean).join(', ');side.push(new docx.Paragraph({spacing:{before:0,after:60},children:[new docx.TextRun({text:`${e.degree}${f}`,bold:true,size:20,color:st})]}));side.push(new docx.Paragraph({spacing:{before:0,after:80},children:[new docx.TextRun({text:[e.school,loc,eduGradDate(e)].filter(Boolean).join(', '),size:19,color:sideContact})]}));});}
   const mainSec=t=>new docx.Paragraph({children:[new docx.TextRun({text:sectionLabel(t),bold:true,size:26,color:ac})],border:{bottom:{style:docx.BorderStyle.SINGLE,size:4,color:ac}},spacing:{before:260,after:140}});
   if(c.objective){main.push(mainSec('Objective'));main.push(bodyTxt(c.objective,{after:120}));}
   if(data.workExperience?.length){main.push(mainSec('Experience'));data.workExperience.forEach(j=>jobBlock(j).forEach(q=>main.push(q)));}
   if(data.militaryService?.length){main.push(mainSec('Military Service'));data.militaryService.forEach(m=>militaryBlock(m).forEach(q=>main.push(q)));}
   if(data.volunteer?.length){main.push(mainSec('Volunteer'));data.volunteer.forEach(v=>volunteerBlock(v).forEach(q=>main.push(q)));}
-  if(data.educationSkills){main.push(mainSec('Education'));if(data.education?.length){const e=data.education[0];const sub=[e.school,[e.city,e.state].filter(Boolean).join(', '),eduGradDate(e)].filter(Boolean).join(' · ');if(sub)main.push(bodyTxt(sub,{size:20,italic:true,color:'888888',after:80}));}main.push(bodyTxt(data.educationSkills,{after:120}));}
+  if(data.educationSkills){main.push(mainSec('Skills Learned'));main.push(bodyTxt(data.educationSkills,{after:120}));}
   main.push(spacer(200));
   return new docx.Document({sections:[{properties:{page:{margin:{top:0,bottom:0,left:0,right:0}}},children:[new docx.Table({width:{size:100,type:docx.WidthType.PERCENTAGE},borders:{top:nb,bottom:nb,left:nb,right:nb,insideH:nb,insideV:nb},rows:[new docx.TableRow({children:[new docx.TableCell({width:{size:twip(5.0),type:docx.WidthType.DXA},margins:{top:twip(.4),bottom:twip(.4),left:twip(.4),right:twip(.3)},children:main}),new docx.TableCell({width:{size:twip(2.5),type:docx.WidthType.DXA},shading:{fill:ac,type:docx.ShadingType.CLEAR,color:'auto'},margins:{top:twip(.45),bottom:twip(.45),left:twip(.25),right:twip(.3)},children:side})]})]})]},]});
 }
@@ -2699,14 +2703,14 @@ function buildTopLeft(data,color){
   const sideSec=t=>new docx.Paragraph({children:[new docx.TextRun({text:sectionLabel(t),bold:true,size:21,color:'333333'})],border:{bottom:{style:docx.BorderStyle.SINGLE,size:2,color:'CCCCCC'}},spacing:{before:220,after:110}});
   const _sc=scItems(data);
   if(_sc.length){side.push(sideSec(scLabel(data)));_sc.forEach(s=>side.push(new docx.Paragraph({spacing:{before:0,after:70},children:[new docx.TextRun({text:`• ${s}`,size:20,color:'444444'})]})));}
-  if(data.education?.length && !data.educationSkills){side.push(sideSec('Education'));data.education.forEach(e=>{const f=e.fieldOfStudy?`, ${e.fieldOfStudy}`:'';const loc=[e.city,e.state].filter(Boolean).join(', ');side.push(new docx.Paragraph({spacing:{before:0,after:80},children:[new docx.TextRun({text:`${e.degree}${f}`,bold:true,size:20,color:'222222'}),new docx.TextRun({text:`, ${[e.school,loc,eduGradDate(e)].filter(Boolean).join(', ')}`,size:19,color:'666666'})]})  );});}
+  if(data.education?.length){side.push(sideSec('Education'));data.education.forEach(e=>{const f=e.fieldOfStudy?`, ${e.fieldOfStudy}`:'';const loc=[e.city,e.state].filter(Boolean).join(', ');side.push(new docx.Paragraph({spacing:{before:0,after:80},children:[new docx.TextRun({text:`${e.degree}${f}`,bold:true,size:20,color:'222222'}),new docx.TextRun({text:`, ${[e.school,loc,eduGradDate(e)].filter(Boolean).join(', ')}`,size:19,color:'666666'})]})  );});}
   const main=[];
   const mainSec=t=>new docx.Paragraph({children:[new docx.TextRun({text:sectionLabel(t),bold:true,size:26,color:ac})],border:{bottom:{style:docx.BorderStyle.SINGLE,size:4,color:ac}},spacing:{before:240,after:140}});
   if(c.objective){main.push(mainSec('Objective'));main.push(bodyTxt(c.objective,{after:120}));}
   if(data.workExperience?.length){main.push(mainSec('Experience'));data.workExperience.forEach(j=>jobBlock(j).forEach(q=>main.push(q)));}
   if(data.militaryService?.length){main.push(mainSec('Military Service'));data.militaryService.forEach(m=>militaryBlock(m).forEach(q=>main.push(q)));}
   if(data.volunteer?.length){main.push(mainSec('Volunteer'));data.volunteer.forEach(v=>volunteerBlock(v).forEach(q=>main.push(q)));}
-  if(data.educationSkills){main.push(mainSec('Education'));if(data.education?.length){const e=data.education[0];const sub=[e.school,[e.city,e.state].filter(Boolean).join(', '),eduGradDate(e)].filter(Boolean).join(' · ');if(sub)main.push(bodyTxt(sub,{size:20,italic:true,color:'666666',after:80}));}main.push(bodyTxt(data.educationSkills,{after:120}));}
+  if(data.educationSkills){main.push(mainSec('Skills Learned'));main.push(bodyTxt(data.educationSkills,{after:120}));}
   main.push(spacer(200));
   const bodyRow=new docx.TableRow({children:[new docx.TableCell({width:{size:twip(2.3),type:docx.WidthType.DXA},shading:{fill:'EEEEEE',type:docx.ShadingType.CLEAR,color:'auto'},margins:{top:twip(.35),bottom:twip(.35),left:twip(.3),right:twip(.25)},children:side}),new docx.TableCell({width:{size:twip(5.2),type:docx.WidthType.DXA},margins:{top:twip(.35),bottom:twip(.35),left:twip(.35),right:twip(.4)},children:main})]});
   return new docx.Document({sections:[{properties:{page:{margin:{top:0,bottom:0,left:0,right:0}}},children:[new docx.Table({width:{size:100,type:docx.WidthType.PERCENTAGE},borders:{top:nb,bottom:nb,left:nb,right:nb,insideH:nb,insideV:nb},rows:[hdrRow,bodyRow]})]},]});
@@ -2726,13 +2730,13 @@ function buildTopRight(data,color){
   if(data.workExperience?.length){main.push(mainSec('Experience'));data.workExperience.forEach(j=>jobBlock(j).forEach(q=>main.push(q)));}
   if(data.militaryService?.length){main.push(mainSec('Military Service'));data.militaryService.forEach(m=>militaryBlock(m).forEach(q=>main.push(q)));}
   if(data.volunteer?.length){main.push(mainSec('Volunteer'));data.volunteer.forEach(v=>volunteerBlock(v).forEach(q=>main.push(q)));}
-  if(data.educationSkills){main.push(mainSec('Education'));if(data.education?.length){const e=data.education[0];const sub=[e.school,[e.city,e.state].filter(Boolean).join(', '),eduGradDate(e)].filter(Boolean).join(' · ');if(sub)main.push(bodyTxt(sub,{size:20,italic:true,color:'888888',after:80}));}main.push(bodyTxt(data.educationSkills,{after:120}));}
+  if(data.educationSkills){main.push(mainSec('Skills Learned'));main.push(bodyTxt(data.educationSkills,{after:120}));}
   main.push(spacer(200));
   const side=[];
   const sideSec=t=>new docx.Paragraph({children:[new docx.TextRun({text:sectionLabel(t),bold:true,size:22,color:st})],border:{bottom:{style:docx.BorderStyle.SINGLE,size:3,color:st==='FFFFFF'?'6699CC':'777777'}},spacing:{before:240,after:120}});
   const _sc=scItems(data);
   if(_sc.length){side.push(sideSec(scLabel(data)));_sc.forEach(s=>side.push(new docx.Paragraph({spacing:{before:0,after:70},children:[new docx.TextRun({text:`• ${s}`,size:20,color:sideContact})]})));}
-  if(data.education?.length && !data.educationSkills){side.push(sideSec('Education'));data.education.forEach(e=>{const f=e.fieldOfStudy?`, ${e.fieldOfStudy}`:'';const loc=[e.city,e.state].filter(Boolean).join(', ');side.push(new docx.Paragraph({spacing:{before:0,after:60},children:[new docx.TextRun({text:`${e.degree}${f}`,bold:true,size:20,color:st})]}));side.push(new docx.Paragraph({spacing:{before:0,after:80},children:[new docx.TextRun({text:[e.school,loc,eduGradDate(e)].filter(Boolean).join(', '),size:19,color:sideContact})]}));});}
+  if(data.education?.length){side.push(sideSec('Education'));data.education.forEach(e=>{const f=e.fieldOfStudy?`, ${e.fieldOfStudy}`:'';const loc=[e.city,e.state].filter(Boolean).join(', ');side.push(new docx.Paragraph({spacing:{before:0,after:60},children:[new docx.TextRun({text:`${e.degree}${f}`,bold:true,size:20,color:st})]}));side.push(new docx.Paragraph({spacing:{before:0,after:80},children:[new docx.TextRun({text:[e.school,loc,eduGradDate(e)].filter(Boolean).join(', '),size:19,color:sideContact})]}));});}
   const bodyRow=new docx.TableRow({children:[new docx.TableCell({width:{size:twip(5.2),type:docx.WidthType.DXA},margins:{top:twip(.35),bottom:twip(.35),left:twip(.4),right:twip(.3)},children:main}),new docx.TableCell({width:{size:twip(2.3),type:docx.WidthType.DXA},shading:{fill:ac,type:docx.ShadingType.CLEAR,color:'auto'},margins:{top:twip(.35),bottom:twip(.35),left:twip(.25),right:twip(.3)},children:side})]});
   return new docx.Document({sections:[{properties:{page:{margin:{top:0,bottom:0,left:0,right:0}}},children:[new docx.Table({width:{size:100,type:docx.WidthType.PERCENTAGE},borders:{top:nb,bottom:nb,left:nb,right:nb,insideH:nb,insideV:nb},rows:[hdrRow,bodyRow]})]},]});
 }
@@ -2751,8 +2755,9 @@ function buildSplit(data,color){
   if(c.objective){leftCol.push(mkSec('Objective'));leftCol.push(bodyTxt(c.objective,{after:100}));}
   if(data.workExperience?.length){leftCol.push(mkSec('Experience'));data.workExperience.forEach(j=>jobBlock(j).forEach(q=>leftCol.push(q)));}
   if(data.militaryService?.length){rightCol.push(mkSec('Military Service'));data.militaryService.forEach(m=>militaryBlock(m).forEach(q=>rightCol.push(q)));}
-  if(data.educationSkills){rightCol.push(mkSec('Education'));if(data.education?.length){const e=data.education[0];const sub=[e.school,[e.city,e.state].filter(Boolean).join(', '),eduGradDate(e)].filter(Boolean).join(' · ');if(sub)rightCol.push(bodyTxt(sub,{size:20,italic:true,color:'666666',after:80}));}rightCol.push(bodyTxt(data.educationSkills,{after:100}));}else if(data.education?.length){rightCol.push(mkSec('Education'));data.education.forEach(e=>rightCol.push(eduBlock(e)));}
+  if(data.education?.length){rightCol.push(mkSec('Education'));data.education.forEach(e=>rightCol.push(eduBlock(e)));}
   if(data.volunteer?.length){rightCol.push(mkSec('Volunteer'));data.volunteer.forEach(v=>volunteerBlock(v).forEach(q=>rightCol.push(q)));}
+  if(data.educationSkills){rightCol.push(mkSec('Skills Learned'));rightCol.push(bodyTxt(data.educationSkills,{after:100}));}
   const _sc=scItems(data);if(_sc.length){rightCol.push(mkSec(scLabel(data)));_sc.forEach(s=>rightCol.push(new docx.Paragraph({spacing:{before:0,after:80},children:[new docx.TextRun({text:`${selectedBullet} ${s}`,size:22,color:'2a2a2a'})]})));}
   const mkCell=items=>new docx.TableCell({borders:{top:nb,bottom:nb,left:nb,right:nb},margins:{top:twip(.25),bottom:twip(.2),left:twip(.15),right:twip(.15)},children:items.length?items:[new docx.Paragraph({})]});
   ch.push(new docx.Table({width:{size:100,type:docx.WidthType.PERCENTAGE},borders:{top:nb,bottom:nb,left:nb,right:nb,insideH:nb,insideV:nb},rows:[new docx.TableRow({children:[mkCell(leftCol),mkCell(rightCol)]})]}));
