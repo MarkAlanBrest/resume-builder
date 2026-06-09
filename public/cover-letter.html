@@ -62,6 +62,21 @@ html,body{height:100%;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Ro
 .chat-messages::-webkit-scrollbar-thumb{background:var(--slate-300);border-radius:2px}
 .chat-msg.ai .msg-lbl{font-size:10px;font-weight:700;color:var(--slate-400);text-transform:uppercase;letter-spacing:.6px;margin-bottom:3px}
 .chat-msg.ai .msg-bubble{background:var(--slate-50);border:1px solid var(--slate-200);border-radius:0 10px 10px 10px;padding:10px 12px;font-size:13px;color:var(--slate-700);line-height:1.55}
+.chat-msg.user{align-self:flex-end}
+.chat-msg.user .msg-bubble{background:var(--blue-700);color:var(--white);border-radius:10px 0 10px 10px;padding:10px 12px;font-size:13px;line-height:1.55;max-width:230px;word-break:break-word}
+.chat-input-area{flex-shrink:0;border-top:1px solid var(--slate-200);padding:10px}
+.chat-input-row{display:flex;gap:6px;align-items:flex-end}
+.chat-input{flex:1;border:1.5px solid var(--slate-200);border-radius:7px;padding:8px 10px;font-size:13px;font-family:inherit;resize:none;min-height:36px;max-height:90px;outline:none;color:var(--slate-900);background:var(--slate-50)}
+.chat-input:focus{border-color:var(--blue-700);background:var(--white)}
+.chat-send{flex-shrink:0;padding:8px 12px;background:var(--blue-700);color:var(--white);border:none;border-radius:7px;font-size:14px;font-weight:700;cursor:pointer;font-family:inherit;line-height:1}
+.chat-send:hover{background:var(--blue-900)}
+
+/* ── Welcome Card ── */
+.welcome-card{background:var(--white);border-radius:14px;box-shadow:0 2px 16px rgba(0,0,0,.1);padding:40px 32px;text-align:center;max-width:480px;margin:40px auto}
+.welcome-icon{font-size:48px;display:block;margin-bottom:16px}
+.welcome-title{font-size:24px;font-weight:800;color:var(--slate-900);margin-bottom:8px}
+.welcome-sub{font-size:14px;color:var(--slate-500);line-height:1.6;margin-bottom:24px}
+.welcome-actions{display:flex;flex-direction:column;gap:10px;align-items:stretch}
 
 /* ── Cards ── */
 .form-card{background:var(--white);border-radius:12px;box-shadow:0 1px 8px rgba(0,0,0,.08);overflow:hidden;margin-bottom:16px}
@@ -69,16 +84,17 @@ html,body{height:100%;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Ro
 .form-card-body{padding:18px 18px 6px}
 .form-card-footer{padding:12px 18px 14px;display:flex;justify-content:flex-end;gap:8px;background:var(--slate-50);border-top:1px solid var(--slate-100)}
 .prefill-banner{background:var(--blue-50);border:1.5px solid var(--blue-100);border-radius:7px;padding:10px 14px;margin-bottom:14px;font-size:13px;color:var(--blue-700);font-weight:500}
+.prefill-banner.green{background:#f0fdf4;border-color:#bbf7d0;color:#15803d}
 
 /* ── Approval card ── */
 .approval-card{background:var(--white);border-radius:12px;box-shadow:0 1px 8px rgba(0,0,0,.08);overflow:hidden;margin-bottom:16px}
 .approval-hdr{background:var(--green-600);color:var(--white);padding:12px 18px;font-size:14px;font-weight:700;display:flex;align-items:center;gap:8px}
-.approval-body{padding:8px 18px 4px}
+.approval-body{padding:8px 18px 12px}
 .a-row{display:flex;align-items:baseline;gap:10px;padding:8px 0;border-bottom:1px solid var(--slate-100)}
 .a-row:last-child{border-bottom:none}
 .a-label{font-size:11px;font-weight:700;color:var(--slate-400);text-transform:uppercase;letter-spacing:.5px;min-width:90px;flex-shrink:0}
 .a-value{font-size:14px;color:var(--slate-800);line-height:1.55}
-.approval-footer{padding:12px 18px 14px;display:flex;justify-content:flex-end;gap:8px;background:var(--slate-50);border-top:1px solid var(--slate-100)}
+.approval-footer{padding:12px 18px 14px;display:flex;justify-content:space-between;gap:8px;background:var(--slate-50);border-top:1px solid var(--slate-100)}
 
 /* ── Forms ── */
 .f-row{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:12px}
@@ -115,18 +131,20 @@ html,body{height:100%;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Ro
 .upload-drop .drop-sub{font-size:12px;color:var(--slate-400);margin-top:3px}
 .upload-selected{display:flex;align-items:center;gap:10px;padding:10px 14px;background:var(--blue-50);border:1.5px solid var(--blue-100);border-radius:7px;margin-bottom:12px;font-size:13px;color:var(--blue-700);font-weight:600}
 
-/* ── Chat suggestions ── */
-.sugg-card{padding:10px 12px}
-.sugg-label{font-size:11px;font-weight:700;color:var(--slate-500);text-transform:uppercase;letter-spacing:.5px;margin-bottom:8px}
+/* ── Sugg card ── */
 .sugg-item{display:flex;align-items:center;gap:8px;padding:7px 8px;border-radius:6px;border:1.5px solid var(--slate-200);background:var(--slate-50);margin-bottom:6px;cursor:pointer;transition:border-color .15s}
 .sugg-item:hover{border-color:var(--blue-700);background:var(--blue-50)}
-.sugg-item:last-child{margin-bottom:0}
 .sugg-hint{font-size:10px;font-weight:700;color:var(--slate-400);text-transform:uppercase;letter-spacing:.4px;margin-bottom:1px}
 .sugg-text{font-size:13px;color:var(--slate-700);flex:1}
 .sugg-use{flex-shrink:0;border:1.5px solid var(--slate-300);border-radius:5px;background:var(--white);padding:4px 10px;font-size:12px;font-weight:600;cursor:pointer;color:var(--slate-600);font-family:inherit}
 .sugg-use:hover{border-color:var(--blue-700);color:var(--blue-700)}
-.bullet-list{list-style:none;padding:0;margin:4px 0}
-.bullet-list li{padding:3px 0;font-size:14px;color:var(--slate-700)}
+
+/* ── Para editor ── */
+.para-block{margin-bottom:16px}
+.para-label{font-size:11px;font-weight:700;color:var(--slate-400);text-transform:uppercase;letter-spacing:.5px;margin-bottom:6px}
+.para-textarea{width:100%;border:1.5px solid var(--slate-200);border-radius:7px;padding:10px 12px;font-size:13px;font-family:inherit;resize:vertical;line-height:1.65;color:var(--slate-800);background:var(--slate-50);outline:none;transition:border-color .18s}
+.para-textarea:focus{border-color:var(--blue-700);background:var(--white);box-shadow:0 0 0 3px rgba(29,78,216,.12)}
+
 @media(max-width:700px){.right-panel{display:none}.left-nav{width:44px}.nav-label,.nav-check,.nav-heading{display:none}.nav-item{justify-content:center;padding:8px 0}}
 </style>
 </head>
@@ -141,65 +159,138 @@ html,body{height:100%;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Ro
     <div class="right-panel">
       <div class="chat-hdr">💬 AI Assistant</div>
       <div class="chat-messages" id="chatMessages"></div>
+      <div class="chat-input-area">
+        <div class="chat-input-row">
+          <textarea class="chat-input" id="chatInput" rows="1" placeholder="Ask me anything…" onkeydown="handleChatKey(event)" oninput="autoResizeChat(this)"></textarea>
+          <button class="chat-send" onclick="sendChat()">➤</button>
+        </div>
+      </div>
     </div>
   </div>
 </div>
 
 <script>
 // ── Sections ─────────────────────────────────────────
-const SECTIONS=[
-  {key:'personal', label:'Personal Info',       icon:'👤'},
-  {key:'company',  label:'Company Info',         icon:'🏢'},
-  {key:'letter',   label:'Build Cover Letter',   icon:'✉️'},
+const SECTIONS = [
+  {key:'personal', label:'Personal Info',     icon:'👤'},
+  {key:'company',  label:'Company Info',       icon:'🏢'},
+  {key:'letter',   label:'Cover Letter',       icon:'✉️'},
 ];
-const sectionStatus={personal:'pending',company:'pending',letter:'pending'};
-let currentSection='personal';
+const sectionStatus = {personal:'pending', company:'pending', letter:'pending'};
+let currentSection = 'home';
 
 // ── State ─────────────────────────────────────────────
-let personalData={};
-let employerData={};
-let pendingLetter={};
-let selectedResumeFile=null;
-let _lastSuggestedCompany='';
+let personalData   = {};
+let employerData   = {};
+let pendingLetter  = {};
+let resumeSnapshot = {};
+let selectedResumeFile = null;
+let chatHistory    = [];
+let isAIThinking   = false;
+let _lastSuggestedCompany = '';
 
 // ── Init ──────────────────────────────────────────────
-window.addEventListener('DOMContentLoaded',()=>{
+window.addEventListener('DOMContentLoaded', () => {
+  // Load resume data silently
+  try {
+    const saved = JSON.parse(localStorage.getItem('rb_progress') || 'null');
+    if (saved) {
+      resumeSnapshot = saved;
+      const p = saved.personal || {};
+      if (p.firstName && p.lastName && p.email && p.phone) {
+        personalData = {
+          firstName: p.firstName, lastName: p.lastName,
+          email: p.email,         phone:  p.phone,
+          address: p.address||'', city:   p.city||'',
+          state: p.state||'',     zip:    p.zip||'',
+        };
+        setStatus('personal', 'done');
+      }
+    }
+  } catch(e) {}
   renderLeftNav();
-  showSection('personal');
-  addAIMsg('Welcome to the AI Cover Letter Builder! Fill in your personal info to get started — I\'ll check if you have saved resume data.');
-  setTimeout(()=>loadSavedSuggestions(),400);
+  showSection('home');
 });
 
 // ── Nav ───────────────────────────────────────────────
-function renderLeftNav(){
-  const nav=document.getElementById('leftNav');
-  nav.innerHTML=`<div class="nav-heading">Cover Letter</div>`+
-    SECTIONS.map(s=>`<div class="nav-item ${sectionStatus[s.key]==='done'?'done':s.key===currentSection?'active':'pending'}" onclick="showSection('${s.key}')">
+function renderLeftNav() {
+  const nav = document.getElementById('leftNav');
+  nav.innerHTML = `<div class="nav-heading">Cover Letter</div>` +
+    SECTIONS.map(s => `<div class="nav-item ${sectionStatus[s.key]==='done'?'done':s.key===currentSection?'active':'pending'}" onclick="showSection('${s.key}')">
       <div class="nav-icon">${s.icon}</div>
       <span class="nav-label">${s.label}</span>
       <span class="nav-check">✓</span>
     </div>`).join('');
 }
 
-function setStatus(key,status){
-  sectionStatus[key]=status;
+function setStatus(key, status) {
+  sectionStatus[key] = status;
   renderLeftNav();
 }
 
-function showSection(key){
-  currentSection=key;
+function showSection(key) {
+  currentSection = key;
   renderLeftNav();
-  const ci=document.getElementById('centerInner');
-  if(key==='personal') ci.innerHTML=renderPersonalForm();
-  else if(key==='company') ci.innerHTML=renderCompanyForm();
-  else if(key==='letter') ci.innerHTML=renderLetterForm();
+  const ci = document.getElementById('centerInner');
+  if      (key === 'home')     { ci.innerHTML = renderWelcome(); }
+  else if (key === 'personal') { ci.innerHTML = renderPersonalForm(); sendTip('personal'); }
+  else if (key === 'company')  { ci.innerHTML = renderCompanyForm();  sendTip('company');  }
+  else if (key === 'letter')   { ci.innerHTML = renderLetterForm();   sendTip('letter');   }
+}
+
+function sendTip(key) {
+  const tips = {
+    personal: personalData.firstName
+      ? `I've pre-filled your contact info from your saved resume (**${personalData.firstName} ${personalData.lastName}**). Confirm it looks right and continue.`
+      : 'Fill in your contact details — these appear at the top of your cover letter.',
+    company: 'Enter the company name and job title. Paste a job posting URL to auto-fill everything, or type details in manually. The more job description you include, the more tailored your letter will be.',
+    letter: 'I\'ll use your resume skills, experience, and program to write a targeted cover letter. Click **Generate Cover Letter** when you\'re ready.',
+  };
+  if (tips[key]) setTimeout(() => addAIMsg(tips[key]), 300);
+}
+
+// ── Welcome ───────────────────────────────────────────
+function renderWelcome() {
+  const p = resumeSnapshot.personal;
+  const jobCount  = (resumeSnapshot.workExperience||[]).length;
+  const skillCount= (resumeSnapshot.skills||[]).length;
+  const certCount = (resumeSnapshot.certifications||[]).length;
+  const hasData   = !!(p?.firstName);
+
+  const foundParts = [];
+  if (hasData)     foundParts.push(`personal info for **${p.firstName} ${p.lastName}**`);
+  if (jobCount)    foundParts.push(`${jobCount} job${jobCount>1?'s':''}`);
+  if (skillCount)  foundParts.push(`${skillCount} skill${skillCount>1?'s':''}`);
+  if (certCount)   foundParts.push(`${certCount} cert${certCount>1?'s':''}`);
+
+  const banner = hasData
+    ? `<div class="prefill-banner green" style="text-align:left;margin-bottom:20px">
+        ✅ Resume data found — ${foundParts.join(', ')} pre-loaded. Ready to build your letter.
+      </div>`
+    : `<div class="prefill-banner" style="text-align:left;margin-bottom:20px">
+        ℹ️ No saved resume found. You can fill in your info manually or upload a resume file.
+      </div>`;
+
+  const startTarget = sectionStatus.personal === 'done' ? 'company' : 'personal';
+
+  return `<div class="welcome-card">
+    <span class="welcome-icon">✉️</span>
+    <div class="welcome-title">AI Cover Letter Builder</div>
+    <div class="welcome-sub">Answer a few quick questions and I'll write a professional, tailored cover letter using your resume data.</div>
+    ${banner}
+    <div class="welcome-actions">
+      <button class="btn btn-primary btn-lg" onclick="showSection('${startTarget}')">Start Building →</button>
+    </div>
+  </div>`;
 }
 
 // ── Personal Info ─────────────────────────────────────
-function renderPersonalForm(){
-  const p=personalData;
-  const hasSome=p.firstName||p.email;
-  const banner=hasSome?`<div class="prefill-banner">✓ Pre-filled from saved data — confirm or update any field.</div>`:'';
+function renderPersonalForm() {
+  const p = personalData;
+  const prefilled = sectionStatus.personal === 'done';
+  const banner = prefilled
+    ? `<div class="prefill-banner green">✅ Pre-filled from your saved resume — confirm details and continue.</div>`
+    : (p.firstName ? `<div class="prefill-banner">ℹ️ Pre-filled from uploaded resume — confirm or update.</div>` : '');
   return `<div class="section-hdr"><div class="section-hdr-icon">👤</div><div><div class="section-hdr-title">Personal Info</div><div class="section-hdr-sub">Your contact details for the letter header</div></div></div>
   ${banner}
   <div class="form-card">
@@ -224,92 +315,38 @@ function renderPersonalForm(){
     </div>
     <div class="form-card-footer" style="justify-content:space-between">
       <button class="btn btn-ghost" onclick="showUploadOption()">Upload Resume Instead</button>
-      <button class="btn btn-primary" onclick="submitPersonal()">Continue to Company Info →</button>
+      <button class="btn btn-primary" onclick="submitPersonal()">${prefilled ? 'Looks Good — Continue →' : 'Continue to Company Info →'}</button>
     </div>
   </div>`;
 }
 
-function submitPersonal(){
-  const fn=document.getElementById('pFn').value.trim();
-  const ln=document.getElementById('pLn').value.trim();
-  const em=document.getElementById('pEm').value.trim();
-  const ph=document.getElementById('pPh').value.trim();
-  let valid=true;
-  if(!fn){document.getElementById('fg-fn').classList.add('has-error');valid=false;}else document.getElementById('fg-fn').classList.remove('has-error');
-  if(!ln){document.getElementById('fg-ln').classList.add('has-error');valid=false;}else document.getElementById('fg-ln').classList.remove('has-error');
-  if(!em||!em.includes('@')){document.getElementById('fg-em').classList.add('has-error');valid=false;}else document.getElementById('fg-em').classList.remove('has-error');
-  if(!ph){document.getElementById('fg-ph').classList.add('has-error');valid=false;}else document.getElementById('fg-ph').classList.remove('has-error');
-  if(!valid)return;
-  personalData={
-    firstName:fn, lastName:ln, email:em, phone:ph,
-    address:document.getElementById('pAddr').value.trim(),
-    city:document.getElementById('pCity').value.trim(),
-    state:document.getElementById('pState').value.trim().toUpperCase(),
-    zip:document.getElementById('pZip').value.trim(),
+function submitPersonal() {
+  const fn = document.getElementById('pFn').value.trim();
+  const ln = document.getElementById('pLn').value.trim();
+  const em = document.getElementById('pEm').value.trim();
+  const ph = document.getElementById('pPh').value.trim();
+  let valid = true;
+  if (!fn) { document.getElementById('fg-fn').classList.add('has-error'); valid=false; } else document.getElementById('fg-fn').classList.remove('has-error');
+  if (!ln) { document.getElementById('fg-ln').classList.add('has-error'); valid=false; } else document.getElementById('fg-ln').classList.remove('has-error');
+  if (!em || !em.includes('@')) { document.getElementById('fg-em').classList.add('has-error'); valid=false; } else document.getElementById('fg-em').classList.remove('has-error');
+  if (!ph) { document.getElementById('fg-ph').classList.add('has-error'); valid=false; } else document.getElementById('fg-ph').classList.remove('has-error');
+  if (!valid) return;
+  personalData = {
+    firstName: fn, lastName: ln, email: em, phone: ph,
+    address: document.getElementById('pAddr').value.trim(),
+    city:    document.getElementById('pCity').value.trim(),
+    state:   document.getElementById('pState').value.trim().toUpperCase(),
+    zip:     document.getElementById('pZip').value.trim(),
   };
-  setStatus('personal','done');
+  setStatus('personal', 'done');
   addAIMsg(`Personal info saved for **${fn} ${ln}**. Now add the employer details.`);
   showSection('company');
-  setTimeout(()=>addAIMsg('Paste a job posting URL to auto-fill everything, or enter the employer details manually. Type the company name and I\'ll suggest the address.'),500);
-}
-
-// ── Saved data suggestions ─────────────────────────────
-function loadSavedSuggestions(){
-  try{
-    const saved=JSON.parse(localStorage.getItem('rb_progress')||'null');
-    const p=saved?.personal;
-    if(!p?.firstName)return;
-    const fields=[
-      {hint:'First Name',text:p.firstName,field:'pFn'},
-      {hint:'Last Name',text:p.lastName,field:'pLn'},
-      {hint:'Email',text:p.email,field:'pEm'},
-      {hint:'Phone',text:p.phone,field:'pPh'},
-      {hint:'Address',text:p.address,field:'pAddr'},
-      {hint:'City',text:p.city,field:'pCity'},
-      {hint:'State',text:p.state,field:'pState'},
-      {hint:'ZIP',text:p.zip,field:'pZip'},
-    ].filter(f=>f.text);
-    if(!fields.length)return;
-    // Pre-populate personalData quietly
-    personalData={firstName:p.firstName,lastName:p.lastName,email:p.email||'',phone:p.phone||'',address:p.address||'',city:p.city||'',state:p.state||'',zip:p.zip||''};
-    // Re-render to show the pre-fill banner and values
-    if(currentSection==='personal') document.getElementById('centerInner').innerHTML=renderPersonalForm();
-    // Show suggestion card in chat
-    const msgs=document.getElementById('chatMessages');
-    const div=document.createElement('div');div.className='chat-msg ai';
-    const rows=fields.map(f=>`<div class="sugg-item" onclick="applyField('${f.field}','${(f.text||'').replace(/'/g,"\\'")}')">
-      <div style="flex:1"><div class="sugg-hint">${escHtml(f.hint)}</div><div class="sugg-text">${escHtml(f.text)}</div></div>
-      <button class="sugg-use" onclick="event.stopPropagation();applyField('${f.field}','${(f.text||'').replace(/'/g,"\\'")}')">+ Add</button>
-    </div>`).join('');
-    div.innerHTML=`<div class="msg-lbl">Saved Resume Data</div>
-      <div class="msg-bubble sugg-card">
-        <div class="sugg-label">Found data for ${escHtml(p.firstName)} ${escHtml(p.lastName||'')} — click to apply</div>
-        ${rows}
-        <button class="btn btn-primary" style="width:100%;margin-top:10px;padding:8px" onclick="fillAllPersonal()">Fill All Fields</button>
-      </div>`;
-    msgs.appendChild(div);msgs.scrollTop=msgs.scrollHeight;
-    addAIMsg(`Found saved resume data for **${p.firstName} ${p.lastName||''}**. I've pre-filled the fields — review and continue when ready.`);
-  }catch(e){}
-}
-
-function fillAllPersonal(){
-  const fields=['pFn','pLn','pEm','pPh','pAddr','pCity','pState','pZip'];
-  const keys=['firstName','lastName','email','phone','address','city','state','zip'];
-  fields.forEach((id,i)=>{const el=document.getElementById(id);if(el&&personalData[keys[i]])el.value=personalData[keys[i]];});
-  addAIMsg('All fields filled. Review and click Continue when ready.');
-}
-
-function applyField(fieldId,value){
-  const el=document.getElementById(fieldId);if(!el)return;
-  el.value=value;
-  el.style.transition='border-color .3s';el.style.borderColor='var(--blue-700)';
-  setTimeout(()=>{el.style.borderColor='';},1200);
 }
 
 // ── Upload option ─────────────────────────────────────
-function showUploadOption(){
-  const ci=document.getElementById('centerInner');
-  ci.innerHTML=`<div class="section-hdr"><div class="section-hdr-icon">📄</div><div><div class="section-hdr-title">Upload Resume</div><div class="section-hdr-sub">Extract your info from a file</div></div></div>
+function showUploadOption() {
+  const ci = document.getElementById('centerInner');
+  ci.innerHTML = `<div class="section-hdr"><div class="section-hdr-icon">📄</div><div><div class="section-hdr-title">Upload Resume</div><div class="section-hdr-sub">Extract your contact info from a file</div></div></div>
   <div class="form-card">
     <div class="form-card-body" style="padding-bottom:18px">
       <div class="upload-drop" id="uploadDrop" ondragover="event.preventDefault();this.classList.add('drag-over')" ondragleave="this.classList.remove('drag-over')" ondrop="handleDrop(event)" onclick="document.getElementById('clFileInput').click()">
@@ -327,49 +364,48 @@ function showUploadOption(){
   </div>`;
 }
 
-function handleDrop(e){e.preventDefault();document.getElementById('uploadDrop').classList.remove('drag-over');if(e.dataTransfer.files[0])setUploadFile(e.dataTransfer.files[0]);}
-function handleFileSelect(inp){if(inp.files[0])setUploadFile(inp.files[0]);}
-function setUploadFile(file){
-  selectedResumeFile=file;
-  const sel=document.getElementById('uploadSelected');
-  sel.style.display='flex';sel.className='upload-selected';
-  sel.innerHTML=`<span>📎</span><span>${escHtml(file.name)}</span><span style="margin-left:auto;font-weight:400;color:var(--slate-500)">${(file.size/1024).toFixed(0)} KB</span>`;
-  const btn=document.getElementById('extractBtn');btn.disabled=false;btn.style.opacity='1';
+function handleDrop(e) { e.preventDefault(); document.getElementById('uploadDrop').classList.remove('drag-over'); if (e.dataTransfer.files[0]) setUploadFile(e.dataTransfer.files[0]); }
+function handleFileSelect(inp) { if (inp.files[0]) setUploadFile(inp.files[0]); }
+function setUploadFile(file) {
+  selectedResumeFile = file;
+  const sel = document.getElementById('uploadSelected');
+  sel.style.display = 'flex'; sel.className = 'upload-selected';
+  sel.innerHTML = `<span>📎</span><span>${escHtml(file.name)}</span><span style="margin-left:auto;font-weight:400;color:var(--slate-500)">${(file.size/1024).toFixed(0)} KB</span>`;
+  const btn = document.getElementById('extractBtn'); btn.disabled = false; btn.style.opacity = '1';
 }
 
-async function extractResume(){
-  if(!selectedResumeFile)return;
-  const btn=document.getElementById('extractBtn');btn.disabled=true;btn.textContent='Extracting…';
+async function extractResume() {
+  if (!selectedResumeFile) return;
+  const btn = document.getElementById('extractBtn'); btn.disabled = true; btn.textContent = 'Extracting…';
   addAIMsg('Extracting your info from the resume — one moment…');
-  try{
-    const ext=selectedResumeFile.name.split('.').pop().toLowerCase();
-    let text='',useDoc=false,b64='';
-    if(ext==='txt') text=await readAsText(selectedResumeFile);
-    else if(ext==='pdf'){b64=await readAsBase64(selectedResumeFile);useDoc=true;}
-    else if(ext==='docx') text=await readDocx(selectedResumeFile);
-    const instruction=`Extract contact info. Return ONLY valid JSON:
-{"firstName":"","lastName":"","email":"","phone":"","address":"","city":"","state":"","zip":""}`;
+  try {
+    const ext = selectedResumeFile.name.split('.').pop().toLowerCase();
+    let text = '', useDoc = false, b64 = '';
+    if (ext === 'txt')  text = await readAsText(selectedResumeFile);
+    else if (ext === 'pdf')  { b64 = await readAsBase64(selectedResumeFile); useDoc = true; }
+    else if (ext === 'docx') text = await readDocx(selectedResumeFile);
+    const instruction = `Extract contact info. Return ONLY valid JSON:\n{"firstName":"","lastName":"","email":"","phone":"","address":"","city":"","state":"","zip":""}`;
     let messages;
-    if(useDoc) messages=[{role:'user',content:[{type:'document',source:{type:'base64',media_type:'application/pdf',data:b64}},{type:'text',text:instruction}]}];
-    else messages=[{role:'user',content:`${instruction}\n\nResume:\n${text}`}];
-    const raw=await callClaude('',messages,{maxTokens:400});
-    const parsed=JSON.parse(raw.replace(/^```(?:json)?\s*/i,'').replace(/\s*```$/,''));
-    Object.assign(personalData,parsed);
+    if (useDoc) messages = [{role:'user',content:[{type:'document',source:{type:'base64',media_type:'application/pdf',data:b64}},{type:'text',text:instruction}]}];
+    else        messages = [{role:'user',content:`${instruction}\n\nResume:\n${text}`}];
+    const raw = await callClaude('', messages, {maxTokens:400});
+    const parsed = JSON.parse(raw.replace(/^```(?:json)?\s*/i,'').replace(/\s*```$/,''));
+    Object.assign(personalData, parsed);
     showSection('personal');
     addAIMsg(`Extracted info for **${parsed.firstName||''} ${parsed.lastName||''}**. Review the fields and continue.`);
-  }catch(err){
+  } catch(err) {
     addAIMsg('Had trouble reading that file. Try a different format or fill in manually.');
-    btn.disabled=false;btn.textContent='Extract & Fill →';btn.style.opacity='1';
+    btn.disabled = false; btn.textContent = 'Extract & Fill →'; btn.style.opacity = '1';
   }
 }
 
-function readAsText(f){return new Promise((res,rej)=>{const r=new FileReader();r.onload=e=>res(e.target.result);r.onerror=rej;r.readAsText(f);});}
-function readAsBase64(f){return new Promise((res,rej)=>{const r=new FileReader();r.onload=e=>{const b64=btoa(new Uint8Array(e.target.result).reduce((d,b)=>d+String.fromCharCode(b),''));res(b64);};r.onerror=rej;r.readAsArrayBuffer(f);});}
-function readDocx(f){return new Promise((res,rej)=>{const r=new FileReader();r.onload=async e=>{try{const result=await mammoth.extractRawText({arrayBuffer:e.target.result});res(result.value);}catch(err){rej(err);}};r.onerror=rej;r.readAsArrayBuffer(f);});}
+function readAsText(f) { return new Promise((res,rej)=>{ const r=new FileReader(); r.onload=e=>res(e.target.result); r.onerror=rej; r.readAsText(f); }); }
+function readAsBase64(f) { return new Promise((res,rej)=>{ const r=new FileReader(); r.onload=e=>{ const b64=btoa(new Uint8Array(e.target.result).reduce((d,b)=>d+String.fromCharCode(b),'')); res(b64); }; r.onerror=rej; r.readAsArrayBuffer(f); }); }
+function readDocx(f) { return new Promise((res,rej)=>{ const r=new FileReader(); r.onload=async e=>{ try{ const result=await mammoth.extractRawText({arrayBuffer:e.target.result}); res(result.value); }catch(err){rej(err);} }; r.onerror=rej; r.readAsArrayBuffer(f); }); }
 
 // ── Company Info ──────────────────────────────────────
-function renderCompanyForm(){
-  const e=employerData;
+function renderCompanyForm() {
+  const e = employerData;
   return `<div class="section-hdr"><div class="section-hdr-icon">🏢</div><div><div class="section-hdr-title">Company Info</div><div class="section-hdr-sub">Employer details and the job you're applying for</div></div></div>
   <div class="form-card">
     <div class="form-card-hdr">🔗 Job Posting URL <span style="font-weight:400;font-size:12px;opacity:.8">(optional — auto-fills everything)</span></div>
@@ -431,7 +467,7 @@ function renderCompanyForm(){
       <div class="f-row single">
         <div class="f-group">
           <label>Job Description / Key Requirements <span style="font-weight:400;text-transform:none;font-size:11px">(recommended)</span></label>
-          <textarea id="fJobDesc" rows="4" placeholder="Paste key requirements from the job posting — the more detail, the more tailored your letter.">${escHtml(e.jobDesc||'')}</textarea>
+          <textarea id="fJobDesc" rows="5" placeholder="Paste key requirements from the job posting — the more detail, the more tailored your letter.">${escHtml(e.jobDesc||'')}</textarea>
         </div>
       </div>
     </div>
@@ -442,262 +478,313 @@ function renderCompanyForm(){
   </div>`;
 }
 
-function submitCompany(){
-  const company=document.getElementById('fCompany').value.trim();
-  const jobTitle=document.getElementById('fJobTitle').value.trim();
-  let valid=true;
-  if(!company){document.getElementById('fg-company').classList.add('has-error');valid=false;}else document.getElementById('fg-company').classList.remove('has-error');
-  if(!jobTitle){document.getElementById('fg-jobtitle').classList.add('has-error');valid=false;}else document.getElementById('fg-jobtitle').classList.remove('has-error');
-  if(!valid)return;
-  employerData={
-    jobUrl:document.getElementById('fJobUrl').value.trim(),
+function submitCompany() {
+  const company  = document.getElementById('fCompany').value.trim();
+  const jobTitle = document.getElementById('fJobTitle').value.trim();
+  let valid = true;
+  if (!company)  { document.getElementById('fg-company').classList.add('has-error');  valid=false; } else document.getElementById('fg-company').classList.remove('has-error');
+  if (!jobTitle) { document.getElementById('fg-jobtitle').classList.add('has-error'); valid=false; } else document.getElementById('fg-jobtitle').classList.remove('has-error');
+  if (!valid) return;
+  employerData = {
+    jobUrl:         document.getElementById('fJobUrl').value.trim(),
     company, jobTitle,
-    hiringManager:document.getElementById('fHiringManager').value.trim(),
-    companyPhone:document.getElementById('fCompanyPhone').value.trim(),
-    companyStreet:document.getElementById('fCompanyStreet').value.trim(),
-    companyCity:document.getElementById('fCompanyCity').value.trim(),
-    companyState:document.getElementById('fCompanyState').value.trim().toUpperCase(),
-    companyZip:document.getElementById('fCompanyZip').value.trim(),
-    jobDesc:document.getElementById('fJobDesc').value.trim(),
+    hiringManager:  document.getElementById('fHiringManager').value.trim(),
+    companyPhone:   document.getElementById('fCompanyPhone').value.trim(),
+    companyStreet:  document.getElementById('fCompanyStreet').value.trim(),
+    companyCity:    document.getElementById('fCompanyCity').value.trim(),
+    companyState:   document.getElementById('fCompanyState').value.trim().toUpperCase(),
+    companyZip:     document.getElementById('fCompanyZip').value.trim(),
+    jobDesc:        document.getElementById('fJobDesc').value.trim(),
   };
-  setStatus('company','done');
+  setStatus('company', 'done');
   addAIMsg(`Company info saved. Ready to write your cover letter for the **${jobTitle}** position at **${company}**.`);
   showSection('letter');
 }
 
 // ── URL Extraction ────────────────────────────────────
-async function extractFromUrl(){
-  const url=document.getElementById('fJobUrl').value.trim();
-  if(!url){addAIMsg('Paste a job posting URL first.');return;}
-  const btn=document.getElementById('urlExtractBtn');
-  btn.disabled=true;btn.textContent='Fetching…';
+async function extractFromUrl() {
+  const url = document.getElementById('fJobUrl').value.trim();
+  if (!url) { addAIMsg('Paste a job posting URL first.'); return; }
+  const btn = document.getElementById('urlExtractBtn');
+  btn.disabled = true; btn.textContent = 'Fetching…';
   addAIMsg('Fetching the job posting — one moment…');
-  try{
-    const fetchRes=await fetch('/api/fetch-url',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({url})});
-    if(!fetchRes.ok){const e=await fetchRes.json().catch(()=>({}));throw new Error(e.error||'fetch failed');}
-    const{text}=await fetchRes.json();
-    const sys=`Extract job posting details. Return ONLY valid JSON:
-{"company":"","jobTitle":"","street":"","city":"","state":"","zip":"","phone":"","description":""}
-- description: key requirements, max 250 words`;
-    const raw=await callClaude(sys,[{role:'user',content:text}],{maxTokens:600});
-    const data=JSON.parse(raw.replace(/^```(?:json)?\s*/i,'').replace(/\s*```$/,''));
-    const map=[['fCompany',data.company],['fJobTitle',data.jobTitle],['fCompanyStreet',data.street],['fCompanyCity',data.city],['fCompanyState',data.state],['fCompanyZip',data.zip],['fCompanyPhone',data.phone],['fJobDesc',data.description]];
-    const filled=[];
-    map.forEach(([id,val])=>{if(val){const el=document.getElementById(id);if(el){el.value=val;if(id==='fCompany'||id==='fJobTitle') filled.push(val);}}});
+  try {
+    const fetchRes = await fetch('/api/fetch-url', {method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({url})});
+    if (!fetchRes.ok) { const e=await fetchRes.json().catch(()=>({})); throw new Error(e.error||'fetch failed'); }
+    const {text} = await fetchRes.json();
+    const sys = `Extract job posting details. Return ONLY valid JSON:\n{"company":"","jobTitle":"","street":"","city":"","state":"","zip":"","phone":"","description":""}\n- description: key requirements, max 250 words`;
+    const raw = await callClaude(sys,[{role:'user',content:text}],{maxTokens:600});
+    const data = JSON.parse(raw.replace(/^```(?:json)?\s*/i,'').replace(/\s*```$/,''));
+    const map = [['fCompany',data.company],['fJobTitle',data.jobTitle],['fCompanyStreet',data.street],['fCompanyCity',data.city],['fCompanyState',data.state],['fCompanyZip',data.zip],['fCompanyPhone',data.phone],['fJobDesc',data.description]];
+    const filled = [];
+    map.forEach(([id,val])=>{ if(val){ const el=document.getElementById(id); if(el){ el.value=val; if(id==='fCompany'||id==='fJobTitle') filled.push(val); } } });
     addAIMsg(`Extracted from the posting${filled.length?' — found '+filled.join(' at '):''}.  Review the fields and continue.`);
-  }catch(e){
+  } catch(e) {
     addAIMsg(`Could not fetch that URL — the site may block access. Paste the job description manually. (${e.message})`);
   }
-  btn.disabled=false;btn.textContent='Extract →';
+  btn.disabled = false; btn.textContent = 'Extract →';
 }
 
-// ── Employer Chat Suggestions ─────────────────────────
-async function refreshEmployerSuggestions(company){
-  company=company.trim();
-  if(!company||company.length<4||company===_lastSuggestedCompany)return;
-  _lastSuggestedCompany=company;
-  const p=personalData;
-  const locationHint=p.city&&p.state?`near ${p.city}, ${p.state}`:'';
-  const sys=`Return employer contact info for a cover letter. ONLY valid JSON:
-{"street":"","city":"","state":"","zip":"","phone":"","hiringManagerTitle":"","confident":true}
-Company: ${company}${locationHint?'\nLocation: '+locationHint:''}`;
-  try{
-    const raw=await callClaude(sys,[{role:'user',content:'Suggest contact info.'}]);
-    const data=JSON.parse(raw.replace(/^```(?:json)?\s*/i,'').replace(/\s*```$/,''));
-    const items=[];
-    if(data.street) items.push({hint:'Street Address',text:data.street,field:'fCompanyStreet'});
-    if(data.city) items.push({hint:'City',text:data.city,field:'fCompanyCity'});
-    if(data.state) items.push({hint:'State',text:data.state,field:'fCompanyState'});
-    if(data.zip) items.push({hint:'ZIP',text:data.zip,field:'fCompanyZip'});
-    if(data.phone) items.push({hint:'Phone',text:data.phone,field:'fCompanyPhone'});
-    if(data.hiringManagerTitle) items.push({hint:'Likely Hiring Contact',text:data.hiringManagerTitle,field:null});
-    if(!items.length)return;
-    const msgs=document.getElementById('chatMessages');if(!msgs)return;
-    const div=document.createElement('div');div.className='chat-msg ai';
-    const rows=items.map(f=>{
-      const onclick=f.field?`applyField('${f.field}','${f.text.replace(/'/g,"\\'")}')`:'';
-      const btn=f.field?`<button class="sugg-use" onclick="event.stopPropagation();${onclick}">+ Add</button>`:'';
+// ── Employer Suggestions ──────────────────────────────
+async function refreshEmployerSuggestions(company) {
+  company = company.trim();
+  if (!company || company.length < 4 || company === _lastSuggestedCompany) return;
+  _lastSuggestedCompany = company;
+  const p = personalData;
+  const locationHint = p.city && p.state ? `near ${p.city}, ${p.state}` : '';
+  const sys = `Return employer contact info for a cover letter. ONLY valid JSON:\n{"street":"","city":"","state":"","zip":"","phone":"","hiringManagerTitle":"","confident":true}\nCompany: ${company}${locationHint?'\nLocation: '+locationHint:''}`;
+  try {
+    const raw = await callClaude(sys,[{role:'user',content:'Suggest contact info.'}]);
+    const data = JSON.parse(raw.replace(/^```(?:json)?\s*/i,'').replace(/\s*```$/,''));
+    const items = [];
+    if (data.street) items.push({hint:'Street Address',text:data.street,field:'fCompanyStreet'});
+    if (data.city)   items.push({hint:'City',text:data.city,field:'fCompanyCity'});
+    if (data.state)  items.push({hint:'State',text:data.state,field:'fCompanyState'});
+    if (data.zip)    items.push({hint:'ZIP',text:data.zip,field:'fCompanyZip'});
+    if (data.phone)  items.push({hint:'Phone',text:data.phone,field:'fCompanyPhone'});
+    if (data.hiringManagerTitle) items.push({hint:'Likely Hiring Contact',text:data.hiringManagerTitle,field:null});
+    if (!items.length) return;
+    const msgs = document.getElementById('chatMessages'); if (!msgs) return;
+    const div = document.createElement('div'); div.className = 'chat-msg ai';
+    const rows = items.map(f=>{
+      const onclick = f.field ? `applyField('${f.field}','${f.text.replace(/'/g,"\\'")}')` : '';
+      const btn = f.field ? `<button class="sugg-use" onclick="event.stopPropagation();${onclick}">+ Add</button>` : '';
       return `<div class="sugg-item"${f.field?` onclick="${onclick}"`:''}><div style="flex:1"><div class="sugg-hint">${escHtml(f.hint)}</div><div class="sugg-text">${escHtml(f.text)}</div></div>${btn}</div>`;
     }).join('');
-    div.innerHTML=`<div class="msg-lbl">Suggestions for ${escHtml(company)}</div>
-      <div class="msg-bubble sugg-card"><div class="sugg-label">Click + Add to apply</div>${rows}
+    div.innerHTML = `<div class="msg-lbl">Suggestions for ${escHtml(company)}</div>
+      <div class="msg-bubble" style="padding:10px 12px"><div style="font-size:11px;font-weight:700;color:var(--slate-400);text-transform:uppercase;letter-spacing:.5px;margin-bottom:8px">Click + Add to apply</div>${rows}
       ${!data.confident?'<div style="font-size:11px;color:var(--slate-400);margin-top:8px">⚠ Verify before sending</div>':''}</div>`;
-    msgs.appendChild(div);msgs.scrollTop=msgs.scrollHeight;
-  }catch(e){}
+    msgs.appendChild(div); msgs.scrollTop = msgs.scrollHeight;
+  } catch(e) {}
+}
+
+function applyField(fieldId, value) {
+  const el = document.getElementById(fieldId); if (!el) return;
+  el.value = value;
+  el.style.transition = 'border-color .3s'; el.style.borderColor = 'var(--blue-700)';
+  setTimeout(() => { el.style.borderColor = ''; }, 1200);
 }
 
 // ── Build Cover Letter ────────────────────────────────
-function renderLetterForm(){
-  const p=personalData;
-  const e=employerData;
-  const pName=[p.firstName,p.lastName].filter(Boolean).join(' ')||'—';
-  const eName=[e.hiringManager,e.company].filter(Boolean).join(' · ')||e.company||'—';
+function renderLetterForm() {
+  const p = personalData;
+  const e = employerData;
+  const pName = [p.firstName, p.lastName].filter(Boolean).join(' ') || '—';
+  const eName = [e.hiringManager, e.company].filter(Boolean).join(' · ') || '—';
   return `<div class="section-hdr"><div class="section-hdr-icon">✉️</div><div><div class="section-hdr-title">Build Cover Letter</div><div class="section-hdr-sub">Generate, review, and download</div></div></div>
   <div class="approval-card">
-    <div class="approval-hdr">📋 Summary</div>
+    <div class="approval-hdr">📋 Ready to Generate</div>
     <div class="approval-body">
-      <div class="a-row"><span class="a-label">From</span><span class="a-value">${escHtml(pName)}${p.email?' · '+escHtml(p.email):''}</span></div>
+      <div class="a-row"><span class="a-label">From</span><span class="a-value">${escHtml(pName)}${p.email?' &nbsp;·&nbsp; '+escHtml(p.email):''}</span></div>
       <div class="a-row"><span class="a-label">Applying To</span><span class="a-value">${escHtml(eName)}</span></div>
       <div class="a-row"><span class="a-label">Position</span><span class="a-value">${escHtml(e.jobTitle||'—')}</span></div>
-      ${e.jobDesc?`<div class="a-row"><span class="a-label">Job Info</span><span class="a-value" style="font-size:13px;color:var(--slate-500)">${escHtml(e.jobDesc.slice(0,120))}${e.jobDesc.length>120?'…':''}</span></div>`:''}
+      ${resumeSnapshot.personal?.program?`<div class="a-row"><span class="a-label">Program</span><span class="a-value">${escHtml(resumeSnapshot.personal.program)}</span></div>`:''}
+      ${(resumeSnapshot.workExperience||[]).length?`<div class="a-row"><span class="a-label">Experience</span><span class="a-value">${(resumeSnapshot.workExperience||[]).length} job${(resumeSnapshot.workExperience||[]).length>1?'s':''} from resume</span></div>`:''}
+      ${e.jobDesc?`<div class="a-row"><span class="a-label">Job Info</span><span class="a-value" style="font-size:13px;color:var(--slate-500)">${escHtml(e.jobDesc.slice(0,140))}${e.jobDesc.length>140?'…':''}</span></div>`:''}
     </div>
-    <div class="approval-footer" style="justify-content:space-between">
+    <div class="approval-footer">
       <button class="btn btn-ghost" onclick="showSection('company')">← Edit Company</button>
-      <button class="btn btn-primary btn-lg" onclick="generateLetter()">Generate Cover Letter →</button>
+      <button class="btn btn-primary btn-lg" id="genBtn" onclick="generateLetter()">Generate Cover Letter →</button>
     </div>
   </div>`;
 }
 
 // ── Letter Generation ─────────────────────────────────
-async function generateLetter(){
-  const ci=document.getElementById('centerInner');
-  ci.innerHTML=`<div style="text-align:center;padding:80px 20px;color:var(--slate-500)"><div style="font-size:40px;margin-bottom:14px">✍️</div><div style="font-size:16px;font-weight:600">Writing your cover letter…</div></div>`;
-  const p=personalData;
-  const e=employerData;
-  const saved=JSON.parse(localStorage.getItem('rb_progress')||'{}');
-  const skills=(saved?.skills||[]).slice(0,10).join(', ')||'hands-on technical skills';
-  const certs=(saved?.certifications||[]).map(x=>x.name).join(', ')||'';
-  const workSummary=(saved?.workExperience||[]).slice(0,3).map(j=>`${j.jobTitle} at ${j.employer}`).join('; ')||'no prior experience listed';
-  const objective=saved?.careerContext?.objective||'';
-  const program=saved?.personal?.program||'trade';
-  const salutation=e.hiringManager?`Dear ${e.hiringManager},`:'Dear Hiring Manager,';
-  const sys=`You write professional cover letters for trade school students. Return ONLY valid JSON:
+async function generateLetter() {
+  const btn = document.getElementById('genBtn');
+  if (btn) { btn.disabled = true; btn.textContent = 'Writing…'; }
+  const ci = document.getElementById('centerInner');
+  ci.innerHTML = `<div style="text-align:center;padding:80px 20px;color:var(--slate-500)"><div style="font-size:40px;margin-bottom:14px">✍️</div><div style="font-size:16px;font-weight:600">Writing your cover letter…</div><div style="font-size:13px;margin-top:6px;color:var(--slate-400)">Pulling from your resume and tailoring to the job posting</div></div>`;
+  const p  = personalData;
+  const e  = employerData;
+  const rs = resumeSnapshot;
+  const program   = rs.personal?.program || 'trade';
+  const objective = rs.careerContext?.objective || '';
+  const skills    = (rs.skills||[]).slice(0,12).join(', ') || 'hands-on technical skills';
+  const certs     = (rs.certifications||[]).map(x=>x.name).join(', ');
+  const works     = (rs.workExperience||[]).slice(0,3).map(j=>{
+    const bullets = (j.bulletLines||[]).slice(0,2).join('; ');
+    return `- ${j.jobTitle} at ${j.employer}${bullets?' ('+bullets+')':''}`;
+  }).join('\n') || 'No prior experience listed';
+  const military  = (rs.militaryService||[]).map(m=>`${m.rank||''} ${m.branch}${m.jobTitle?', '+m.jobTitle:''}`).filter(Boolean).join('; ');
+  const volunteer = (rs.volunteer||[]).map(v=>`${v.role||'Volunteer'} at ${v.organization}`).join('; ');
+  const education = (rs.education||[]).map(ed=>[ed.degree,ed.fieldOfStudy,ed.school].filter(Boolean).join(' — ')).join('; ');
+  const salutation = e.hiringManager ? `Dear ${e.hiringManager},` : 'Dear Hiring Manager,';
+  const sys = `You write professional cover letters for trade school students. Return ONLY valid JSON:
 {"salutation":"${salutation}","paragraphs":["","",""]}
-- paragraphs: exactly 3 full paragraphs.
-  - Paragraph 1: 2-3 sentences. Reference the specific job title and company. Show genuine interest. Do NOT start with "I am writing to".
-  - Paragraph 2: 3-4 sentences. Connect the student's actual skills, certifications, and experience to the job. Be specific — use real details.
-  - Paragraph 3: 2-3 sentences. Express enthusiasm, request an interview, thank them.
-- Tone: professional trade school. No "I am passionate about", no fluff.
+- Exactly 3 paragraphs.
+- Paragraph 1 (2-3 sentences): Reference the specific job title and company. Show genuine interest. Do NOT start with "I am writing to".
+- Paragraph 2 (3-4 sentences): Connect the student's actual skills, certifications, and work experience to the job requirements. Be specific — use real details from the resume data.
+- Paragraph 3 (2-3 sentences): Express enthusiasm, request an interview, thank them.
+- Tone: professional, confident, trade-focused. No "I am passionate about", no fluff.
 
 Student: ${p.firstName||'Student'} ${p.lastName||''}, ${program} student
 Applying for: ${e.jobTitle} at ${e.company}
 Job requirements: ${e.jobDesc||'Not provided'}
 Career objective: ${objective||'Seeking entry-level position in trade field'}
+Work experience:\n${works}
 Skills: ${skills}
-Certifications: ${certs||'None listed'}
-Experience: ${workSummary}`;
-  try{
-    const raw=await callClaude(sys,[{role:'user',content:'Write the cover letter.'}],{maxTokens:1000});
-    const letter=JSON.parse(raw.replace(/^```(?:json)?\s*/i,'').replace(/\s*```$/,''));
-    if(!Array.isArray(letter.paragraphs)||letter.paragraphs.length<2)throw new Error('bad response');
-    pendingLetter={employer:e,letter};
-    setStatus('letter','done');
+Certifications: ${certs||'None listed'}${military?'\nMilitary: '+military:''}${volunteer?'\nVolunteer: '+volunteer:''}${education?'\nEducation: '+education:''}`;
+  try {
+    const raw = await callClaude(sys, [{role:'user',content:'Write the cover letter.'}], {maxTokens:1200});
+    const letter = JSON.parse(raw.replace(/^```(?:json)?\s*/i,'').replace(/\s*```$/,''));
+    if (!Array.isArray(letter.paragraphs) || letter.paragraphs.length < 2) throw new Error('bad response');
+    pendingLetter = {employer: e, letter};
+    setStatus('letter', 'done');
     showLetterPreview();
-    addAIMsg('Your cover letter is ready! Review each paragraph — edit the downloaded file if anything needs adjusting before you send it.');
-  }catch(e){
+    addAIMsg('Your cover letter is ready! Each paragraph is editable — adjust anything before downloading. Click **Rewrite** to generate a completely new version.');
+  } catch(err) {
     addAIMsg('Had trouble generating the letter — please try again.');
-    showSection('letter');
+    ci.innerHTML = renderLetterForm();
   }
 }
 
-// ── Preview ───────────────────────────────────────────
-function showLetterPreview(){
-  const ci=document.getElementById('centerInner');
-  const p=personalData;
-  const e=pendingLetter.employer||{};
-  const letter=pendingLetter.letter||{};
-  const name=[p.firstName,p.lastName].filter(Boolean).join(' ')||'—';
-  const addressedTo=[e.hiringManager,e.company,[e.companyCity,e.companyState].filter(Boolean).join(', ')].filter(Boolean).join(', ')||e.company||'—';
-  const paraLabels=['Opening','Body','Closing'];
-  const parasHtml=(letter.paragraphs||[]).map((para,i)=>`
-    <div class="a-row" style="display:block;padding:10px 0">
-      <span class="a-label" style="display:block;margin-bottom:6px">${paraLabels[i]||'Paragraph '+(i+1)}</span>
-      <span class="a-value">${escHtml(para)}</span>
+// ── Letter Preview ────────────────────────────────────
+function showLetterPreview() {
+  const ci = document.getElementById('centerInner');
+  const p  = personalData;
+  const e  = pendingLetter.employer || {};
+  const letter = pendingLetter.letter || {};
+  const name = [p.firstName, p.lastName].filter(Boolean).join(' ') || '—';
+  const addressedTo = [e.hiringManager, e.company, [e.companyCity, e.companyState].filter(Boolean).join(', ')].filter(Boolean).join(', ') || e.company || '—';
+  const paraLabels = ['Opening Paragraph', 'Body Paragraph', 'Closing Paragraph'];
+  const parasHtml = (letter.paragraphs||[]).map((para,i)=>`
+    <div class="para-block">
+      <div class="para-label">${paraLabels[i]||'Paragraph '+(i+1)}</div>
+      <textarea class="para-textarea" id="para${i}" rows="5">${escHtml(para)}</textarea>
     </div>`).join('');
-  ci.innerHTML=`<div class="section-hdr"><div class="section-hdr-icon">✉️</div><div><div class="section-hdr-title">Cover Letter</div><div class="section-hdr-sub">Review before downloading</div></div></div>
-  <div class="approval-card">
-    <div class="approval-hdr">✓ Cover Letter — Review</div>
-    <div class="approval-body">
-      <div class="a-row"><span class="a-label">From</span><span class="a-value">${escHtml(name)}</span></div>
-      <div class="a-row"><span class="a-label">To</span><span class="a-value">${escHtml(addressedTo)}</span></div>
-      <div class="a-row"><span class="a-label">Position</span><span class="a-value">${escHtml(e.jobTitle||'—')}</span></div>
-      <div class="a-row"><span class="a-label">Salutation</span><span class="a-value">${escHtml(letter.salutation||'Dear Hiring Manager,')}</span></div>
-      ${parasHtml}
-    </div>
-    <div class="approval-footer" style="justify-content:space-between">
-      <button class="btn btn-ghost" onclick="showSection('letter')">← Regenerate</button>
-      <div style="display:flex;gap:8px">
-        <button class="btn btn-ghost" onclick="generateLetter()">Rewrite</button>
-        <button class="btn btn-confirm btn-lg" onclick="downloadLetter()">Download .docx ↓</button>
+  ci.innerHTML = `<div class="section-hdr"><div class="section-hdr-icon">✉️</div><div><div class="section-hdr-title">Your Cover Letter</div><div class="section-hdr-sub">Edit any paragraph directly, then download</div></div></div>
+  <div class="form-card" style="margin-bottom:16px">
+    <div class="form-card-hdr">✓ Ready to Download</div>
+    <div class="form-card-body" style="padding-bottom:4px">
+      <div style="display:flex;gap:24px;flex-wrap:wrap;margin-bottom:14px">
+        <div><div style="font-size:10px;font-weight:700;color:var(--slate-400);text-transform:uppercase;letter-spacing:.5px;margin-bottom:3px">From</div><div style="font-size:13px;color:var(--slate-700)">${escHtml(name)}</div></div>
+        <div><div style="font-size:10px;font-weight:700;color:var(--slate-400);text-transform:uppercase;letter-spacing:.5px;margin-bottom:3px">To</div><div style="font-size:13px;color:var(--slate-700)">${escHtml(addressedTo)}</div></div>
+        <div><div style="font-size:10px;font-weight:700;color:var(--slate-400);text-transform:uppercase;letter-spacing:.5px;margin-bottom:3px">Position</div><div style="font-size:13px;color:var(--slate-700)">${escHtml(e.jobTitle||'—')}</div></div>
       </div>
+      <div style="font-size:12px;font-weight:700;color:var(--slate-700);margin-bottom:4px;border-top:1px solid var(--slate-100);padding-top:12px">${escHtml(letter.salutation||'Dear Hiring Manager,')}</div>
+      ${parasHtml}
+      <div style="font-size:13px;color:var(--slate-700);margin-top:4px;margin-bottom:12px">Sincerely,<br><strong>${escHtml(name)}</strong></div>
+    </div>
+    <div class="form-card-footer">
+      <button class="btn btn-ghost" onclick="generateLetter()">🔄 Rewrite</button>
+      <button class="btn btn-confirm btn-lg" onclick="downloadLetter()">Download .docx ↓</button>
     </div>
   </div>`;
 }
 
 // ── Word Doc ──────────────────────────────────────────
-function twip(inches){return Math.round(inches*1440);}
+function twip(inches) { return Math.round(inches * 1440); }
 
-async function downloadLetter(){
-  const p=personalData;
-  const e=pendingLetter.employer||{};
-  const letter=pendingLetter.letter||{};
-  const M=twip(1.1);
-  const BODY=24,SMALL=22,NAME=30;
-  const LS={line:276,lineRule:'auto'};
-  const para=(t,opts={})=>new docx.Paragraph({
-    spacing:{before:0,after:opts.after!==undefined?opts.after:0,...(opts.before?{before:opts.before}:{}),...LS},
-    children:[new docx.TextRun({text:t,size:opts.size||BODY,color:opts.color||'1a1a1a',bold:!!opts.bold,italics:!!opts.italic})]
+async function downloadLetter() {
+  const p = personalData;
+  const e = pendingLetter.employer || {};
+  const letter = pendingLetter.letter || {};
+  // Read paragraphs from editable textareas if present
+  const paragraphs = (letter.paragraphs||[]).map((_,i) => {
+    const el = document.getElementById('para'+i);
+    return el ? el.value.trim() : _;
   });
-  const blank=(pts=240)=>new docx.Paragraph({spacing:{before:0,after:pts}});
-  const ch=[];
-  const name=[p.firstName,p.lastName].filter(Boolean).join(' ')||'';
-  // Student header
-  ch.push(para(name,{size:NAME,bold:true,color:'111111',after:80}));
-  if(p.address) ch.push(para(p.address,{size:SMALL,color:'444444',after:40}));
-  const cityStateZip=[[p.city,p.state].filter(Boolean).join(', '),p.zip].filter(Boolean).join(' ');
-  if(cityStateZip) ch.push(para(cityStateZip,{size:SMALL,color:'444444',after:40}));
-  const contactLine=[p.email,p.phone].filter(Boolean).join('   |   ');
-  if(contactLine) ch.push(para(contactLine,{size:SMALL,color:'444444',after:120}));
-  // Rule
+  const M = twip(1.1);
+  const BODY=24, SMALL=22, NAME=30;
+  const LS = {line:276, lineRule:'auto'};
+  const para = (t, opts={}) => new docx.Paragraph({
+    spacing:{before:0, after:opts.after!==undefined?opts.after:0, ...(opts.before?{before:opts.before}:{}), ...LS},
+    children:[new docx.TextRun({text:t, size:opts.size||BODY, color:opts.color||'1a1a1a', bold:!!opts.bold, italics:!!opts.italic})]
+  });
+  const blank = (pts=240) => new docx.Paragraph({spacing:{before:0,after:pts}});
+  const ch = [];
+  const name = [p.firstName, p.lastName].filter(Boolean).join(' ') || '';
+  ch.push(para(name, {size:NAME, bold:true, color:'111111', after:80}));
+  if (p.address) ch.push(para(p.address, {size:SMALL, color:'444444', after:40}));
+  const csz = [[p.city, p.state].filter(Boolean).join(', '), p.zip].filter(Boolean).join(' ');
+  if (csz) ch.push(para(csz, {size:SMALL, color:'444444', after:40}));
+  const contactLine = [p.email, p.phone].filter(Boolean).join('   |   ');
+  if (contactLine) ch.push(para(contactLine, {size:SMALL, color:'444444', after:120}));
   ch.push(new docx.Paragraph({border:{bottom:{style:docx.BorderStyle.SINGLE,size:4,color:'333333'}},spacing:{before:0,after:300}}));
-  // Date
-  const today=new Date().toLocaleDateString('en-US',{year:'numeric',month:'long',day:'numeric'});
-  ch.push(para(today,{after:260}));
-  // Employer block
-  if(e.hiringManager) ch.push(para(e.hiringManager,{after:40}));
-  if(e.company) ch.push(para(e.company,{after:40}));
-  if(e.companyStreet) ch.push(para(e.companyStreet,{after:40}));
-  const empCityLine=[[e.companyCity,e.companyState].filter(Boolean).join(', '),e.companyZip].filter(Boolean).join(' ');
-  if(empCityLine) ch.push(para(empCityLine,{after:40}));
-  if(e.companyPhone) ch.push(para(e.companyPhone,{after:40}));
-  if(e.company) ch.push(blank(280));
-  // Salutation
-  ch.push(para(letter.salutation||'Dear Hiring Manager,',{after:260}));
-  // Paragraphs
-  (letter.paragraphs||[]).forEach(p=>ch.push(para(p,{after:240})));
-  // Sign-off
-  ch.push(para('Sincerely,',{after:360}));
-  ch.push(para(name,{bold:true,after:60}));
-  const prog=JSON.parse(localStorage.getItem('rb_progress')||'{}')?.personal?.program||'';
-  if(prog) ch.push(para(prog,{size:SMALL,color:'555555',after:0}));
-  const doc=new docx.Document({sections:[{properties:{page:{margin:{top:M,bottom:M,left:M,right:M}}},children:ch}]});
-  const blob=await docx.Packer.toBlob(doc);
-  const fname=[p.firstName,p.lastName].filter(Boolean).join('-')||'Cover-Letter';
-  saveAs(blob,`${fname}-Cover-Letter.docx`);
+  const today = new Date().toLocaleDateString('en-US',{year:'numeric',month:'long',day:'numeric'});
+  ch.push(para(today, {after:260}));
+  if (e.hiringManager)  ch.push(para(e.hiringManager, {after:40}));
+  if (e.company)        ch.push(para(e.company, {after:40}));
+  if (e.companyStreet)  ch.push(para(e.companyStreet, {after:40}));
+  const empCity = [[e.companyCity, e.companyState].filter(Boolean).join(', '), e.companyZip].filter(Boolean).join(' ');
+  if (empCity)          ch.push(para(empCity, {after:40}));
+  if (e.companyPhone)   ch.push(para(e.companyPhone, {after:40}));
+  if (e.company)        ch.push(blank(280));
+  ch.push(para(letter.salutation||'Dear Hiring Manager,', {after:260}));
+  paragraphs.forEach(p => ch.push(para(p, {after:240})));
+  ch.push(para('Sincerely,', {after:360}));
+  ch.push(para(name, {bold:true, after:60}));
+  const prog = resumeSnapshot.personal?.program || '';
+  if (prog) ch.push(para(prog, {size:SMALL, color:'555555', after:0}));
+  const doc = new docx.Document({sections:[{properties:{page:{margin:{top:M,bottom:M,left:M,right:M}}},children:ch}]});
+  const blob = await docx.Packer.toBlob(doc);
+  const fname = [p.firstName, p.lastName].filter(Boolean).join('-') || 'Cover-Letter';
+  saveAs(blob, `${fname}-Cover-Letter.docx`);
   addAIMsg('Downloaded! Open in Word to make any final edits before sending. Good luck! 🎉');
 }
 
+// ── Chat ──────────────────────────────────────────────
+async function sendChat() {
+  const inp = document.getElementById('chatInput');
+  const text = inp.value.trim();
+  if (!text || isAIThinking) return;
+  inp.value = ''; inp.style.height = '';
+  const msgs = document.getElementById('chatMessages');
+  const userDiv = document.createElement('div');
+  userDiv.className = 'chat-msg user';
+  userDiv.innerHTML = `<div class="msg-bubble">${escHtml(text)}</div>`;
+  msgs.appendChild(userDiv);
+  msgs.scrollTop = 99999;
+  chatHistory.push({role:'user', content:text});
+  isAIThinking = true;
+  const typing = document.createElement('div');
+  typing.id = 'chatTyping'; typing.className = 'chat-msg ai';
+  typing.innerHTML = '<div class="msg-lbl">AI</div><div class="msg-bubble" style="color:var(--slate-400)">Thinking…</div>';
+  msgs.appendChild(typing); msgs.scrollTop = 99999;
+  try {
+    const sys = `You are an AI assistant helping a trade school student write a professional cover letter. Be concise and helpful. Context: applying for ${employerData.jobTitle||'a trade position'} at ${employerData.company||'a company'}.`;
+    const reply = await callClaude(sys, chatHistory);
+    chatHistory.push({role:'assistant', content:reply});
+    typing.remove();
+    addAIMsg(reply);
+  } catch(err) {
+    typing.remove();
+    addAIMsg('Connection error — please try again.');
+  }
+  isAIThinking = false;
+}
+
+function handleChatKey(e) { if (e.key==='Enter' && !e.shiftKey) { e.preventDefault(); sendChat(); } }
+function autoResizeChat(el) { el.style.height='auto'; el.style.height=Math.min(el.scrollHeight,90)+'px'; }
+
 // ── Claude API ────────────────────────────────────────
-async function callClaude(system,messages,opts){
-  const body={model:'claude-sonnet-4-6',max_tokens:(opts&&opts.maxTokens)||2048,messages};
-  if(system)body.system=system;
-  const controller=new AbortController();
-  const timer=setTimeout(()=>controller.abort(),40000);
-  try{
-    const res=await fetch('/api/claude',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(body),signal:controller.signal});
-    if(!res.ok){const e=await res.json().catch(()=>({}));throw new Error(e.error||`Server error ${res.status}`);}
-    const data=await res.json();
+async function callClaude(system, messages, opts) {
+  const body = {model:'claude-sonnet-4-6', max_tokens:(opts&&opts.maxTokens)||2048, messages};
+  if (system) body.system = system;
+  const controller = new AbortController();
+  const timer = setTimeout(() => controller.abort(), 45000);
+  try {
+    const res = await fetch('/api/claude', {method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(body),signal:controller.signal});
+    if (!res.ok) { const e=await res.json().catch(()=>({})); throw new Error(e.error||`Server error ${res.status}`); }
+    const data = await res.json();
     return data.content[0].text;
-  }finally{clearTimeout(timer);}
+  } finally { clearTimeout(timer); }
 }
 
 // ── Helpers ───────────────────────────────────────────
-function escHtml(str){if(!str)return '';const d=document.createElement('div');d.appendChild(document.createTextNode(String(str)));return d.innerHTML;}
-function addAIMsg(text){
-  const msgs=document.getElementById('chatMessages');if(!msgs)return;
-  const div=document.createElement('div');div.className='chat-msg ai';
-  div.innerHTML=`<div class="msg-lbl">AI</div><div class="msg-bubble">${escHtml(text).replace(/\*\*(.+?)\*\*/g,'<strong>$1</strong>').replace(/\n/g,'<br>')}</div>`;
-  msgs.appendChild(div);msgs.scrollTop=msgs.scrollHeight;
+function escHtml(str) {
+  if (!str) return '';
+  const d = document.createElement('div');
+  d.appendChild(document.createTextNode(String(str)));
+  return d.innerHTML;
+}
+
+function addAIMsg(text) {
+  const msgs = document.getElementById('chatMessages'); if (!msgs) return;
+  const div = document.createElement('div'); div.className = 'chat-msg ai';
+  div.innerHTML = `<div class="msg-lbl">AI</div><div class="msg-bubble">${escHtml(text).replace(/\*\*(.+?)\*\*/g,'<strong>$1</strong>').replace(/\n/g,'<br>')}</div>`;
+  msgs.appendChild(div); msgs.scrollTop = msgs.scrollHeight;
 }
 </script>
 </body>
