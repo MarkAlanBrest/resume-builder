@@ -630,8 +630,8 @@
     <div class="card">
       <div class="grade-hdr">
         <div class="grade-circle" id="gradeCircle">
-          <div class="gl" id="gradeLetter">B</div>
-          <div class="gp" id="gradePoints">84 pts</div>
+          <div class="gl" id="gradePoints">84</div>
+          <div class="gp">pts</div>
         </div>
         <div class="grade-meta">
           <h3 id="gradeHeadline">Good Work!</h3>
@@ -1081,8 +1081,7 @@ function showGradeResult() {
   // Circle
   const circle = document.getElementById('gradeCircle');
   circle.className = 'grade-circle gc-' + ltr.toLowerCase();
-  document.getElementById('gradeLetter').textContent = ltr;
-  document.getElementById('gradePoints').textContent  = (g.overall || 0) + ' pts';
+  document.getElementById('gradePoints').textContent  = (g.overall || 0);
 
   // Summary
   const headlines = { A:'Excellent Work!', B:'Good Work!', C:'Nice Start!', D:'Needs Improvement', F:'Keep Practicing' };
