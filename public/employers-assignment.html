@@ -331,7 +331,19 @@
 <!-- ══════════════════════════════════════════════
      SCREEN 2B — Work History Job Entry Form
 ══════════════════════════════════════════════════ -->
-<div id="screenWorkForm" hidden>
+<!-- ══════════════════════════════════════════════
+     SCREEN 2B-HELP — Work History Instructions
+══════════════════════════════════════════════════ -->
+<div id="screenWorkHelp" hidden>
+
+  <!-- CTA banner -->
+  <div style="background:var(--blue); border-radius:12px; padding:28px 32px; text-align:center; margin-bottom:24px;">
+    <div style="font-size:22px; font-weight:800; color:#fff; margin-bottom:8px;">Before You Begin</div>
+    <div style="font-size:15px; color:rgba(255,255,255,.8); margin-bottom:24px; max-width:520px; margin-left:auto; margin-right:auto;">Review the directions, examples, and grading criteria below. When you're ready, click the button to start entering your work history.</div>
+    <button onclick="startWorkForm()" style="background:#fff; color:var(--blue); font-size:16px; font-weight:800; padding:16px 44px; border-radius:10px; border:none; cursor:pointer; font-family:inherit; box-shadow:0 4px 12px rgba(0,0,0,.15);">
+      Start Assignment →
+    </button>
+  </div>
 
   <!-- Help button bar -->
   <div style="display:flex; gap:10px; margin-bottom:16px; flex-wrap:wrap;">
@@ -508,6 +520,19 @@
     </div>
   </div>
 
+  <!-- Second "Start Assignment" button at the bottom for students who scroll through -->
+  <div style="text-align:center; padding:8px 0 4px;">
+    <button onclick="startWorkForm()" style="background:var(--blue); color:#fff; font-size:15px; font-weight:700; padding:14px 40px; border-radius:10px; border:none; cursor:pointer; font-family:inherit;">
+      Start Assignment →
+    </button>
+  </div>
+
+</div>
+
+<!-- ══════════════════════════════════════════════
+     SCREEN 2B-FORM — Job Entry Form
+══════════════════════════════════════════════════ -->
+<div id="screenWorkForm" hidden>
   <div class="card">
     <div class="card-title" id="formTitle">Add a Job</div>
     <div class="card-sub">Fill in the details for this position. Bullet points describe what you did — at least 3 are required.</div>
@@ -677,7 +702,7 @@ let submissionId  = null;
 let gradeResult   = null;
 
 /* ── Screen navigation ─────────────────────────────────── */
-const SCREENS = ['screenWelcome','screenNoWork','screenWorkForm','screenJobsReview','screenGrading'];
+const SCREENS = ['screenWelcome','screenNoWork','screenWorkHelp','screenWorkForm','screenJobsReview','screenGrading'];
 function show(id) {
   SCREENS.forEach(s => {
     const el = document.getElementById(s);
@@ -710,11 +735,15 @@ function choosePath(path) {
   if (path === 'nowork') {
     show('screenNoWork');
   } else {
-    editingIndex = -1;
-    clearJobForm();
-    document.getElementById('formTitle').textContent = 'Add Your First Job';
-    show('screenWorkForm');
+    show('screenWorkHelp');
   }
+}
+
+function startWorkForm() {
+  editingIndex = -1;
+  clearJobForm();
+  document.getElementById('formTitle').textContent = 'Add Your First Job';
+  show('screenWorkForm');
 }
 
 function goBack() { show('screenWelcome'); }
@@ -885,7 +914,7 @@ function saveJob() {
 function cancelJobForm() {
   editingIndex = -1;
   if (jobs.length > 0) { show('screenJobsReview'); }
-  else { show('screenWelcome'); }
+  else { show('screenWorkHelp'); }
 }
 
 function addAnotherJob() {
