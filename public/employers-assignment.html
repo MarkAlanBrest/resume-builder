@@ -15,7 +15,7 @@
   --amber-900:#92400e;--amber-bg:#fffbeb;--amber-bd:#fde68a;
   --red-600:#dc2626;--red-bg:#fef2f2;--red-bd:#fecaca;
   --white:#ffffff;
-  --nav-w:195px;--chat-w:360px;
+  --nav-w:195px;--chat-w:900px;
 }
 html,body{height:100%;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;background:#64748b}
 
@@ -254,9 +254,13 @@ html,body{height:100%;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Ro
 .right-panel.collapsed .rp-tabs,.right-panel.collapsed .rp-tab-panel{display:none}
 
 /* ── Responsive ── */
-@media(max-width:1200px){:root{--chat-w:300px}}
-@media(max-width:900px){:root{--chat-w:260px;--nav-w:175px}}
+@media(max-width:2400px){:root{--nav-w:190px;--chat-w:660px}}
+@media(max-width:1800px){:root{--nav-w:185px;--chat-w:500px}}
+@media(max-width:1300px){:root{--nav-w:180px;--chat-w:380px}}
+@media(max-width:1000px){:root{--nav-w:175px;--chat-w:280px}}
+@media(max-width:900px){:root{--chat-w:260px}}
 @media(max-width:700px){.right-panel{width:0!important}.left-nav{width:44px}.nav-label,.nav-check,.nav-heading{display:none}.nav-item{justify-content:center;padding:8px 0}.form-2col{grid-template-columns:1fr}}
+@media(max-width:480px){:root{--nav-w:44px}}
 </style>
 </head>
 <body>
