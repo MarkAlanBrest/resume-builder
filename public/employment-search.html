@@ -133,20 +133,6 @@ html,body{height:100%;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Ro
 .wc-count.ok{color:var(--green-600)}
 .wc-count.warn{color:var(--amber-600)}
 
-/* ── Source tracker ── */
-.source-tracker{background:var(--white);border-radius:10px;box-shadow:0 1px 4px rgba(0,0,0,.07);padding:13px 15px;margin-bottom:14px;border:1px solid var(--slate-200)}
-.st-hdr{display:flex;justify-content:space-between;align-items:center;margin-bottom:9px}
-.st-title{font-size:12px;font-weight:700;color:var(--slate-700)}
-.st-status{font-size:11px;font-weight:600;color:var(--slate-400)}
-.st-status.met{color:var(--green-700)}
-.source-pills{display:flex;flex-wrap:wrap;gap:5px}
-.source-pill{display:inline-flex;align-items:center;gap:4px;padding:3px 9px;border-radius:20px;font-size:11px;font-weight:600;background:var(--slate-100);color:var(--slate-500);border:1.5px solid var(--slate-200)}
-.source-pill.used{background:var(--green-50);color:var(--green-700);border-color:var(--green-200)}
-.st-warning{font-size:12px;color:var(--amber-600);font-weight:600;margin-top:7px}
-
-/* ── Submit bar ── */
-.submit-bar{display:flex;align-items:center;justify-content:space-between;background:var(--white);border:1px solid var(--slate-200);border-radius:10px;padding:13px 16px;margin-bottom:16px;gap:12px;box-shadow:0 1px 3px rgba(0,0,0,.05)}
-.submit-bar-text{font-size:13px;color:var(--slate-600)}
 
 /* ── Grade card ── */
 .grade-card{background:var(--white);border-radius:12px;box-shadow:0 1px 8px rgba(0,0,0,.08);overflow:hidden;margin-bottom:16px}
@@ -170,6 +156,36 @@ html,body{height:100%;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Ro
 .fb-block{padding:14px 22px;border-top:1px solid var(--slate-100)}
 .fb-block h4{font-size:12px;font-weight:700;color:var(--slate-700);text-transform:uppercase;letter-spacing:.5px;margin-bottom:5px}
 .fb-block p{font-size:13px;color:var(--slate-600);line-height:1.55}
+
+/* ── Right-panel tabs (Directions / Examples / Rubric) ── */
+.rp-tabs{display:flex;border-bottom:1px solid var(--slate-200);flex-shrink:0}
+.rp-tab{flex:1;padding:9px 4px;font-size:11px;font-weight:700;background:none;border:none;border-bottom:2px solid transparent;cursor:pointer;color:var(--slate-400);font-family:inherit;transition:all .15s}
+.rp-tab:hover{color:var(--slate-600);background:var(--slate-50)}
+.rp-tab.active{color:var(--blue-700);border-bottom-color:var(--blue-700)}
+.rp-tab-panel{flex-shrink:0;max-height:280px;overflow-y:auto;border-bottom:1px solid var(--slate-200);background:var(--white);padding:14px 13px;display:none}
+.rp-tab-panel.open{display:block}
+.rp-tab-panel::-webkit-scrollbar{width:4px}
+.rp-tab-panel::-webkit-scrollbar-thumb{background:var(--slate-300);border-radius:2px}
+.rtp-rule{margin-bottom:12px;font-size:12px;color:var(--slate-600);line-height:1.5}
+.rtp-rule-title{font-size:12px;font-weight:700;color:var(--slate-800);margin-bottom:4px}
+.rtp-tags{display:flex;flex-wrap:wrap;gap:4px;margin-top:6px}
+.rtp-tag{background:var(--blue-50);color:var(--blue-700);border:1px solid var(--blue-100);border-radius:4px;padding:2px 7px;font-size:11px;font-weight:600}
+.rtp-eg{margin-bottom:14px}
+.rtp-eg-lbl{font-size:11px;font-weight:700;color:var(--slate-500);text-transform:uppercase;letter-spacing:.5px;margin-bottom:5px}
+.rtp-eg p,.rtp-eg ul{font-size:12px;color:var(--slate-700);line-height:1.6}
+.rtp-eg ul{padding-left:14px}
+.rtp-eg ul li{margin-bottom:3px}
+.rtp-eg .good{color:var(--green-700);background:var(--green-50);border-radius:5px;padding:5px 8px;margin-bottom:4px;font-size:12px}
+.rtp-eg .weak{color:#7c3aed;background:#f5f3ff;border-radius:5px;padding:5px 8px;margin-bottom:4px;font-size:12px}
+.rtp-rub{background:var(--slate-50);border-radius:7px;padding:10px 11px;margin-bottom:9px}
+.rtp-rub-hdr{display:flex;justify-content:space-between;align-items:center;margin-bottom:4px}
+.rtp-rub-name{font-size:12px;font-weight:700;color:var(--slate-800)}
+.rtp-rub-wt{font-size:11px;font-weight:700;color:var(--slate-400)}
+.rtp-rub-sc{display:flex;flex-direction:column;gap:3px;margin-top:6px}
+.rtp-sc{font-size:11px;padding:2px 7px;border-radius:4px;font-weight:600}
+.rtp-sc-a{background:#dcfce7;color:#15803d}
+.rtp-sc-b{background:#dbeafe;color:#1d4ed8}
+.rtp-sc-d{background:#fee2e2;color:#dc2626}
 
 /* ── Buttons ── */
 .btn{border:none;border-radius:7px;padding:9px 18px;font-size:14px;font-weight:600;cursor:pointer;font-family:inherit;transition:background .15s,opacity .15s}
@@ -221,6 +237,12 @@ html,body{height:100%;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Ro
           <div id="linksInner"></div>
         </div>
       </div>
+      <div class="rp-tabs">
+        <button class="rp-tab" onclick="showRpTab('directions')">📋 Directions</button>
+        <button class="rp-tab" onclick="showRpTab('examples')">✏️ Examples</button>
+        <button class="rp-tab" onclick="showRpTab('rubric')">📊 Rubric</button>
+      </div>
+      <div class="rp-tab-panel" id="rpTabPanel"></div>
       <div class="chat-messages" id="chatMessages"></div>
       <div class="chat-input-area">
         <div class="chat-row">
@@ -277,13 +299,131 @@ window.addEventListener('DOMContentLoaded', () => {
   renderLinks();
   show('info');
   setTimeout(()=> addAIMsg(
-    `Welcome to the Employment Search Assignment! I'm here to answer questions and grade your work.\n\n**What you need to do:**\n• Open the **🔗 Job Search Sites** panel and browse real job boards\n• Find at least **3 job postings** — each from a **different website**\n• Fill in every field with your own words — I won't write your responses\n• Submit for grading and download your assignment\n\nQuestions? Just ask.`
+    `Use the **📋 Directions**, **✏️ Examples**, and **📊 Rubric** tabs above to learn what's expected.\n\nOpen a job site from the links panel, find a position, then fill in the **Job 1** tab. Questions? Just ask.`
   ), 400);
 });
 
 function toggleLinks() {
   const b=document.getElementById('linksBody'), a=document.getElementById('linksArrow');
   const open=b.classList.toggle('open'); a.classList.toggle('open',open);
+}
+
+// ── Right-panel tabs ──────────────────────────────────
+let activeRpTab = null;
+function showRpTab(tab) {
+  const panel = document.getElementById('rpTabPanel');
+  const tabs  = document.querySelectorAll('.rp-tab');
+  if (activeRpTab === tab) {
+    activeRpTab = null;
+    panel.classList.remove('open');
+    tabs.forEach(t => t.classList.remove('active'));
+    return;
+  }
+  activeRpTab = tab;
+  panel.classList.add('open');
+  panel.innerHTML = getRpContent(tab);
+  tabs.forEach(t => t.classList.toggle('active', t.textContent.toLowerCase().includes(tab.slice(0,3))));
+}
+
+function getRpContent(tab) {
+  if (tab === 'directions') return rpDirections();
+  if (tab === 'examples')   return rpExamples();
+  if (tab === 'rubric')     return rpRubric();
+  return '';
+}
+
+function rpDirections() {
+  return `<div class="rtp-rule">
+    <div class="rtp-rule-title">Rule 1 — Use 3 Different Websites</div>
+    Each job must come from a different job site. That's the whole point — learning how to search. You can't use Indeed for all three.
+    <div class="rtp-tags"><span class="rtp-tag">Indeed</span><span class="rtp-tag">LinkedIn</span><span class="rtp-tag">ZipRecruiter</span><span class="rtp-tag">Glassdoor</span><span class="rtp-tag">PA CareerLink</span><span class="rtp-tag">Vindicator</span><span class="rtp-tag">New Castle News</span><span class="rtp-tag">Sharon Herald</span></div>
+  </div>
+  <div class="rtp-rule">
+    <div class="rtp-rule-title">Rule 2 — Document the Real Location</div>
+    City and state are required. Paste the job URL when you have it — it proves you found a real posting.
+  </div>
+  <div class="rtp-rule">
+    <div class="rtp-rule-title">Rule 3 — Paste the Actual Requirements</div>
+    Copy the requirements section from the job posting. Don't summarize in one sentence — paste the real list. Minimum 40 words.
+  </div>
+  <div class="rtp-rule">
+    <div class="rtp-rule-title">Rule 4 — Write Your Reflection in Your Own Words</div>
+    The "Why Interested" and "Skills Match" fields must be at least 50 and 40 words respectively. The AI will not write these for you. Think and write honestly.
+  </div>
+  <div class="rtp-rule">
+    <div class="rtp-rule-title">Rule 5 — Research the Company</div>
+    Go to the company's actual website. Write about what the company does, how big they are, and anything that stood out. This shows you did more than glance at a job title.
+  </div>
+  <div class="rtp-rule">
+    <div class="rtp-rule-title">Rule 6 — Watch the Word Count Indicators</div>
+    Every reflection field shows a live word count. Green = you've met the minimum. Amber = keep writing. You cannot save a job until required minimums are met.
+  </div>`;
+}
+
+function rpExamples() {
+  return `<div class="rtp-eg">
+    <div class="rtp-eg-lbl">Good "Why Interested" (✓ passes)</div>
+    <div class="good">I'm interested in this Automotive Technician position at Valvoline because I enjoy hands-on mechanical work and want to build on the oil change and multi-point inspection skills I learned in my program. The location in New Castle is close to home, and I like that Valvoline promotes from within. Working in a fast-paced shop environment appeals to me because it keeps things interesting and I learn faster when I'm busy.</div>
+  </div>
+  <div class="rtp-eg">
+    <div class="rtp-eg-lbl">Weak "Why Interested" (✗ will score low)</div>
+    <div class="weak">I like cars and need a job. This looks like a good place to work.</div>
+  </div>
+  <div class="rtp-eg">
+    <div class="rtp-eg-lbl">Good "Skills I Have" (✓ passes)</div>
+    <div class="good">In my Automotive Technology program I learned to perform oil changes, tire rotations, and brake inspections. I know how to use a torque wrench, diagnostic scan tool, and hydraulic lift safely. I've also practiced reading vehicle service manuals and following step-by-step repair procedures. I understand OSHA shop safety rules and always wore proper PPE during lab time.</div>
+  </div>
+  <div class="rtp-eg">
+    <div class="rtp-eg-lbl">Good "Requirements" paste (✓ passes)</div>
+    <div class="good">Perform oil changes, tire rotations, and multi-point vehicle inspections. Diagnose and repair basic mechanical issues. Operate shop equipment including lifts and diagnostic tools. Maintain a clean and safe work environment. Must have own basic tool set. ASE certification preferred but not required. Valid driver's license required.</div>
+  </div>
+  <div class="rtp-eg">
+    <div class="rtp-eg-lbl">Good "Company Research" (✓ passes)</div>
+    <div class="good">Valvoline is a national chain of quick-service oil change shops with over 1,700 locations across the US. Their website shows they focus on fast, stay-in-your-car oil changes and preventive maintenance services. They hire technicians at all experience levels and advertise a clear path from lube tech to assistant manager. I noticed they also offer fleet services for businesses, which was something I didn't expect.</div>
+  </div>
+  <div class="rtp-eg">
+    <div class="rtp-eg-lbl">Weak "Company Research" (✗ will score low)</div>
+    <div class="weak">They fix cars. It is a car place.</div>
+  </div>`;
+}
+
+function rpRubric() {
+  return `<div class="rtp-rub">
+    <div class="rtp-rub-hdr"><span class="rtp-rub-name">Completeness</span><span class="rtp-rub-wt">25%</span></div>
+    <p style="font-size:11px;margin-bottom:5px">All required fields filled — title, company, location, site used, requirements pasted, and both reflection fields.</p>
+    <div class="rtp-rub-sc">
+      <span class="rtp-sc rtp-sc-a">A — All fields complete, word counts met, URL included</span>
+      <span class="rtp-sc rtp-sc-b">B — All required fields complete, URL missing</span>
+      <span class="rtp-sc rtp-sc-d">D/F — Required fields blank or well under word count</span>
+    </div>
+  </div>
+  <div class="rtp-rub">
+    <div class="rtp-rub-hdr"><span class="rtp-rub-name">Program Relevance</span><span class="rtp-rub-wt">25%</span></div>
+    <p style="font-size:11px;margin-bottom:5px">Do the jobs relate to your trade program? Related fields (e.g. manufacturing for a welding student) get credit.</p>
+    <div class="rtp-rub-sc">
+      <span class="rtp-sc rtp-sc-a">A — All jobs clearly in your trade area</span>
+      <span class="rtp-sc rtp-sc-b">B — Most jobs on-topic, one is a stretch</span>
+      <span class="rtp-sc rtp-sc-d">D/F — Jobs are completely unrelated to your program</span>
+    </div>
+  </div>
+  <div class="rtp-rub">
+    <div class="rtp-rub-hdr"><span class="rtp-rub-name">Effort &amp; Detail</span><span class="rtp-rub-wt">25%</span></div>
+    <p style="font-size:11px;margin-bottom:5px">Are responses thorough and specific? Real requirements pasted? Word count minimums met?</p>
+    <div class="rtp-rub-sc">
+      <span class="rtp-sc rtp-sc-a">A — Thorough responses, real requirements, all minimums met</span>
+      <span class="rtp-sc rtp-sc-b">B — Adequate detail, meets most minimums</span>
+      <span class="rtp-sc rtp-sc-d">D/F — Minimal responses, one or two sentences each</span>
+    </div>
+  </div>
+  <div class="rtp-rub">
+    <div class="rtp-rub-hdr"><span class="rtp-rub-name">Company Research</span><span class="rtp-rub-wt">25%</span></div>
+    <p style="font-size:11px;margin-bottom:5px">Did you actually visit the company website and describe what you found?</p>
+    <div class="rtp-rub-sc">
+      <span class="rtp-sc rtp-sc-a">A — Specific details from the company site: what they do, size, location, something notable</span>
+      <span class="rtp-sc rtp-sc-b">B — Basic description, shows you visited their site</span>
+      <span class="rtp-sc rtp-sc-d">D/F — Blank, or just repeats the job title</span>
+    </div>
+  </div>`;
 }
 
 function renderLinks() {
@@ -427,31 +567,10 @@ function renderJobsInto(container) {
   const doneCount= jobComplete.filter(Boolean).length;
   const canSubmit= doneCount>=3 && srcCount>=3;
 
-  // Source tracker
-  const pills = SOURCES.slice(0,14).map(s=>{
-    const used=uSrc.includes(s);
-    return `<span class="source-pill${used?' used':''}">${used?'✓ ':''} ${escHtml(s)}</span>`;
-  }).join('');
-  const srcNeeded=Math.max(0,3-srcCount);
-
-  const srcTracker=`<div class="source-tracker">
-    <div class="st-hdr">
-      <span class="st-title">Sites Used</span>
-      <span class="st-status${srcCount>=3?' met':''}">${srcCount}/3 different sites required</span>
-    </div>
-    <div class="source-pills">${pills}</div>
-    ${srcNeeded>0?`<div class="st-warning">⚠ Use ${srcNeeded} more different site${srcNeeded>1?'s':''} across your jobs.</div>`:'<div style="font-size:12px;color:var(--green-700);margin-top:7px;font-weight:600">✓ Source requirement met</div>'}
-  </div>`;
-
-  // Submit bar
+  const srcNeeded = Math.max(0, 3 - srcCount);
   const submitBtn = canSubmit
     ? `<button class="btn btn-confirm btn-lg" onclick="goToGrade()">Submit for Grade →</button>`
     : `<button class="btn btn-confirm btn-lg" disabled>${doneCount<3?`${doneCount}/3 jobs saved`:srcNeeded+' more site'+(srcNeeded>1?'s':'')+' needed'}</button>`;
-
-  const submitBar=`<div class="submit-bar">
-    <div class="submit-bar-text">${doneCount<3?`Save ${3-doneCount} more job${3-doneCount===1?'':'s'} to submit.`:srcNeeded>0?`Use ${srcNeeded} more different site${srcNeeded>1?'s':''} then submit.`:'All requirements met — ready to submit!'}</div>
-    ${submitBtn}
-  </div>`;
 
   // Tab buttons
   const tabs = jobSlots.map((_,i)=>{
@@ -468,12 +587,13 @@ function renderJobsInto(container) {
     : '';
 
   container.innerHTML = `
-    <div class="sec-hdr"><div class="sec-hdr-icon">💼</div><div>
-      <div class="sec-hdr-title">Document Your Jobs</div>
-      <div class="sec-hdr-sub">3 jobs minimum · 3 different sites required · write in your own words</div>
-    </div></div>
-    ${srcTracker}
-    ${submitBar}
+    <div style="background:var(--blue-900);border-radius:12px;padding:18px 22px;margin-bottom:18px;display:flex;align-items:center;justify-content:space-between;gap:16px">
+      <div>
+        <div style="font-size:11px;font-weight:700;color:var(--blue-400);text-transform:uppercase;letter-spacing:.8px;margin-bottom:4px">Research Project</div>
+        <div style="font-size:20px;font-weight:800;color:var(--white)">Research Job Opportunities</div>
+      </div>
+      ${submitBtn}
+    </div>
     <div class="job-tabs">${tabs}${addTabBtn}</div>
     <div class="job-tab-panel" id="jobTabPanel"></div>`;
 
@@ -549,8 +669,8 @@ function renderTabForm() {
     </div>
 
     <div class="f1 fg">
-      <label>What would you still need to learn or develop? <span style="font-size:10px;font-weight:500;color:var(--slate-400)">(optional but graded)</span></label>
-      <textarea id="jSkillsNeeded" rows="3" style="min-height:72px" placeholder="Are there requirements you don't fully have yet? What would you need to work on?" oninput="syncField('skillsNeeded',this.value);liveWC(this,'wc-need',${MIN_WORDS.skillsNeeded})">${escHtml(j.skillsNeeded)}</textarea>
+      <label>Research the company — visit their website and describe what they do</label>
+      <textarea id="jSkillsNeeded" rows="3" style="min-height:72px" placeholder="Go to the company's website. What do they do? How big are they? What stood out to you?" oninput="syncField('skillsNeeded',this.value);liveWC(this,'wc-need',${MIN_WORDS.skillsNeeded})">${escHtml(j.skillsNeeded)}</textarea>
       <div class="wc-row">
         <span class="wc-hint">Aim for ${MIN_WORDS.skillsNeeded}+ words</span>
         <span class="wc-count ${wcCls(j.skillsNeeded,MIN_WORDS.skillsNeeded)}" id="wc-need">${wcStr(j.skillsNeeded,MIN_WORDS.skillsNeeded)}</span>
