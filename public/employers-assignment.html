@@ -649,42 +649,11 @@
       </div>
     </div>
 
-    <div class="card">
-      <div class="card-title">Submission Receipt</div>
-
-      <div class="sub-id-box">
-        <div class="sub-id-label">Submission ID</div>
-        <div class="sub-id-code" id="subIdDisplay">—</div>
-        <div class="sub-id-note">Your instructor uses this ID to verify your submission — it is embedded in your PDF.</div>
-      </div>
-
-      <!-- Download CTA -->
-      <div style="background:#1e40af; border-radius:12px; padding:24px 28px; margin:20px 0; text-align:center;">
-        <div style="font-size:15px; font-weight:700; color:#fff; margin-bottom:6px;">Step 1 — Download Your PDF</div>
-        <div style="font-size:13px; color:rgba(255,255,255,.8); margin-bottom:18px;">Your completed assignment with your grade and submission ID is ready to download.</div>
-        <button class="btn btn-lg" onclick="downloadPDF()" style="background:#fff; color:#1e40af; font-weight:800; font-size:15px; padding:14px 36px; border-radius:8px; cursor:pointer; border:none; font-family:inherit;">
-          ⬇ Download PDF Submission
-        </button>
-      </div>
-
-      <!-- Submit instruction -->
-      <div style="background:#fef9c3; border:2px solid #fde047; border-radius:12px; padding:20px 24px; margin:20px 0;">
-        <div style="font-size:15px; font-weight:800; color:#713f12; margin-bottom:10px;">⚠ Step 2 — You Must Submit the PDF to Get Credit</div>
-        <p style="font-size:14px; color:#78350f; line-height:1.6; margin-bottom:10px;">
-          Completing this assignment on screen <strong>does not automatically give you a grade.</strong>
-          You must download the PDF above and hand it in to your instructor.
-        </p>
-        <ul style="font-size:14px; color:#78350f; padding-left:20px; line-height:2;">
-          <li>Download the PDF using the button above</li>
-          <li>Submit the PDF to your instructor or upload it to your class portal</li>
-          <li>Your instructor will use your <strong>Submission ID</strong> to confirm it is your original work</li>
-        </ul>
-      </div>
-
-      <div class="info green" style="margin-bottom:0;">
-        <h3>✅ Your Work Is Saved</h3>
-        <p>Your jobs and skills information have been saved to this device and will be available to import when you build your resume — no need to retype anything.</p>
-      </div>
+    <div class="card" style="display:flex; align-items:center; justify-content:space-between; gap:20px; flex-wrap:wrap;">
+      <div style="font-size:16px; font-weight:700; color:var(--g900);">You must download and submit your work in Canvas to receive credit.</div>
+      <button onclick="downloadPDF()" style="background:var(--blue); color:#fff; font-size:15px; font-weight:700; padding:13px 30px; border-radius:8px; border:none; cursor:pointer; font-family:inherit; white-space:nowrap; flex-shrink:0;">
+        ⬇ Download Assignment
+      </button>
     </div>
   </div>
 </div>
