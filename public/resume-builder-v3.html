@@ -514,6 +514,29 @@ function importAssignmentIfNeeded() {
   return jobs.length;
 }
 
+async function polishImportedJobs() {
+  const ci = document.getElementById('centerInner');
+  const toProcess = resumeData.workExperience.filter(j => j._fromAssignment && !j._bulletPolished);
+  const prog = resumeData.personal.program || '';
+  for (let idx = 0; idx < toProcess.length; idx++) {
+    const job = toProcess[idx];
+    ci.innerHTML = `<div style="text-align:center;padding:60px 20px;color:var(--slate-500)"><div style="font-size:32px;margin-bottom:12px">⚙️</div><div style="font-size:15px;font-weight:600;margin-bottom:6px">Writing professional bullets…</div><div style="font-size:13px">${escHtml(job.jobTitle||'Job')} at ${escHtml(job.employer)} (${idx+1} of ${toProcess.length})</div></div>`;
+    const tense = job.current ? 'present tense' : 'past tense';
+    const duties = (job.bulletLines||[]).filter(Boolean).join('\n') || job.duties || '';
+    const sys = `Write resume bullet points for a trade school student${prog?' studying '+prog:''}. Job: ${job.jobTitle} at ${job.employer}. The student described their duties as: "${duties}". Write 3–5 polished, professional resume bullets in ${tense}. Each starts with a strong action verb. No bullet characters, no "I". Plain text, one bullet per line.`;
+    try {
+      const result = await callClaude(sys,[{role:'user',content:'Write the bullet points.'}]);
+      job.bulletLines = result.trim().split('\n').map(l=>l.trim().replace(/^[•\-\*]\s*/,'')).filter(l=>l.length>0).map(l=>cleanCareerText(l));
+      job._bulletPolished = true;
+    } catch(e) {
+      job._bulletPolished = true;
+    }
+  }
+  setStatus('work','done');
+  showCenter('work');
+  sendTip('work');
+}
+
 // ── App Start ─────────────────────────────────────
 function startApp() {
   renderLeftNav();
@@ -590,7 +613,11 @@ function showSection(key) {
   clearChat();
   if (key === 'personal') { showCenter('personal'); sendTip('personal'); }
   else if (key === 'career') { showCenter('career'); sendTip('career'); }
-  else if (key === 'work') { importAssignmentIfNeeded(); showCenter('work'); sendTip('work'); }
+  else if (key === 'work') {
+    importAssignmentIfNeeded();
+    const unpolished = resumeData.workExperience?.filter(j => j._fromAssignment && !j._bulletPolished);
+    if (unpolished?.length) { polishImportedJobs(); } else { showCenter('work'); sendTip('work'); }
+  }
   else if (key === 'military') { showCenter('military'); sendTip('military'); }
   else if (key === 'education') { showCenter('education'); sendTip('education'); }
   else if (key === 'certifications') { showSection('skills'); }
@@ -2512,24 +2539,21 @@ async function generateResume() {
     const weakEmployment = (resumeData.workExperience||[]).length < 2;
     const tradeEdu = (resumeData.education||[]).find(e=>e.school||e.degree)||resumeData.education?.[0];
     if (weakEmployment && tradeEdu) {
-      // Use student's own written paragraph from the employers assignment if available
+      btn.textContent = 'Building education skills section…';
+      const program = resumeData.personal.program || tradeEdu.fieldOfStudy || tradeEdu.degree || 'Trade Program';
+      const school  = tradeEdu.school || 'Trade School';
+      const inProgress = tradeEdu.gradYear === 'In Progress' || !tradeEdu.gradYear;
+      const tense = inProgress ? 'present tense — student is currently enrolled' : 'past tense — student has completed the program';
       const savedPara = localStorage.getItem('empAssign_skillsPara');
-      if (savedPara && savedPara.trim().length > 40) {
-        buildData = {...resumeData, educationSkills: savedPara.trim()};
-      } else {
-        // Fall back to AI-generated paragraph
-        btn.textContent = 'Building education skills section…';
-        const program = resumeData.personal.program || tradeEdu.fieldOfStudy || tradeEdu.degree || 'Trade Program';
-        const school  = tradeEdu.school || 'Trade School';
-        const inProgress = tradeEdu.gradYear === 'In Progress' || !tradeEdu.gradYear;
-        const tense = inProgress ? 'present tense — student is currently enrolled' : 'past tense — student has completed the program';
-        const sys = `Write a single professional paragraph (4–6 sentences) for an "Education Skills" section on a trade school student's resume. Program: ${program}. School: ${school}. Use ${tense}. Describe the hands-on technical skills, equipment, safety practices, and competencies the student gained through the program. Write in implied first person — no "I" or the student's name. Professional resume language only. Return only the paragraph, no labels or headings.`;
-        try {
-          const r = await callClaude(sys,[{role:'user',content:'Write the education skills paragraph.'}]);
-          const para = r.trim().replace(/^["']|["']$/g,'');
-          if (para.length > 40) buildData = {...resumeData, educationSkills: para};
-        } catch(e) { /* AI failed — proceed without education skills section */ }
-      }
+      // If student wrote a skills paragraph in their assignment, polish it; otherwise generate from scratch
+      const sys = (savedPara && savedPara.trim().length > 40)
+        ? `You are polishing a trade school student's resume. The student wrote this Education Skills paragraph themselves: "${savedPara.trim()}". Rewrite it as a single polished, professional paragraph (4–6 sentences) for a resume. Correct grammar, strengthen the language, and make it sound like it was written by a professional resume writer. Keep the same skills and content — do not add certifications or tools not mentioned. Program: ${program}. School: ${school}. Use ${tense}. No "I" or student's name. Return only the paragraph.`
+        : `Write a single professional paragraph (4–6 sentences) for an "Education Skills" section on a trade school student's resume. Program: ${program}. School: ${school}. Use ${tense}. Describe the hands-on technical skills, equipment, safety practices, and competencies the student gained through the program. Write in implied first person — no "I" or the student's name. Professional resume language only. Return only the paragraph, no labels or headings.`;
+      try {
+        const r = await callClaude(sys,[{role:'user',content:'Write the education skills paragraph.'}]);
+        const para = r.trim().replace(/^["']|["']$/g,'');
+        if (para.length > 40) buildData = {...resumeData, educationSkills: para};
+      } catch(e) { /* AI failed — proceed without education skills section */ }
     }
 
     btn.textContent = 'Building resume…';
