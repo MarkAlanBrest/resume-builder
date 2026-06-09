@@ -3,950 +3,1041 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Employers Section Assignment</title>
+  <title>Work Experience Assignment</title>
   <style>
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
-
     :root {
-      --primary:      #1e40af;
-      --primary-lt:   #3b82f6;
-      --primary-bg:   #eff6ff;
-      --primary-bd:   #bfdbfe;
-      --success:      #15803d;
-      --success-bg:   #f0fdf4;
-      --success-bd:   #bbf7d0;
-      --warn:         #92400e;
-      --warn-bg:      #fffbeb;
-      --warn-bd:      #fde68a;
-      --red:          #b91c1c;
-      --red-bg:       #fef2f2;
-      --g900: #111827; --g800: #1f2937; --g700: #374151; --g600: #4b5563;
-      --g500: #6b7280; --g400: #9ca3af; --g300: #d1d5db; --g200: #e5e7eb;
-      --g100: #f3f4f6; --g50:  #f9fafb; --white: #ffffff;
+      --blue:#1e40af; --blue-lt:#3b82f6; --blue-bg:#eff6ff; --blue-bd:#bfdbfe;
+      --green:#15803d; --green-bg:#f0fdf4; --green-bd:#bbf7d0;
+      --amber:#92400e; --amber-bg:#fffbeb; --amber-bd:#fde68a;
+      --red:#b91c1c; --red-bg:#fef2f2; --red-bd:#fecaca;
+      --g900:#111827; --g800:#1f2937; --g700:#374151; --g600:#4b5563;
+      --g500:#6b7280; --g400:#9ca3af; --g300:#d1d5db; --g200:#e5e7eb;
+      --g100:#f3f4f6; --g50:#f9fafb; --white:#fff;
+    }
+    body { font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif; background:var(--g100); color:var(--g900); min-height:100vh; line-height:1.6; }
+
+    /* Header */
+    .hdr { background:var(--blue); color:#fff; padding:18px 24px; }
+    .hdr-inner { max-width:820px; margin:0 auto; display:flex; justify-content:space-between; align-items:center; }
+    .hdr h1 { font-size:18px; font-weight:700; }
+    .hdr-sub { font-size:13px; opacity:.75; margin-top:2px; }
+    .hdr-badge { background:rgba(255,255,255,.18); border-radius:20px; padding:4px 14px; font-size:12px; font-weight:700; white-space:nowrap; }
+
+    /* Layout */
+    .main { max-width:820px; margin:0 auto; padding:32px 24px 72px; }
+
+    /* Cards */
+    .card { background:#fff; border:1px solid var(--g200); border-radius:12px; padding:28px; margin-bottom:20px; }
+    .card-title { font-size:18px; font-weight:800; margin-bottom:6px; }
+    .card-sub { font-size:14px; color:var(--g500); margin-bottom:22px; line-height:1.5; }
+
+    /* Info boxes */
+    .info { border-radius:10px; padding:16px 20px; margin-bottom:20px; }
+    .info.blue  { background:var(--blue-bg);  border:1px solid var(--blue-bd);  }
+    .info.green { background:var(--green-bg); border:1px solid var(--green-bd); }
+    .info.amber { background:var(--amber-bg); border:1px solid var(--amber-bd); }
+    .info h3 { font-size:14px; font-weight:700; margin-bottom:10px; }
+    .info.blue h3  { color:var(--blue); }
+    .info.green h3 { color:var(--green); }
+    .info.amber h3 { color:#78350f; }
+    .info ul  { padding-left:18px; font-size:14px; color:var(--g700); line-height:1.9; }
+    .info p   { font-size:14px; color:var(--g700); line-height:1.6; }
+    .info strong { color:var(--g900); }
+
+    /* Welcome */
+    .welcome-wrap { max-width:600px; margin:0 auto; }
+    .welcome-card { background:#fff; border:1px solid var(--g200); border-radius:16px; padding:48px 32px; text-align:center; margin-bottom:24px; }
+    .welcome-icon { font-size:52px; display:block; margin-bottom:16px; }
+    .welcome-title { font-size:26px; font-weight:800; margin-bottom:8px; }
+    .welcome-sub { font-size:15px; color:var(--g500); margin-bottom:28px; max-width:420px; margin-left:auto; margin-right:auto; }
+    .name-field { text-align:left; margin-bottom:28px; }
+    .name-field label { font-size:13px; font-weight:600; color:var(--g700); display:block; margin-bottom:5px; }
+    .name-field input { width:100%; padding:10px 14px; border:1.5px solid var(--g300); border-radius:8px; font-size:15px; font-family:inherit; }
+    .name-field input:focus { outline:none; border-color:var(--blue-lt); box-shadow:0 0 0 3px rgba(59,130,246,.1); }
+    .choice-btns { display:flex; flex-direction:column; gap:14px; }
+    .choice-btn { display:flex; align-items:flex-start; gap:16px; padding:20px 22px; background:#fff; border:2px solid var(--g200); border-radius:12px; text-align:left; cursor:pointer; transition:all .15s; font-family:inherit; width:100%; }
+    .choice-btn:hover { border-color:var(--blue); background:var(--blue-bg); }
+    .choice-btn .cb-icon { font-size:30px; flex-shrink:0; }
+    .choice-btn .cb-text { flex:1; }
+    .choice-btn .cb-title { font-size:16px; font-weight:700; color:var(--g900); display:block; margin-bottom:3px; }
+    .choice-btn .cb-desc  { font-size:13px; color:var(--g500); line-height:1.4; }
+
+    /* Form fields */
+    .field { margin-bottom:18px; }
+    .field label { display:block; font-size:13px; font-weight:600; color:var(--g700); margin-bottom:5px; }
+    .req { color:#dc2626; }
+    input[type="text"], input[type="month"], select, textarea {
+      width:100%; padding:10px 14px; border:1.5px solid var(--g300); border-radius:8px;
+      font-size:14px; color:var(--g900); background:#fff; font-family:inherit;
+      transition:border-color .15s, box-shadow .15s;
+    }
+    input:focus, select:focus, textarea:focus { outline:none; border-color:var(--blue-lt); box-shadow:0 0 0 3px rgba(59,130,246,.1); }
+    input:disabled, select:disabled { background:var(--g50); color:var(--g400); }
+    textarea { resize:vertical; min-height:140px; }
+    .field-hint { font-size:12px; color:var(--g500); margin-top:4px; }
+    .form-2col { display:grid; grid-template-columns:1fr 1fr; gap:16px; }
+    .check-wrap { display:flex; align-items:center; gap:8px; margin-top:10px; cursor:pointer; }
+    .check-wrap input[type="checkbox"] { width:15px; height:15px; accent-color:var(--blue); cursor:pointer; }
+    .check-wrap span { font-size:13px; font-weight:500; color:var(--g700); }
+
+    /* Bullet inputs */
+    .bullet-section-title { font-size:13px; font-weight:700; color:var(--g700); margin-bottom:12px; }
+    .bullet-row { display:flex; align-items:center; gap:8px; margin-bottom:10px; }
+    .bullet-num { width:22px; font-size:14px; font-weight:700; color:var(--g400); text-align:right; flex-shrink:0; }
+    .bullet-row input { flex:1; }
+    .req-tag { font-size:11px; font-weight:700; background:#fee2e2; color:#b91c1c; padding:2px 8px; border-radius:20px; white-space:nowrap; flex-shrink:0; }
+    .opt-tag { font-size:11px; font-weight:700; background:var(--g100); color:var(--g500); padding:2px 8px; border-radius:20px; white-space:nowrap; flex-shrink:0; }
+
+    /* Buttons */
+    .btn { padding:11px 24px; border-radius:8px; font-size:14px; font-weight:600; cursor:pointer; border:none; font-family:inherit; transition:all .15s; }
+    .btn-primary  { background:var(--blue);  color:#fff; }
+    .btn-primary:hover  { background:#1e3a8a; }
+    .btn-primary:disabled { background:var(--g300); cursor:not-allowed; }
+    .btn-secondary { background:#fff; color:var(--g700); border:1.5px solid var(--g300); }
+    .btn-secondary:hover { background:var(--g50); border-color:var(--g400); }
+    .btn-success  { background:var(--green); color:#fff; }
+    .btn-success:hover  { background:#166534; }
+    .btn-danger   { background:#fff; color:#dc2626; border:1.5px solid var(--red-bd); }
+    .btn-danger:hover   { background:var(--red-bg); }
+    .btn-row { display:flex; gap:12px; flex-wrap:wrap; margin-top:24px; align-items:center; }
+    .btn-lg { padding:13px 30px; font-size:15px; }
+
+    /* Job tiles */
+    .jobs-list { margin-bottom:12px; }
+    .job-tile { background:#fff; border:1.5px solid var(--g200); border-radius:10px; padding:18px 20px; margin-bottom:12px; display:flex; justify-content:space-between; align-items:flex-start; gap:16px; }
+    .job-tile-info .jt-title { font-size:15px; font-weight:700; }
+    .job-tile-info .jt-employer { font-size:13px; color:var(--g600); margin-top:2px; }
+    .job-tile-info .jt-dates   { font-size:12px; color:var(--g400); margin-top:2px; }
+    .job-tile-info .jt-bullets { font-size:12px; color:var(--g500); margin-top:6px; line-height:1.7; }
+    .job-tile-actions { display:flex; gap:8px; flex-shrink:0; }
+    .tile-btn { padding:6px 14px; border-radius:6px; font-size:12px; font-weight:600; cursor:pointer; border:1px solid; font-family:inherit; }
+    .tile-edit { background:var(--blue-bg); color:var(--blue); border-color:var(--blue-bd); }
+    .tile-edit:hover { background:#dbeafe; }
+    .tile-del  { background:var(--red-bg); color:#dc2626; border-color:var(--red-bd); }
+    .tile-del:hover  { background:#fee2e2; }
+
+    /* Grade display */
+    .grade-hdr { display:flex; align-items:flex-start; gap:24px; padding-bottom:22px; margin-bottom:22px; border-bottom:1px solid var(--g200); }
+    .grade-circle { width:90px; height:90px; border-radius:50%; display:flex; flex-direction:column; align-items:center; justify-content:center; flex-shrink:0; }
+    .gc-a { background:#dcfce7; color:#15803d; }
+    .gc-b { background:#dbeafe; color:#1d4ed8; }
+    .gc-c { background:#fef9c3; color:#854d0e; }
+    .gc-d { background:#ffedd5; color:#c2410c; }
+    .gc-f { background:#fee2e2; color:#b91c1c; }
+    .grade-circle .gl { font-size:36px; font-weight:800; line-height:1; }
+    .grade-circle .gp { font-size:12px; font-weight:600; opacity:.75; margin-top:2px; }
+    .grade-meta h3 { font-size:19px; font-weight:700; margin-bottom:6px; }
+    .grade-meta .gm-strengths { font-size:14px; color:var(--green); font-weight:600; }
+    .grade-meta .gm-score { font-size:14px; color:var(--g600); margin-top:4px; }
+
+    /* Rubric rows */
+    .rubric-section-hdr { font-size:12px; font-weight:700; color:var(--g500); text-transform:uppercase; letter-spacing:.5px; margin-bottom:14px; }
+    .rub-row { margin-bottom:14px; }
+    .rub-row-top { display:flex; justify-content:space-between; align-items:center; margin-bottom:5px; }
+    .rub-lbl { font-size:13px; font-weight:600; color:var(--g700); }
+    .rub-wt  { font-size:12px; color:var(--g400); }
+    .rub-sc  { font-size:13px; font-weight:700; }
+    .rub-track { height:8px; background:var(--g200); border-radius:4px; overflow:hidden; margin-bottom:4px; }
+    .rub-fill  { height:100%; border-radius:4px; transition:width .7s ease; }
+    .rub-fb    { font-size:12px; color:var(--g600); line-height:1.5; }
+
+    /* Submission ID */
+    .sub-id-box { background:var(--g50); border:2px dashed var(--g300); border-radius:10px; padding:16px 20px; text-align:center; margin:20px 0; }
+    .sub-id-label { font-size:11px; font-weight:700; color:var(--g500); text-transform:uppercase; letter-spacing:.5px; margin-bottom:5px; }
+    .sub-id-code { font-size:22px; font-weight:800; letter-spacing:3px; color:var(--blue); font-family:'Courier New',monospace; }
+    .sub-id-note { font-size:12px; color:var(--g500); margin-top:5px; }
+
+    /* Loading */
+    .loading-card { text-align:center; padding:52px 32px; }
+    .spinner { display:inline-block; width:28px; height:28px; border:3px solid rgba(0,0,0,.1); border-top-color:var(--blue); border-radius:50%; animation:spin .75s linear infinite; margin-top:20px; }
+    .btn-spin { display:inline-block; width:14px; height:14px; border:2px solid rgba(255,255,255,.35); border-top-color:#fff; border-radius:50%; animation:spin .75s linear infinite; vertical-align:middle; margin-right:6px; }
+    @keyframes spin { to { transform:rotate(360deg); } }
+
+    .err-msg { color:#dc2626; font-size:13px; margin-top:8px; display:none; }
+    [hidden] { display:none !important; }
+
+    /* Divider */
+    .divider { height:1px; background:var(--g200); margin:24px 0; }
+
+    /* Responsive */
+    @media(max-width:600px) {
+      .main { padding:20px 16px 60px; }
+      .form-2col { grid-template-columns:1fr; }
+      .job-tile { flex-direction:column; }
+      .grade-hdr { flex-direction:column; align-items:center; text-align:center; }
+      .welcome-card { padding:32px 20px; }
     }
 
-    body {
-      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', sans-serif;
-      background: var(--g100);
-      color: var(--g900);
-      line-height: 1.6;
-      min-height: 100vh;
+    /* ── Print styles ────────────────────────────── */
+    @media print {
+      body > * { display:none !important; }
+      #printArea { display:block !important; }
     }
+    #printArea { display:none; }
 
-    /* ── Header ─────────────────────────────────────────────── */
-    .hdr {
-      background: var(--primary);
-      color: var(--white);
-      padding: 18px 24px;
-    }
-    .hdr-inner {
-      max-width: 780px;
-      margin: 0 auto;
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-    }
-    .hdr h1 { font-size: 18px; font-weight: 700; }
-    .hdr-sub { font-size: 13px; opacity: 0.75; margin-top: 2px; }
-    .hdr-badge {
-      background: rgba(255,255,255,0.18);
-      border-radius: 20px;
-      padding: 4px 13px;
-      font-size: 12px;
-      font-weight: 700;
-      letter-spacing: 0.5px;
-      white-space: nowrap;
-    }
-
-    /* ── Progress bar ───────────────────────────────────────── */
-    .prog-bar { height: 4px; background: rgba(255,255,255,0.25); }
-    .prog-fill { height: 100%; background: #93c5fd; transition: width 0.4s ease; width: 0%; }
-
-    /* ── Step tabs ──────────────────────────────────────────── */
-    .tabs-wrap {
-      background: var(--white);
-      border-bottom: 1px solid var(--g200);
-      padding: 0 24px;
-      overflow-x: auto;
-    }
-    .tabs { max-width: 780px; margin: 0 auto; display: flex; }
-    .tab {
-      padding: 14px 18px;
-      font-size: 13px;
-      font-weight: 500;
-      color: var(--g500);
-      border-bottom: 3px solid transparent;
-      white-space: nowrap;
-      display: flex;
-      align-items: center;
-      gap: 8px;
-      cursor: default;
-      user-select: none;
-    }
-    .tab.active { color: var(--primary); border-bottom-color: var(--primary); font-weight: 600; }
-    .tab.done   { color: var(--success); }
-    .tab-num {
-      width: 21px; height: 21px; border-radius: 50%;
-      background: var(--g200); color: var(--g600);
-      display: inline-flex; align-items: center; justify-content: center;
-      font-size: 11px; font-weight: 700; flex-shrink: 0;
-    }
-    .tab.active .tab-num { background: var(--primary); color: var(--white); }
-    .tab.done   .tab-num { background: var(--success);  color: var(--white); }
-
-    /* ── Main layout ────────────────────────────────────────── */
-    .main { max-width: 780px; margin: 0 auto; padding: 32px 24px 64px; }
-
-    /* ── Cards ──────────────────────────────────────────────── */
-    .card {
-      background: var(--white);
-      border: 1px solid var(--g200);
-      border-radius: 12px;
-      padding: 28px;
-      margin-bottom: 20px;
-    }
-    .card-title    { font-size: 16px; font-weight: 700; margin-bottom: 4px; }
-    .card-subtitle { font-size: 14px; color: var(--g500); margin-bottom: 22px; }
-
-    /* ── Info boxes ─────────────────────────────────────────── */
-    .info-box {
-      border-radius: 10px;
-      padding: 18px 22px;
-      margin-bottom: 22px;
-    }
-    .info-box.blue  { background: var(--primary-bg); border: 1px solid var(--primary-bd); }
-    .info-box.green { background: var(--success-bg); border: 1px solid var(--success-bd); }
-    .info-box h2 { font-size: 14px; font-weight: 700; margin-bottom: 10px; }
-    .info-box.blue  h2 { color: var(--primary); }
-    .info-box.green h2 { color: var(--success); }
-    .info-box ul { padding-left: 18px; font-size: 14px; color: var(--g700); line-height: 1.85; }
-    .info-box p  { font-size: 14px; color: var(--g700); font-weight: 500; }
-
-    /* ── Form ───────────────────────────────────────────────── */
-    .field { margin-bottom: 18px; }
-    label {
-      display: block;
-      font-size: 13px;
-      font-weight: 600;
-      color: var(--g700);
-      margin-bottom: 5px;
-    }
-    input[type="text"],
-    input[type="month"] {
-      width: 100%;
-      padding: 10px 14px;
-      border: 1.5px solid var(--g300);
-      border-radius: 8px;
-      font-size: 14px;
-      color: var(--g900);
-      background: var(--white);
-      font-family: inherit;
-      transition: border-color 0.15s, box-shadow 0.15s;
-    }
-    input:focus {
-      outline: none;
-      border-color: var(--primary-lt);
-      box-shadow: 0 0 0 3px rgba(59,130,246,0.12);
-    }
-    input:disabled { background: var(--g50); color: var(--g400); cursor: not-allowed; }
-    .field-hint { font-size: 12px; color: var(--g500); margin-top: 4px; }
-    .form-2col { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
-    .check-label {
-      display: flex; align-items: center; gap: 8px;
-      font-size: 13px; font-weight: 500; color: var(--g700);
-      cursor: pointer; margin-top: 8px;
-    }
-    input[type="checkbox"] { width: 15px; height: 15px; accent-color: var(--primary); cursor: pointer; }
-
-    /* ── Duty rows ──────────────────────────────────────────── */
-    .duty-row { margin-bottom: 18px; }
-    .duty-row-input {
-      display: flex; gap: 8px; align-items: center;
-    }
-    .duty-n {
-      width: 28px; font-weight: 700; font-size: 14px;
-      color: var(--g400); flex-shrink: 0; text-align: center;
-    }
-    .duty-row-input input { flex: 1; }
-    .btn-check {
-      background: var(--primary-bg);
-      color: var(--primary);
-      border: 1.5px solid var(--primary-bd);
-      padding: 9px 14px;
-      border-radius: 8px;
-      font-size: 13px;
-      font-weight: 600;
-      cursor: pointer;
-      white-space: nowrap;
-      flex-shrink: 0;
-      transition: background 0.15s;
-    }
-    .btn-check:hover   { background: #dbeafe; }
-    .btn-check:disabled { opacity: 0.45; cursor: not-allowed; }
-
-    .coach-bubble {
-      margin: 8px 0 0 36px;
-      padding: 11px 15px;
-      border-radius: 8px;
-      font-size: 13px;
-      line-height: 1.6;
-      animation: fadeUp 0.2s ease;
-    }
-    .coach-bubble.loading { background: var(--g100); border: 1px solid var(--g200); color: var(--g500); }
-    .coach-bubble.info    { background: var(--primary-bg); border: 1px solid var(--primary-bd); color: #1e3a8a; }
-
-    .btn-add-duty {
-      width: 100%; margin-top: 4px;
-      background: none;
-      border: 2px dashed var(--g300);
-      color: var(--g500);
-      padding: 10px;
-      border-radius: 8px;
-      font-size: 13px;
-      font-weight: 600;
-      cursor: pointer;
-      transition: all 0.15s;
-    }
-    .btn-add-duty:hover {
-      border-color: var(--primary-lt);
-      color: var(--primary);
-      background: var(--primary-bg);
-    }
-
-    /* ── Buttons ────────────────────────────────────────────── */
-    .btn {
-      padding: 11px 26px;
-      border-radius: 8px;
-      font-size: 14px;
-      font-weight: 600;
-      cursor: pointer;
-      border: none;
-      transition: all 0.15s;
-    }
-    .btn-primary   { background: var(--primary); color: var(--white); }
-    .btn-primary:hover  { background: #1e3a8a; }
-    .btn-primary:disabled { background: var(--g400); cursor: not-allowed; }
-    .btn-secondary { background: var(--white); color: var(--g700); border: 1.5px solid var(--g300); }
-    .btn-secondary:hover { background: var(--g50); border-color: var(--g400); }
-    .btn-success   { background: var(--success); color: var(--white); }
-    .btn-success:hover { background: #166534; }
-    .btn-row { display: flex; gap: 12px; align-items: center; margin-top: 24px; flex-wrap: wrap; }
-
-    /* ── Grade card ─────────────────────────────────────────── */
-    .grade-card {
-      background: var(--white);
-      border: 2px solid var(--g200);
-      border-radius: 14px;
-      padding: 32px;
-      margin-bottom: 20px;
-    }
-    .grade-hdr {
-      display: flex; align-items: center; gap: 24px;
-      padding-bottom: 24px; margin-bottom: 24px;
-      border-bottom: 1px solid var(--g200);
-    }
-    .grade-circle {
-      width: 88px; height: 88px; border-radius: 50%;
-      display: flex; flex-direction: column;
-      align-items: center; justify-content: center;
-      flex-shrink: 0;
-    }
-    .grade-circle .gl { font-size: 36px; font-weight: 800; line-height: 1; }
-    .grade-circle .gp { font-size: 12px; font-weight: 600; opacity: 0.75; margin-top: 2px; }
-    .gc-a { background: #dcfce7; color: #15803d; }
-    .gc-b { background: #dbeafe; color: #1d4ed8; }
-    .gc-c { background: #fef9c3; color: #854d0e; }
-    .gc-d { background: #ffedd5; color: #c2410c; }
-    .gc-f { background: #fee2e2; color: #b91c1c; }
-    .grade-summary h3 { font-size: 20px; font-weight: 700; margin-bottom: 6px; }
-    .grade-summary .strengths { color: var(--success); font-weight: 600; font-size: 14px; }
-    .grade-summary .score-line { font-size: 14px; color: var(--g600); margin-top: 4px; }
-
-    .rubric-section-title { font-size: 13px; font-weight: 700; color: var(--g600); text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 16px; }
-    .rubric-row { margin-bottom: 15px; }
-    .rubric-row-top { display: flex; justify-content: space-between; align-items: center; margin-bottom: 5px; }
-    .rubric-lbl { font-size: 13px; font-weight: 600; color: var(--g700); }
-    .rubric-wt  { font-size: 12px; color: var(--g400); }
-    .rubric-sc  { font-size: 13px; font-weight: 700; }
-    .rubric-track { height: 8px; background: var(--g200); border-radius: 4px; overflow: hidden; margin-bottom: 4px; }
-    .rubric-fill  { height: 100%; border-radius: 4px; transition: width 0.7s ease; }
-    .rubric-fb    { font-size: 12px; color: var(--g600); line-height: 1.5; }
-
-    .tip-box {
-      background: var(--warn-bg); border: 1px solid var(--warn-bd);
-      border-radius: 8px; padding: 14px 16px; margin-top: 20px;
-    }
-    .tip-box .tip-lbl { font-size: 11px; font-weight: 700; color: #92400e; text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 5px; }
-    .tip-box p { font-size: 13px; color: #78350f; line-height: 1.55; }
-
-    /* ── Submission ─────────────────────────────────────────── */
-    .submission-ta {
-      width: 100%; min-height: 300px;
-      padding: 16px;
-      border: 1.5px solid var(--g300);
-      border-radius: 8px;
-      font-family: 'Courier New', Courier, monospace;
-      font-size: 13px;
-      line-height: 1.75;
-      color: var(--g800);
-      background: var(--g50);
-      resize: vertical;
-    }
-    .copy-ok { font-size: 13px; font-weight: 600; color: var(--success); opacity: 0; transition: opacity 0.3s; margin-left: 10px; }
-    .copy-ok.show { opacity: 1; }
-
-    .import-cta {
-      background: linear-gradient(135deg, #1e40af, #3b82f6);
-      border-radius: 12px; padding: 22px 26px;
-      color: var(--white);
-      display: flex; align-items: center; justify-content: space-between; gap: 16px;
-      margin-top: 24px;
-    }
-    .import-cta h3 { font-size: 15px; font-weight: 700; margin-bottom: 4px; }
-    .import-cta p  { font-size: 13px; opacity: 0.82; }
-    .btn-import {
-      background: var(--white); color: var(--primary);
-      border: none; padding: 10px 20px; border-radius: 8px;
-      font-size: 14px; font-weight: 700; cursor: pointer; white-space: nowrap;
-      flex-shrink: 0; transition: background 0.15s;
-    }
-    .btn-import:hover { background: #f0f9ff; }
-    .btn-import.saved { background: #dcfce7; color: var(--success); }
-
-    /* ── Loading ────────────────────────────────────────────── */
-    .loading-card { text-align: center; padding: 52px 32px; }
-    .loading-card .lc-icon { font-size: 36px; margin-bottom: 12px; }
-    .loading-card .lc-title { font-size: 17px; font-weight: 600; margin-bottom: 6px; }
-    .loading-card .lc-sub   { font-size: 14px; color: var(--g500); }
-    .spinner {
-      display: inline-block;
-      width: 28px; height: 28px;
-      border: 3px solid rgba(0,0,0,0.1);
-      border-top-color: var(--primary);
-      border-radius: 50%;
-      animation: spin 0.75s linear infinite;
-      margin-top: 20px;
-    }
-    .btn-spinner {
-      display: inline-block;
-      width: 14px; height: 14px;
-      border: 2px solid rgba(255,255,255,0.35);
-      border-top-color: var(--white);
-      border-radius: 50%;
-      animation: spin 0.75s linear infinite;
-      vertical-align: middle;
-      margin-right: 6px;
-    }
-
-    /* ── Error ──────────────────────────────────────────────── */
-    .err-msg { font-size: 13px; color: var(--red); margin-top: 10px; display: none; }
-
-    /* ── Animations ─────────────────────────────────────────── */
-    @keyframes spin    { to { transform: rotate(360deg); } }
-    @keyframes fadeUp  { from { opacity: 0; transform: translateY(-5px); } to { opacity: 1; transform: translateY(0); } }
-
-    /* ── Hidden ─────────────────────────────────────────────── */
-    [hidden] { display: none !important; }
-
-    /* ── Responsive ─────────────────────────────────────────── */
-    @media (max-width: 600px) {
-      .main { padding: 20px 16px 48px; }
-      .form-2col { grid-template-columns: 1fr; }
-      .grade-hdr { flex-direction: column; align-items: flex-start; gap: 16px; }
-      .import-cta { flex-direction: column; }
-    }
+    .print-doc { max-width:680px; margin:0 auto; padding:32px; font-family:'Times New Roman',serif; font-size:12pt; color:#000; }
+    .print-header { text-align:center; border-bottom:2px solid #000; padding-bottom:14px; margin-bottom:20px; }
+    .print-header h1 { font-size:18pt; margin-bottom:4px; }
+    .print-header p  { font-size:11pt; color:#444; }
+    .print-id { border:2px solid #000; padding:14px 20px; text-align:center; margin:18px 0; }
+    .print-id .pi-label { font-size:9pt; font-weight:bold; text-transform:uppercase; letter-spacing:1px; }
+    .print-id .pi-code  { font-size:20pt; font-weight:bold; font-family:monospace; letter-spacing:3px; margin:4px 0; }
+    .print-id .pi-note  { font-size:9pt; color:#666; }
+    .print-sec { margin-top:18px; }
+    .print-sec-title { font-size:11pt; font-weight:bold; text-transform:uppercase; border-bottom:1px solid #000; padding-bottom:4px; margin-bottom:10px; letter-spacing:.5px; }
+    .print-job { margin-bottom:14px; page-break-inside:avoid; }
+    .print-job-hdr { font-size:12pt; font-weight:bold; }
+    .print-job-sub { font-size:10pt; color:#444; margin:2px 0 6px; }
+    .print-job ul  { padding-left:18px; font-size:10pt; line-height:1.8; }
+    .print-para { font-size:11pt; line-height:1.7; }
+    .print-rubric { margin-top:10px; }
+    .print-rubric-row { display:flex; justify-content:space-between; font-size:10pt; border-bottom:1px solid #ddd; padding:4px 0; }
+    .print-rubric-row .pr-lbl { font-weight:bold; }
+    .print-rubric-row .pr-fb  { color:#444; flex:1; margin-left:12px; }
+    .print-grade-line { font-size:13pt; font-weight:bold; text-align:center; margin:12px 0; }
+    .print-footer { margin-top:24px; border-top:1px solid #000; padding-top:12px; font-size:9pt; text-align:center; color:#666; font-style:italic; }
   </style>
 </head>
 <body>
 
-<!-- ── Header ──────────────────────────────────────────────── -->
+<!-- ── Header ──────────────────────────────────── -->
 <div class="hdr">
   <div class="hdr-inner">
     <div>
       <h1>Work Experience Assignment</h1>
-      <div class="hdr-sub">Resume Writing — Employers Section</div>
+      <div class="hdr-sub">Resume Writing Program</div>
     </div>
-    <span class="hdr-badge">AI Graded</span>
-  </div>
-</div>
-<div class="prog-bar"><div class="prog-fill" id="progFill"></div></div>
-
-<!-- ── Step tabs ───────────────────────────────────────────── -->
-<div class="tabs-wrap">
-  <div class="tabs">
-    <div class="tab active" id="tab1"><span class="tab-num">1</span> Job Info</div>
-    <div class="tab"        id="tab2"><span class="tab-num">2</span> Job Duties</div>
-    <div class="tab"        id="tab3"><span class="tab-num">3</span> Grade</div>
-    <div class="tab"        id="tab4"><span class="tab-num">4</span> Submit</div>
+    <span class="hdr-badge">Assignment</span>
   </div>
 </div>
 
-<!-- ── Main ────────────────────────────────────────────────── -->
+<!-- ── Main ────────────────────────────────────── -->
 <main class="main">
 
-  <!-- ════ STEP 1: Info ══════════════════════════════════════ -->
-  <div id="step1">
-    <div class="info-box blue">
-      <h2>📋 Assignment Instructions</h2>
+<!-- ══════════════════════════════════════════════
+     SCREEN 1 — Welcome / Choose Path
+══════════════════════════════════════════════════ -->
+<div id="screenWelcome">
+  <div class="welcome-wrap">
+    <div class="welcome-card">
+      <span class="welcome-icon">📋</span>
+      <div class="welcome-title">Work Experience Assignment</div>
+      <div class="welcome-sub">This assignment builds the Work Experience section of your resume. Complete it carefully — your submission will be graded and saved for use in your resume.</div>
+
+      <div class="name-field">
+        <label for="studentName">Your Full Name <span class="req">*</span></label>
+        <input type="text" id="studentName" placeholder="First and Last Name" autocomplete="name">
+      </div>
+
+      <div class="choice-btns">
+        <button class="choice-btn" onclick="choosePath('work')">
+          <span class="cb-icon">💼</span>
+          <span class="cb-text">
+            <span class="cb-title">I Have Work History — Enter My Jobs</span>
+            <span class="cb-desc">I have worked one or more jobs and want to enter them for my resume. You can add multiple positions.</span>
+          </span>
+        </button>
+        <button class="choice-btn" onclick="choosePath('nowork')">
+          <span class="cb-icon">🎓</span>
+          <span class="cb-text">
+            <span class="cb-title">I Don't Have Work History Yet</span>
+            <span class="cb-desc">I haven't held a job yet and will write about the skills and knowledge I gained in my program.</span>
+          </span>
+        </button>
+      </div>
+    </div>
+    <div id="nameErr" class="err-msg" style="display:none; text-align:center; font-size:14px;">⚠ Please enter your name before continuing.</div>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════════════
+     SCREEN 2A — No Work History Form
+══════════════════════════════════════════════════ -->
+<div id="screenNoWork" hidden>
+  <div class="info green">
+    <h3>📌 What You're Doing in This Assignment</h3>
+    <p>Since you haven't held a job yet, you'll write a paragraph describing the skills, techniques, and knowledge you gained through your trade school program. This is completely normal — many trade school students are entering the workforce for the first time.</p>
+  </div>
+
+  <div class="card">
+    <div class="card-title">Skills & Training Paragraph</div>
+    <div class="card-sub">Write a paragraph in your own words about what you learned in your program. Be specific and honest — this will be used to build the Skills section of your resume.</div>
+
+    <div class="info blue" style="margin-bottom:22px">
+      <h3>✏️ What to Write About</h3>
       <ul>
-        <li>Think of a real job you've held (current or past)</li>
-        <li>Fill in the employer details below, then move to Step 2</li>
-        <li>In Step 2 you'll write 3–5 job duties — the AI will coach each one as you go</li>
-        <li>The AI will grade your finished work against a rubric</li>
-        <li>In Step 4 your submission is auto-filled — just copy and paste it in</li>
+        <li><strong>Tools and equipment</strong> you learned to use (name them specifically)</li>
+        <li><strong>Techniques and skills</strong> you practiced in class or the shop</li>
+        <li><strong>Safety procedures</strong> and industry standards you were trained on</li>
+        <li><strong>Hands-on tasks</strong> you can perform on your own</li>
+        <li><strong>Soft skills</strong> developed: teamwork, attention to detail, time management</li>
       </ul>
     </div>
 
-    <div class="card">
-      <div class="card-title">Your Name</div>
-      <div class="card-subtitle">Appears on your submission</div>
-      <div class="field">
-        <label for="studentName">Full Name</label>
-        <input type="text" id="studentName" placeholder="e.g., Alex Johnson" autocomplete="name">
-      </div>
+    <div class="info amber">
+      <h3>⚠ Important: Be Accurate</h3>
+      <p>Write only about what you actually learned in your program. Do not exaggerate or include skills you haven't been trained on. This paragraph will be used directly in your resume — accuracy is essential for your professional reputation.</p>
     </div>
 
-    <div class="card">
-      <div class="card-title">Employer Information</div>
-      <div class="card-subtitle">Enter details for one job you want to use on your resume</div>
-
-      <div class="field">
-        <label for="employer">Employer / Company Name <span style="color:#dc2626">*</span></label>
-        <input type="text" id="employer" placeholder="e.g., Johnson's Auto Repair">
-      </div>
-
-      <div class="field">
-        <label for="jobTitle">Job Title <span style="color:#dc2626">*</span></label>
-        <input type="text" id="jobTitle" placeholder="e.g., Automotive Technician">
-      </div>
-
-      <div class="form-2col">
-        <div class="field">
-          <label for="startDate">Start Date</label>
-          <input type="month" id="startDate">
+    <div class="card" style="background:var(--g50); border-color:var(--g200); margin-bottom:0;">
+      <div style="font-size:13px; font-weight:700; color:var(--g600); text-transform:uppercase; letter-spacing:.5px; margin-bottom:12px;">Grading Rubric — What You'll Be Scored On</div>
+      <div style="display:grid; grid-template-columns:1fr 1fr; gap:10px; font-size:13px;">
+        <div style="padding:10px 14px; background:#fff; border:1px solid var(--g200); border-radius:8px;">
+          <div style="font-weight:700; margin-bottom:2px;">Specific Skills Named <span style="color:var(--g400); font-weight:400;">(35%)</span></div>
+          <div style="color:var(--g500); font-size:12px;">Did you name actual tools, techniques, or procedures from your program?</div>
         </div>
-        <div class="field">
-          <label for="endDate">End Date</label>
-          <input type="month" id="endDate">
-          <label class="check-label" style="margin-top:10px;">
-            <input type="checkbox" id="currentJob" onchange="toggleCurrent()">
-            I currently work here
-          </label>
+        <div style="padding:10px 14px; background:#fff; border:1px solid var(--g200); border-radius:8px;">
+          <div style="font-weight:700; margin-bottom:2px;">Program Relevance <span style="color:var(--g400); font-weight:400;">(25%)</span></div>
+          <div style="color:var(--g500); font-size:12px;">Does your content relate to your trade school program?</div>
+        </div>
+        <div style="padding:10px 14px; background:#fff; border:1px solid var(--g200); border-radius:8px;">
+          <div style="font-weight:700; margin-bottom:2px;">Effort &amp; Length <span style="color:var(--g400); font-weight:400;">(25%)</span></div>
+          <div style="color:var(--g500); font-size:12px;">Is the paragraph complete and detailed? Aim for at least 5–8 sentences.</div>
+        </div>
+        <div style="padding:10px 14px; background:#fff; border:1px solid var(--g200); border-radius:8px;">
+          <div style="font-weight:700; font-size:12px; margin-bottom:2px;">Professional Language <span style="color:var(--g400); font-weight:400;">(15%)</span></div>
+          <div style="color:var(--g500); font-size:12px;">Clear and professional writing. Avoid slang.</div>
         </div>
       </div>
-
-      <div class="err-msg" id="step1Err">Please enter both Employer and Job Title before continuing.</div>
     </div>
+
+    <div class="field" style="margin-top:22px">
+      <label for="skillsParagraph">Your Skills &amp; Training Paragraph <span class="req">*</span></label>
+      <textarea id="skillsParagraph" rows="8" placeholder="Example: During my Automotive Technology program at Lincoln Tech, I developed hands-on skills in vehicle maintenance and repair. I learned to perform oil changes, brake inspections, and tire rotations using professional shop equipment. I also gained experience with diagnostic scan tools to identify engine fault codes. In addition to technical skills, I was trained on OSHA shop safety procedures and proper disposal of hazardous materials..."></textarea>
+      <div class="field-hint" id="wordCount">0 words — aim for at least 50</div>
+    </div>
+
+    <div id="noworkErr" class="err-msg">Please write your skills paragraph before submitting.</div>
 
     <div class="btn-row">
-      <button class="btn btn-primary" onclick="goStep2()">Continue to Job Duties →</button>
+      <button class="btn btn-secondary" onclick="goBack()">← Back</button>
+      <button class="btn btn-primary btn-lg" onclick="submitNoWork()">Submit for Grading →</button>
     </div>
   </div>
+</div>
 
-  <!-- ════ STEP 2: Duties ════════════════════════════════════ -->
-  <div id="step2" hidden>
+<!-- ══════════════════════════════════════════════
+     SCREEN 2B — Work History Job Entry Form
+══════════════════════════════════════════════════ -->
+<div id="screenWorkForm" hidden>
+  <div class="info blue">
+    <h3>💼 How to Write Strong Bullet Points</h3>
+    <ul>
+      <li><strong>Start with an ACTION VERB:</strong> Maintained, Operated, Assisted, Performed, Inspected, Installed…</li>
+      <li><strong>Be specific:</strong> Name the tools, equipment, or tasks — "Operated hydraulic lifts and diagnostic scan tools" is much stronger than "Used equipment"</li>
+      <li><strong>Skip "I":</strong> Write "Performed oil changes" — not "I performed oil changes"</li>
+      <li><strong>Add detail:</strong> "Completed oil changes, tire rotations, and brake inspections on 8–10 vehicles per shift" tells the full story</li>
+    </ul>
+    <p style="margin-top:10px; font-size:13px; color:var(--g500);">Examples: <em>Maintained a clean, organized work bay following shop safety procedures. | Assisted lead technician with engine diagnostics and component replacement. | Operated POS system to process customer transactions and returns.</em></p>
+  </div>
 
-    <div class="card">
-      <div class="card-title" id="dutiesTitle">Job Duties</div>
-      <div class="card-subtitle">Write what you actually did at this job. The AI will coach each duty individually.</div>
+  <div class="card">
+    <div class="card-title" id="formTitle">Add a Job</div>
+    <div class="card-sub">Fill in the details for this position. Bullet points describe what you did — at least 3 are required.</div>
 
-      <div class="info-box blue" style="margin-bottom:22px;">
-        <h2>💡 How to Write a Strong Job Duty</h2>
-        <ul>
-          <li><strong>Start with an action verb:</strong> Maintained, Operated, Installed, Inspected, Assisted…</li>
-          <li><strong>Be specific:</strong> Name the tools, equipment, or processes you used</li>
-          <li><strong>Skip "I":</strong> Write "Diagnosed brake issues" not "I diagnosed brake issues"</li>
-          <li><strong>Add a detail or result:</strong> "Performed oil changes on 8–10 vehicles per shift"</li>
-        </ul>
+    <div class="field">
+      <label for="fEmployer">Employer / Company Name <span class="req">*</span></label>
+      <input type="text" id="fEmployer" placeholder="e.g., Johnson's Auto Repair">
+    </div>
+
+    <div class="field">
+      <label for="fTitle">Job Title <span class="req">*</span></label>
+      <input type="text" id="fTitle" placeholder="e.g., Automotive Technician Helper">
+    </div>
+
+    <div class="form-2col">
+      <div class="field">
+        <label for="fCity">City</label>
+        <input type="text" id="fCity" placeholder="City">
       </div>
-
-      <div id="dutiesContainer"></div>
-
-      <button class="btn-add-duty" id="addDutyBtn" onclick="addDuty()">+ Add Another Duty</button>
-
-      <div class="err-msg" id="step2Err">Please write at least 3 job duties before grading.</div>
+      <div class="field">
+        <label for="fState">State</label>
+        <input type="text" id="fState" placeholder="e.g., PA" maxlength="2" style="text-transform:uppercase">
+      </div>
     </div>
+
+    <div class="form-2col">
+      <div class="field">
+        <label for="fStart">Start Date <span class="req">*</span></label>
+        <input type="month" id="fStart">
+      </div>
+      <div class="field">
+        <label for="fEnd">End Date</label>
+        <input type="month" id="fEnd">
+        <label class="check-wrap" style="margin-top:10px;">
+          <input type="checkbox" id="fCurrent" onchange="toggleCurrent()">
+          <span>I currently work here</span>
+        </label>
+      </div>
+    </div>
+
+    <div class="divider"></div>
+
+    <div class="bullet-section-title">Job Duties / Bullet Points</div>
+
+    <div class="info amber" style="margin-bottom:18px">
+      <p>Bullets 1–3 are <strong>required</strong>. Bullets 4–5 are optional but strongly recommended — more detail makes a stronger resume.</p>
+    </div>
+
+    <div class="bullet-row"><span class="bullet-num">1.</span><input type="text" id="b1" placeholder="Performed oil changes, tire rotations, and brake inspections on customer vehicles"><span class="req-tag">Required</span></div>
+    <div class="bullet-row"><span class="bullet-num">2.</span><input type="text" id="b2" placeholder="Operated shop equipment including hydraulic lifts and diagnostic scan tools"><span class="req-tag">Required</span></div>
+    <div class="bullet-row"><span class="bullet-num">3.</span><input type="text" id="b3" placeholder="Maintained a clean, organized work bay and followed all shop safety procedures"><span class="req-tag">Required</span></div>
+    <div class="bullet-row"><span class="bullet-num">4.</span><input type="text" id="b4" placeholder="(Optional) Add a fourth bullet point..."><span class="opt-tag">Optional</span></div>
+    <div class="bullet-row"><span class="bullet-num">5.</span><input type="text" id="b5" placeholder="(Optional) Add a fifth bullet point..."><span class="opt-tag">Optional</span></div>
+
+    <div id="workFormErr" class="err-msg">Please fill in Employer, Job Title, Start Date, and at least 3 bullet points.</div>
 
     <div class="btn-row">
-      <button class="btn btn-secondary" onclick="goStep1()">← Back</button>
-      <button class="btn btn-primary" id="gradeBtn" onclick="startGrading()">Grade My Work →</button>
+      <button class="btn btn-secondary" onclick="cancelJobForm()">← Cancel</button>
+      <button class="btn btn-primary" onclick="saveJob()">Save This Job →</button>
     </div>
   </div>
+</div>
 
-  <!-- ════ STEP 3: Grade ═════════════════════════════════════ -->
-  <div id="step3" hidden>
+<!-- ══════════════════════════════════════════════
+     SCREEN 3 — Jobs Review / Add More
+══════════════════════════════════════════════════ -->
+<div id="screenJobsReview" hidden>
+  <div class="info green">
+    <h3>✅ Jobs Saved</h3>
+    <p>Your saved jobs are shown below. You can edit or delete any entry before submitting. Add more jobs if needed — there's no limit. When you're done, click <strong>Submit Assignment</strong>.</p>
+  </div>
 
-    <!-- Loading state -->
-    <div class="card loading-card" id="loadingCard">
-      <div class="lc-icon">📝</div>
-      <div class="lc-title">Grading your assignment…</div>
-      <div class="lc-sub">The AI is reviewing your job duties against the rubric.</div>
-      <div><div class="spinner"></div></div>
-    </div>
+  <div id="jobsList" class="jobs-list"></div>
 
-    <!-- Result -->
-    <div class="grade-card" id="gradeCard" hidden>
+  <div style="display:flex; gap:14px; flex-wrap:wrap; margin-top:4px;">
+    <button class="btn btn-secondary" onclick="addAnotherJob()">+ Add Another Job</button>
+    <button class="btn btn-success btn-lg" onclick="submitWorkAssignment()">Submit Assignment →</button>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════════════
+     SCREEN 4 — Grading (Loading → Result)
+══════════════════════════════════════════════════ -->
+<div id="screenGrading" hidden>
+  <!-- Loading state -->
+  <div class="card loading-card" id="gradingLoading">
+    <div style="font-size:36px; margin-bottom:12px;">📝</div>
+    <div style="font-size:17px; font-weight:600; margin-bottom:6px;">Grading your assignment…</div>
+    <div style="font-size:14px; color:var(--g500);">Reviewing your submission against the rubric. This takes a moment.</div>
+    <div><div class="spinner"></div></div>
+  </div>
+
+  <!-- Grade result -->
+  <div id="gradingResult" hidden>
+    <div class="card">
       <div class="grade-hdr">
         <div class="grade-circle" id="gradeCircle">
           <div class="gl" id="gradeLetter">B</div>
-          <div class="gp" id="gradePoints">83 pts</div>
+          <div class="gp" id="gradePoints">84 pts</div>
         </div>
-        <div class="grade-summary">
+        <div class="grade-meta">
           <h3 id="gradeHeadline">Good Work!</h3>
-          <div class="strengths" id="gradeStrengths"></div>
-          <div class="score-line" id="gradeScoreLine"></div>
+          <div class="gm-strengths" id="gradeStrengths"></div>
+          <div class="gm-score" id="gradeScoreLine"></div>
         </div>
       </div>
 
-      <div class="rubric-section-title">Rubric Breakdown</div>
+      <div class="rubric-section-hdr">Rubric Breakdown</div>
+      <div id="rubricRows"></div>
 
-      <div class="rubric-row">
-        <div class="rubric-row-top">
-          <span class="rubric-lbl">Action Verbs</span>
-          <span class="rubric-wt">25%</span>
-          <span class="rubric-sc" id="sc-actionVerbs"></span>
-        </div>
-        <div class="rubric-track"><div class="rubric-fill" id="bar-actionVerbs" style="width:0%"></div></div>
-        <div class="rubric-fb" id="fb-actionVerbs"></div>
+      <div style="background:var(--amber-bg); border:1px solid var(--amber-bd); border-radius:8px; padding:14px 16px; margin-top:16px;">
+        <div style="font-size:11px; font-weight:700; color:#92400e; text-transform:uppercase; letter-spacing:.5px; margin-bottom:5px;">Summary Feedback</div>
+        <p id="gradeSummary" style="font-size:13px; color:#78350f; line-height:1.55;"></p>
       </div>
-
-      <div class="rubric-row">
-        <div class="rubric-row-top">
-          <span class="rubric-lbl">Specificity</span>
-          <span class="rubric-wt">25%</span>
-          <span class="rubric-sc" id="sc-specificity"></span>
-        </div>
-        <div class="rubric-track"><div class="rubric-fill" id="bar-specificity" style="width:0%"></div></div>
-        <div class="rubric-fb" id="fb-specificity"></div>
-      </div>
-
-      <div class="rubric-row">
-        <div class="rubric-row-top">
-          <span class="rubric-lbl">Professionalism</span>
-          <span class="rubric-wt">20%</span>
-          <span class="rubric-sc" id="sc-professionalism"></span>
-        </div>
-        <div class="rubric-track"><div class="rubric-fill" id="bar-professionalism" style="width:0%"></div></div>
-        <div class="rubric-fb" id="fb-professionalism"></div>
-      </div>
-
-      <div class="rubric-row">
-        <div class="rubric-row-top">
-          <span class="rubric-lbl">Completeness</span>
-          <span class="rubric-wt">20%</span>
-          <span class="rubric-sc" id="sc-completeness"></span>
-        </div>
-        <div class="rubric-track"><div class="rubric-fill" id="bar-completeness" style="width:0%"></div></div>
-        <div class="rubric-fb" id="fb-completeness"></div>
-      </div>
-
-      <div class="rubric-row">
-        <div class="rubric-row-top">
-          <span class="rubric-lbl">Relevance to Job Title</span>
-          <span class="rubric-wt">10%</span>
-          <span class="rubric-sc" id="sc-relevance"></span>
-        </div>
-        <div class="rubric-track"><div class="rubric-fill" id="bar-relevance" style="width:0%"></div></div>
-        <div class="rubric-fb" id="fb-relevance"></div>
-      </div>
-
-      <div class="tip-box">
-        <div class="tip-lbl">Top Suggestion</div>
-        <p id="topSuggestion"></p>
-      </div>
-    </div>
-
-    <div class="btn-row" id="gradeActions" hidden>
-      <button class="btn btn-secondary" onclick="goStep2()">← Revise My Duties</button>
-      <button class="btn btn-primary"   onclick="goStep4()">Generate Submission →</button>
-    </div>
-  </div>
-
-  <!-- ════ STEP 4: Submit ════════════════════════════════════ -->
-  <div id="step4" hidden>
-
-    <div class="info-box green">
-      <p>✅ Your assignment is complete! Your submission has been auto-filled below. Copy it and paste it into the assignment submission box.</p>
     </div>
 
     <div class="card">
-      <div class="card-title">Your Submission</div>
-      <div class="card-subtitle">Auto-filled with your completed work — ready to copy and paste.</div>
-      <label style="margin-bottom:8px;">Assignment Submission Text:</label>
-      <textarea class="submission-ta" id="submissionText" readonly></textarea>
+      <div class="card-title">Submission Receipt</div>
+      <div class="card-sub">Your submission has been recorded. Write down your Submission ID and keep a copy of your PDF — you'll need to turn it in to receive credit.</div>
+
+      <div class="sub-id-box">
+        <div class="sub-id-label">Submission ID</div>
+        <div class="sub-id-code" id="subIdDisplay">—</div>
+        <div class="sub-id-note">Keep this ID for your records — it's how your instructor can verify your submission.</div>
+      </div>
+
+      <div class="info green">
+        <h3>📥 Next Steps</h3>
+        <ul>
+          <li>Click <strong>Download PDF</strong> below to save your submission</li>
+          <li>Hand in the PDF to your instructor for credit</li>
+          <li>Your work has been saved and will be automatically used when you build your resume</li>
+        </ul>
+      </div>
+
       <div class="btn-row">
-        <button class="btn btn-success" onclick="copySubmission()">Copy to Clipboard</button>
-        <span class="copy-ok" id="copyOk">✓ Copied!</span>
+        <button class="btn btn-primary btn-lg" onclick="downloadPDF()">⬇ Download PDF Submission</button>
       </div>
     </div>
-
-    <div class="import-cta">
-      <div>
-        <h3>Save to Your Resume Builder</h3>
-        <p>Import this entry into the resume builder — no retyping needed.</p>
-      </div>
-      <button class="btn-import" id="importBtn" onclick="saveToResume()">Save for My Resume</button>
-    </div>
-
   </div>
+</div>
 
 </main>
 
+<!-- ══════════════════════════════════════════════
+     PRINT AREA (only rendered during print)
+══════════════════════════════════════════════════ -->
+<div id="printArea">
+  <div class="print-doc" id="printDoc">
+    <!-- Generated dynamically before printing -->
+  </div>
+</div>
+
 <script>
-  /* ── State ──────────────────────────────────────────────── */
-  let duties    = [];   // [{ text, coaching }]
-  let gradeData = null;
-  let isCurrent = false;
+/* ── State ──────────────────────────────────────────────── */
+let studentName   = '';
+let currentPath   = null;      // 'work' | 'nowork'
+let jobs          = [];        // array of job objects
+let editingIndex  = -1;        // -1 = new job, ≥0 = editing existing
+let submissionId  = null;
+let gradeResult   = null;
 
-  /* ── Init ───────────────────────────────────────────────── */
-  window.addEventListener('load', () => {
-    // Restore draft
-    try {
-      const d = JSON.parse(localStorage.getItem('empAssign_draft') || '{}');
-      if (d.studentName) document.getElementById('studentName').value = d.studentName;
-      if (d.employer)    document.getElementById('employer').value    = d.employer;
-      if (d.jobTitle)    document.getElementById('jobTitle').value    = d.jobTitle;
-      if (d.startDate)   document.getElementById('startDate').value   = d.startDate;
-      if (d.endDate)     document.getElementById('endDate').value     = d.endDate;
-      if (d.isCurrent) {
-        document.getElementById('currentJob').checked = true;
-        toggleCurrent();
-      }
-    } catch(e) {}
-
-    // Seed 3 duty rows
-    for (let i = 0; i < 3; i++) addDuty();
+/* ── Screen navigation ─────────────────────────────────── */
+const SCREENS = ['screenWelcome','screenNoWork','screenWorkForm','screenJobsReview','screenGrading'];
+function show(id) {
+  SCREENS.forEach(s => {
+    const el = document.getElementById(s);
+    if (el) el.hidden = (s !== id);
   });
+  window.scrollTo({ top:0, behavior:'smooth' });
+}
 
-  function toggleCurrent() {
-    isCurrent = document.getElementById('currentJob').checked;
-    const el = document.getElementById('endDate');
-    el.disabled = isCurrent;
-    if (isCurrent) el.value = '';
+/* ── Welcome / path selection ──────────────────────────── */
+function choosePath(path) {
+  const name = document.getElementById('studentName').value.trim();
+  if (!name) {
+    document.getElementById('nameErr').style.display = 'block';
+    document.getElementById('studentName').focus();
+    return;
   }
+  document.getElementById('nameErr').style.display = 'none';
+  studentName = name;
+  currentPath = path;
 
-  /* ── Duties ─────────────────────────────────────────────── */
-  function addDuty() {
-    if (duties.length >= 5) return;
-    const i = duties.length;
-    duties.push({ text: '', coaching: null });
-
-    const wrap = document.createElement('div');
-    wrap.className = 'duty-row';
-    wrap.id = 'dr' + i;
-    wrap.innerHTML = `
-      <div class="duty-row-input">
-        <div class="duty-n">${i + 1}.</div>
-        <input type="text" id="di${i}"
-          placeholder="e.g., Performed oil changes and tire rotations on customer vehicles"
-          oninput="duties[${i}].text=this.value; clearCoach(${i})">
-        <button class="btn-check" id="cb${i}" onclick="coach(${i})">Check It</button>
-      </div>
-      <div id="bubble${i}"></div>`;
-    document.getElementById('dutiesContainer').appendChild(wrap);
-
-    if (duties.length >= 5) document.getElementById('addDutyBtn').style.display = 'none';
+  if (path === 'nowork') {
+    show('screenNoWork');
+  } else {
+    editingIndex = -1;
+    clearJobForm();
+    document.getElementById('formTitle').textContent = 'Add Your First Job';
+    show('screenWorkForm');
   }
+}
 
-  function clearCoach(i) {
-    duties[i].coaching = null;
-    document.getElementById('bubble' + i).innerHTML = '';
-    const cb = document.getElementById('cb' + i);
-    if (cb) { cb.textContent = 'Check It'; cb.disabled = false; }
+function goBack() { show('screenWelcome'); }
+
+/* ── No Work History path ──────────────────────────────── */
+document.getElementById('skillsParagraph').addEventListener('input', function() {
+  const words = this.value.trim().split(/\s+/).filter(w => w.length > 0).length;
+  const hint  = document.getElementById('wordCount');
+  hint.textContent = `${words} word${words !== 1 ? 's' : ''} — ${words < 50 ? 'aim for at least 50' : '✓ Good length'}`;
+  hint.style.color = words >= 50 ? 'var(--green)' : 'var(--g500)';
+});
+
+function submitNoWork() {
+  const para = document.getElementById('skillsParagraph').value.trim();
+  if (!para || para.split(/\s+/).length < 15) {
+    document.getElementById('noworkErr').style.display = 'block';
+    return;
   }
+  document.getElementById('noworkErr').style.display = 'none';
+  show('screenGrading');
+  gradeNoWork(para);
+}
 
-  async function coach(i) {
-    const duty = duties[i].text.trim();
-    if (!duty) return;
+async function gradeNoWork(para) {
+  const sys = `You are a fair, encouraging instructor grading a trade school student's skills paragraph assignment. Return ONLY valid JSON.`;
+  const msg = `Grade this trade school student's skills paragraph. They have no work experience and are writing about skills learned in their program.
 
-    const employer  = document.getElementById('employer').value.trim();
-    const jobTitle  = document.getElementById('jobTitle').value.trim();
-    const cb     = document.getElementById('cb'     + i);
-    const bubble = document.getElementById('bubble' + i);
+Paragraph: "${para}"
 
-    cb.disabled = true;
-    cb.innerHTML = '<span class="btn-spinner"></span>Checking…';
-    bubble.className = 'coach-bubble loading';
-    bubble.textContent = 'Reviewing this duty…';
+Grade on these criteria (0-100 each). Be FAIR and ENCOURAGING. Give reasonable credit for genuine effort. These are students, not professional writers.
 
-    try {
-      const text = await callAPI(
-        'You are a friendly, concise resume writing coach for a trade school student.',
-        `The student wrote this job duty for "${jobTitle}" at "${employer}":\n"${duty}"\n\nGive coaching in 2–3 sentences:\n1. What is strong about it (or encourage them if it needs work)\n2. One specific improvement if needed — or confirm it looks great\n\nFocus on: action verbs, specificity, professional tone. Be warm and brief.`,
-        280
-      );
-      duties[i].coaching = text;
-      bubble.className  = 'coach-bubble info';
-      bubble.textContent = text;
-      cb.textContent = '✓ Checked';
-    } catch(e) {
-      bubble.className  = 'coach-bubble loading';
-      bubble.textContent = 'Could not reach AI. Make sure the app is running locally.';
-      cb.disabled = false;
-      cb.textContent = 'Try Again';
-    }
-  }
-
-  /* ── Navigation ─────────────────────────────────────────── */
-  function showStep(n) {
-    [1,2,3,4].forEach(s => {
-      const el  = document.getElementById('step' + s);
-      const tab = document.getElementById('tab'  + s);
-      if (el)  el.hidden = (s !== n);
-      if (tab) tab.className = 'tab' + (s === n ? ' active' : s < n ? ' done' : '');
-    });
-    const pct = [0, 25, 50, 75, 100];
-    document.getElementById('progFill').style.width = pct[n] + '%';
-    window.scrollTo({ top: 0, behavior: 'smooth' });
-  }
-
-  function goStep1() { showStep(1); }
-
-  function goStep2() {
-    const employer = document.getElementById('employer').value.trim();
-    const jobTitle = document.getElementById('jobTitle').value.trim();
-    if (!employer || !jobTitle) {
-      document.getElementById('step1Err').style.display = 'block';
-      return;
-    }
-    document.getElementById('step1Err').style.display = 'none';
-    document.getElementById('dutiesTitle').textContent = `Job Duties — ${jobTitle} at ${employer}`;
-    saveDraft();
-    showStep(2);
-  }
-
-  async function startGrading() {
-    const filled = duties.filter(d => d.text.trim());
-    if (filled.length < 3) {
-      document.getElementById('step2Err').style.display = 'block';
-      return;
-    }
-    document.getElementById('step2Err').style.display = 'none';
-    showStep(3);
-    await doGrade();
-  }
-
-  function goStep4() {
-    showStep(4);
-    fillSubmission();
-  }
-
-  /* ── Grading ────────────────────────────────────────────── */
-  async function doGrade() {
-    const employer  = document.getElementById('employer').value.trim();
-    const jobTitle  = document.getElementById('jobTitle').value.trim();
-    const start     = fmtMonthYear(document.getElementById('startDate').value);
-    const end       = isCurrent ? 'Present' : fmtMonthYear(document.getElementById('endDate').value);
-    const dutyList  = duties.filter(d => d.text.trim()).map((d, i) => `${i+1}. ${d.text.trim()}`).join('\n');
-
-    const prompt = `Grade this trade school student's resume work experience entry.
-
-Employer: ${employer}
-Title:    ${jobTitle}
-Dates:    ${start} to ${end}
-Duties:
-${dutyList}
-
-Return ONLY valid JSON — no other text:
+Return ONLY this JSON — no other text:
 {
   "scores": {
-    "actionVerbs": 0-100,
-    "specificity": 0-100,
-    "professionalism": 0-100,
-    "completeness": 0-100,
-    "relevance": 0-100
+    "specificSkills": <0-100>,
+    "relevance": <0-100>,
+    "effort": <0-100>,
+    "language": <0-100>
   },
   "feedback": {
-    "actionVerbs": "1-2 sentence feedback",
-    "specificity": "1-2 sentence feedback",
-    "professionalism": "1-2 sentence feedback",
-    "completeness": "1-2 sentence feedback",
-    "relevance": "1-2 sentence feedback"
+    "specificSkills": "1-2 sentence feedback",
+    "relevance": "1-2 sentence feedback",
+    "effort": "1-2 sentence feedback",
+    "language": "1-2 sentence feedback"
   },
+  "overall": <0-100>,
+  "grade": "<A|B|C|D|F>",
+  "headline": "<Excellent Work!|Good Work!|Nice Start!|Needs More Detail|Keep Practicing>",
   "strengths": "1-2 sentences on what they did well",
-  "topSuggestion": "The single most important improvement"
+  "summary": "2-3 sentences of overall feedback — be encouraging and constructive"
 }
 
 Scoring guide:
-- actionVerbs (25%): Duties start with strong action verbs (Maintained, Operated, Assisted…). No verb = low score.
-- specificity (25%): Specific tools, quantities, processes named. Vague = low.
-- professionalism (20%): No "I" or first person. No slang. Proper capitalization.
-- completeness (20%): 3+ duties present and employer/title filled in.
-- relevance (10%): Duties make sense for the stated job title.`;
+- specificSkills (35%): Did they name real tools, techniques, or procedures? Generic = low, specific names = high.
+- relevance (25%): Does it relate to a trade school program? Completely off-topic = low.
+- effort (25%): Word count and detail. Under 30 words = 50, 30-50 = 65, 50-80 = 80, 80+ = 90-100.
+- language (15%): Clear, professional writing. Slang or very poor grammar = low. Minor errors = still give 70+.`;
 
-    try {
-      const raw   = await callAPI('You are a resume writing instructor. Return only valid JSON.', prompt, 900);
-      const match = raw.match(/\{[\s\S]*\}/);
-      if (!match) throw new Error('No JSON');
-      gradeData = JSON.parse(match[0]);
-      renderGrade(gradeData);
-    } catch(e) {
-      document.getElementById('loadingCard').innerHTML = `
-        <div class="lc-icon">⚠️</div>
-        <div class="lc-title" style="color:#b91c1c">Grading failed</div>
-        <div class="lc-sub" style="margin-bottom:20px">Could not parse the AI response. Try again.</div>
-        <button class="btn btn-secondary" onclick="goStep2()">← Go Back</button>`;
-    }
+  try {
+    const raw   = await callAPI(sys, msg, 900);
+    const match = raw.match(/\{[\s\S]*\}/);
+    if (!match) throw new Error('no json');
+    gradeResult = JSON.parse(match[0]);
+    gradeResult._rubricKeys   = ['specificSkills','relevance','effort','language'];
+    gradeResult._rubricLabels = ['Specific Skills Named','Program Relevance','Effort & Length','Professional Language'];
+    gradeResult._rubricWeights = ['35%','25%','25%','15%'];
+  } catch(e) {
+    // JS fallback grading for no-work path
+    gradeResult = gradeNoWorkJS(para);
   }
 
-  function renderGrade(data) {
-    const weights = { actionVerbs: .25, specificity: .25, professionalism: .20, completeness: .20, relevance: .10 };
-    let overall = 0;
-    for (const [k, w] of Object.entries(weights)) overall += (data.scores[k] || 0) * w;
-    overall = Math.round(overall);
-    data.overall = overall;
+  // Save to localStorage
+  localStorage.setItem('empAssign_skillsPara', para);
+  localStorage.setItem('empAssign_submission', JSON.stringify({
+    path: 'nowork', studentName, submissionId: generateId(), gradeResult,
+    submittedAt: new Date().toISOString()
+  }));
 
-    const grade = overall >= 90 ? 'A' : overall >= 80 ? 'B' : overall >= 70 ? 'C' : overall >= 60 ? 'D' : 'F';
-    data.grade  = grade;
+  submissionId = gradeResult._submissionId || generateId();
+  gradeResult._submissionId = submissionId;
+  showGradeResult();
+}
 
-    // Circle
-    const circle = document.getElementById('gradeCircle');
-    circle.className = 'grade-circle gc-' + grade.toLowerCase();
-    document.getElementById('gradeLetter').textContent = grade;
-    document.getElementById('gradePoints').textContent = overall + ' pts';
+function gradeNoWorkJS(para) {
+  const words = para.trim().split(/\s+/).filter(w => w.length > 0).length;
+  const hasTools = /\b(tool|equipment|machine|diagnostic|scan|hydraulic|lift|wrench|drill|saw|welding|soldering|meter|gauge)\b/i.test(para);
+  const hasTechniques = /\b(install|repair|maintain|diagnose|inspect|test|operate|perform|complete|assembly|wiring|plumbing|electrical|brake|engine)\b/i.test(para);
+  const effortScore = words < 30 ? 50 : words < 50 ? 65 : words < 80 ? 80 : 90;
+  const skillScore  = (hasTools && hasTechniques) ? 80 : hasTools || hasTechniques ? 65 : 45;
+  const overall = Math.round(skillScore * .35 + 75 * .25 + effortScore * .25 + 70 * .15);
+  const grade   = overall >= 90 ? 'A' : overall >= 80 ? 'B' : overall >= 70 ? 'C' : overall >= 60 ? 'D' : 'F';
+  return {
+    scores: { specificSkills: skillScore, relevance: 75, effort: effortScore, language: 70 },
+    feedback: {
+      specificSkills: hasTools || hasTechniques ? 'You mentioned some specific skills from your training.' : 'Try to name specific tools or techniques you used in your program.',
+      relevance: 'Your paragraph relates to your trade school experience.',
+      effort: words >= 50 ? 'Good length — you provided sufficient detail.' : 'Try to add more detail. Aim for at least 50 words.',
+      language: 'Your writing is generally clear and understandable.'
+    },
+    overall, grade,
+    headline: overall >= 90 ? 'Excellent Work!' : overall >= 80 ? 'Good Work!' : overall >= 70 ? 'Nice Start!' : 'Needs More Detail',
+    strengths: 'You completed the assignment and provided information about your training.',
+    summary: 'Thank you for completing this assignment. Your paragraph will be used to build your resume\'s skills section.',
+    _rubricKeys:    ['specificSkills','relevance','effort','language'],
+    _rubricLabels:  ['Specific Skills Named','Program Relevance','Effort & Length','Professional Language'],
+    _rubricWeights: ['35%','25%','25%','15%']
+  };
+}
 
-    // Headline
-    const headlines = { A: 'Excellent Work!', B: 'Good Work!', C: 'Decent Start!', D: 'Needs More Detail', F: 'Keep Practicing' };
-    document.getElementById('gradeHeadline').textContent  = headlines[grade] || 'Graded';
-    document.getElementById('gradeStrengths').textContent = data.strengths || '';
-    document.getElementById('gradeScoreLine').textContent = `Overall: ${overall}/100 — Grade: ${grade}`;
+/* ── Work History path ─────────────────────────────────── */
+function toggleCurrent() {
+  const chk = document.getElementById('fCurrent');
+  const end = document.getElementById('fEnd');
+  end.disabled = chk.checked;
+  if (chk.checked) end.value = '';
+}
 
-    // Bars
-    const cats   = ['actionVerbs','specificity','professionalism','completeness','relevance'];
-    const clrFor = s => s >= 85 ? '#15803d' : s >= 70 ? '#2563eb' : s >= 55 ? '#d97706' : '#dc2626';
-    cats.forEach(c => {
-      const s   = data.scores[c] || 0;
-      const clr = clrFor(s);
-      const sc  = document.getElementById('sc-'  + c);
-      const bar = document.getElementById('bar-' + c);
-      const fb  = document.getElementById('fb-'  + c);
-      sc.textContent  = s + '/100';
-      sc.style.color  = clr;
-      bar.style.width      = s + '%';
-      bar.style.background = clr;
-      fb.textContent  = (data.feedback || {})[c] || '';
+function clearJobForm() {
+  ['fEmployer','fTitle','fCity','fState','fEnd','b1','b2','b3','b4','b5'].forEach(id => {
+    const el = document.getElementById(id);
+    if (el) el.value = '';
+  });
+  document.getElementById('fStart').value = '';
+  document.getElementById('fCurrent').checked = false;
+  document.getElementById('fEnd').disabled = false;
+  document.getElementById('workFormErr').style.display = 'none';
+}
+
+function saveJob() {
+  const employer = document.getElementById('fEmployer').value.trim();
+  const title    = document.getElementById('fTitle').value.trim();
+  const start    = document.getElementById('fStart').value;
+  const bullets  = [
+    document.getElementById('b1').value.trim(),
+    document.getElementById('b2').value.trim(),
+    document.getElementById('b3').value.trim(),
+    document.getElementById('b4').value.trim(),
+    document.getElementById('b5').value.trim(),
+  ];
+  const filledBullets = bullets.filter(b => b.length > 0);
+
+  if (!employer || !title || !start || filledBullets.length < 3) {
+    document.getElementById('workFormErr').style.display = 'block';
+    return;
+  }
+  document.getElementById('workFormErr').style.display = 'none';
+
+  const current = document.getElementById('fCurrent').checked;
+  const job = {
+    employer, title,
+    city:  document.getElementById('fCity').value.trim(),
+    state: document.getElementById('fState').value.trim().toUpperCase(),
+    start, end: current ? '' : document.getElementById('fEnd').value,
+    current, bullets: filledBullets
+  };
+
+  if (editingIndex >= 0) {
+    jobs[editingIndex] = job;
+    editingIndex = -1;
+  } else {
+    jobs.push(job);
+  }
+
+  renderJobTiles();
+  show('screenJobsReview');
+}
+
+function cancelJobForm() {
+  editingIndex = -1;
+  if (jobs.length > 0) { show('screenJobsReview'); }
+  else { show('screenWelcome'); }
+}
+
+function addAnotherJob() {
+  editingIndex = -1;
+  clearJobForm();
+  document.getElementById('formTitle').textContent = 'Add Another Job';
+  show('screenWorkForm');
+}
+
+function editJob(i) {
+  editingIndex = i;
+  const j = jobs[i];
+  document.getElementById('fEmployer').value = j.employer;
+  document.getElementById('fTitle').value    = j.title;
+  document.getElementById('fCity').value     = j.city;
+  document.getElementById('fState').value    = j.state;
+  document.getElementById('fStart').value    = j.start;
+  document.getElementById('fEnd').value      = j.end;
+  document.getElementById('fCurrent').checked = j.current;
+  document.getElementById('fEnd').disabled   = j.current;
+  ['b1','b2','b3','b4','b5'].forEach((id, idx) => {
+    document.getElementById(id).value = j.bullets[idx] || '';
+  });
+  document.getElementById('formTitle').textContent = 'Edit Job';
+  show('screenWorkForm');
+}
+
+function deleteJob(i) {
+  if (!confirm('Delete this job entry?')) return;
+  jobs.splice(i, 1);
+  renderJobTiles();
+  if (jobs.length === 0) { show('screenWorkForm'); clearJobForm(); document.getElementById('formTitle').textContent = 'Add Your First Job'; }
+}
+
+function renderJobTiles() {
+  const container = document.getElementById('jobsList');
+  if (jobs.length === 0) { container.innerHTML = ''; return; }
+  container.innerHTML = jobs.map((j, i) => {
+    const dateStr = j.current ? `${fmtMonth(j.start)} – Present` : `${fmtMonth(j.start)}${j.end ? ' – ' + fmtMonth(j.end) : ''}`;
+    const loc     = [j.city, j.state].filter(Boolean).join(', ');
+    const bulletsList = j.bullets.map(b => `• ${b}`).join('<br>');
+    return `
+      <div class="job-tile">
+        <div class="job-tile-info">
+          <div class="jt-title">${esc(j.title)}</div>
+          <div class="jt-employer">${esc(j.employer)}${loc ? ' — ' + esc(loc) : ''}</div>
+          <div class="jt-dates">${esc(dateStr)}</div>
+          <div class="jt-bullets">${bulletsList}</div>
+        </div>
+        <div class="job-tile-actions">
+          <button class="tile-btn tile-edit" onclick="editJob(${i})">Edit</button>
+          <button class="tile-btn tile-del"  onclick="deleteJob(${i})">Delete</button>
+        </div>
+      </div>`;
+  }).join('');
+}
+
+async function submitWorkAssignment() {
+  if (jobs.length === 0) return;
+  show('screenGrading');
+  await gradeWork();
+}
+
+async function gradeWork() {
+  const jobText = jobs.map((j, i) => {
+    const bullets = j.bullets.map(b => `  • ${b}`).join('\n');
+    return `Job ${i+1}: ${j.title} at ${j.employer}\n${bullets}`;
+  }).join('\n\n');
+
+  const sys = `You are a fair, encouraging instructor grading a trade school student's work experience assignment. Return ONLY valid JSON.`;
+  const msg = `Grade this trade school student's work experience assignment.
+
+Student: ${studentName}
+Number of jobs: ${jobs.length}
+
+${jobText}
+
+Grade on these criteria (0-100 each). Be FAIR and ENCOURAGING. Trade school students may be entering the workforce for the first time.
+
+Return ONLY this JSON — no other text:
+{
+  "scores": {
+    "completeness": <0-100>,
+    "actionVerbs": <0-100>,
+    "specificity": <0-100>,
+    "professionalism": <0-100>
+  },
+  "feedback": {
+    "completeness": "1-2 sentences",
+    "actionVerbs": "1-2 sentences",
+    "specificity": "1-2 sentences",
+    "professionalism": "1-2 sentences"
+  },
+  "overall": <0-100>,
+  "grade": "<A|B|C|D|F>",
+  "headline": "<Excellent Work!|Good Work!|Nice Start!|Needs Improvement|Keep Practicing>",
+  "strengths": "1-2 sentences on what they did well",
+  "summary": "2-3 sentences of overall feedback — encouraging and constructive"
+}
+
+Scoring guide:
+- completeness (25%): All fields filled, 3+ bullets per job. Missing required info = low. Fully complete = 90-100.
+- actionVerbs (25%): Bullets start with action verbs (Maintained, Operated, Assisted, Performed, etc.). None = low, some = 65, most = 85+.
+- specificity (25%): Bullets mention specific tools, tasks, or quantities. Vague = low, detailed = high.
+- professionalism (25%): No "I", no slang, proper capitalization. Minor issues = still give 70+.`;
+
+  try {
+    const raw   = await callAPI(sys, msg, 900);
+    const match = raw.match(/\{[\s\S]*\}/);
+    if (!match) throw new Error('no json');
+    gradeResult = JSON.parse(match[0]);
+    gradeResult._rubricKeys    = ['completeness','actionVerbs','specificity','professionalism'];
+    gradeResult._rubricLabels  = ['Completeness','Action Verbs','Specificity & Detail','Professionalism'];
+    gradeResult._rubricWeights = ['25%','25%','25%','25%'];
+  } catch(e) {
+    gradeResult = gradeWorkJS();
+  }
+
+  // Save jobs to localStorage for resume builder
+  localStorage.setItem('employerAssignment', JSON.stringify(jobs.map(j => ({
+    employer: j.employer, title: j.title, start: j.start, end: j.end,
+    tasks: j.bullets.join('\n'), isCurrent: j.current,
+    grade: gradeResult.grade, score: gradeResult.overall,
+    savedAt: new Date().toISOString()
+  }))));
+  localStorage.setItem('empAssign_submission', JSON.stringify({
+    path: 'work', studentName, jobs, gradeResult,
+    submittedAt: new Date().toISOString()
+  }));
+
+  submissionId = generateId();
+  gradeResult._submissionId = submissionId;
+  showGradeResult();
+}
+
+function gradeWorkJS() {
+  const ACTION_VERBS = ['maintained','operated','assisted','performed','managed','installed','repaired','cleaned','inspected','monitored','built','assembled','trained','completed','supported','handled','coordinated','processed','prepared','served','helped','used','followed','developed','stocked','loaded','delivered','answered','greeted','supervised','scheduled','created'];
+  let verbCount = 0, totalBullets = 0;
+  jobs.forEach(j => {
+    j.bullets.forEach(b => {
+      totalBullets++;
+      const first = b.trim().split(/\s+/)[0].toLowerCase().replace(/[^a-z]/g,'');
+      if (ACTION_VERBS.includes(first)) verbCount++;
     });
+  });
+  const verbScore    = totalBullets > 0 ? Math.round((verbCount / totalBullets) * 100) : 50;
+  const complete     = jobs.every(j => j.employer && j.title && j.start && j.bullets.length >= 3) ? 92 : 70;
+  const specificity  = totalBullets > 0 ? Math.min(85, 55 + Math.round((jobs.flatMap(j=>j.bullets).reduce((s,b)=>s+b.split(/\s+/).length,0)/totalBullets)*1.5)) : 55;
+  const professional = jobs.flatMap(j=>j.bullets).some(b=>/\bI\b/.test(b)) ? 65 : 85;
+  const overall = Math.round(complete * .25 + verbScore * .25 + specificity * .25 + professional * .25);
+  const grade   = overall >= 90 ? 'A' : overall >= 80 ? 'B' : overall >= 70 ? 'C' : overall >= 60 ? 'D' : 'F';
+  return {
+    scores: { completeness: complete, actionVerbs: verbScore, specificity, professionalism: professional },
+    feedback: {
+      completeness:    complete >= 85 ? 'All required fields and bullet points are filled in.' : 'Make sure all fields are complete with at least 3 bullet points per job.',
+      actionVerbs:     verbScore >= 75 ? 'Good use of action verbs to start your bullet points.' : 'Try starting more bullets with action verbs like Maintained, Operated, Assisted, or Performed.',
+      specificity:     'Include specific tools, equipment, or tasks to make your bullets more impactful.',
+      professionalism: professional >= 80 ? 'Professional tone throughout.' : 'Avoid starting sentences with "I" in resume bullet points.'
+    },
+    overall, grade,
+    headline: overall >= 90 ? 'Excellent Work!' : overall >= 80 ? 'Good Work!' : overall >= 70 ? 'Nice Start!' : 'Needs Improvement',
+    strengths: 'You completed the work experience entry with the required information.',
+    summary: 'Your work experience section has been saved. Review the feedback above and keep these tips in mind for future resume updates.',
+    _rubricKeys:    ['completeness','actionVerbs','specificity','professionalism'],
+    _rubricLabels:  ['Completeness','Action Verbs','Specificity & Detail','Professionalism'],
+    _rubricWeights: ['25%','25%','25%','25%']
+  };
+}
 
-    document.getElementById('topSuggestion').textContent = data.topSuggestion || '';
+/* ── Grade display ─────────────────────────────────────── */
+function showGradeResult() {
+  document.getElementById('gradingLoading').hidden  = true;
+  document.getElementById('gradingResult').hidden   = false;
 
-    document.getElementById('loadingCard').hidden = true;
-    document.getElementById('gradeCard').hidden   = false;
-    document.getElementById('gradeActions').hidden = false;
-  }
+  const g   = gradeResult;
+  const ltr = (g.grade || 'B').toUpperCase()[0];
 
-  /* ── Submission text ────────────────────────────────────── */
-  function fillSubmission() {
-    const name     = document.getElementById('studentName').value.trim() || 'Student';
-    const employer = document.getElementById('employer').value.trim();
-    const title    = document.getElementById('jobTitle').value.trim();
-    const start    = fmtMonthYear(document.getElementById('startDate').value);
-    const end      = isCurrent ? 'Present' : fmtMonthYear(document.getElementById('endDate').value);
-    const filled   = duties.filter(d => d.text.trim());
-    const today    = new Date().toLocaleDateString('en-US', { year:'numeric', month:'long', day:'numeric' });
+  // Circle
+  const circle = document.getElementById('gradeCircle');
+  circle.className = 'grade-circle gc-' + ltr.toLowerCase();
+  document.getElementById('gradeLetter').textContent = ltr;
+  document.getElementById('gradePoints').textContent  = (g.overall || 0) + ' pts';
 
-    const lines = [
-      'RESUME WRITING ASSIGNMENT — EMPLOYERS SECTION',
-      '='.repeat(46),
-      `Student:   ${name}`,
-      `Submitted: ${today}`,
-      '',
-      'EMPLOYER ENTRY',
-      '-'.repeat(40),
-      `Company:   ${employer}`,
-      `Title:     ${title}`,
-      `Dates:     ${start}${end ? ' – ' + end : ''}`,
-      '',
-      'JOB DUTIES',
-      '-'.repeat(40),
-    ];
-    filled.forEach((d, i) => lines.push(`${i+1}. ${d.text.trim()}`));
+  // Summary
+  const headlines = { A:'Excellent Work!', B:'Good Work!', C:'Nice Start!', D:'Needs Improvement', F:'Keep Practicing' };
+  document.getElementById('gradeHeadline').textContent  = g.headline || headlines[ltr] || 'Graded';
+  document.getElementById('gradeStrengths').textContent = g.strengths || '';
+  document.getElementById('gradeScoreLine').textContent = `Overall: ${g.overall}/100 — Grade: ${ltr}`;
+  document.getElementById('gradeSummary').textContent   = g.summary || '';
 
-    if (gradeData) {
-      lines.push('', 'AI GRADE REPORT', '-'.repeat(40));
-      lines.push(`Overall Score: ${gradeData.overall}/100  |  Grade: ${gradeData.grade}`);
-      lines.push('');
-      lines.push('Rubric Breakdown:');
-      lines.push(`  Action Verbs (25%):    ${gradeData.scores.actionVerbs}/100`);
-      lines.push(`  Specificity (25%):     ${gradeData.scores.specificity}/100`);
-      lines.push(`  Professionalism (20%): ${gradeData.scores.professionalism}/100`);
-      lines.push(`  Completeness (20%):    ${gradeData.scores.completeness}/100`);
-      lines.push(`  Relevance (10%):       ${gradeData.scores.relevance}/100`);
-      lines.push('');
-      lines.push(`Strengths:       ${gradeData.strengths}`);
-      lines.push(`Top Suggestion:  ${gradeData.topSuggestion}`);
-    }
+  // Rubric bars
+  const keys    = g._rubricKeys    || [];
+  const labels  = g._rubricLabels  || [];
+  const weights = g._rubricWeights || [];
+  const clr = s => s >= 85 ? '#15803d' : s >= 70 ? '#1d4ed8' : s >= 55 ? '#d97706' : '#dc2626';
+  const rows = document.getElementById('rubricRows');
+  rows.innerHTML = keys.map((k, i) => {
+    const score = (g.scores || {})[k] || 0;
+    const fb    = (g.feedback || {})[k] || '';
+    const c     = clr(score);
+    return `
+      <div class="rub-row">
+        <div class="rub-row-top">
+          <span class="rub-lbl">${esc(labels[i] || k)}</span>
+          <span class="rub-wt">${weights[i] || ''}</span>
+          <span class="rub-sc" style="color:${c}">${score}/100</span>
+        </div>
+        <div class="rub-track"><div class="rub-fill" style="width:0%; background:${c}" data-w="${score}"></div></div>
+        <div class="rub-fb">${esc(fb)}</div>
+      </div>`;
+  }).join('');
 
-    document.getElementById('submissionText').value = lines.join('\n');
-  }
-
-  function copySubmission() {
-    const ta = document.getElementById('submissionText');
-    navigator.clipboard.writeText(ta.value).catch(() => {
-      ta.select(); document.execCommand('copy');
-    }).then(() => {}).catch(() => {});
-    const ok = document.getElementById('copyOk');
-    ok.classList.add('show');
-    setTimeout(() => ok.classList.remove('show'), 2500);
-  }
-
-  /* ── Save to resume builder ─────────────────────────────── */
-  function saveToResume() {
-    const employer = document.getElementById('employer').value.trim();
-    const title    = document.getElementById('jobTitle').value.trim();
-    const start    = document.getElementById('startDate').value;
-    const end      = isCurrent ? '' : document.getElementById('endDate').value;
-    const tasks    = duties.filter(d => d.text.trim()).map(d => d.text.trim()).join('\n');
-
-    const entry = { employer, title, start, end, tasks, isCurrent,
-      grade: gradeData?.grade, score: gradeData?.overall, savedAt: new Date().toISOString() };
-
-    // Append / replace in array
-    const list = JSON.parse(localStorage.getItem('employerAssignment') || '[]');
-    const idx  = list.findIndex(e => e.employer === employer && e.title === title);
-    if (idx >= 0) list[idx] = entry; else list.push(entry);
-    localStorage.setItem('employerAssignment', JSON.stringify(list));
-
-    const btn = document.getElementById('importBtn');
-    btn.textContent = '✓ Saved!';
-    btn.classList.add('saved');
-  }
-
-  /* ── Draft save ─────────────────────────────────────────── */
-  function saveDraft() {
-    localStorage.setItem('empAssign_draft', JSON.stringify({
-      studentName: document.getElementById('studentName').value.trim(),
-      employer:    document.getElementById('employer').value.trim(),
-      jobTitle:    document.getElementById('jobTitle').value.trim(),
-      startDate:   document.getElementById('startDate').value,
-      endDate:     document.getElementById('endDate').value,
-      isCurrent
-    }));
-  }
-
-  /* ── Claude API ─────────────────────────────────────────── */
-  async function callAPI(system, userMsg, maxTokens) {
-    const res = await fetch('/api/claude', {
-      method:  'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body:    JSON.stringify({
-        model:      'claude-sonnet-4-6',
-        max_tokens: maxTokens || 500,
-        system,
-        messages: [{ role: 'user', content: userMsg }]
-      })
+  // Animate bars
+  setTimeout(() => {
+    rows.querySelectorAll('.rub-fill').forEach(el => {
+      el.style.width = el.dataset.w + '%';
     });
-    if (!res.ok) throw new Error('API ' + res.status);
-    const data = await res.json();
-    return data.content?.[0]?.text || '';
+  }, 180);
+
+  // Submission ID
+  document.getElementById('subIdDisplay').textContent = submissionId;
+}
+
+/* ── PDF Download ──────────────────────────────────────── */
+function downloadPDF() {
+  buildPrintDoc();
+  window.print();
+}
+
+function buildPrintDoc() {
+  const doc   = document.getElementById('printDoc');
+  const today = new Date().toLocaleDateString('en-US', { year:'numeric', month:'long', day:'numeric' });
+  const g     = gradeResult;
+  const ltr   = (g?.grade || '—').toUpperCase()[0];
+
+  let contentHtml = '';
+
+  if (currentPath === 'nowork') {
+    const para = document.getElementById('skillsParagraph').value.trim();
+    contentHtml = `
+      <div class="print-sec">
+        <div class="print-sec-title">Skills &amp; Training Paragraph</div>
+        <p class="print-para">${esc(para)}</p>
+      </div>`;
+  } else {
+    contentHtml = `
+      <div class="print-sec">
+        <div class="print-sec-title">Work Experience Entries</div>
+        ${jobs.map(j => {
+          const loc     = [j.city, j.state].filter(Boolean).join(', ');
+          const dateStr = j.current ? `${fmtMonth(j.start)} – Present` : `${fmtMonth(j.start)}${j.end ? ' – ' + fmtMonth(j.end) : ''}`;
+          return `
+            <div class="print-job">
+              <div class="print-job-hdr">${esc(j.title)}</div>
+              <div class="print-job-sub">${esc(j.employer)}${loc ? ' — ' + esc(loc) : ''} | ${esc(dateStr)}</div>
+              <ul>${j.bullets.map(b => `<li>${esc(b)}</li>`).join('')}</ul>
+            </div>`;
+        }).join('')}
+      </div>`;
   }
 
-  /* ── Helpers ────────────────────────────────────────────── */
-  function fmtMonthYear(val) {
-    if (!val) return '';
-    const [y, m] = val.split('-');
-    const months = ['','Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
-    return `${months[parseInt(m, 10)]} ${y}`;
-  }
+  const keys    = g?._rubricKeys    || [];
+  const labels  = g?._rubricLabels  || [];
+  const weights = g?._rubricWeights || [];
+  const rubricHtml = keys.map((k, i) => {
+    const score = (g?.scores || {})[k] || 0;
+    const fb    = (g?.feedback || {})[k] || '';
+    return `<div class="print-rubric-row"><span class="pr-lbl">${esc(labels[i] || k)} (${weights[i] || ''}): ${score}/100</span><span class="pr-fb">${esc(fb)}</span></div>`;
+  }).join('');
+
+  doc.innerHTML = `
+    <div class="print-header">
+      <h1>Work Experience Assignment</h1>
+      <p>Resume Writing Program &nbsp;|&nbsp; ${today}</p>
+    </div>
+
+    <table style="width:100%; font-size:11pt; border-collapse:collapse; margin-bottom:10px;">
+      <tr>
+        <td><strong>Student:</strong> ${esc(studentName)}</td>
+        <td style="text-align:right"><strong>Path:</strong> ${currentPath === 'nowork' ? 'No Work History (Skills Paragraph)' : 'Work History (' + jobs.length + ' job' + (jobs.length !== 1 ? 's' : '') + ')'}</td>
+      </tr>
+    </table>
+
+    <div class="print-id">
+      <div class="pi-label">Submission ID — Do Not Alter</div>
+      <div class="pi-code">${esc(submissionId)}</div>
+      <div class="pi-note">This ID verifies the authenticity of your submission. Your instructor will use it to locate your work.</div>
+    </div>
+
+    ${contentHtml}
+
+    <div class="print-sec">
+      <div class="print-sec-title">Grade &amp; Rubric</div>
+      <div class="print-grade-line">Overall Score: ${g?.overall || '—'}/100 &nbsp;|&nbsp; Grade: ${ltr}</div>
+      <div class="print-rubric">${rubricHtml}</div>
+      <p style="font-size:10pt; margin-top:10px; font-style:italic;">${esc(g?.summary || '')}</p>
+    </div>
+
+    <div class="print-footer">
+      This document was generated by the Resume Writing Program AI Assignment System.<br>
+      Submit this PDF to your instructor to receive credit for this assignment. | Submission ID: ${esc(submissionId)}
+    </div>`;
+}
+
+/* ── API call ──────────────────────────────────────────── */
+async function callAPI(system, userMsg, maxTokens) {
+  const res = await fetch('/api/claude', {
+    method:  'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body:    JSON.stringify({
+      model:      'claude-sonnet-4-6',
+      max_tokens: maxTokens || 600,
+      system,
+      messages: [{ role: 'user', content: userMsg }]
+    })
+  });
+  if (!res.ok) throw new Error('API ' + res.status);
+  const data = await res.json();
+  return data.content?.[0]?.text || '';
+}
+
+/* ── Helpers ───────────────────────────────────────────── */
+function generateId() {
+  const d   = new Date();
+  const dt  = d.toLocaleDateString('en-US',{month:'2-digit',day:'2-digit',year:'2-digit'}).replace(/\//g,'');
+  const ts  = d.getTime().toString(36).slice(-4).toUpperCase();
+  const rnd = Math.random().toString(36).substring(2, 6).toUpperCase();
+  return `WE-${dt}-${ts}-${rnd}`;
+}
+
+function fmtMonth(val) {
+  if (!val) return '';
+  const [y, m] = val.split('-');
+  const months = ['','Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+  return `${months[parseInt(m, 10)]} ${y}`;
+}
+
+function esc(str) {
+  if (!str) return '';
+  const d = document.createElement('div');
+  d.appendChild(document.createTextNode(String(str)));
+  return d.innerHTML;
+}
 </script>
 </body>
 </html>
