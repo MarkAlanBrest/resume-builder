@@ -1,0 +1,1034 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Employment Search Assignment</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --blue-900:#1e3a8a;--blue-800:#1e40af;--blue-700:#1d4ed8;--blue-400:#60a5fa;--blue-100:#dbeafe;--blue-50:#eff6ff;
+  --slate-900:#0f172a;--slate-700:#334155;--slate-600:#475569;--slate-500:#64748b;
+  --slate-400:#94a3b8;--slate-300:#cbd5e1;--slate-200:#e2e8f0;--slate-100:#f1f5f9;--slate-50:#f8fafc;
+  --green-700:#15803d;--green-600:#16a34a;--green-50:#f0fdf4;--green-100:#dcfce7;--green-200:#bbf7d0;
+  --amber-900:#92400e;--amber-bg:#fffbeb;--amber-bd:#fde68a;
+  --red-600:#dc2626;--red-bg:#fef2f2;--red-bd:#fecaca;
+  --purple-700:#7c3aed;--purple-50:#f5f3ff;--purple-100:#ede9fe;--purple-200:#ddd6fe;
+  --white:#ffffff;
+  --nav-w:195px;--chat-w:900px;
+}
+html,body{height:100%;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;background:#64748b}
+.app{display:flex;flex-direction:column;height:100vh;max-width:3000px;margin:0 auto;box-shadow:0 0 60px rgba(0,0,0,.3)}
+.app-body{flex:1;display:flex;overflow:hidden}
+.app-header{flex-shrink:0;height:60px;background:var(--slate-900);display:flex;align-items:center;padding:0 18px;gap:12px}
+.header-brand{display:flex;align-items:center;gap:9px}
+.header-brand span{font-size:20px}
+.header-title{font-size:16px;font-weight:700;color:var(--white);line-height:1.2}
+.header-badge{font-size:10px;font-weight:700;color:var(--slate-400);background:rgba(255,255,255,.08);padding:2px 7px;border-radius:20px;text-transform:uppercase;letter-spacing:.5px}
+
+/* ── Left Nav ── */
+.left-nav{width:var(--nav-w);flex-shrink:0;background:var(--white);border-right:1px solid var(--slate-200);overflow-y:auto;display:flex;flex-direction:column;padding:16px 0}
+.nav-heading{font-size:10px;font-weight:700;color:var(--slate-400);text-transform:uppercase;letter-spacing:.8px;padding:0 14px 10px}
+.nav-item{display:flex;align-items:center;gap:8px;padding:8px 14px;cursor:pointer;transition:background .15s;position:relative}
+.nav-item:hover{background:var(--slate-50)}
+.nav-item.active{background:var(--blue-50)}
+.nav-item.active::before{content:'';position:absolute;left:0;top:4px;bottom:4px;width:3px;background:var(--blue-700);border-radius:0 3px 3px 0}
+.nav-icon{width:28px;height:28px;border-radius:6px;display:flex;align-items:center;justify-content:center;font-size:14px;flex-shrink:0}
+.nav-item.pending .nav-icon{background:var(--slate-100);filter:grayscale(1) opacity(.5)}
+.nav-item.active .nav-icon{background:var(--blue-100)}
+.nav-item.done .nav-icon{background:#dcfce7}
+.nav-label{font-size:12px;font-weight:600}
+.nav-item.pending .nav-label{color:var(--slate-400)}
+.nav-item.active .nav-label{color:var(--blue-700)}
+.nav-item.done .nav-label{color:var(--slate-600)}
+.nav-check{margin-left:auto;font-size:11px;color:var(--green-600);font-weight:700;display:none}
+.nav-item.done .nav-check{display:block}
+
+/* ── Center ── */
+.center-panel{flex:1;overflow-y:auto;background:var(--slate-100)}
+.center-panel::-webkit-scrollbar{width:6px}
+.center-panel::-webkit-scrollbar-thumb{background:var(--slate-400);border-radius:3px}
+.center-inner{max-width:800px;margin:0 auto;padding:28px 24px 60px}
+
+/* ── Right Panel ── */
+.right-panel{width:var(--chat-w);flex-shrink:0;display:flex;flex-direction:column;background:var(--white);border-left:1px solid var(--slate-200);overflow:hidden}
+.chat-hdr{padding:12px 14px;font-size:12px;font-weight:700;color:var(--slate-500);text-transform:uppercase;letter-spacing:.6px;border-bottom:1px solid var(--slate-100);flex-shrink:0}
+
+/* ── Link panels ── */
+.links-panel-section{flex-shrink:0;border-bottom:1px solid var(--slate-200);padding:10px 12px;background:var(--slate-50)}
+.links-toggle{display:flex;align-items:center;justify-content:space-between;cursor:pointer;user-select:none;padding:2px 0}
+.links-toggle-label{font-size:11px;font-weight:700;color:var(--slate-500);text-transform:uppercase;letter-spacing:.5px}
+.links-toggle-arrow{font-size:11px;color:var(--slate-400);transition:transform .2s}
+.links-toggle-arrow.open{transform:rotate(180deg)}
+.links-body{padding-top:10px;display:none}
+.links-body.open{display:block}
+.link-group-label{font-size:10px;font-weight:700;color:var(--slate-400);text-transform:uppercase;letter-spacing:.5px;margin-bottom:6px;margin-top:10px}
+.link-group-label:first-child{margin-top:0}
+.link-chips{display:flex;flex-wrap:wrap;gap:5px;margin-bottom:2px}
+.link-chip{display:inline-flex;align-items:center;gap:4px;padding:4px 9px;border-radius:20px;font-size:12px;font-weight:600;cursor:pointer;border:1.5px solid transparent;text-decoration:none;transition:all .15s;white-space:nowrap}
+.link-chip.national{background:var(--blue-50);border-color:var(--blue-100);color:var(--blue-700)}
+.link-chip.national:hover{background:var(--blue-100);border-color:var(--blue-400)}
+.link-chip.local{background:var(--green-50);border-color:var(--green-100);color:var(--green-700)}
+.link-chip.local:hover{background:var(--green-100);border-color:var(--green-200)}
+.link-chip.trade{background:var(--amber-bg);border-color:var(--amber-bd);color:var(--amber-900)}
+.link-chip.trade:hover{background:#fef3c7}
+.link-chip.salary{background:var(--purple-50);border-color:var(--purple-100);color:var(--purple-700)}
+.link-chip.salary:hover{background:var(--purple-100);border-color:var(--purple-200)}
+
+/* ── Chat ── */
+.chat-messages{flex:1;overflow-y:auto;padding:12px 10px;display:flex;flex-direction:column;gap:10px}
+.chat-messages::-webkit-scrollbar{width:4px}
+.chat-messages::-webkit-scrollbar-thumb{background:var(--slate-300);border-radius:2px}
+.chat-msg.ai .msg-lbl{font-size:10px;font-weight:700;color:var(--slate-400);text-transform:uppercase;letter-spacing:.6px;margin-bottom:3px}
+.chat-msg.ai .msg-bubble{background:var(--slate-50);border:1px solid var(--slate-200);border-radius:0 10px 10px 10px;padding:10px 12px;font-size:13px;color:var(--slate-700);line-height:1.55}
+.chat-msg.user{align-self:flex-end}
+.chat-msg.user .msg-bubble{background:var(--blue-700);color:var(--white);border-radius:10px 0 10px 10px;padding:10px 12px;font-size:13px;line-height:1.55;max-width:230px;word-break:break-word}
+.chat-input-area{flex-shrink:0;border-top:1px solid var(--slate-200);padding:10px}
+.chat-input-row{display:flex;gap:6px;align-items:flex-end}
+.chat-input{flex:1;border:1.5px solid var(--slate-200);border-radius:7px;padding:8px 10px;font-size:13px;font-family:inherit;resize:none;min-height:36px;max-height:90px;outline:none;color:var(--slate-900);background:var(--slate-50)}
+.chat-input:focus{border-color:var(--blue-700);background:var(--white)}
+.chat-send{flex-shrink:0;padding:8px 12px;background:var(--blue-700);color:var(--white);border:none;border-radius:7px;font-size:14px;font-weight:700;cursor:pointer;font-family:inherit}
+.chat-send:hover{background:var(--blue-900)}
+
+/* ── Welcome ── */
+.welcome-card{background:var(--white);border-radius:14px;box-shadow:0 2px 16px rgba(0,0,0,.1);padding:36px 32px;text-align:center;margin-bottom:20px}
+.welcome-icon{font-size:48px;display:block;margin-bottom:14px}
+.welcome-title{font-size:24px;font-weight:800;color:var(--slate-900);margin-bottom:8px}
+.welcome-sub{font-size:14px;color:var(--slate-500);line-height:1.6;margin-bottom:24px;max-width:480px;margin-left:auto;margin-right:auto}
+.task-list{text-align:left;background:var(--blue-50);border-radius:10px;padding:16px 20px;margin-bottom:24px}
+.task-list li{font-size:13px;color:var(--slate-700);margin-bottom:8px;padding-left:4px;line-height:1.5;list-style:none;display:flex;gap:8px}
+.name-field{text-align:left;margin-bottom:20px;max-width:340px;margin-left:auto;margin-right:auto}
+.name-field label{display:block;font-size:11px;font-weight:700;color:var(--slate-500);text-transform:uppercase;letter-spacing:.6px;margin-bottom:5px}
+.name-field input{width:100%;border:1.5px solid var(--slate-200);border-radius:7px;padding:9px 12px;font-size:15px;color:var(--slate-900);background:var(--slate-50);outline:none;font-family:inherit}
+.name-field input:focus{border-color:var(--blue-700);background:var(--white)}
+
+/* ── Section Headers ── */
+.section-hdr{display:flex;align-items:center;gap:12px;margin-bottom:22px}
+.section-hdr-icon{width:44px;height:44px;border-radius:10px;background:var(--blue-50);display:flex;align-items:center;justify-content:center;font-size:22px;flex-shrink:0}
+.section-hdr-title{font-size:20px;font-weight:700;color:var(--slate-900)}
+.section-hdr-sub{font-size:13px;color:var(--slate-500);margin-top:2px}
+
+/* ── Cards ── */
+.form-card{background:var(--white);border-radius:12px;box-shadow:0 1px 8px rgba(0,0,0,.08);overflow:hidden;margin-bottom:16px}
+.form-card-hdr{background:var(--blue-900);color:var(--white);padding:12px 18px;font-size:14px;font-weight:700;display:flex;align-items:center;gap:8px}
+.form-card-body{padding:18px 18px 6px}
+.form-card-footer{padding:12px 18px 14px;display:flex;justify-content:flex-end;gap:8px;background:var(--slate-50);border-top:1px solid var(--slate-100)}
+
+/* ── Salary Resource Grid ── */
+.salary-resource-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(170px,1fr));gap:10px;margin-bottom:16px}
+.salary-resource-card{background:var(--white);border:1.5px solid var(--purple-200);border-radius:10px;padding:14px 12px;cursor:pointer;text-decoration:none;transition:border-color .15s,box-shadow .15s,transform .1s;display:flex;flex-direction:column;gap:5px}
+.salary-resource-card:hover{border-color:var(--purple-700);box-shadow:0 2px 12px rgba(124,58,237,.15);transform:translateY(-1px)}
+.salary-resource-card .sr-icon{font-size:24px}
+.salary-resource-card .sr-name{font-size:13px;font-weight:700;color:var(--purple-700)}
+.salary-resource-card .sr-desc{font-size:11px;color:var(--slate-500);line-height:1.4}
+
+/* ── Job Site Cards ── */
+.site-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(140px,1fr));gap:10px;margin-bottom:16px}
+.site-card{background:var(--white);border:1.5px solid var(--slate-200);border-radius:10px;padding:14px 12px;text-align:center;cursor:pointer;text-decoration:none;transition:border-color .15s,box-shadow .15s,transform .1s;display:flex;flex-direction:column;align-items:center;gap:6px}
+.site-card:hover{border-color:var(--blue-700);box-shadow:0 2px 12px rgba(29,78,216,.15);transform:translateY(-1px)}
+.site-card .site-icon{font-size:26px;display:block}
+.site-card .site-name{font-size:12px;font-weight:700;color:var(--slate-700)}
+.site-card .site-type{font-size:10px;color:var(--slate-400);text-transform:uppercase;letter-spacing:.4px}
+.site-card.local{border-color:var(--green-200);background:var(--green-50)}
+.site-card.local:hover{border-color:var(--green-600)}
+.site-card.local .site-name{color:var(--green-700)}
+.site-card.trade{border-color:var(--amber-bd);background:var(--amber-bg)}
+.site-card.trade:hover{border-color:#d97706}
+.site-card.trade .site-name{color:var(--amber-900)}
+
+/* ── Forms ── */
+.f-2col{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:12px}
+.f-3col{display:grid;grid-template-columns:2fr 1fr 1fr;gap:12px;margin-bottom:12px}
+.f-1col{margin-bottom:12px}
+.f-group{display:flex;flex-direction:column;gap:4px}
+.f-group label{font-size:11px;font-weight:700;color:var(--slate-500);text-transform:uppercase;letter-spacing:.6px}
+.f-group input,.f-group textarea,.f-group select{border:1.5px solid var(--slate-200);border-radius:7px;padding:9px 11px;font-size:14px;color:var(--slate-900);background:var(--slate-50);outline:none;width:100%;font-family:inherit;transition:border-color .18s}
+.f-group input:focus,.f-group textarea:focus,.f-group select:focus{border-color:var(--blue-700);background:var(--white);box-shadow:0 0 0 3px rgba(29,78,216,.1)}
+.f-group textarea{resize:vertical;min-height:72px}
+.f-err{font-size:11px;color:var(--red-600);display:none;margin-top:1px}
+.f-group.has-error input,.f-group.has-error textarea{border-color:var(--red-600)}
+.f-group.has-error .f-err{display:block}
+.req{color:var(--red-600)}
+
+/* ── Job Tiles ── */
+.job-tile{background:var(--white);border:1px solid var(--slate-200);border-radius:10px;padding:14px 16px;margin-bottom:10px;box-shadow:0 1px 3px rgba(0,0,0,.05)}
+.job-tile-top{display:flex;justify-content:space-between;align-items:flex-start;gap:10px;margin-bottom:8px}
+.job-tile-title{font-size:15px;font-weight:700;color:var(--slate-800)}
+.job-tile-sub{font-size:13px;color:var(--slate-600);margin-top:2px}
+.job-tile-source{font-size:11px;color:var(--slate-400);margin-top:2px}
+.job-tile-actions{display:flex;gap:6px;flex-shrink:0}
+.job-tile-preview{border-top:1px solid var(--slate-100);padding-top:8px;margin-top:4px}
+.job-tile-preview-row{display:flex;gap:8px;margin-bottom:4px;font-size:12px}
+.job-tile-preview-lbl{color:var(--slate-400);font-weight:700;min-width:90px;text-transform:uppercase;letter-spacing:.3px;flex-shrink:0}
+.job-tile-preview-val{color:var(--slate-700);line-height:1.4}
+.progress-bar-wrap{background:var(--slate-100);border-radius:20px;height:8px;overflow:hidden;margin-bottom:4px}
+.progress-bar-fill{height:100%;border-radius:20px;background:var(--blue-700);transition:width .4s}
+.progress-label{font-size:12px;color:var(--slate-500);margin-bottom:12px}
+
+/* ── Grade Result ── */
+.grade-card{background:var(--white);border-radius:12px;box-shadow:0 1px 8px rgba(0,0,0,.08);overflow:hidden;margin-bottom:16px}
+.grade-hdr{display:flex;align-items:center;gap:16px;padding:20px 22px;border-bottom:1px solid var(--slate-100)}
+.grade-circle{width:72px;height:72px;border-radius:50%;display:flex;flex-direction:column;align-items:center;justify-content:center;flex-shrink:0}
+.grade-circle.A{background:#dcfce7;border:3px solid #16a34a}
+.grade-circle.B{background:#dbeafe;border:3px solid #2563eb}
+.grade-circle.C{background:#fef9c3;border:3px solid #ca8a04}
+.grade-circle.D,.grade-circle.F{background:#fee2e2;border:3px solid #dc2626}
+.grade-letter{font-size:28px;font-weight:900;line-height:1}
+.grade-points{font-size:11px;font-weight:700;color:var(--slate-500)}
+.grade-hdr-right h3{font-size:17px;font-weight:700;color:var(--slate-900);margin-bottom:4px}
+.grade-hdr-right p{font-size:13px;color:var(--slate-500);line-height:1.5}
+.rubric-row{display:flex;align-items:center;gap:12px;padding:10px 22px;border-bottom:1px solid var(--slate-100)}
+.rubric-row:last-child{border-bottom:none}
+.rubric-label{font-size:12px;font-weight:700;color:var(--slate-700);min-width:140px}
+.rubric-bar-wrap{flex:1;background:var(--slate-100);border-radius:20px;height:8px;overflow:hidden}
+.rubric-bar{height:100%;border-radius:20px;background:var(--blue-700)}
+.rubric-score{font-size:12px;font-weight:700;color:var(--slate-700);min-width:36px;text-align:right}
+.rubric-fb{font-size:12px;color:var(--slate-500);padding:0 22px 10px;line-height:1.5}
+.feedback-block{padding:14px 22px;border-top:1px solid var(--slate-100)}
+.feedback-block h4{font-size:12px;font-weight:700;color:var(--slate-700);text-transform:uppercase;letter-spacing:.5px;margin-bottom:6px}
+.feedback-block p{font-size:13px;color:var(--slate-600);line-height:1.55}
+
+/* ── Salary summary card ── */
+.salary-summary{background:var(--purple-50);border:1.5px solid var(--purple-200);border-radius:10px;padding:16px 18px;margin-bottom:16px}
+.salary-summary h4{font-size:13px;font-weight:700;color:var(--purple-700);margin-bottom:8px}
+.salary-row{display:flex;justify-content:space-between;align-items:baseline;padding:4px 0;border-bottom:1px solid var(--purple-200)}
+.salary-row:last-child{border-bottom:none}
+.salary-lbl{font-size:12px;color:var(--slate-600)}
+.salary-val{font-size:13px;font-weight:700;color:var(--slate-900)}
+
+/* ── Buttons ── */
+.btn{border:none;border-radius:7px;padding:9px 18px;font-size:14px;font-weight:600;cursor:pointer;font-family:inherit;transition:background .15s,opacity .15s}
+.btn-primary{background:var(--blue-700);color:var(--white)}
+.btn-primary:hover{background:var(--blue-900)}
+.btn-confirm{background:var(--green-600);color:var(--white)}
+.btn-confirm:hover{background:var(--green-700)}
+.btn-danger{background:var(--red-bg);color:var(--red-600);border:1px solid var(--red-bd)}
+.btn-danger:hover{background:#fee2e2}
+.btn-ghost{background:var(--slate-100);color:var(--slate-700);border:1px solid var(--slate-200)}
+.btn-ghost:hover{background:var(--slate-200)}
+.btn-lg{padding:11px 24px;font-size:15px}
+.btn:disabled{opacity:.4;cursor:not-allowed}
+.err-msg{font-size:12px;color:var(--red-600);background:var(--red-bg);border:1px solid var(--red-bd);border-radius:6px;padding:8px 12px;margin-top:8px;display:none}
+.download-bar{display:flex;align-items:center;justify-content:space-between;background:var(--slate-900);border-radius:8px;padding:12px 16px;margin-bottom:16px;gap:12px}
+.download-bar-text{font-size:13px;color:var(--slate-300)}
+.download-btn{flex-shrink:0;background:var(--green-600);color:var(--white);border:none;border-radius:7px;padding:9px 16px;font-size:13px;font-weight:700;cursor:pointer;font-family:inherit}
+.download-btn:hover{background:var(--green-700)}
+.loading-center{text-align:center;padding:60px 20px;color:var(--slate-600)}
+.spinner{display:inline-block;width:36px;height:36px;border:4px solid var(--slate-200);border-top-color:var(--blue-700);border-radius:50%;animation:spin .8s linear infinite;margin-top:16px}
+@keyframes spin{to{transform:rotate(360deg)}}
+
+@media(max-width:2400px){:root{--nav-w:190px;--chat-w:660px}}
+@media(max-width:1800px){:root{--nav-w:185px;--chat-w:500px}}
+@media(max-width:1300px){:root{--nav-w:180px;--chat-w:380px}}
+@media(max-width:1000px){:root{--nav-w:175px;--chat-w:280px}}
+@media(max-width:900px){:root{--chat-w:260px}}
+@media(max-width:700px){.right-panel{width:0!important}.left-nav{width:44px}.nav-label,.nav-check,.nav-heading{display:none}.nav-item{justify-content:center;padding:8px 0}}
+@media(max-width:480px){:root{--nav-w:44px}}
+</style>
+</head>
+<body>
+<div class="app">
+  <div class="app-header">
+    <div class="header-brand"><span>🔍</span><span class="header-title">Employment Search Assignment</span><span class="header-badge">Graded</span></div>
+  </div>
+  <div class="app-body">
+    <nav class="left-nav" id="leftNav"></nav>
+    <div class="center-panel"><div id="centerInner" class="center-inner"></div></div>
+    <div class="right-panel">
+      <div class="chat-hdr">💬 AI Assistant</div>
+
+      <!-- Job Search Links -->
+      <div class="links-panel-section">
+        <div class="links-toggle" onclick="togglePanel('jobLinks','jobLinksArrow')">
+          <span class="links-toggle-label">🔗 Job Search Sites</span>
+          <span class="links-toggle-arrow" id="jobLinksArrow">▾</span>
+        </div>
+        <div class="links-body" id="jobLinks">
+          <div class="link-group-label">National Job Boards</div>
+          <div class="link-chips">
+            <a class="link-chip national" href="https://www.indeed.com" target="_blank" rel="noopener">📌 Indeed</a>
+            <a class="link-chip national" href="https://www.linkedin.com/jobs/" target="_blank" rel="noopener">💼 LinkedIn</a>
+            <a class="link-chip national" href="https://www.ziprecruiter.com" target="_blank" rel="noopener">⚡ ZipRecruiter</a>
+            <a class="link-chip national" href="https://www.glassdoor.com/Job/index.htm" target="_blank" rel="noopener">🏢 Glassdoor</a>
+            <a class="link-chip national" href="https://www.monster.com" target="_blank" rel="noopener">👾 Monster</a>
+            <a class="link-chip national" href="https://www.careerbuilder.com" target="_blank" rel="noopener">🔨 CareerBuilder</a>
+            <a class="link-chip national" href="https://www.simplyhired.com" target="_blank" rel="noopener">✅ SimplyHired</a>
+            <a class="link-chip national" href="https://www.usajobs.gov" target="_blank" rel="noopener">🇺🇸 USAJobs</a>
+          </div>
+          <div class="link-group-label">Trade &amp; Student Sites</div>
+          <div class="link-chips">
+            <a class="link-chip trade" href="https://www.pacareerlink.pa.gov/jponline/" target="_blank" rel="noopener">🏛 PA CareerLink</a>
+            <a class="link-chip trade" href="https://joinhandshake.com" target="_blank" rel="noopener">🤝 Handshake</a>
+            <a class="link-chip trade" href="https://www.tradesmenintl.com/find-work/" target="_blank" rel="noopener">🔧 Tradesmen Intl</a>
+          </div>
+          <div class="link-group-label">Local Help Wanted</div>
+          <div class="link-chips">
+            <a class="link-chip local" href="https://www.vindy.com" target="_blank" rel="noopener">📰 Vindicator</a>
+            <a class="link-chip local" href="https://www.ncnewsonline.com" target="_blank" rel="noopener">📰 New Castle News</a>
+            <a class="link-chip local" href="https://www.sharonherald.com" target="_blank" rel="noopener">📰 Sharon Herald</a>
+          </div>
+        </div>
+      </div>
+
+      <!-- Salary / Wage Research Links -->
+      <div class="links-panel-section">
+        <div class="links-toggle" onclick="togglePanel('salaryLinks','salaryLinksArrow')">
+          <span class="links-toggle-label">💰 Salary &amp; Wage Data</span>
+          <span class="links-toggle-arrow" id="salaryLinksArrow">▾</span>
+        </div>
+        <div class="links-body" id="salaryLinks">
+          <div class="link-group-label">Official Government Sources</div>
+          <div class="link-chips">
+            <a class="link-chip salary" href="https://www.bls.gov/ooh/" target="_blank" rel="noopener">📊 BLS Occupational Outlook</a>
+            <a class="link-chip salary" href="https://www.careeronestop.org/Toolkit/Wages/find-wages.aspx" target="_blank" rel="noopener">🏛 CareerOneStop Wages</a>
+            <a class="link-chip salary" href="https://www.onetonline.org/" target="_blank" rel="noopener">🔎 O*NET OnLine</a>
+            <a class="link-chip salary" href="https://www.paworkstats.pa.gov/gsipub/index.asp?docid=374" target="_blank" rel="noopener">🏛 PA Wage Data</a>
+          </div>
+          <div class="link-group-label">Employer-Reported Pay</div>
+          <div class="link-chips">
+            <a class="link-chip salary" href="https://www.salary.com" target="_blank" rel="noopener">💵 Salary.com</a>
+            <a class="link-chip salary" href="https://www.payscale.com" target="_blank" rel="noopener">📈 PayScale</a>
+            <a class="link-chip salary" href="https://www.glassdoor.com/Salaries/index.htm" target="_blank" rel="noopener">🏢 Glassdoor Salaries</a>
+            <a class="link-chip salary" href="https://www.indeed.com/career/salaries" target="_blank" rel="noopener">📌 Indeed Salaries</a>
+          </div>
+        </div>
+      </div>
+
+      <div class="chat-messages" id="chatMessages"></div>
+      <div class="chat-input-area">
+        <div class="chat-input-row">
+          <textarea class="chat-input" id="chatInput" rows="1" placeholder="Ask me anything…" onkeydown="handleChatKey(event)" oninput="autoResizeChat(this)"></textarea>
+          <button class="chat-send" onclick="sendChat()">➤</button>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+// ── Sections ──────────────────────────────────────────
+const SECTIONS = [
+  {key:'info',   label:'Student Info',    icon:'👤'},
+  {key:'search', label:'Job Sites',       icon:'🔍'},
+  {key:'jobs',   label:'Document Jobs',   icon:'💼'},
+  {key:'salary', label:'Salary Research', icon:'💰'},
+  {key:'grade',  label:'Grade & Submit',  icon:'📊'},
+];
+const stepStatus = {info:'active', search:'pending', jobs:'pending', salary:'pending', grade:'pending'};
+let currentSection = 'info';
+
+// ── State ─────────────────────────────────────────────
+let studentName    = '';
+let studentProgram = '';
+let jobs           = [];
+let editingJobIdx  = -1;
+let salaryData     = {occupation:'', entryPay:'', avgPay:'', topPay:'', localPay:'', source:'', notes:''};
+let salaryDone     = false;
+let gradeResult    = null;
+let submissionId   = '';
+let chatHistory    = [];
+let isThinking     = false;
+
+// ── Init ──────────────────────────────────────────────
+window.addEventListener('DOMContentLoaded', () => {
+  try {
+    const saved = JSON.parse(localStorage.getItem('rb_progress') || 'null');
+    if (saved?.personal?.program) studentProgram = saved.personal.program;
+    if (saved?.personal?.firstName) studentName = (saved.personal.firstName + ' ' + (saved.personal.lastName||'')).trim();
+  } catch(e) {}
+  renderLeftNav();
+  show('info');
+  setTimeout(() => addAIMsg(`Welcome! I'm your AI job search assistant. I'll help you find positions that match your ${studentProgram ? '**' + studentProgram + '**' : 'trade'} training.\n\nUse the **🔗 Job Search Sites** panel above for job boards — including the Vindicator, New Castle News, and Sharon Herald.\n\nYou'll also research **salary and wage data** using the **💰 Salary & Wage Data** links — I recommend starting with the BLS Occupational Outlook Handbook.\n\nYou need to document at least **3 jobs** and complete the salary research step to submit. Ask me anything!`), 400);
+});
+
+// ── Link panel toggles ────────────────────────────────
+function togglePanel(bodyId, arrowId) {
+  const body  = document.getElementById(bodyId);
+  const arrow = document.getElementById(arrowId);
+  const open  = body.classList.toggle('open');
+  arrow.classList.toggle('open', open);
+}
+
+// ── Nav ───────────────────────────────────────────────
+function renderLeftNav() {
+  const nav = document.getElementById('leftNav');
+  nav.innerHTML = '<div class="nav-heading">Assignment</div>' +
+    SECTIONS.map(s => {
+      const st = stepStatus[s.key];
+      const cls = s.key === currentSection ? 'active' : st;
+      return `<div class="nav-item ${cls}" onclick="navClick('${s.key}')">
+        <div class="nav-icon">${s.icon}</div>
+        <span class="nav-label">${s.label}</span>
+        <span class="nav-check">✓</span>
+      </div>`;
+    }).join('');
+}
+
+function navClick(key) {
+  if (stepStatus[key] === 'pending') return;
+  show(key);
+}
+
+function setStatus(key, st) { stepStatus[key] = st; renderLeftNav(); }
+
+// ── Routing ───────────────────────────────────────────
+function show(key) {
+  currentSection = key;
+  renderLeftNav();
+  const ci = document.getElementById('centerInner');
+  if      (key === 'info')   ci.innerHTML = renderInfoScreen();
+  else if (key === 'search') ci.innerHTML = renderSearchScreen();
+  else if (key === 'jobs')   ci.innerHTML = renderJobsScreen();
+  else if (key === 'salary') ci.innerHTML = renderSalaryScreen();
+  else if (key === 'grade')  ci.innerHTML = renderGradeScreen();
+}
+
+// ── Info Screen ───────────────────────────────────────
+function renderInfoScreen() {
+  const prog = studentProgram;
+  return `<div class="welcome-card">
+    <span class="welcome-icon">🔍</span>
+    <div class="welcome-title">Employment Search Assignment</div>
+    <div class="welcome-sub">Use real job search websites to find positions in your trade area. Document what you find, research wage data, and get a fair grade.</div>
+    <ul class="task-list">
+      <li><span>📌</span><span>Browse job boards — links are in the right panel</span></li>
+      <li><span>💼</span><span>Find and document at least <strong>3 real job postings</strong></span></li>
+      <li><span>💰</span><span>Research <strong>entry-level and average pay</strong> for your trade</span></li>
+      <li><span>📊</span><span>Submit for AI grading and download your completed assignment</span></li>
+    </ul>
+    <div class="name-field">
+      <label>Your Full Name *</label>
+      <input id="nameInput" value="${escHtml(studentName)}" placeholder="First and Last Name" oninput="document.getElementById('nameErr').style.display='none'">
+      <div id="nameErr" class="err-msg">Please enter your name.</div>
+    </div>
+    ${prog
+      ? `<div style="font-size:13px;color:var(--blue-700);background:var(--blue-50);border-radius:7px;padding:10px 14px;margin-bottom:16px;font-weight:500">🎓 Program detected: <strong>${escHtml(prog)}</strong></div>`
+      : `<div style="margin-bottom:16px"><div class="f-group" style="max-width:340px;margin:0 auto;text-align:left"><label>Your Trade Program</label><input id="progInput" placeholder="e.g. Automotive Technology, HVAC, Welding"></div></div>`
+    }
+    <button class="btn btn-primary btn-lg" onclick="submitInfo()">Start Searching →</button>
+  </div>`;
+}
+
+function submitInfo() {
+  const name = document.getElementById('nameInput').value.trim();
+  if (!name) { document.getElementById('nameErr').style.display='block'; return; }
+  studentName = name;
+  if (!studentProgram) {
+    const pi = document.getElementById('progInput');
+    if (pi) studentProgram = pi.value.trim();
+  }
+  setStatus('info','done');
+  setStatus('search','active');
+  addAIMsg(`Got it, **${studentName.split(' ')[0]}**! Head over to **Job Sites** to start browsing. The links panel has everything from Indeed and LinkedIn to the local papers. When you find a job you like, come back and document it.`);
+  show('search');
+}
+
+// ── Search Screen ─────────────────────────────────────
+const SITES = [
+  {name:'Indeed',         icon:'📌', url:'https://www.indeed.com',                        type:'national', tip:'Largest US job board'},
+  {name:'LinkedIn',       icon:'💼', url:'https://www.linkedin.com/jobs/',                type:'national', tip:'Professional network'},
+  {name:'ZipRecruiter',   icon:'⚡', url:'https://www.ziprecruiter.com',                  type:'national', tip:'Fast-apply matching'},
+  {name:'Glassdoor',      icon:'🏢', url:'https://www.glassdoor.com/Job/index.htm',       type:'national', tip:'Jobs + company reviews'},
+  {name:'Monster',        icon:'👾', url:'https://www.monster.com',                       type:'national', tip:'Classic job board'},
+  {name:'CareerBuilder',  icon:'🔨', url:'https://www.careerbuilder.com',                 type:'national', tip:'Large employer network'},
+  {name:'SimplyHired',    icon:'✅', url:'https://www.simplyhired.com',                   type:'national', tip:'Aggregates many sites'},
+  {name:'USAJobs',        icon:'🇺🇸', url:'https://www.usajobs.gov',                       type:'national', tip:'Federal government jobs'},
+  {name:'PA CareerLink',  icon:'🏛', url:'https://www.pacareerlink.pa.gov/jponline/',     type:'trade',    tip:'PA state career center'},
+  {name:'Handshake',      icon:'🤝', url:'https://joinhandshake.com',                     type:'trade',    tip:'Built for students'},
+  {name:'Tradesmen Intl', icon:'🔧', url:'https://www.tradesmenintl.com/find-work/',      type:'trade',    tip:'Skilled trades staffing'},
+  {name:'Vindicator',     icon:'📰', url:'https://www.vindy.com',                         type:'local',    tip:'Mahoning Valley'},
+  {name:'New Castle News',icon:'📰', url:'https://www.ncnewsonline.com',                  type:'local',    tip:'Lawrence County'},
+  {name:'Sharon Herald',  icon:'📰', url:'https://www.sharonherald.com',                  type:'local',    tip:'Mercer County'},
+];
+const TYPE_LABELS = {national:'🌐 National Job Boards', trade:'🔧 Trade & Student Sites', local:'📍 Local Help Wanted'};
+
+function renderSearchScreen() {
+  const byType = {};
+  SITES.forEach(s => { (byType[s.type] = byType[s.type]||[]).push(s); });
+  const secs = ['national','trade','local'].map(type => {
+    const cards = byType[type].map(s =>
+      `<a class="site-card ${type==='local'?'local':type==='trade'?'trade':''}" href="${s.url}" target="_blank" rel="noopener">
+        <span class="site-icon">${s.icon}</span>
+        <span class="site-name">${escHtml(s.name)}</span>
+        <span class="site-type">${escHtml(s.tip)}</span>
+      </a>`).join('');
+    return `<div style="margin-bottom:22px"><div style="font-size:12px;font-weight:700;color:var(--slate-500);text-transform:uppercase;letter-spacing:.5px;margin-bottom:10px">${TYPE_LABELS[type]}</div><div class="site-grid">${cards}</div></div>`;
+  }).join('');
+
+  return `<div class="section-hdr"><div class="section-hdr-icon">🔍</div><div><div class="section-hdr-title">Job Search Sites</div><div class="section-hdr-sub">Click any site to open it in a new tab — come back to document what you find</div></div></div>
+  <div class="form-card">
+    <div class="form-card-hdr">💡 Search Tips</div>
+    <div class="form-card-body" style="padding-bottom:16px">
+      <ul style="list-style:none;display:flex;flex-direction:column;gap:8px">
+        <li style="font-size:13px;color:var(--slate-700);display:flex;gap:8px"><span>🔎</span><span>Search your job title (e.g. "<strong>${escHtml(studentProgram||'Automotive Technician')}</strong>") plus your city or ZIP</span></li>
+        <li style="font-size:13px;color:var(--slate-700);display:flex;gap:8px"><span>📋</span><span>Copy the job <strong>requirements</strong> from the posting — you'll paste them into the form</span></li>
+        <li style="font-size:13px;color:var(--slate-700);display:flex;gap:8px"><span>📍</span><span>Check the <strong>local papers</strong> — they often list jobs not found on national boards</span></li>
+        <li style="font-size:13px;color:var(--slate-700);display:flex;gap:8px"><span>💰</span><span>You'll research <strong>salary data</strong> in a later step using the 💰 links in the right panel</span></li>
+      </ul>
+    </div>
+  </div>
+  ${secs}
+  <div style="display:flex;justify-content:flex-end;margin-top:8px">
+    <button class="btn btn-primary btn-lg" onclick="goToJobs()">I Found Some Jobs — Document Them →</button>
+  </div>`;
+}
+
+function goToJobs() {
+  setStatus('search','done');
+  setStatus('jobs','active');
+  show('jobs');
+  if (!jobs.length) addAIMsg(`Ready to document! Click **Add a Job** to record each position you found. You need at least 3. The more detail you add, the better your grade.`);
+}
+
+// ── Jobs Screen ───────────────────────────────────────
+function renderJobsScreen() {
+  const needed   = Math.max(0, 3 - jobs.length);
+  const progress = Math.min(100, Math.round(jobs.length / 3 * 100));
+  const tiles = jobs.map((j,i) => `
+    <div class="job-tile">
+      <div class="job-tile-top">
+        <div>
+          <div class="job-tile-title">${escHtml(j.title||'Untitled')}</div>
+          <div class="job-tile-sub">${escHtml(j.company)}${j.location?' · '+escHtml(j.location):''}</div>
+          <div class="job-tile-source">${j.source?'Found on '+escHtml(j.source):''}</div>
+        </div>
+        <div class="job-tile-actions">
+          <button class="btn btn-ghost" style="padding:5px 10px;font-size:12px" onclick="editJob(${i})">Edit</button>
+          <button class="btn btn-danger" style="padding:5px 10px;font-size:12px" onclick="deleteJob(${i})">Delete</button>
+        </div>
+      </div>
+      ${j.whyInterested ? `<div class="job-tile-preview"><div class="job-tile-preview-row"><span class="job-tile-preview-lbl">Why Interested</span><span class="job-tile-preview-val">${escHtml(j.whyInterested.slice(0,120))}${j.whyInterested.length>120?'…':''}</span></div></div>` : ''}
+    </div>`).join('');
+
+  const canNext = jobs.length >= 3;
+  const addBtn  = `<button class="btn btn-primary" onclick="showJobForm()">+ Add a Job</button>`;
+  const nextBtn = canNext
+    ? `<button class="btn btn-confirm btn-lg" onclick="goToSalary()">Next: Salary Research →</button>`
+    : `<button class="btn btn-confirm btn-lg" disabled style="opacity:.4">Next (${jobs.length}/3 jobs)</button>`;
+
+  return `<div class="section-hdr"><div class="section-hdr-icon">💼</div><div><div class="section-hdr-title">Document Your Jobs</div><div class="section-hdr-sub">Add at least 3 jobs — more detail = higher grade</div></div></div>
+  <div style="margin-bottom:20px">
+    <div class="progress-bar-wrap"><div class="progress-bar-fill" style="width:${progress}%"></div></div>
+    <div class="progress-label">${jobs.length} of 3 required${jobs.length>=3?' — you can add more for a stronger grade':` — need ${needed} more`}</div>
+    <div style="display:flex;gap:8px;justify-content:space-between;align-items:center">${addBtn}${nextBtn}</div>
+  </div>
+  ${tiles}
+  ${!jobs.length ? `<div style="text-align:center;padding:40px 20px;color:var(--slate-400)"><div style="font-size:36px;margin-bottom:10px">💼</div><div style="font-size:14px;font-weight:600">No jobs documented yet</div><div style="font-size:13px;margin-top:4px">Click <strong>Add a Job</strong> to get started</div></div>` : ''}`;
+}
+
+function showJobForm(prefill) {
+  const j = prefill || {title:'',company:'',location:'',source:'',requirements:'',whyInterested:'',skillsMatch:'',skillsNeeded:'',wouldApply:''};
+  const isEdit = editingJobIdx >= 0;
+  const ci = document.getElementById('centerInner');
+  const srcOpts = ['Indeed','LinkedIn','ZipRecruiter','Glassdoor','Monster','CareerBuilder','SimplyHired','USAJobs','PA CareerLink','Handshake','Tradesmen Intl','Vindicator','New Castle News','Sharon Herald','Other']
+    .map(s=>`<option value="${s}"${j.source===s?' selected':''}>${s}</option>`).join('');
+  ci.innerHTML = `<div class="section-hdr"><div class="section-hdr-icon">${isEdit?'✏️':'➕'}</div><div><div class="section-hdr-title">${isEdit?'Edit Job':'Add a Job'}</div><div class="section-hdr-sub">Fill in the details for this job posting</div></div></div>
+  <div class="form-card">
+    <div class="form-card-hdr">💼 Job Details</div>
+    <div class="form-card-body">
+      <div class="f-2col">
+        <div class="f-group" id="fg-title"><label>Job Title <span class="req">*</span></label><input id="jTitle" value="${escHtml(j.title)}" placeholder="e.g. Automotive Technician"><span class="f-err">Required</span></div>
+        <div class="f-group" id="fg-company"><label>Company Name <span class="req">*</span></label><input id="jCompany" value="${escHtml(j.company)}" placeholder="e.g. Valvoline Instant Oil Change"><span class="f-err">Required</span></div>
+      </div>
+      <div class="f-2col">
+        <div class="f-group"><label>City / Location</label><input id="jLocation" value="${escHtml(j.location)}" placeholder="e.g. New Castle, PA"></div>
+        <div class="f-group"><label>Found On</label><select id="jSource"><option value="">— Select site —</option>${srcOpts}</select></div>
+      </div>
+    </div>
+  </div>
+  <div class="form-card">
+    <div class="form-card-hdr">📋 Job Requirements</div>
+    <div class="form-card-body">
+      <div class="f-1col f-group" id="fg-req">
+        <label>Key Requirements from the Posting <span class="req">*</span></label>
+        <textarea id="jRequirements" rows="4" placeholder="Paste or summarize the key requirements, qualifications, and responsibilities…">${escHtml(j.requirements)}</textarea>
+        <span class="f-err">Describe the job requirements.</span>
+      </div>
+    </div>
+  </div>
+  <div class="form-card">
+    <div class="form-card-hdr">✍️ Your Reflection</div>
+    <div class="form-card-body">
+      <div class="f-1col f-group" id="fg-why">
+        <label>Why are you interested in this job? <span class="req">*</span></label>
+        <textarea id="jWhyInterested" rows="3" placeholder="What appeals to you about this position? Why would it be a good fit?">${escHtml(j.whyInterested)}</textarea>
+        <span class="f-err">Explain why you're interested.</span>
+      </div>
+      <div class="f-1col f-group" id="fg-match">
+        <label>What skills do you already have that match? <span class="req">*</span></label>
+        <textarea id="jSkillsMatch" rows="3" placeholder="Which of your current skills, training, or experience match what they're looking for?">${escHtml(j.skillsMatch)}</textarea>
+        <span class="f-err">Describe your matching skills.</span>
+      </div>
+      <div class="f-1col f-group">
+        <label>What would you need to learn or develop?</label>
+        <textarea id="jSkillsNeeded" rows="3" placeholder="Are there requirements you don't yet have? What would you need to work on?">${escHtml(j.skillsNeeded)}</textarea>
+      </div>
+      <div class="f-1col f-group" style="margin-bottom:14px">
+        <label>Would you apply for this job?</label>
+        <select id="jWouldApply">
+          <option value="">— Choose —</option>
+          <option value="Yes"   ${j.wouldApply==='Yes'   ?'selected':''}>Yes — I'd apply</option>
+          <option value="Maybe" ${j.wouldApply==='Maybe' ?'selected':''}>Maybe — needs more thought</option>
+          <option value="No"    ${j.wouldApply==='No'    ?'selected':''}>No — not the right fit</option>
+        </select>
+      </div>
+    </div>
+    <div class="form-card-footer" style="justify-content:space-between">
+      <button class="btn btn-ghost" onclick="cancelJobForm()">Cancel</button>
+      <button class="btn btn-primary" onclick="saveJob()">Save Job ✓</button>
+    </div>
+  </div>`;
+}
+
+function validateField(id, fgId) {
+  const val = document.getElementById(id).value.trim();
+  if (!val) { document.getElementById(fgId).classList.add('has-error'); return false; }
+  document.getElementById(fgId).classList.remove('has-error'); return true;
+}
+
+function saveJob() {
+  const v1=validateField('jTitle','fg-title'), v2=validateField('jCompany','fg-company'),
+        v3=validateField('jRequirements','fg-req'), v4=validateField('jWhyInterested','fg-why'),
+        v5=validateField('jSkillsMatch','fg-match');
+  if (!v1||!v2||!v3||!v4||!v5) return;
+  const job = {
+    title:         document.getElementById('jTitle').value.trim(),
+    company:       document.getElementById('jCompany').value.trim(),
+    location:      document.getElementById('jLocation').value.trim(),
+    source:        document.getElementById('jSource').value,
+    requirements:  document.getElementById('jRequirements').value.trim(),
+    whyInterested: document.getElementById('jWhyInterested').value.trim(),
+    skillsMatch:   document.getElementById('jSkillsMatch').value.trim(),
+    skillsNeeded:  document.getElementById('jSkillsNeeded').value.trim(),
+    wouldApply:    document.getElementById('jWouldApply').value,
+  };
+  if (editingJobIdx >= 0) { jobs[editingJobIdx] = job; editingJobIdx = -1; }
+  else                     jobs.push(job);
+  setStatus('jobs', jobs.length >= 3 ? 'done' : 'active');
+  addAIMsg(`Saved **${job.title}** at ${job.company}! ${jobs.length<3?`Need ${3-jobs.length} more job${3-jobs.length===1?'':'s'} to continue.`:'You have enough — add more or continue to salary research.'}`);
+  show('jobs');
+}
+
+function editJob(i)     { editingJobIdx=i; showJobForm(jobs[i]); }
+function deleteJob(i)   { jobs.splice(i,1); if(jobs.length<3) setStatus('jobs','active'); show('jobs'); }
+function cancelJobForm(){ editingJobIdx=-1; show('jobs'); }
+
+function goToSalary() {
+  setStatus('jobs','done');
+  setStatus('salary','active');
+  show('salary');
+  addAIMsg(`Great work finding ${jobs.length} jobs! Now let's research wages.\n\nOpen the **💰 Salary & Wage Data** links in the right panel. Start with the **BLS Occupational Outlook Handbook** (bls.gov/ooh) — it has entry-level and median pay broken down by state. Use **CareerOneStop Wages** to filter by Pennsylvania ZIP code for local rates. Not sure what to search? Just ask me!`);
+}
+
+// ── Salary Research Screen ────────────────────────────
+const SALARY_RESOURCES = [
+  {name:'BLS Occupational Outlook', icon:'📊', url:'https://www.bls.gov/ooh/',                                        desc:'Official entry-level & median pay by occupation'},
+  {name:'CareerOneStop Wages',       icon:'🏛', url:'https://www.careeronestop.org/Toolkit/Wages/find-wages.aspx',   desc:'Search wages by job title and PA location'},
+  {name:'O*NET OnLine',              icon:'🔎', url:'https://www.onetonline.org/',                                   desc:'Detailed occupation data including typical wages'},
+  {name:'PA Wage Data',              icon:'🏛', url:'https://www.paworkstats.pa.gov/gsipub/index.asp?docid=374',     desc:'Pennsylvania occupational wages by county'},
+  {name:'Salary.com',                icon:'💵', url:'https://www.salary.com',                                        desc:'Employer-reported pay ranges'},
+  {name:'PayScale',                  icon:'📈', url:'https://www.payscale.com',                                      desc:'Experience-based salary estimates'},
+  {name:'Glassdoor Salaries',        icon:'🏢', url:'https://www.glassdoor.com/Salaries/index.htm',                  desc:'Salaries reported by real employees'},
+  {name:'Indeed Salaries',           icon:'📌', url:'https://www.indeed.com/career/salaries',                       desc:'Average pay from job postings'},
+];
+
+function renderSalaryScreen() {
+  const sd = salaryData;
+  const resCards = SALARY_RESOURCES.map(r =>
+    `<a class="salary-resource-card" href="${r.url}" target="_blank" rel="noopener">
+      <span class="sr-icon">${r.icon}</span>
+      <span class="sr-name">${escHtml(r.name)}</span>
+      <span class="sr-desc">${escHtml(r.desc)}</span>
+    </a>`).join('');
+
+  const srcOpts = SALARY_RESOURCES.map(r =>`<option value="${escHtml(r.name)}"${sd.source===r.name?' selected':''}>${escHtml(r.name)}</option>`).join('');
+
+  return `<div class="section-hdr"><div class="section-hdr-icon" style="background:var(--purple-50)">💰</div><div><div class="section-hdr-title">Salary Research</div><div class="section-hdr-sub">Look up what workers in your trade actually earn</div></div></div>
+
+  <div class="form-card">
+    <div class="form-card-hdr" style="background:var(--purple-700)">💡 What to Look Up</div>
+    <div class="form-card-body" style="padding-bottom:16px">
+      <ul style="list-style:none;display:flex;flex-direction:column;gap:8px">
+        <li style="font-size:13px;color:var(--slate-700);display:flex;gap:8px"><span>📊</span><span>Start with <strong>BLS Occupational Outlook Handbook</strong> — search your job title, note entry-level and median annual wage</span></li>
+        <li style="font-size:13px;color:var(--slate-700);display:flex;gap:8px"><span>📍</span><span>Use <strong>CareerOneStop Wages</strong> filtered to Pennsylvania or your ZIP for local rates</span></li>
+        <li style="font-size:13px;color:var(--slate-700);display:flex;gap:8px"><span>💵</span><span>Check <strong>Salary.com</strong> or <strong>PayScale</strong> for pay ranges including overtime and experience tiers</span></li>
+        <li style="font-size:13px;color:var(--slate-700);display:flex;gap:8px"><span>💬</span><span>Not sure what title to search? Ask me — e.g. "What is the BLS job title for an HVAC technician?"</span></li>
+      </ul>
+    </div>
+  </div>
+
+  <div style="margin-bottom:18px">
+    <div style="font-size:12px;font-weight:700;color:var(--slate-500);text-transform:uppercase;letter-spacing:.5px;margin-bottom:10px">📂 Open a Salary Resource</div>
+    <div class="salary-resource-grid">${resCards}</div>
+  </div>
+
+  <div class="form-card">
+    <div class="form-card-hdr" style="background:var(--purple-700)">📝 Record What You Found</div>
+    <div class="form-card-body">
+      <div class="f-2col">
+        <div class="f-group" id="fg-occ">
+          <label>Occupation / Job Title Searched <span class="req">*</span></label>
+          <input id="sOccupation" value="${escHtml(sd.occupation)}" placeholder="e.g. Automotive Service Technician">
+          <span class="f-err">Enter the occupation you searched.</span>
+        </div>
+        <div class="f-group">
+          <label>Source Used</label>
+          <select id="sSource"><option value="">— Select —</option>${srcOpts}<option value="Other"${sd.source==='Other'?' selected':''}>Other</option></select>
+        </div>
+      </div>
+      <div class="f-3col">
+        <div class="f-group" id="fg-entry">
+          <label>Entry-Level Pay <span class="req">*</span></label>
+          <input id="sEntryPay" value="${escHtml(sd.entryPay)}" placeholder="e.g. $15/hr or $30,000/yr">
+          <span class="f-err">Enter entry-level pay.</span>
+        </div>
+        <div class="f-group">
+          <label>Average / Median Pay</label>
+          <input id="sAvgPay" value="${escHtml(sd.avgPay)}" placeholder="e.g. $21/hr">
+        </div>
+        <div class="f-group">
+          <label>Top / Experienced Pay</label>
+          <input id="sTopPay" value="${escHtml(sd.topPay)}" placeholder="e.g. $35/hr">
+        </div>
+      </div>
+      <div class="f-1col f-group">
+        <label>Local / PA Pay Rate (if different)</label>
+        <input id="sLocalPay" value="${escHtml(sd.localPay)}" placeholder="e.g. $17/hr in Lawrence County PA — from CareerOneStop">
+      </div>
+      <div class="f-1col f-group" id="fg-notes">
+        <label>What Did You Learn? <span class="req">*</span></label>
+        <textarea id="sNotes" rows="4" placeholder="Summarize what you found. Does the pay meet your expectations? How does entry-level compare to average? Is local pay higher or lower than national? What does it take to reach top pay?">${escHtml(sd.notes)}</textarea>
+        <span class="f-err">Write a short reflection on what you found.</span>
+      </div>
+    </div>
+    <div class="form-card-footer" style="justify-content:space-between">
+      <button class="btn btn-ghost" onclick="show('jobs')">← Back to Jobs</button>
+      <button class="btn btn-confirm btn-lg" onclick="saveSalary()">Save &amp; Continue →</button>
+    </div>
+  </div>`;
+}
+
+function saveSalary() {
+  const v1=validateField('sOccupation','fg-occ'), v2=validateField('sEntryPay','fg-entry'), v3=validateField('sNotes','fg-notes');
+  if (!v1||!v2||!v3) return;
+  salaryData = {
+    occupation: document.getElementById('sOccupation').value.trim(),
+    source:     document.getElementById('sSource').value,
+    entryPay:   document.getElementById('sEntryPay').value.trim(),
+    avgPay:     document.getElementById('sAvgPay').value.trim(),
+    topPay:     document.getElementById('sTopPay').value.trim(),
+    localPay:   document.getElementById('sLocalPay').value.trim(),
+    notes:      document.getElementById('sNotes').value.trim(),
+  };
+  salaryDone = true;
+  setStatus('salary','done');
+  setStatus('grade','active');
+  addAIMsg(`Saved your salary research! Entry-level for **${salaryData.occupation}**: **${salaryData.entryPay}**${salaryData.avgPay?', average: '+salaryData.avgPay:''}.\n\nNow I'm grading your assignment — one moment…`);
+  show('grade');
+  submitForGrade();
+}
+
+// ── Grade Screen ──────────────────────────────────────
+function renderGradeScreen() {
+  if (!gradeResult) {
+    return `<div class="loading-center"><div style="font-size:36px;margin-bottom:14px">📊</div><div style="font-size:17px;font-weight:600;margin-bottom:6px">Grading your assignment…</div><div style="font-size:14px;color:var(--slate-500)">Reviewing your job search and salary research.</div><div class="spinner"></div></div>`;
+  }
+  const g  = gradeResult;
+  const gc = g.grade==='A'?'A':g.grade==='B'?'B':g.grade==='C'?'C':'D';
+  const rubric = [
+    {key:'completeness',    label:'Completeness',      weight:'20%'},
+    {key:'programRelevance',label:'Program Relevance', weight:'20%'},
+    {key:'effort',          label:'Effort & Detail',   weight:'20%'},
+    {key:'reflection',      label:'Self-Reflection',   weight:'20%'},
+    {key:'salaryResearch',  label:'Salary Research',   weight:'20%'},
+  ];
+  const rubricRows = rubric.map(r => {
+    const sc = g.scores?.[r.key]??75;
+    const fb = g.feedback?.[r.key]??'';
+    return `<div class="rubric-row"><span class="rubric-label">${r.label} <span style="font-size:10px;color:var(--slate-400)">(${r.weight})</span></span><div class="rubric-bar-wrap"><div class="rubric-bar" style="width:${sc}%"></div></div><span class="rubric-score">${sc}</span></div>${fb?`<div class="rubric-fb">${escHtml(fb)}</div>`:''}`;
+  }).join('');
+
+  const salaryCard = salaryDone ? `<div class="salary-summary">
+    <h4>💰 Salary Research: ${escHtml(salaryData.occupation)}</h4>
+    ${salaryData.entryPay?`<div class="salary-row"><span class="salary-lbl">Entry-Level Pay</span><span class="salary-val">${escHtml(salaryData.entryPay)}</span></div>`:''}
+    ${salaryData.avgPay?`<div class="salary-row"><span class="salary-lbl">Average / Median Pay</span><span class="salary-val">${escHtml(salaryData.avgPay)}</span></div>`:''}
+    ${salaryData.topPay?`<div class="salary-row"><span class="salary-lbl">Top / Experienced Pay</span><span class="salary-val">${escHtml(salaryData.topPay)}</span></div>`:''}
+    ${salaryData.localPay?`<div class="salary-row"><span class="salary-lbl">Local / PA Rate</span><span class="salary-val">${escHtml(salaryData.localPay)}</span></div>`:''}
+    ${salaryData.source?`<div class="salary-row"><span class="salary-lbl">Source</span><span class="salary-val">${escHtml(salaryData.source)}</span></div>`:''}
+  </div>` : '';
+
+  return `<div class="section-hdr"><div class="section-hdr-icon">📊</div><div><div class="section-hdr-title">Your Grade</div><div class="section-hdr-sub">Based on ${jobs.length} job${jobs.length===1?'':'s'} + salary research</div></div></div>
+  <div class="download-bar"><div class="download-bar-text">Download and submit in Canvas to receive credit.</div><button class="download-btn" onclick="downloadPDF()">⬇ Download Assignment</button></div>
+  ${salaryCard}
+  <div class="grade-card">
+    <div class="grade-hdr">
+      <div class="grade-circle ${gc}"><div class="grade-letter">${g.grade||'B'}</div><div class="grade-points">${g.overall||75}/100</div></div>
+      <div class="grade-hdr-right"><h3>${gradeLabel(g.overall||75)}</h3><p>${escHtml(g.encouragement||'Good work on your assignment.')}</p></div>
+    </div>
+    ${rubricRows}
+    ${g.strengths?`<div class="feedback-block"><h4>What You Did Well</h4><p>${escHtml(g.strengths)}</p></div>`:''}
+    ${g.improvements?`<div class="feedback-block" style="border-top:1px solid var(--slate-100)"><h4>How to Improve</h4><p>${escHtml(g.improvements)}</p></div>`:''}
+  </div>
+  <div style="display:flex;gap:10px;justify-content:flex-end;margin-top:8px">
+    <button class="btn btn-ghost" onclick="show('salary')">← Edit Salary Research</button>
+    <button class="btn btn-primary" onclick="downloadPDF()">Download PDF</button>
+  </div>`;
+}
+
+function gradeLabel(score) {
+  if (score>=90) return 'Excellent Work!';
+  if (score>=80) return 'Great Job!';
+  if (score>=70) return 'Good Effort!';
+  if (score>=60) return 'Passing — Room to Grow';
+  return 'Needs More Work';
+}
+
+// ── Submit & Grade ────────────────────────────────────
+async function submitForGrade() {
+  if (jobs.length < 3) { addAIMsg('You need at least 3 jobs documented before you can submit.'); return; }
+  gradeResult = null;
+  try {
+    const jobSummaries = jobs.map((j,i) =>
+      `Job ${i+1}: ${j.title} at ${j.company}${j.location?' in '+j.location:''}.
+Requirements: ${j.requirements.slice(0,200)}.
+Why interested: ${j.whyInterested.slice(0,200)}.
+Skills match: ${j.skillsMatch.slice(0,150)}.
+Skills needed: ${j.skillsNeeded.slice(0,100)||'Not specified'}.
+Would apply: ${j.wouldApply||'Not specified'}.`
+    ).join('\n\n');
+
+    const salaryCtx = salaryDone
+      ? `\n\nSALARY RESEARCH:\nOccupation: ${salaryData.occupation}\nEntry pay: ${salaryData.entryPay}\nAverage pay: ${salaryData.avgPay||'not specified'}\nTop pay: ${salaryData.topPay||'not specified'}\nLocal/PA pay: ${salaryData.localPay||'not specified'}\nSource: ${salaryData.source||'not specified'}\nReflection: ${salaryData.notes.slice(0,300)}`
+      : '\n\nSALARY RESEARCH: Not completed.';
+
+    const sys = `You fairly grade a trade school student's employment search assignment. The student's program is "${studentProgram||'trade'}". They documented ${jobs.length} job(s).
+
+JOBS:
+${jobSummaries}${salaryCtx}
+
+Grade on 5 criteria (0-100 each):
+- completeness: All required fields filled with real, specific content? Reward detail.
+- programRelevance: Jobs relate to their trade program? Give credit for related fields.
+- effort: Written responses thorough and show real thought? Reward effort over writing quality.
+- reflection: Honest self-awareness about skills they have and what they need to develop?
+- salaryResearch: Did they research entry-level pay, average/median pay, and write a genuine reflection on what the wages mean for their career goals?
+
+Be fair and encouraging — trade school students may not be strong writers. A student who completed all sections with genuine effort earns at least a B (80). Only go below 70 if responses are empty, clearly fake, or completely off-topic.
+
+Return ONLY valid JSON:
+{"grade":"B","overall":82,"scores":{"completeness":85,"programRelevance":80,"effort":80,"reflection":82,"salaryResearch":83},"feedback":{"completeness":"","programRelevance":"","effort":"","reflection":"","salaryResearch":""},"strengths":"","improvements":"","encouragement":""}`;
+
+    const raw   = await callAPI(sys, 'Grade this assignment.');
+    const match = raw.match(/\{[\s\S]*\}/);
+    if (!match) throw new Error('no json');
+    gradeResult = JSON.parse(match[0]);
+  } catch(e) {
+    gradeResult = gradeJS();
+  }
+  submissionId = genId();
+  gradeResult._submissionId = submissionId;
+  localStorage.setItem('empSearch_submission', JSON.stringify({studentName, studentProgram, jobs, salaryData, gradeResult, submittedAt:new Date().toISOString()}));
+  setStatus('grade','done');
+  show('grade');
+  addAIMsg(`Your grade is **${gradeResult.grade} (${gradeResult.overall}/100)**. ${gradeResult.encouragement||''}\n\nDownload your assignment and submit it in Canvas.`);
+}
+
+// ── JS Fallback Grader ────────────────────────────────
+function gradeJS() {
+  const wc = t => (t||'').trim().split(/\s+/).filter(w=>w.length>1).length;
+  let completeness=0, relevance=75, effort=0, reflection=0, salary=0;
+  const prog = (studentProgram||'').toLowerCase();
+  const relTerms = prog.split(/\s+/).filter(w=>w.length>3);
+  let totalWords = 0;
+
+  jobs.forEach(j => {
+    const filled = [j.title,j.company,j.requirements,j.whyInterested,j.skillsMatch].filter(f=>f&&f.trim().length>3).length;
+    completeness += (filled/5)*100;
+    const allText = [j.title,j.company,j.requirements,j.whyInterested,j.skillsMatch,j.skillsNeeded].join(' ').toLowerCase();
+    if (relTerms.some(t=>allText.includes(t))) relevance = Math.min(100, relevance+8);
+    const tw = wc(j.requirements)+wc(j.whyInterested)+wc(j.skillsMatch);
+    totalWords += tw;
+    effort     += tw>=60?90:tw>=30?75:60;
+    const rw    = wc(j.whyInterested)+wc(j.skillsMatch);
+    reflection += rw>=40?85:rw>=20?72:60;
+  });
+
+  completeness = Math.round(completeness/jobs.length);
+  effort       = Math.round(effort/jobs.length);
+  reflection   = Math.round(reflection/jobs.length);
+  relevance    = Math.min(95,relevance);
+
+  if (salaryDone) {
+    const snWc = wc(salaryData.notes);
+    salary = salaryData.entryPay && salaryData.occupation ? (snWc>=40?90:snWc>=20?80:70) : 65;
+  } else {
+    salary = 50;
+  }
+
+  const overall = Math.round(completeness*.2 + relevance*.2 + effort*.2 + reflection*.2 + salary*.2);
+  const grade   = overall>=90?'A':overall>=80?'B':overall>=70?'C':overall>=60?'D':'F';
+
+  return {
+    grade, overall,
+    scores:{completeness, programRelevance:relevance, effort, reflection, salaryResearch:salary},
+    feedback:{
+      completeness: completeness>=85?'All required fields filled with solid content.':'Some fields were brief — more detail will improve this score.',
+      programRelevance: relevance>=80?'Your job choices relate well to your program.':'Try to find jobs more directly connected to your trade area.',
+      effort: effort>=85?'Great detail in your job descriptions and requirements.':'More detail in the requirements field will improve this score.',
+      reflection: reflection>=85?'Thoughtful self-assessment of your skills.':'Be more specific about what skills you have and what you need to develop.',
+      salaryResearch: salary>=80?'Good salary research with a thoughtful reflection.':salaryDone?'Add more detail to your salary reflection — compare local vs national and explain your reaction.':'Salary research section not completed.',
+    },
+    strengths: `You documented ${jobs.length} job posting${jobs.length>1?'s':''}.`+(totalWords>120?' Your written responses show real engagement with the assignment.':''),
+    improvements: overall<80?'Add more detail to job entries and the salary reflection for a higher grade.':'Consider adding one or two more jobs to strengthen your grade.',
+    encouragement: grade==='A'?'Excellent — very thorough job search and research!':grade==='B'?'Great work on your employment search assignment!':grade==='C'?'Good effort — a bit more detail would push this higher.':'More specific responses will improve your grade significantly.',
+  };
+}
+
+// ── PDF Download ──────────────────────────────────────
+function downloadPDF() {
+  const { jsPDF } = window.jspdf;
+  const doc = new jsPDF();
+  const M=18, W=210-M*2;
+  let y=M;
+  const checkY=(need=10)=>{ if(y+need>285){doc.addPage();y=M;} };
+  const hLine=()=>{ doc.setDrawColor(180);doc.setLineWidth(.3);doc.line(M,y,M+W,y);y+=5; };
+  const section=(title,rgb)=>{ checkY(14);doc.setFontSize(11);doc.setFont('helvetica','bold');doc.setTextColor(...(rgb||[30,58,138]));doc.text(title.toUpperCase(),M,y);y+=1;hLine();doc.setTextColor(30,30,30); };
+  const field=(label,value,indent=0)=>{ if(!value)return;checkY(8);doc.setFontSize(9);doc.setFont('helvetica','bold');doc.setTextColor(80,80,80);doc.text(label.toUpperCase(),M+indent,y);y+=4;doc.setFont('helvetica','normal');doc.setTextColor(30,30,30);doc.setFontSize(10);const ls=doc.splitTextToSize(value,W-indent);ls.forEach(l=>{checkY(6);doc.text(l,M+indent,y);y+=5;});y+=2; };
+
+  // Header bar
+  doc.setFillColor(15,23,42);doc.rect(0,0,210,26,'F');
+  doc.setFontSize(16);doc.setFont('helvetica','bold');doc.setTextColor(255,255,255);
+  doc.text('Employment Search Assignment',M,12);
+  doc.setFontSize(10);doc.setFont('helvetica','normal');doc.setTextColor(148,163,184);
+  doc.text(`Student: ${studentName}   |   Program: ${studentProgram||'Trade'}   |   ${new Date().toLocaleDateString()}`,M,21);
+  y=34;
+
+  // Grade summary
+  if (gradeResult) {
+    const g=gradeResult;
+    section('Grade Summary');
+    doc.setFontSize(22);doc.setFont('helvetica','bold');doc.setTextColor(30,58,138);
+    doc.text(`${g.grade}  (${g.overall}/100)`,M,y);y+=8;
+    doc.setFontSize(10);doc.setFont('helvetica','normal');doc.setTextColor(60,60,60);
+    if(g.encouragement){const ls=doc.splitTextToSize(g.encouragement,W);ls.forEach(l=>{checkY(6);doc.text(l,M,y);y+=5;});}
+    y+=4;
+    const rubric=[{key:'completeness',label:'Completeness'},{key:'programRelevance',label:'Program Relevance'},{key:'effort',label:'Effort & Detail'},{key:'reflection',label:'Self-Reflection'},{key:'salaryResearch',label:'Salary Research'}];
+    rubric.forEach(r=>{
+      const sc=g.scores?.[r.key]??75, fb=g.feedback?.[r.key]??'';
+      checkY(10);
+      doc.setFontSize(9);doc.setFont('helvetica','bold');doc.setTextColor(80,80,80);
+      doc.text(`${r.label}: ${sc}/100`,M,y);
+      doc.setDrawColor(220);doc.setLineWidth(.5);doc.rect(M+65,y-4,68,5,'S');
+      doc.setFillColor(30,78,216);doc.rect(M+65,y-4,68*(sc/100),5,'F');
+      y+=5;
+      if(fb){doc.setFont('helvetica','normal');doc.setFontSize(9);doc.setTextColor(100,100,100);const ls=doc.splitTextToSize(fb,W-10);ls.forEach(l=>{checkY(5);doc.text(l,M+4,y);y+=4;});}
+    });
+    if(g.strengths) field('What You Did Well',g.strengths);
+    if(g.improvements) field('How to Improve',g.improvements);
+    y+=4;
+  }
+
+  // Salary Research
+  if (salaryDone) {
+    section('Salary Research',[124,58,237]);
+    field('Occupation Searched', salaryData.occupation);
+    const payParts=[salaryData.entryPay?`Entry: ${salaryData.entryPay}`:'',salaryData.avgPay?`Average: ${salaryData.avgPay}`:'',salaryData.topPay?`Top: ${salaryData.topPay}`:''].filter(Boolean);
+    if(payParts.length) field('Pay Rates', payParts.join('   |   '));
+    if(salaryData.localPay) field('Local / PA Rate', salaryData.localPay);
+    if(salaryData.source) field('Source', salaryData.source);
+    field('Reflection', salaryData.notes);
+    y+=4;
+  }
+
+  // Jobs
+  jobs.forEach((j,i)=>{
+    section(`Job ${i+1}: ${j.title}`);
+    field('Company', j.company+(j.location?' — '+j.location:''));
+    if(j.source) field('Found On', j.source);
+    field('Key Requirements', j.requirements);
+    field('Why Interested', j.whyInterested);
+    field('Skills I Have', j.skillsMatch);
+    if(j.skillsNeeded) field('Skills to Develop', j.skillsNeeded);
+    if(j.wouldApply) field('Would Apply?', j.wouldApply);
+    y+=4;
+  });
+
+  doc.setFontSize(8);doc.setTextColor(150,150,150);
+  doc.text(`Submission ID: ${submissionId||'draft'}  |  AI Resume Builder`,M,290);
+
+  const safeName=(studentName||'Student').replace(/\s+/g,'-');
+  doc.save(`${safeName}-Employment-Search.pdf`);
+}
+
+// ── Chat ──────────────────────────────────────────────
+async function sendChat() {
+  const inp=document.getElementById('chatInput');
+  const text=inp.value.trim();
+  if(!text||isThinking) return;
+  inp.value=''; inp.style.height='';
+  addUserMsg(text);
+  chatHistory.push({role:'user',content:text});
+  isThinking=true;
+  const typingDiv=document.createElement('div');
+  typingDiv.className='chat-msg ai';
+  typingDiv.innerHTML='<div class="msg-lbl">AI</div><div class="msg-bubble" style="color:var(--slate-400)">Thinking…</div>';
+  document.getElementById('chatMessages').appendChild(typingDiv);
+  document.getElementById('chatMessages').scrollTop=99999;
+  try {
+    const jobCtx   = jobs.length?`${jobs.length} job(s) documented: ${jobs.map(j=>j.title+' at '+j.company).join(', ')}.`:'No jobs documented yet.';
+    const salCtx   = salaryDone?`Salary: ${salaryData.occupation}, entry ${salaryData.entryPay}${salaryData.avgPay?', avg '+salaryData.avgPay:''}.`:'Salary research pending.';
+    const sys      = `You are an AI assistant for a trade school student doing an employment search assignment. Student: ${studentName||'Student'}. Program: ${studentProgram||'trade'}. ${jobCtx} ${salCtx}\n\nHelp with: finding jobs, understanding postings, salary research (direct them to BLS bls.gov/ooh or CareerOneStop for wages), interview prep, resume tips. For local jobs, mention Vindicator (vindy.com), New Castle News (ncnewsonline.com), Sharon Herald (sharonherald.com). Be encouraging, practical, and concise.`;
+    const reply    = await callAPI(sys, text);
+    chatHistory.push({role:'assistant',content:reply});
+    typingDiv.remove();
+    addAIMsg(reply);
+  } catch(e) {
+    typingDiv.remove();
+    addAIMsg('Connection error — please try again.');
+  }
+  isThinking=false;
+}
+
+function handleChatKey(e){ if(e.key==='Enter'&&!e.shiftKey){e.preventDefault();sendChat();} }
+function autoResizeChat(el){ el.style.height='auto';el.style.height=Math.min(el.scrollHeight,90)+'px'; }
+
+function addAIMsg(text){
+  const msgs=document.getElementById('chatMessages');if(!msgs)return;
+  const div=document.createElement('div');div.className='chat-msg ai';
+  div.innerHTML=`<div class="msg-lbl">AI</div><div class="msg-bubble">${escHtml(text).replace(/\*\*(.+?)\*\*/g,'<strong>$1</strong>').replace(/\n/g,'<br>')}</div>`;
+  msgs.appendChild(div);msgs.scrollTop=msgs.scrollHeight;
+}
+
+function addUserMsg(text){
+  const msgs=document.getElementById('chatMessages');if(!msgs)return;
+  const div=document.createElement('div');div.className='chat-msg user';
+  div.innerHTML=`<div class="msg-bubble">${escHtml(text)}</div>`;
+  msgs.appendChild(div);msgs.scrollTop=msgs.scrollHeight;
+}
+
+// ── API ───────────────────────────────────────────────
+async function callAPI(system, userMsg, maxTokens=1400){
+  const body={model:'claude-sonnet-4-6',max_tokens:maxTokens,messages:[{role:'user',content:userMsg}]};
+  if(system) body.system=system;
+  const ctrl=new AbortController();
+  const timer=setTimeout(()=>ctrl.abort(),45000);
+  try {
+    const res=await fetch('/api/claude',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(body),signal:ctrl.signal});
+    if(!res.ok){const e=await res.json().catch(()=>({}));throw new Error(e.error||'API error');}
+    const data=await res.json();
+    return data.content[0].text;
+  } finally { clearTimeout(timer); }
+}
+
+// ── Helpers ───────────────────────────────────────────
+function escHtml(str){
+  if(!str) return '';
+  const d=document.createElement('div');
+  d.appendChild(document.createTextNode(String(str)));
+  return d.innerHTML;
+}
+function genId(){ return Date.now().toString(36)+Math.random().toString(36).slice(2,6); }
+</script>
+</body>
+</html>
