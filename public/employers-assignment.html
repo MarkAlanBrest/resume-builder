@@ -161,6 +161,42 @@
     /* Divider */
     .divider { height:1px; background:var(--g200); margin:24px 0; }
 
+    /* Help tab buttons */
+    .help-tab { padding:9px 20px; border-radius:8px; font-size:13px; font-weight:600; cursor:pointer; border:1.5px solid var(--g300); background:#fff; color:var(--g600); font-family:inherit; transition:all .15s; }
+    .help-tab:hover { border-color:var(--blue); color:var(--blue); background:var(--blue-bg); }
+    .help-tab.active { background:var(--blue); color:#fff; border-color:var(--blue); }
+
+    /* Help panels */
+    .help-panel { background:#fff; border:1px solid var(--g200); border-radius:12px; margin-bottom:20px; overflow:hidden; }
+    .help-panel-inner { padding:24px 28px; }
+    .hp-title { font-size:16px; font-weight:800; color:var(--g900); margin-bottom:18px; }
+    .hp-p { font-size:14px; color:var(--g700); line-height:1.65; margin-bottom:10px; }
+    .hp-section-lbl { font-size:11px; font-weight:700; text-transform:uppercase; letter-spacing:.6px; color:var(--g400); margin:18px 0 6px; }
+    .hp-rule { background:var(--g50); border:1px solid var(--g200); border-radius:10px; padding:16px 18px; margin-bottom:14px; }
+    .hp-rule-title { font-size:14px; font-weight:700; color:var(--blue); margin-bottom:8px; }
+    .hp-vlist { display:flex; flex-wrap:wrap; gap:6px; margin-top:10px; }
+    .hp-vlist span { background:var(--blue-bg); color:var(--blue); border:1px solid var(--blue-bd); border-radius:20px; padding:3px 12px; font-size:12px; font-weight:600; }
+    .hp-compare { margin:10px 0; }
+    .hp-weak   { background:#fef2f2; border:1px solid var(--red-bd);   border-radius:8px; padding:10px 14px; font-size:13px; color:#7f1d1d; margin-bottom:6px; display:flex; gap:10px; align-items:flex-start; }
+    .hp-strong { background:var(--green-bg); border:1px solid var(--green-bd); border-radius:8px; padding:10px 14px; font-size:13px; color:#14532d; display:flex; gap:10px; align-items:flex-start; }
+    .hp-badge { font-size:10px; font-weight:800; padding:2px 8px; border-radius:20px; white-space:nowrap; flex-shrink:0; margin-top:1px; }
+    .hp-badge.weak   { background:#fee2e2; color:#b91c1c; }
+    .hp-badge.strong { background:var(--green-bd); color:var(--green); }
+    .hp-eg-group { margin-bottom:18px; }
+    .hp-eg-label { font-size:12px; font-weight:700; text-transform:uppercase; letter-spacing:.5px; color:var(--g500); margin-bottom:8px; }
+    .hp-eg-list { padding-left:18px; font-size:13px; color:var(--g700); line-height:2; }
+    .hp-eg-list li { border-bottom:1px solid var(--g100); }
+    .hp-eg-list li:last-child { border-bottom:none; }
+    .hp-rub-row { background:var(--g50); border:1px solid var(--g200); border-radius:10px; padding:16px 18px; margin-bottom:14px; }
+    .hp-rub-hdr { display:flex; justify-content:space-between; align-items:center; margin-bottom:8px; }
+    .hp-rub-name { font-size:14px; font-weight:700; color:var(--g900); }
+    .hp-rub-wt   { font-size:12px; font-weight:700; background:var(--blue-bg); color:var(--blue); padding:2px 10px; border-radius:20px; }
+    .hp-rub-scale { display:flex; flex-direction:column; gap:5px; margin-top:10px; }
+    .sc-item { font-size:12px; font-weight:600; padding:5px 12px; border-radius:6px; }
+    .sc-a { background:#dcfce7; color:#15803d; }
+    .sc-b { background:#dbeafe; color:#1d4ed8; }
+    .sc-d { background:#fee2e2; color:#b91c1c; }
+
     /* Responsive */
     @media(max-width:600px) {
       .main { padding:20px 16px 60px; }
@@ -168,6 +204,8 @@
       .job-tile { flex-direction:column; }
       .grade-hdr { flex-direction:column; align-items:center; text-align:center; }
       .welcome-card { padding:32px 20px; }
+      .help-tab { font-size:12px; padding:8px 14px; }
+      .help-panel-inner { padding:18px 16px; }
     }
 
   </style>
@@ -294,15 +332,180 @@
      SCREEN 2B — Work History Job Entry Form
 ══════════════════════════════════════════════════ -->
 <div id="screenWorkForm" hidden>
-  <div class="info blue">
-    <h3>💼 How to Write Strong Bullet Points</h3>
-    <ul>
-      <li><strong>Start with an ACTION VERB:</strong> Maintained, Operated, Assisted, Performed, Inspected, Installed…</li>
-      <li><strong>Be specific:</strong> Name the tools, equipment, or tasks — "Operated hydraulic lifts and diagnostic scan tools" is much stronger than "Used equipment"</li>
-      <li><strong>Skip "I":</strong> Write "Performed oil changes" — not "I performed oil changes"</li>
-      <li><strong>Add detail:</strong> "Completed oil changes, tire rotations, and brake inspections on 8–10 vehicles per shift" tells the full story</li>
-    </ul>
-    <p style="margin-top:10px; font-size:13px; color:var(--g500);">Examples: <em>Maintained a clean, organized work bay following shop safety procedures. | Assisted lead technician with engine diagnostics and component replacement. | Operated POS system to process customer transactions and returns.</em></p>
+
+  <!-- Help button bar -->
+  <div style="display:flex; gap:10px; margin-bottom:16px; flex-wrap:wrap;">
+    <button class="help-tab active" id="tab-directions" onclick="openTab('directions')">📋 Directions</button>
+    <button class="help-tab" id="tab-examples"   onclick="openTab('examples')">✏️ See Examples</button>
+    <button class="help-tab" id="tab-rubric"     onclick="openTab('rubric')">📊 Grading Criteria</button>
+  </div>
+
+  <!-- Directions panel -->
+  <div id="panel-directions" class="help-panel">
+    <div class="help-panel-inner">
+      <div class="hp-title">📋 How to Complete This Assignment</div>
+
+      <div class="hp-section-lbl">What You're Doing</div>
+      <p class="hp-p">You are entering your work history so it can be used to build your resume. For each job you've held, fill in the employer name, your job title, dates, and a set of bullet points that describe what you actually did there. Be honest and specific — this information will go directly on your resume.</p>
+
+      <div class="hp-section-lbl">The Bullet Points Are the Most Important Part</div>
+      <p class="hp-p">Bullet points are how employers learn what you can do. A weak bullet point says very little. A strong bullet point names exactly what you did, what tools or equipment you used, and the scope of the work. You need at least 3 per job — 4 or 5 is even better.</p>
+
+      <div class="hp-rule">
+        <div class="hp-rule-title">Rule 1 — Always Start With an Action Verb</div>
+        <p class="hp-p">Every bullet must begin with a strong action verb — a word that describes something you <em>did</em>. Never start with "I" or "Was responsible for."</p>
+        <div class="hp-vlist">
+          <span>Maintained</span><span>Operated</span><span>Assisted</span><span>Performed</span><span>Installed</span><span>Inspected</span><span>Repaired</span><span>Cleaned</span><span>Assembled</span><span>Loaded</span><span>Monitored</span><span>Prepared</span><span>Processed</span><span>Handled</span><span>Completed</span><span>Trained</span><span>Organized</span><span>Delivered</span><span>Stocked</span><span>Scheduled</span>
+        </div>
+      </div>
+
+      <div class="hp-rule">
+        <div class="hp-rule-title">Rule 2 — Be Specific, Not Vague</div>
+        <p class="hp-p">Name the actual tools, equipment, systems, or tasks. The more specific you are, the more useful it is on a resume.</p>
+        <div class="hp-compare">
+          <div class="hp-weak"><span class="hp-badge weak">Weak</span> Used equipment in the shop.</div>
+          <div class="hp-strong"><span class="hp-badge strong">Strong</span> Operated hydraulic lifts, diagnostic scan tools, and tire mounting equipment.</div>
+        </div>
+        <div class="hp-compare">
+          <div class="hp-weak"><span class="hp-badge weak">Weak</span> Helped customers.</div>
+          <div class="hp-strong"><span class="hp-badge strong">Strong</span> Assisted customers with product selection and processed transactions using the POS system.</div>
+        </div>
+      </div>
+
+      <div class="hp-rule">
+        <div class="hp-rule-title">Rule 3 — Add Numbers or Volume When You Can</div>
+        <p class="hp-p">If you can add a number — how many, how often, how fast — it makes the bullet much stronger. Even a rough estimate is better than nothing.</p>
+        <div class="hp-compare">
+          <div class="hp-weak"><span class="hp-badge weak">Weaker</span> Performed oil changes on customer vehicles.</div>
+          <div class="hp-strong"><span class="hp-badge strong">Stronger</span> Performed oil changes and tire rotations on 6–10 customer vehicles per shift.</div>
+        </div>
+      </div>
+
+      <div class="hp-rule">
+        <div class="hp-rule-title">Rule 4 — Never Write "I"</div>
+        <p class="hp-p">Resume bullet points never start with "I." Just start with the verb.</p>
+        <div class="hp-compare">
+          <div class="hp-weak"><span class="hp-badge weak">Wrong</span> I cleaned the work area at the end of each shift.</div>
+          <div class="hp-strong"><span class="hp-badge strong">Right</span> Cleaned and organized the work area at the end of each shift following safety procedures.</div>
+        </div>
+      </div>
+
+      <div class="hp-rule">
+        <div class="hp-rule-title">Rule 5 — Think About What You Learned, Not Just What You Were Told to Do</div>
+        <p class="hp-p">Even if a task felt basic, describe it in a way that shows you understood it. "Stocked shelves" is fine. "Stocked and rotated inventory of 200+ SKUs to maintain product availability" shows more awareness of the job.</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- Examples panel -->
+  <div id="panel-examples" class="help-panel" hidden>
+    <div class="help-panel-inner">
+      <div class="hp-title">✏️ Example Bullet Points by Industry</div>
+      <p class="hp-p" style="margin-bottom:18px;">These are examples of strong bullet points from various fields. Use them as a guide — write about <em>your</em> actual experience in your own words.</p>
+
+      <div class="hp-eg-group">
+        <div class="hp-eg-label">Automotive / Mechanical</div>
+        <ul class="hp-eg-list">
+          <li>Performed oil changes, tire rotations, and multi-point inspections on 8–10 vehicles per shift</li>
+          <li>Operated hydraulic lifts, diagnostic scan tools, and tire mounting equipment</li>
+          <li>Assisted lead technician with brake pad replacement and suspension component diagnostics</li>
+          <li>Maintained a clean, organized work bay and followed all OSHA shop safety procedures</li>
+          <li>Documented vehicle service records and communicated repair status to service advisors</li>
+        </ul>
+      </div>
+
+      <div class="hp-eg-group">
+        <div class="hp-eg-label">Retail / Customer Service</div>
+        <ul class="hp-eg-list">
+          <li>Processed customer transactions and returns using a POS register system</li>
+          <li>Stocked and rotated product inventory across 12 departments to maintain shelf availability</li>
+          <li>Assisted customers with product selection and answered questions about store policies</li>
+          <li>Maintained a clean and organized sales floor throughout each shift</li>
+          <li>Handled cash and balanced a register drawer at the end of each shift</li>
+        </ul>
+      </div>
+
+      <div class="hp-eg-group">
+        <div class="hp-eg-label">Construction / Trades</div>
+        <ul class="hp-eg-list">
+          <li>Assisted journeyman electrician with residential wiring, outlet installation, and panel work</li>
+          <li>Operated hand and power tools including drills, circular saws, and nail guns</li>
+          <li>Loaded, unloaded, and organized materials and equipment on job sites</li>
+          <li>Followed blueprints and supervisor instructions to complete assigned tasks on schedule</li>
+          <li>Maintained a safe and clean job site in compliance with OSHA standards</li>
+        </ul>
+      </div>
+
+      <div class="hp-eg-group">
+        <div class="hp-eg-label">Food Service / Hospitality</div>
+        <ul class="hp-eg-list">
+          <li>Prepared and served food orders for up to 80 customers per shift following health codes</li>
+          <li>Operated kitchen equipment including fryers, grills, and commercial dishwashers</li>
+          <li>Restocked food prep stations and maintained inventory of supplies throughout the shift</li>
+          <li>Cleaned and sanitized kitchen surfaces, equipment, and dining areas per health regulations</li>
+          <li>Assisted with opening and closing duties including cash count and equipment shutdown</li>
+        </ul>
+      </div>
+
+      <div class="hp-eg-group">
+        <div class="hp-eg-label">Healthcare / CNA / Medical Assistant</div>
+        <ul class="hp-eg-list">
+          <li>Assisted nursing staff with patient care including bathing, dressing, and mobility support</li>
+          <li>Monitored and recorded patient vital signs every 4 hours and reported changes to the RN</li>
+          <li>Maintained patient rooms in clean, organized condition following infection control standards</li>
+          <li>Transported patients to and from appointments and diagnostic testing areas</li>
+          <li>Communicated effectively with patients, families, and care team members</li>
+        </ul>
+      </div>
+    </div>
+  </div>
+
+  <!-- Rubric panel -->
+  <div id="panel-rubric" class="help-panel" hidden>
+    <div class="help-panel-inner">
+      <div class="hp-title">📊 How This Assignment Is Graded</div>
+      <p class="hp-p" style="margin-bottom:18px;">Your submission is scored on four categories, each worth 25%. A fully completed entry with solid bullet points will earn a B or better.</p>
+
+      <div class="hp-rub-row">
+        <div class="hp-rub-hdr"><span class="hp-rub-name">Completeness</span><span class="hp-rub-wt">25%</span></div>
+        <p class="hp-p">All required fields are filled in: employer name, job title, start date, and at least 3 bullet points. Optional fields (city, state, end date, extra bullets) are not required for full credit.</p>
+        <div class="hp-rub-scale">
+          <div class="sc-item sc-a">A — All fields complete, 3+ bullets</div>
+          <div class="sc-item sc-b">B — Minor optional field missing</div>
+          <div class="sc-item sc-d">D/F — Required fields left blank</div>
+        </div>
+      </div>
+
+      <div class="hp-rub-row">
+        <div class="hp-rub-hdr"><span class="hp-rub-name">Action Verbs</span><span class="hp-rub-wt">25%</span></div>
+        <p class="hp-p">Each bullet point should begin with an action verb (Maintained, Operated, Performed, etc.). The more bullets that follow this rule, the higher the score.</p>
+        <div class="hp-rub-scale">
+          <div class="sc-item sc-a">A — Most or all bullets start with an action verb</div>
+          <div class="sc-item sc-b">B — About half use action verbs</div>
+          <div class="sc-item sc-d">D/F — Bullets start with "I" or no verb at all</div>
+        </div>
+      </div>
+
+      <div class="hp-rub-row">
+        <div class="hp-rub-hdr"><span class="hp-rub-name">Specificity & Detail</span><span class="hp-rub-wt">25%</span></div>
+        <p class="hp-p">Bullets should describe actual tasks, tools, or equipment — not just vague phrases. A short but specific bullet scores higher than a long vague one.</p>
+        <div class="hp-rub-scale">
+          <div class="sc-item sc-a">A — Specific tools, tasks, or numbers mentioned</div>
+          <div class="sc-item sc-b">B — Reasonable detail, could be more specific</div>
+          <div class="sc-item sc-d">D/F — Bullets are one or two generic words</div>
+        </div>
+      </div>
+
+      <div class="hp-rub-row">
+        <div class="hp-rub-hdr"><span class="hp-rub-name">Professionalism</span><span class="hp-rub-wt">25%</span></div>
+        <p class="hp-p">Bullets should be written professionally — no slang, no "I", and generally clear sentences. Minor grammar issues are fine and won't lower your grade significantly.</p>
+        <div class="hp-rub-scale">
+          <div class="sc-item sc-a">A — Professional tone, no "I", clear writing</div>
+          <div class="sc-item sc-b">B — Minor grammar issues, mostly professional</div>
+          <div class="sc-item sc-d">D/F — Heavy slang, very hard to understand</div>
+        </div>
+      </div>
+    </div>
   </div>
 
   <div class="card">
@@ -484,6 +687,15 @@ function show(id) {
 }
 
 /* ── Welcome / path selection ──────────────────────────── */
+/* ── Help tab toggle ───────────────────────────────────── */
+function openTab(name) {
+  ['directions','examples','rubric'].forEach(t => {
+    document.getElementById('panel-' + t).hidden = (t !== name);
+    const btn = document.getElementById('tab-' + t);
+    if (btn) btn.classList.toggle('active', t === name);
+  });
+}
+
 function choosePath(path) {
   const name = document.getElementById('studentName').value.trim();
   if (!name) {
@@ -747,11 +959,15 @@ async function gradeWork() {
   const msg = `Grade this trade school student's work experience assignment.
 
 Student: ${studentName}
-Number of jobs: ${jobs.length}
 
 ${jobText}
 
-Grade on these criteria (0-100 each). Be FAIR and ENCOURAGING. Trade school students may be entering the workforce for the first time.
+IMPORTANT GRADING RULES:
+- Having one job is completely fine and should NOT lower any score. Grade the QUALITY of the entries, not the number of jobs.
+- Do NOT suggest the student add more jobs — they submitted what they have. Never mention number of jobs in feedback.
+- These are trade school students who may be entering the workforce for the first time. Be genuinely fair and encouraging.
+- A student who fills in all required fields and writes 3+ solid bullet points deserves a B or higher. Reserve C/D/F for work that is clearly incomplete or very low effort.
+- Give benefit of the doubt on minor grammar issues. Focus on whether the content is honest and usable for a resume.
 
 Return ONLY this JSON — no other text:
 {
@@ -762,23 +978,23 @@ Return ONLY this JSON — no other text:
     "professionalism": <0-100>
   },
   "feedback": {
-    "completeness": "1-2 sentences",
+    "completeness": "1-2 sentences — do NOT mention number of jobs",
     "actionVerbs": "1-2 sentences",
     "specificity": "1-2 sentences",
     "professionalism": "1-2 sentences"
   },
   "overall": <0-100>,
   "grade": "<A|B|C|D|F>",
-  "headline": "<Excellent Work!|Good Work!|Nice Start!|Needs Improvement|Keep Practicing>",
+  "headline": "<Excellent Work!|Good Work!|Nice Start!|Needs More Detail|Keep Practicing>",
   "strengths": "1-2 sentences on what they did well",
-  "summary": "2-3 sentences of overall feedback — encouraging and constructive"
+  "summary": "2-3 sentences of overall feedback — encouraging and constructive. Do NOT mention adding more jobs."
 }
 
-Scoring guide:
-- completeness (25%): All fields filled, 3+ bullets per job. Missing required info = low. Fully complete = 90-100.
-- actionVerbs (25%): Bullets start with action verbs (Maintained, Operated, Assisted, Performed, etc.). None = low, some = 65, most = 85+.
-- specificity (25%): Bullets mention specific tools, tasks, or quantities. Vague = low, detailed = high.
-- professionalism (25%): No "I", no slang, proper capitalization. Minor issues = still give 70+.`;
+Scoring guide — be GENEROUS with students who made a genuine effort:
+- completeness (25%): All required fields filled and 3+ bullets per job. If complete = 90-100. Missing a minor optional field = still 80+. Only go below 70 if required fields are missing.
+- actionVerbs (25%): Bullets start with action verbs (Maintained, Operated, Assisted, Performed, Cleaned, etc.). Most bullets have action verbs = 85+. Some do = 70. None = 50.
+- specificity (25%): Bullets name actual tasks, tools, or equipment. Reasonably specific = 75+. Very vague = 50. Only dock points if bullets are truly content-free.
+- professionalism (25%): Clear writing, no slang. Minor grammar issues = still 75+. Only go below 65 for very unprofessional tone or heavy slang.`;
 
   try {
     const raw   = await callAPI(sys, msg, 900);
@@ -810,7 +1026,7 @@ Scoring guide:
 }
 
 function gradeWorkJS() {
-  const ACTION_VERBS = ['maintained','operated','assisted','performed','managed','installed','repaired','cleaned','inspected','monitored','built','assembled','trained','completed','supported','handled','coordinated','processed','prepared','served','helped','used','followed','developed','stocked','loaded','delivered','answered','greeted','supervised','scheduled','created'];
+  const ACTION_VERBS = ['maintained','operated','assisted','performed','managed','installed','repaired','cleaned','inspected','monitored','built','assembled','trained','completed','supported','handled','coordinated','processed','prepared','served','helped','used','followed','developed','stocked','loaded','delivered','answered','greeted','supervised','scheduled','created','tested','organized','restocked','sanitized'];
   let verbCount = 0, totalBullets = 0;
   jobs.forEach(j => {
     j.bullets.forEach(b => {
@@ -819,24 +1035,37 @@ function gradeWorkJS() {
       if (ACTION_VERBS.includes(first)) verbCount++;
     });
   });
-  const verbScore    = totalBullets > 0 ? Math.round((verbCount / totalBullets) * 100) : 50;
-  const complete     = jobs.every(j => j.employer && j.title && j.start && j.bullets.length >= 3) ? 92 : 70;
-  const specificity  = totalBullets > 0 ? Math.min(85, 55 + Math.round((jobs.flatMap(j=>j.bullets).reduce((s,b)=>s+b.split(/\s+/).length,0)/totalBullets)*1.5)) : 55;
-  const professional = jobs.flatMap(j=>j.bullets).some(b=>/\bI\b/.test(b)) ? 65 : 85;
+
+  // Completeness: fully filled = 95, minor gaps = 80+. Never penalize for only having one job.
+  const complete = jobs.every(j => j.employer && j.title && j.start && j.bullets.length >= 3) ? 95 : 78;
+
+  // Action verbs: generous — even 50% verb usage earns a 78
+  const rawVerbPct = totalBullets > 0 ? verbCount / totalBullets : 0;
+  const verbScore  = rawVerbPct >= .8 ? 95 : rawVerbPct >= .5 ? 82 : rawVerbPct >= .25 ? 70 : 55;
+
+  // Specificity: based on avg words per bullet — any reasonable sentence gets 75+
+  const avgWords   = totalBullets > 0 ? jobs.flatMap(j=>j.bullets).reduce((s,b)=>s+b.split(/\s+/).length,0)/totalBullets : 0;
+  const specificity = avgWords >= 10 ? 90 : avgWords >= 7 ? 80 : avgWords >= 4 ? 70 : 55;
+
+  // Professionalism: only penalize for "I" in bullets; minor issues don't count
+  const hasI       = jobs.flatMap(j=>j.bullets).some(b=>/\bI\b/.test(b));
+  const professional = hasI ? 72 : 88;
+
   const overall = Math.round(complete * .25 + verbScore * .25 + specificity * .25 + professional * .25);
   const grade   = overall >= 90 ? 'A' : overall >= 80 ? 'B' : overall >= 70 ? 'C' : overall >= 60 ? 'D' : 'F';
+
   return {
     scores: { completeness: complete, actionVerbs: verbScore, specificity, professionalism: professional },
     feedback: {
-      completeness:    complete >= 85 ? 'All required fields and bullet points are filled in.' : 'Make sure all fields are complete with at least 3 bullet points per job.',
-      actionVerbs:     verbScore >= 75 ? 'Good use of action verbs to start your bullet points.' : 'Try starting more bullets with action verbs like Maintained, Operated, Assisted, or Performed.',
-      specificity:     'Include specific tools, equipment, or tasks to make your bullets more impactful.',
-      professionalism: professional >= 80 ? 'Professional tone throughout.' : 'Avoid starting sentences with "I" in resume bullet points.'
+      completeness:    complete >= 88 ? 'All required fields and bullet points are filled in — great job.' : 'Most required information is present. Double-check that each job has employer, title, start date, and at least 3 bullets.',
+      actionVerbs:     verbScore >= 80 ? 'Strong use of action verbs to open your bullet points.' : 'Try starting more bullets with action verbs like Maintained, Operated, Assisted, or Performed to make them stand out.',
+      specificity:     specificity >= 80 ? 'Your bullets include specific tasks and detail — that makes a strong resume.' : 'Adding more detail (specific tools, equipment, or tasks) would make your bullets more impactful.',
+      professionalism: professional >= 80 ? 'Professional tone throughout — well done.' : 'Tip: avoid starting bullet points with "I" — resume bullets typically start with the action verb directly.'
     },
     overall, grade,
-    headline: overall >= 90 ? 'Excellent Work!' : overall >= 80 ? 'Good Work!' : overall >= 70 ? 'Nice Start!' : 'Needs Improvement',
-    strengths: 'You completed the work experience entry with the required information.',
-    summary: 'Your work experience section has been saved. Review the feedback above and keep these tips in mind for future resume updates.',
+    headline: overall >= 90 ? 'Excellent Work!' : overall >= 80 ? 'Good Work!' : overall >= 70 ? 'Nice Start!' : 'Needs More Detail',
+    strengths: 'You completed the work experience section with real job information — that\'s the foundation of a strong resume.',
+    summary: 'Your work experience has been saved and will be ready to use when you build your resume. The feedback above offers tips to strengthen your bullets even further.',
     _rubricKeys:    ['completeness','actionVerbs','specificity','professionalism'],
     _rubricLabels:  ['Completeness','Action Verbs','Specificity & Detail','Professionalism'],
     _rubricWeights: ['25%','25%','25%','25%']
