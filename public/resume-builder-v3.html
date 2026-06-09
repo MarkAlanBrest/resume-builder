@@ -921,17 +921,17 @@ function validatePersonalData(p) {
 
 async function reviewPersonalData(personal) {
   const sys = `You review resume contact information for data quality. Fix clear spelling and capitalization mistakes, but do not invent missing personal data. Return ONLY JSON with this exact shape:
-{"corrections":{"firstName":"","lastName":"","email":"","phone":"","address":"","city":"","state":"","zip":"","campus":"","program":""},"issues":[{"field":"address","message":"Short user-facing instruction"}]}
+{"corrections":{"email":"","phone":"","address":"","city":"","state":"","zip":""},"issues":[{"field":"address","message":"Short user-facing instruction"}]}
 Rules:
 - Omit fields from corrections when no change is needed.
-- Correct obvious capitalization in names, city, and street address.
+- Do NOT include firstName or lastName in corrections — names are handled separately and must not be changed.
+- Correct obvious capitalization in city and street address.
 - Correct obvious street suffix words such as "stret" to "Street", "avenu" to "Avenue", and unit capitalization such as "apt" to "Apt".
-- Do not change a person's name unless it is only capitalization, spacing, hyphen, or apostrophe cleanup.
-- Do not invent apartment numbers, street numbers, ZIP codes, phone numbers, campus, or program.
+- Do not invent apartment numbers, street numbers, ZIP codes, or phone numbers.
 - If an email is unprofessional, suspicious, or not employer-ready, add an issue for "email".
 - If an address is incomplete or clearly malformed, add an issue. Do not flag a plausible complete street address just because you cannot verify it.
-- If city, state, or ZIP seems misspelled, incomplete, mismatched, or impossible to verify confidently, add an issue instead of guessing.
-- Field must be one of: firstName,lastName,email,phone,address,city,state,zip,campus,program.`;
+- If city, state, or ZIP seems misspelled, incomplete, or mismatched, add an issue instead of guessing.
+- Field must be one of: email,phone,address,city,state,zip.`;
   const raw = await callClaude(sys,[{role:'user',content:JSON.stringify(personal)}]);
   let review = JSON.parse(raw.trim().replace(/^```(?:json)?\s*/i,'').replace(/\s*```$/,''));
   const allowed = new Set(Object.keys(PERSONAL_FIELD_GROUPS));
