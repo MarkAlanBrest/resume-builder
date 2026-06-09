@@ -616,13 +616,14 @@ function renderUpload() {
   return `<div class="section-hdr"><div class="section-hdr-icon">📄</div><div><div class="section-hdr-title">Load Existing Resume</div><div class="section-hdr-sub">PDF, Word (.docx), or plain text (.txt)</div></div></div>
   <div class="form-card">
     <div class="form-card-body" style="padding-bottom:18px">
-      <label class="upload-drop" id="uploadDrop" for="resumeFileInput" ondragover="event.preventDefault();this.classList.add('drag-over')" ondragleave="this.classList.remove('drag-over')" ondrop="handleDrop(event)" style="cursor:pointer;display:block">
+      <label class="upload-drop" id="uploadDrop" ondragover="event.preventDefault();this.classList.add('drag-over')" ondragleave="this.classList.remove('drag-over')" ondrop="handleDrop(event)" style="cursor:pointer;display:block;position:relative;overflow:hidden;">
+        <input type="file" id="resumeFileInput" accept=".pdf,.docx,.txt" onchange="handleFileSelect(this)"
+          style="position:absolute;top:0;left:0;width:100%;height:100%;opacity:0;cursor:pointer;z-index:2;">
         <span class="drop-icon">⬆️</span>
         <div class="drop-lbl">Click to browse or drag and drop</div>
         <div class="drop-sub">Supports PDF, Word (.docx), or plain text (.txt)</div>
       </label>
       <div id="uploadSelected" style="display:none"></div>
-      <input type="file" id="resumeFileInput" accept=".pdf,.docx,.txt" style="display:none" onchange="handleFileSelect(this)">
     </div>
     <div class="form-card-footer">
       <button class="btn btn-ghost" onclick="showCenter('welcome')">Cancel</button>
