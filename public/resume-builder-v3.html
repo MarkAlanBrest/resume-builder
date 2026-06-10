@@ -444,7 +444,8 @@ let chatHistory = [];
 let isAIThinking = false;
 
 const resumeData = {
-  personal:{},careerContext:{},workExperience:[],militaryService:[],education:[],volunteer:[],certifications:[],skills:[],references:'Available upon request'
+  personal:{},careerContext:{},workExperience:[],militaryService:[],education:[],volunteer:[],certifications:[],skills:[],references:'Available upon request',
+  _assignmentImported: false
 };
 const sectionStatus = {};
 SECTIONS.forEach(s => sectionStatus[s.key] = 'pending');
@@ -506,11 +507,13 @@ function loadAssignmentJobs() {
 }
 
 function importAssignmentIfNeeded() {
-  if (resumeData.workExperience?.length) return 0;
+  if (resumeData._assignmentImported) return 0;
   const jobs = loadAssignmentJobs();
   if (!jobs.length) return 0;
-  resumeData.workExperience = jobs;
+  resumeData._assignmentImported = true;
+  resumeData.workExperience = [...resumeData.workExperience, ...jobs];
   setStatus('work', 'done');
+  saveProgress();
   return jobs.length;
 }
 
@@ -664,6 +667,7 @@ function startFresh() {
   resumeData.certifications=[];
   resumeData.skills=[];
   resumeData.references='Available upon request';
+  resumeData._assignmentImported=false;
   SECTIONS.forEach(s=>sectionStatus[s.key]='pending');
   const imported = importAssignmentIfNeeded();
   if (imported) addAIMsg(`✅ **${imported} job${imported>1?'s':''} imported** from your Work Experience Assignment and added to the Work Experience section. You can review and edit them there.`);
