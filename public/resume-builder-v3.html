@@ -327,6 +327,29 @@ const CAMPUSES = {
   "North American Trade Schools — Baltimore, MD":["Building Construction Technology","Combination Welding","Electrical Technology","HVAC Technology","Diesel Technology","Commercial Truck Driving with CDL License"]
 };
 
+const RESUME_PROGRAM_INITIALS = {
+  "Main Campus — New Castle, PA": {
+    "Automotive Technology": "AT",
+    "Building Technology": "BT",
+    "Combination Welding": "CW",
+    "Electrical Technology": "ET",
+    "Industrial Electro-Mechanical Technology": "EIM",
+    "Refrigeration and AC Technology": "RT"
+  },
+  "East Liverpool Campus — East Liverpool, OH": {
+    "Combination Welding": "ELPCW",
+    "Electrical and Industrial Maintenance": "ELPCIM",
+    "Refrigeration and Climate Control": "ELPRT"
+  },
+  "Satellite Campus — Pulaski, PA": {
+    "Commercial Truck Driving CDL": "CT",
+    "Diesel and Heavy Equipment Repair Technology": "DT",
+    "Heavy Equipment Operations with CDL": "HEC",
+    "Machinist and CNC Manufacturing": "MT",
+    "Motorcycle and Power Equipment Technology": "MT"
+  }
+};
+
 const MONTHS = ['January','February','March','April','May','June','July','August','September','October','November','December'];
 
 // ── Color Schemes ────────────────────────────────
@@ -2517,6 +2540,23 @@ function getColorObj(hex){
   return {hex,accent:clean,sideText:lum>0.55?'111111':'FFFFFF'};
 }
 
+function resumeFilename(personal) {
+  const programInitials = RESUME_PROGRAM_INITIALS[personal.campus]?.[personal.program] || 'Resume';
+  const safePart = value => String(value || '')
+    .replace(/[<>:"/\\|?*\x00-\x1F]/g, '')
+    .trim()
+    .replace(/[\s-]+/g, '-')
+    .replace(/^[.-]+|[.-]+$/g, '');
+  const parts = [
+    programInitials,
+    personal.lastName,
+    personal.firstName,
+    personal.city,
+    personal.state
+  ].map(safePart).filter(Boolean);
+  return `${parts.join('-')}.docx`;
+}
+
 // Mini CSS previews
 function buildPreviewHTML(style,hex) {
   const ac = hex;
@@ -2566,8 +2606,7 @@ async function generateResume() {
     const doc = await buildDocument(buildData, selectedStyle, color);
     const blob = await docx.Packer.toBlob(doc);
     const p=resumeData.personal;
-    const fname=[p.firstName,p.lastName].filter(Boolean).join('-')||'Resume';
-    saveAs(blob, `${fname}-Resume.docx`);
+    saveAs(blob, resumeFilename(p));
     setStatus('template','done');
     btn.disabled=false; btn.textContent='Download Again ↓';
     addAIMsg(`Your resume has been downloaded!${buildData.educationSkills?' A Skills Learned section was automatically added based on your program.':''} Change the style or color anytime and click Download Again to try a different look.`);
