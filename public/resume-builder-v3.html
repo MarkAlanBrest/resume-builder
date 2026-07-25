@@ -2545,16 +2545,14 @@ function resumeFilename(personal) {
   const safePart = value => String(value || '')
     .replace(/[<>:"/\\|?*\x00-\x1F]/g, '')
     .trim()
-    .replace(/[\s-]+/g, '-')
+    .replace(/\s+/g, ' ')
     .replace(/^[.-]+|[.-]+$/g, '');
-  const parts = [
-    programInitials,
-    personal.lastName,
-    personal.firstName,
-    personal.city,
-    personal.state
-  ].map(safePart).filter(Boolean);
-  return `${parts.join('-')}.docx`;
+  const program = safePart(programInitials);
+  const lastName = safePart(personal.lastName);
+  const firstName = safePart(personal.firstName);
+  const city = safePart(personal.city);
+  const state = safePart(personal.state);
+  return `${program} ${lastName}, ${firstName} ${city}, ${state}.docx`;
 }
 
 // Mini CSS previews
