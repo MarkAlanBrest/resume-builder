@@ -3316,9 +3316,9 @@ function bodyText(text, opts = {}) {
 
 function bulletLine(text) {
   return new docx.Paragraph({
-    children: [new docx.TextRun({ text: `•  ${text}`, size: 19, color: '2a2a2a' })],
-    indent: { left: twip(0.15) },
-    spacing: { before: 0, after: 28 },
+    children: [new docx.TextRun({ text: `• ${text}`, size: 19, color: '2a2a2a' })],
+    indent: { left: twip(0.36), hanging: twip(0.14) },
+    spacing: { before: 0, after: 120, line: 276, lineRule: 'auto' },
   });
 }
 
