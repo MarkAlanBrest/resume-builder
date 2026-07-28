@@ -360,7 +360,6 @@ const BULLET_OPTIONS = [
   {label:'Dash',    char:'\u2013', font:'Calibri'},
   {label:'Check',   char:'\u2713', font:'Segoe UI Symbol'},
 ];
-const SECTION_ICON_KEYS = ['Objective','Experience','Military Service','Education','Volunteer','Certifications','Skills','Skills & Certifications','Skills Learned'];
 
 const PRESET_COLORS = [
   '#1e3a8a','#14532d','#7f1d1d','#334155','#1c1c1c',
@@ -2467,7 +2466,7 @@ function confirmSkills() {
 }
 
 // ── Template Configurator ─────────────────────────
-const STYLES = [{id:'classic',label:'Classic'},{id:'modern',label:'Modern'},{id:'bold',label:'Bold'},{id:'executive',label:'Executive'},{id:'flip',label:'Flip'},{id:'top-left',label:'Top Left'},{id:'top-right',label:'Top Right'},{id:'split',label:'Split'}];
+const STYLES = [{id:'classic',label:'Classic'},{id:'modern',label:'Modern'},{id:'bold',label:'Bold'},{id:'executive',label:'Executive'},{id:'flip',label:'Flip'},{id:'top-left',label:'Top Left'},{id:'top-right',label:'Top Right'},{id:'split',label:'Two Column'}];
 
 function renderTemplateConfig() {
   const styleBtns = STYLES.map(s=>`<button class="style-btn ${s.id===selectedStyle?'sel':''}" id="sb-${s.id}" onclick="pickStyle('${s.id}')"><div class="style-preview" id="sp-${s.id}">${buildPreviewHTML(s.id,selectedColorHex)}</div><div class="style-name">${s.label}</div></button>`).join('');
@@ -2574,7 +2573,7 @@ function buildPreviewHTML(style,hex) {
   if (style==='flip') return `<div style="display:flex;height:100%"><div style="flex:1;background:white;padding:6% 5%;box-sizing:border-box">${sec()}${ml(95)}${ml(80)}${sec()}${job()}${ml(90)}${ml(82)}${sec()}${ml(75)}${ml(60)}</div><div style="width:33%;background:${ac};padding:6% 4%;box-sizing:border-box"><div style="height:4px;background:white;width:80%;margin-bottom:3px;border-radius:1px;opacity:.9"></div>${[90,70,85,75,80].map(w=>`<div style="height:1.5px;background:rgba(255,255,255,.5);width:${w}%;margin-bottom:2px;border-radius:1px"></div>`).join('')}<div style="height:2px;background:rgba(255,255,255,.8);width:55%;margin:6px 0 3px;border-radius:1px"></div>${[80,65].map(w=>`<div style="height:1.5px;background:rgba(255,255,255,.45);width:${w}%;margin-bottom:2px;border-radius:1px"></div>`).join('')}</div></div>`;
   if (style==='top-left') return `<div style="height:100%;background:white;display:flex;flex-direction:column"><div style="background:${ac};padding:8% 7% 6%;text-align:center;flex-shrink:0"><div style="height:5px;background:white;width:60%;margin:0 auto 3px;border-radius:1px;opacity:.95"></div><div style="height:1.5px;background:rgba(255,255,255,.55);width:72%;margin:0 auto;border-radius:1px"></div></div><div style="display:flex;flex:1"><div style="width:34%;background:#eeeeee;padding:5% 4%;box-sizing:border-box"><div style="height:1.5px;background:#bbb;width:55%;margin-bottom:3px;border-radius:1px"></div>${[88,72,80,66,78,70].map(w=>`<div style="height:1.5px;background:#ccc;width:${w}%;margin-bottom:2px;border-radius:1px"></div>`).join('')}</div><div style="flex:1;padding:5%;box-sizing:border-box">${sec()}${ml(90)}${ml(80)}${sec()}${job()}${ml(85)}</div></div></div>`;
   if (style==='top-right') return `<div style="height:100%;background:white;display:flex;flex-direction:column"><div style="background:${ac};padding:8% 7% 6%;text-align:center;flex-shrink:0"><div style="height:5px;background:white;width:60%;margin:0 auto 3px;border-radius:1px;opacity:.95"></div><div style="height:1.5px;background:rgba(255,255,255,.55);width:72%;margin:0 auto;border-radius:1px"></div></div><div style="display:flex;flex:1"><div style="flex:1;padding:5%;box-sizing:border-box">${sec()}${ml(90)}${ml(80)}${sec()}${job()}${ml(85)}</div><div style="width:34%;background:${ac};padding:5% 4%;box-sizing:border-box"><div style="height:2px;background:rgba(255,255,255,.8);width:55%;margin-bottom:3px;border-radius:1px"></div>${[88,72,80,66,78,70].map(w=>`<div style="height:1.5px;background:rgba(255,255,255,.45);width:${w}%;margin-bottom:2px;border-radius:1px"></div>`).join('')}</div></div></div>`;
-  if (style==='split') return `<div style="padding:7%;background:white;height:100%;box-sizing:border-box"><div style="height:4px;background:#1a1a1a;width:50%;margin:0 auto 2px;border-radius:1px"></div><div style="height:2px;background:#888;width:64%;margin:0 auto 3px;border-radius:1px"></div><div style="height:1px;background:${ac};margin:2px 0 5px"></div><div style="display:grid;grid-template-columns:1fr 1fr;gap:8px"><div>${sec()}${ml(88)}${ml(76)}${ml(82)}${sec()}${job()}${ml(85)}${ml(74)}</div><div>${sec()}${ml(92)}${ml(80)}${sec()}${ml(78)}${ml(68)}${sec()}${ml(85)}${ml(72)}</div></div></div>`;
+  if (style==='split') return `<div style="height:100%;background:white;display:flex;flex-direction:column"><div style="padding:8% 7% 5%;box-sizing:border-box"><div style="height:5px;background:#1a1a1a;width:46%;margin-bottom:3px;border-radius:1px"></div><div style="height:2px;background:#888;width:58%;margin-bottom:3px;border-radius:1px"></div><div style="height:1.5px;background:${ac};width:100%;border-radius:1px"></div></div><div style="display:flex;flex:1"><div style="width:32%;background:#f4f6f8;padding:5% 4%;box-sizing:border-box;border-right:1.5px solid ${ac}33">${sec()}${ml(82)}${ml(70)}${ml(76)}${sec()}${ml(78)}${ml(65)}</div><div style="flex:1;padding:5% 6% 5% 5%;box-sizing:border-box">${sec()}${ml(92)}${ml(80)}${sec()}${job()}${ml(88)}${ml(76)}</div></div></div>`;
   return '';
 }
 
@@ -2632,7 +2631,6 @@ function militaryBlock(mil){const items=[];const loc=[mil.city,mil.state].filter
 
 function volunteerBlock(v){const items=[],loc=[v.city,v.state].filter(Boolean).join(', '),end=v.current?'Present':[v.endMonth,v.endYear].filter(Boolean).join(' '),dates=[[v.startMonth,v.startYear].filter(Boolean).join(' '),end].filter(Boolean).join(' – ');items.push(new docx.Paragraph({spacing:{before:320,after:60},children:[new docx.TextRun({text:v.role||'Volunteer',bold:true,size:26,color:'1a1a1a'}),new docx.TextRun({text:`, ${v.organization}${loc?', '+loc:''}`,size:24,color:'444444'})]}));if(dates)items.push(new docx.Paragraph({spacing:{before:0,after:160},children:[new docx.TextRun({text:dates,italics:true,size:22,color:'777777'})]}));(v.bulletLines||[]).forEach(b=>items.push(bullet(b)));return items;}
 
-function sectionLabel(t){return t.toUpperCase();}
 
 function scLabel(data){const s=data.skills?.length,c=data.certifications?.length;return s&&c?'Skills & Certifications':c?'Certifications':'Skills';}
 function scItems(data){return [...(Array.isArray(data.skills)?data.skills:[]),...(data.certifications||[]).map(c=>c.name)];}
@@ -2792,27 +2790,33 @@ function buildTopRight(data,color){
   return new docx.Document({sections:[{properties:{page:{margin:{top:0,bottom:0,left:0,right:0}}},children:[new docx.Table({width:{size:100,type:docx.WidthType.PERCENTAGE},borders:{top:nb,bottom:nb,left:nb,right:nb,insideH:nb,insideV:nb},rows:[hdrRow,bodyRow]})]},]});
 }
 
-// Split: two equal columns — left has objective+experience, right has military+education+skills
+// Two Column: left sidebar for skills/education, wide right column for experience
 function buildSplit(data,color){
-  const p=data.personal,c=data.careerContext,ac=color.accent,M=twip(.85),nb={style:docx.BorderStyle.NONE,size:0,color:'FFFFFF'},ch=[];
+  const p=data.personal,c=data.careerContext,ac=color.accent,M=twip(.75),nb={style:docx.BorderStyle.NONE,size:0,color:'FFFFFF'},ch=[];
   const csz=[[p.city,p.state].filter(Boolean).join(', '),p.zip].filter(Boolean).join(' ');
   const addr=[p.address,csz].filter(Boolean).join(', ');
   const ct=[p.email,p.phone,addr].filter(Boolean).join('   |   ');
-  ch.push(new docx.Paragraph({alignment:docx.AlignmentType.CENTER,spacing:{before:0,after:80},children:[new docx.TextRun({text:`${p.firstName} ${p.lastName}`.trim(),bold:true,size:48,color:'111111'})]}));
-  if(ct)ch.push(new docx.Paragraph({alignment:docx.AlignmentType.CENTER,spacing:{before:0,after:120},children:[new docx.TextRun({text:ct,size:22,color:'555555'})]}));
-  ch.push(new docx.Paragraph({border:{bottom:{style:docx.BorderStyle.SINGLE,size:8,color:ac}},spacing:{before:0,after:0}}));
-  const mkSec=t=>new docx.Paragraph({children:sectionHeaderRuns(t,{size:24,color:ac}),border:{bottom:{style:docx.BorderStyle.SINGLE,size:3,color:ac}},spacing:{before:240,after:140}});
-  const leftCol=[],rightCol=[];
-  if(c.objective){leftCol.push(mkSec('Objective'));leftCol.push(bodyTxt(c.objective,{after:100}));}
-  if(data.workExperience?.length){leftCol.push(mkSec('Experience'));data.workExperience.forEach(j=>jobBlock(j).forEach(q=>leftCol.push(q)));}
-  if(data.militaryService?.length){rightCol.push(mkSec('Military Service'));data.militaryService.forEach(m=>militaryBlock(m).forEach(q=>rightCol.push(q)));}
-  if(data.education?.length){rightCol.push(mkSec('Education'));data.education.forEach(e=>rightCol.push(eduBlock(e)));}
-  if(data.volunteer?.length){rightCol.push(mkSec('Volunteer'));data.volunteer.forEach(v=>volunteerBlock(v).forEach(q=>rightCol.push(q)));}
-  if(data.educationSkills){rightCol.push(mkSec('Skills Learned'));rightCol.push(bodyTxt(data.educationSkills,{after:100}));}
-  const _sc=scItems(data);if(_sc.length){rightCol.push(mkSec(scLabel(data)));_sc.forEach(s=>rightCol.push(bullet(s,{after:80})));}
-  const mkCell=items=>new docx.TableCell({borders:{top:nb,bottom:nb,left:nb,right:nb},margins:{top:twip(.25),bottom:twip(.2),left:twip(.15),right:twip(.15)},children:items.length?items:[new docx.Paragraph({})]});
-  ch.push(new docx.Table({width:{size:100,type:docx.WidthType.PERCENTAGE},borders:{top:nb,bottom:nb,left:nb,right:nb,insideH:nb,insideV:nb},rows:[new docx.TableRow({children:[mkCell(leftCol),mkCell(rightCol)]})]}));
-  ch.push(spacer(200));
+  ch.push(new docx.Paragraph({spacing:{before:0,after:50},children:[new docx.TextRun({text:`${p.firstName} ${p.lastName}`.trim(),bold:true,size:50,color:'111111',font:'Calibri'})]}));
+  if(ct)ch.push(new docx.Paragraph({spacing:{before:0,after:120},children:[new docx.TextRun({text:ct,size:20,color:'555555',font:'Calibri'})]}));
+  ch.push(new docx.Paragraph({border:{bottom:{style:docx.BorderStyle.SINGLE,size:10,color:ac}},spacing:{before:0,after:180}}));
+  const sideSec=t=>new docx.Paragraph({children:sectionHeaderRuns(t,{size:22,color:ac}),border:{bottom:{style:docx.BorderStyle.SINGLE,size:2,color:ac}},spacing:{before:180,after:110}});
+  const mainSec=t=>new docx.Paragraph({children:sectionHeaderRuns(t,{size:26,color:ac}),border:{bottom:{style:docx.BorderStyle.SINGLE,size:4,color:ac}},spacing:{before:260,after:140}});
+  const side=[],main=[];
+  const _sc=scItems(data);
+  if(_sc.length){side.push(sideSec(scLabel(data)));_sc.forEach(s=>side.push(bullet(s,{size:20,after:70})));}
+  if(data.education?.length){side.push(sideSec('Education'));data.education.forEach(e=>{const f=e.fieldOfStudy?`, ${e.fieldOfStudy}`:'';const loc=[e.city,e.state].filter(Boolean).join(', ');side.push(new docx.Paragraph({spacing:{before:0,after:50},children:[new docx.TextRun({text:`${e.degree}${f}`,bold:true,size:20,color:'1a1a1a',font:'Calibri'})]}));side.push(new docx.Paragraph({spacing:{before:0,after:120},children:[new docx.TextRun({text:[e.school,loc,eduGradDate(e)].filter(Boolean).join(', '),size:19,color:'555555',font:'Calibri'})]}));});}
+  if(data.educationSkills){side.push(sideSec('Skills Learned'));side.push(bodyTxt(data.educationSkills,{after:100,size:20}));}
+  if(c.objective){main.push(mainSec('Objective'));main.push(bodyTxt(c.objective,{after:120}));}
+  if(data.workExperience?.length){main.push(mainSec('Experience'));data.workExperience.forEach(j=>jobBlock(j).forEach(q=>main.push(q)));}
+  if(data.militaryService?.length){main.push(mainSec('Military Service'));data.militaryService.forEach(m=>militaryBlock(m).forEach(q=>main.push(q)));}
+  if(data.volunteer?.length){main.push(mainSec('Volunteer'));data.volunteer.forEach(v=>volunteerBlock(v).forEach(q=>main.push(q)));}
+  main.push(spacer(200));
+  const divider={style:docx.BorderStyle.SINGLE,size:4,color:ac};
+  if(side.length){
+    ch.push(new docx.Table({width:{size:100,type:docx.WidthType.PERCENTAGE},borders:{top:nb,bottom:nb,left:nb,right:nb,insideH:nb,insideV:divider},rows:[new docx.TableRow({children:[new docx.TableCell({width:{size:twip(2.25),type:docx.WidthType.DXA},shading:{fill:'F4F6F8',type:docx.ShadingType.CLEAR,color:'auto'},margins:{top:twip(.2),bottom:twip(.2),left:twip(.2),right:twip(.18)},children:side}),new docx.TableCell({width:{size:twip(4.75),type:docx.WidthType.DXA},margins:{top:twip(.2),bottom:twip(.2),left:twip(.32),right:twip(.25)},children:main})]})]}));
+  }else{
+    main.forEach(q=>ch.push(q));
+  }
   return new docx.Document({sections:[{properties:{page:{margin:{top:M,bottom:M,left:M,right:M}}},children:ch}]});
 }
 
