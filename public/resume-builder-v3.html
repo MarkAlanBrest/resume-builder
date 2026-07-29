@@ -2633,7 +2633,6 @@ function renderTemplateConfig() {
       <div style="border:2px solid #facc15;border-radius:8px;padding:16px;background:#fef9c3;">
         <div style="font-weight:bold;color:#92400e;margin-bottom:8px;font-size:15px;">⚠ Important: Review Before Using</div>
         <p style="margin-bottom:12px;font-size:14px;color:#78350f;line-height:1.5;">This resume was generated using AI. You must carefully review, edit, and approve all content before using it. Do not assume the information is correct. Verify dates, employers, skills, and all details to ensure the resume is accurate and professional.</p>
-        <p style="margin-bottom:12px;font-size:14px;color:#78350f;line-height:1.5;">A <strong>Course of Study</strong> section is included on every resume. If you completed the assignment paragraph, AI will polish it for you. Otherwise, AI will write a professional summary from your program and education details.</p>
         <label style="display:flex;align-items:flex-start;gap:10px;font-size:14px;font-weight:600;color:#78350f;cursor:pointer;margin-bottom:14px;">
           <input type="checkbox" id="reviewConfirmed" onchange="document.getElementById('genBtn').disabled=!this.checked;document.getElementById('genBtn').style.opacity=this.checked?'1':'0.45'" style="margin-top:2px;width:16px;height:16px;accent-color:#eab308;flex-shrink:0;">
           I understand that I must review and edit this resume before using it.
@@ -2799,9 +2798,9 @@ function buildClassic(data,color){
   ch.push(new docx.Paragraph({border:{bottom:{style:docx.BorderStyle.SINGLE,size:8,color:ac}},spacing:{before:0,after:160}}));
   const sec=t=>new docx.Paragraph({children:sectionHeaderRuns(t,{size:28,color:ac}),border:{bottom:{style:docx.BorderStyle.SINGLE,size:4,color:ac}},spacing:{before:320,after:180}});
   if(c.objective){ch.push(sec('Objective'));ch.push(bodyTxt(c.objective,{after:140}));}
+  if(courseOfStudyText(data)){ch.push(sec('Course of Study'));ch.push(bodyTxt(courseOfStudyText(data),{after:140}));}
   if(data.workExperience?.length){ch.push(sec('Experience'));data.workExperience.forEach(j=>jobBlock(j).forEach(q=>ch.push(q)));}
   if(data.militaryService?.length){ch.push(sec('Military Service'));data.militaryService.forEach(m=>militaryBlock(m).forEach(q=>ch.push(q)));}
-  if(courseOfStudyText(data)){ch.push(sec('Course of Study'));ch.push(bodyTxt(courseOfStudyText(data),{after:140}));}
   if(data.education?.length){ch.push(sec('Education'));data.education.forEach(e=>ch.push(eduBlock(e)));}
   if(data.volunteer?.length){ch.push(sec('Volunteer'));data.volunteer.forEach(v=>volunteerBlock(v).forEach(q=>ch.push(q)));}
   const _sc=scItems(data);if(_sc.length){ch.push(sec(scLabel(data)));ch.push(skillsCertsGrid(_sc));}
@@ -2818,9 +2817,9 @@ function buildModern(data,color){
   const _sc=scItems(data);  if(_sc.length){side.push(sideSec(scLabel(data)));_sc.forEach(s=>side.push(bullet(s,{size:21,color:sideContact,after:70})));}
   const mainSec=t=>new docx.Paragraph({children:sectionHeaderRuns(t,{size:28,color:ac}),border:{bottom:{style:docx.BorderStyle.SINGLE,size:4,color:ac}},spacing:{before:280,after:160}});
   if(c.objective){main.push(mainSec('Objective'));main.push(bodyTxt(c.objective,{after:120}));}
+  if(courseOfStudyText(data)){main.push(mainSec('Course of Study'));main.push(bodyTxt(courseOfStudyText(data),{after:120}));}
   if(data.workExperience?.length){main.push(mainSec('Experience'));data.workExperience.forEach(j=>jobBlock(j).forEach(q=>main.push(q)));}
   if(data.militaryService?.length){main.push(mainSec('Military Service'));data.militaryService.forEach(m=>militaryBlock(m).forEach(q=>main.push(q)));}
-  if(courseOfStudyText(data)){main.push(mainSec('Course of Study'));main.push(bodyTxt(courseOfStudyText(data),{after:120}));}
   if(data.education?.length){main.push(mainSec('Education'));data.education.forEach(e=>main.push(eduBlock(e)));}
   if(data.volunteer?.length){main.push(mainSec('Volunteer'));data.volunteer.forEach(v=>volunteerBlock(v).forEach(q=>main.push(q)));}
   main.push(spacer(200));
@@ -2835,9 +2834,9 @@ function buildBold(data,color){
   const ch=[hdr];
   const sec=t=>new docx.Paragraph({spacing:{before:300,after:160},children:sectionHeaderRuns(t,{size:28,color:ac})});
   if(c.objective){ch.push(sec('Objective'));ch.push(bodyTxt(c.objective,{after:120}));}
+  if(courseOfStudyText(data)){ch.push(sec('Course of Study'));ch.push(bodyTxt(courseOfStudyText(data),{after:120}));}
   if(data.workExperience?.length){ch.push(sec('Experience'));data.workExperience.forEach(j=>jobBlock(j).forEach(q=>ch.push(q)));}
   if(data.militaryService?.length){ch.push(sec('Military Service'));data.militaryService.forEach(m=>militaryBlock(m).forEach(q=>ch.push(q)));}
-  if(courseOfStudyText(data)){ch.push(sec('Course of Study'));ch.push(bodyTxt(courseOfStudyText(data),{after:120}));}
   if(data.education?.length){ch.push(sec('Education'));data.education.forEach(e=>ch.push(eduBlock(e)));}
   if(data.volunteer?.length){ch.push(sec('Volunteer'));data.volunteer.forEach(v=>volunteerBlock(v).forEach(q=>ch.push(q)));}
   const _sc=scItems(data);if(_sc.length){ch.push(sec(scLabel(data)));ch.push(skillsCertsGrid(_sc));}
@@ -2853,9 +2852,9 @@ function buildExecutive(data,color){
   ch.push(new docx.Paragraph({border:{bottom:{style:docx.BorderStyle.THICK,size:14,color:ac}},spacing:{before:0,after:160}}));
   const sec=t=>new docx.Paragraph({tabStops:[{type:docx.TabStopType.RIGHT,position:twip(6.8)}],spacing:{before:300,after:160},children:sectionHeaderRuns(t,{size:26,color:'111111'}),border:{bottom:{style:docx.BorderStyle.SINGLE,size:2,color:'cccccc'}}});
   if(c.objective){ch.push(sec('Professional Summary'));ch.push(bodyTxt(c.objective,{after:120}));}
+  if(courseOfStudyText(data)){ch.push(sec('Course of Study'));ch.push(bodyTxt(courseOfStudyText(data),{after:120}));}
   if(data.workExperience?.length){ch.push(sec('Experience'));data.workExperience.forEach(job=>{const loc=[job.city,job.state].filter(Boolean).join(', '),end=job.current?'Present':[job.endMonth,job.endYear].filter(Boolean).join(' '),dates=`${[job.startMonth,job.startYear].filter(Boolean).join(' ')} – ${end}`;ch.push(new docx.Paragraph({tabStops:[{type:docx.TabStopType.RIGHT,position:twip(6.8)}],spacing:{before:280,after:60},children:[new docx.TextRun({text:`${job.jobTitle}, ${job.employer}${loc?', '+loc:''}`,bold:true,size:26,color:'1a1a1a'}),new docx.TextRun({text:'\t'+dates,italics:true,size:22,color:'888888'})]}));(job.bulletLines||[]).forEach(b=>ch.push(bullet(b)));});}
   if(data.militaryService?.length){ch.push(sec('Military Service'));data.militaryService.forEach(m=>militaryBlock(m).forEach(q=>ch.push(q)));}
-  if(courseOfStudyText(data)){ch.push(sec('Course of Study'));ch.push(bodyTxt(courseOfStudyText(data),{after:120}));}
   if(data.education?.length){ch.push(sec('Education'));data.education.forEach(e=>ch.push(eduBlock(e)));}
   if(data.volunteer?.length){ch.push(sec('Volunteer'));data.volunteer.forEach(v=>volunteerBlock(v).forEach(q=>ch.push(q)));}
   const _sc=scItems(data);if(_sc.length){ch.push(sec(scLabel(data)));ch.push(skillsCertsGrid(_sc));}
@@ -2874,10 +2873,10 @@ function buildFlip(data,color){
   const sideSec=t=>new docx.Paragraph({children:sectionHeaderRuns(t,{size:22,color:st}),border:{bottom:{style:docx.BorderStyle.SINGLE,size:3,color:st==='FFFFFF'?'6699CC':'777777'}},spacing:{before:260,after:120}});
   const _sc=scItems(data);
   if(_sc.length){side.push(sideSec(scLabel(data)));_sc.forEach(s=>side.push(bullet(s,{size:20,color:sideContact,after:70})));}
-  if(courseOfStudyText(data)){side.push(sideSec('Course of Study'));side.push(bodyTxt(courseOfStudyText(data),{after:100,size:20}));}
   if(data.education?.length){side.push(sideSec('Education'));data.education.forEach(e=>{const f=e.fieldOfStudy?`, ${e.fieldOfStudy}`:'';const loc=[e.city,e.state].filter(Boolean).join(', ');side.push(new docx.Paragraph({spacing:{before:0,after:60},children:[new docx.TextRun({text:`${e.degree}${f}`,bold:true,size:20,color:st})]}));side.push(new docx.Paragraph({spacing:{before:0,after:80},children:[new docx.TextRun({text:[e.school,loc,eduGradDate(e)].filter(Boolean).join(', '),size:19,color:sideContact})]}));});}
   const mainSec=t=>new docx.Paragraph({children:sectionHeaderRuns(t,{size:26,color:ac}),border:{bottom:{style:docx.BorderStyle.SINGLE,size:4,color:ac}},spacing:{before:260,after:140}});
   if(c.objective){main.push(mainSec('Objective'));main.push(bodyTxt(c.objective,{after:120}));}
+  if(courseOfStudyText(data)){main.push(mainSec('Course of Study'));main.push(bodyTxt(courseOfStudyText(data),{after:120}));}
   if(data.workExperience?.length){main.push(mainSec('Experience'));data.workExperience.forEach(j=>jobBlock(j).forEach(q=>main.push(q)));}
   if(data.militaryService?.length){main.push(mainSec('Military Service'));data.militaryService.forEach(m=>militaryBlock(m).forEach(q=>main.push(q)));}
   if(data.volunteer?.length){main.push(mainSec('Volunteer'));data.volunteer.forEach(v=>volunteerBlock(v).forEach(q=>main.push(q)));}
@@ -2896,11 +2895,11 @@ function buildTopLeft(data,color){
   const sideSec=t=>new docx.Paragraph({children:sectionHeaderRuns(t,{size:21,color:'333333'}),border:{bottom:{style:docx.BorderStyle.SINGLE,size:2,color:'CCCCCC'}},spacing:{before:220,after:110}});
   const _sc=scItems(data);
   if(_sc.length){side.push(sideSec(scLabel(data)));_sc.forEach(s=>side.push(bullet(s,{size:20,color:'444444',after:70})));}
-  if(courseOfStudyText(data)){side.push(sideSec('Course of Study'));side.push(bodyTxt(courseOfStudyText(data),{after:100,size:20}));}
   if(data.education?.length){side.push(sideSec('Education'));data.education.forEach(e=>{const f=e.fieldOfStudy?`, ${e.fieldOfStudy}`:'';const loc=[e.city,e.state].filter(Boolean).join(', ');side.push(new docx.Paragraph({spacing:{before:0,after:80},children:[new docx.TextRun({text:`${e.degree}${f}`,bold:true,size:20,color:'222222'}),new docx.TextRun({text:`, ${[e.school,loc,eduGradDate(e)].filter(Boolean).join(', ')}`,size:19,color:'666666'})]})  );});}
   const main=[];
   const mainSec=t=>new docx.Paragraph({children:sectionHeaderRuns(t,{size:26,color:ac}),border:{bottom:{style:docx.BorderStyle.SINGLE,size:4,color:ac}},spacing:{before:240,after:140}});
   if(c.objective){main.push(mainSec('Objective'));main.push(bodyTxt(c.objective,{after:120}));}
+  if(courseOfStudyText(data)){main.push(mainSec('Course of Study'));main.push(bodyTxt(courseOfStudyText(data),{after:120}));}
   if(data.workExperience?.length){main.push(mainSec('Experience'));data.workExperience.forEach(j=>jobBlock(j).forEach(q=>main.push(q)));}
   if(data.militaryService?.length){main.push(mainSec('Military Service'));data.militaryService.forEach(m=>militaryBlock(m).forEach(q=>main.push(q)));}
   if(data.volunteer?.length){main.push(mainSec('Volunteer'));data.volunteer.forEach(v=>volunteerBlock(v).forEach(q=>main.push(q)));}
@@ -2920,6 +2919,7 @@ function buildTopRight(data,color){
   const main=[];
   const mainSec=t=>new docx.Paragraph({children:sectionHeaderRuns(t,{size:26,color:ac}),border:{bottom:{style:docx.BorderStyle.SINGLE,size:4,color:ac}},spacing:{before:240,after:140}});
   if(c.objective){main.push(mainSec('Objective'));main.push(bodyTxt(c.objective,{after:120}));}
+  if(courseOfStudyText(data)){main.push(mainSec('Course of Study'));main.push(bodyTxt(courseOfStudyText(data),{after:120}));}
   if(data.workExperience?.length){main.push(mainSec('Experience'));data.workExperience.forEach(j=>jobBlock(j).forEach(q=>main.push(q)));}
   if(data.militaryService?.length){main.push(mainSec('Military Service'));data.militaryService.forEach(m=>militaryBlock(m).forEach(q=>main.push(q)));}
   if(data.volunteer?.length){main.push(mainSec('Volunteer'));data.volunteer.forEach(v=>volunteerBlock(v).forEach(q=>main.push(q)));}
@@ -2928,7 +2928,6 @@ function buildTopRight(data,color){
   const sideSec=t=>new docx.Paragraph({children:sectionHeaderRuns(t,{size:22,color:st}),border:{bottom:{style:docx.BorderStyle.SINGLE,size:3,color:st==='FFFFFF'?'6699CC':'777777'}},spacing:{before:240,after:120}});
   const _sc=scItems(data);
   if(_sc.length){side.push(sideSec(scLabel(data)));_sc.forEach(s=>side.push(bullet(s,{size:20,color:sideContact,after:70})));}
-  if(courseOfStudyText(data)){side.push(sideSec('Course of Study'));side.push(bodyTxt(courseOfStudyText(data),{after:100,size:20}));}
   if(data.education?.length){side.push(sideSec('Education'));data.education.forEach(e=>{const f=e.fieldOfStudy?`, ${e.fieldOfStudy}`:'';const loc=[e.city,e.state].filter(Boolean).join(', ');side.push(new docx.Paragraph({spacing:{before:0,after:60},children:[new docx.TextRun({text:`${e.degree}${f}`,bold:true,size:20,color:st})]}));side.push(new docx.Paragraph({spacing:{before:0,after:80},children:[new docx.TextRun({text:[e.school,loc,eduGradDate(e)].filter(Boolean).join(', '),size:19,color:sideContact})]}));});}
   const bodyRow=new docx.TableRow({children:[new docx.TableCell({width:{size:twip(5.2),type:docx.WidthType.DXA},margins:{top:twip(.35),bottom:twip(.35),left:twip(.4),right:twip(.3)},children:main}),new docx.TableCell({width:{size:twip(2.3),type:docx.WidthType.DXA},shading:{fill:ac,type:docx.ShadingType.CLEAR,color:'auto'},margins:{top:twip(.35),bottom:twip(.35),left:twip(.25),right:twip(.3)},children:side})]});
   return new docx.Document({sections:[{properties:{page:{margin:{top:0,bottom:0,left:0,right:0}}},children:[new docx.Table({width:{size:100,type:docx.WidthType.PERCENTAGE},borders:{top:nb,bottom:nb,left:nb,right:nb,insideH:nb,insideV:nb},rows:[hdrRow,bodyRow]})]},]});
@@ -2946,9 +2945,9 @@ function buildSplit(data,color){
   const side=[],main=[];
   const _sc=scItems(data);
   if(_sc.length){side.push(sideSec(scLabel(data)));_sc.forEach(s=>side.push(bullet(s,{size:20,after:70})));}
-  if(courseOfStudyText(data)){side.push(sideSec('Course of Study'));side.push(bodyTxt(courseOfStudyText(data),{after:100,size:20}));}
   if(data.education?.length){side.push(sideSec('Education'));data.education.forEach(e=>{const f=e.fieldOfStudy?`, ${e.fieldOfStudy}`:'';const loc=[e.city,e.state].filter(Boolean).join(', ');side.push(new docx.Paragraph({spacing:{before:0,after:50},children:[new docx.TextRun({text:`${e.degree}${f}`,bold:true,size:20,color:'1a1a1a',font:'Calibri'})]}));side.push(new docx.Paragraph({spacing:{before:0,after:120},children:[new docx.TextRun({text:[e.school,loc,eduGradDate(e)].filter(Boolean).join(', '),size:19,color:'555555',font:'Calibri'})]}));});}
   if(c.objective){main.push(mainSec('Objective'));main.push(bodyTxt(c.objective,{after:120}));}
+  if(courseOfStudyText(data)){main.push(mainSec('Course of Study'));main.push(bodyTxt(courseOfStudyText(data),{after:120}));}
   if(data.workExperience?.length){main.push(mainSec('Experience'));data.workExperience.forEach(j=>jobBlock(j).forEach(q=>main.push(q)));}
   if(data.militaryService?.length){main.push(mainSec('Military Service'));data.militaryService.forEach(m=>militaryBlock(m).forEach(q=>main.push(q)));}
   if(data.volunteer?.length){main.push(mainSec('Volunteer'));data.volunteer.forEach(v=>volunteerBlock(v).forEach(q=>main.push(q)));}
