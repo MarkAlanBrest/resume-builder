@@ -338,26 +338,17 @@ html,body{height:100%;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Ro
         <div class="welcome-card">
           <span class="welcome-icon">📋</span>
           <div class="welcome-title">Work Experience Assignment</div>
-          <div class="welcome-sub">This assignment builds your Work Experience section. Complete it carefully — it will be graded and saved for your resume.</div>
+          <div class="welcome-sub">This assignment builds content for your resume. Everyone completes a <strong>Course of Study</strong> paragraph (required). If you have held a job, you can also add your <strong>work history</strong> (optional).</div>
           <div class="name-field">
             <label for="studentName">Your Full Name <span class="req">*</span></label>
             <input type="text" id="studentName" placeholder="First and Last Name" autocomplete="name">
           </div>
-          <div class="choice-btns">
-            <button class="choice-btn" onclick="choosePath('work')">
-              <span class="cb-icon">💼</span>
-              <div>
-                <span class="cb-title">I Have Work History</span>
-                <span class="cb-desc">I've worked one or more jobs and want to enter them for my resume.</span>
-              </div>
-            </button>
-            <button class="choice-btn" onclick="choosePath('nowork')">
-              <span class="cb-icon">🎓</span>
-              <div>
-                <span class="cb-title">I Don't Have Work History Yet</span>
-                <span class="cb-desc">I haven't held a job yet and will write about skills I gained in my program.</span>
-              </div>
-            </button>
+          <div class="info-box blue" style="margin:20px 0;text-align:left">
+            <h4>What you'll complete</h4>
+            <p><strong>Required:</strong> Course of Study — a paragraph about skills and training from your program. This goes on every resume.<br><strong>Optional:</strong> Work history — only if you have held one or more jobs.</p>
+          </div>
+          <div class="btn-row" style="justify-content:center;margin-top:8px">
+            <button class="btn btn-primary btn-lg" onclick="startAssignment()">Get Started →</button>
           </div>
           <div id="nameErr" class="err-msg" style="display:none;text-align:center;margin-top:14px">⚠ Please enter your name before continuing.</div>
         </div>
@@ -498,27 +489,56 @@ html,body{height:100%;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Ro
         </div>
         <div id="jobsList" class="jobs-list"></div>
         <div class="btn-row">
+          <button class="btn btn-secondary" onclick="backToWorkOptional()">← Back</button>
           <button class="btn btn-secondary" onclick="addAnotherJob()">+ Add Another Job</button>
-          <button class="btn btn-success btn-lg" onclick="submitWorkAssignment()">Submit Assignment →</button>
+          <button class="btn btn-success btn-lg" onclick="submitFullAssignment()">Submit Assignment →</button>
         </div>
       </div>
 
-      <!-- SCREEN: No Work History Paragraph -->
+      <!-- SCREEN: Course of Study (required) -->
       <div id="screenNoWork" hidden>
         <div class="form-card">
-          <div class="form-card-hdr">✍️ Skills &amp; Training Paragraph</div>
+          <div class="form-card-hdr">📚 Course of Study <span style="font-size:11px;font-weight:600;opacity:.85;margin-left:6px">Required</span></div>
           <div class="form-card-body">
-            <p style="font-size:14px;color:var(--slate-600);margin-bottom:18px;line-height:1.6">Write a paragraph in your own words about what you learned in your program. Be specific and honest — this will be used on your resume. Ask the AI assistant on the right if you need help getting started.</p>
+            <p style="font-size:14px;color:var(--slate-600);margin-bottom:18px;line-height:1.6">Write a paragraph in your own words about what you learned in your program. Be specific and honest — this will appear in the <strong>Course of Study</strong> section on your resume. Ask the AI assistant on the right if you need help getting started.</p>
             <div class="field">
-              <label for="skillsParagraph">Your paragraph <span class="req">*</span></label>
+              <label for="skillsParagraph">Your Course of Study paragraph <span class="req">*</span></label>
               <textarea id="skillsParagraph" rows="10" placeholder="Example: During my Automotive Technology program, I developed hands-on skills in vehicle maintenance and repair. I learned to perform oil changes, brake inspections, and tire rotations using professional shop equipment…"></textarea>
               <div class="field-hint" id="wordCount">0 words — aim for at least 50</div>
             </div>
-            <div id="noworkErr" class="err-msg">Please write your skills paragraph before submitting.</div>
+            <div id="noworkErr" class="err-msg">Please write your Course of Study paragraph before continuing.</div>
             <div class="btn-row">
               <button class="btn btn-secondary" onclick="goBack()">← Back</button>
-              <button class="btn btn-primary btn-lg" onclick="submitNoWork()">Submit for Grading →</button>
+              <button class="btn btn-primary btn-lg" onclick="continueFromCourseOfStudy()">Continue →</button>
             </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- SCREEN: Optional Work History -->
+      <div id="screenWorkOptional" hidden>
+        <div class="welcome-card">
+          <span class="welcome-icon">💼</span>
+          <div class="welcome-title">Work History (Optional)</div>
+          <div class="welcome-sub">Your Course of Study is saved. If you have held a job — part-time, seasonal, or full-time — you can add it now. If you don't have work experience yet, skip this step and submit your assignment.</div>
+          <div class="choice-btns">
+            <button class="choice-btn" onclick="startWorkHistory()">
+              <span class="cb-icon">💼</span>
+              <div>
+                <span class="cb-title">Yes, I Have Work History</span>
+                <span class="cb-desc">I've worked one or more jobs and want to add them to my resume.</span>
+              </div>
+            </button>
+            <button class="choice-btn" onclick="skipWorkHistory()">
+              <span class="cb-icon">✓</span>
+              <div>
+                <span class="cb-title">No Work History — Submit Assignment</span>
+                <span class="cb-desc">I haven't held a job yet. Submit with my Course of Study only.</span>
+              </div>
+            </button>
+          </div>
+          <div class="btn-row" style="justify-content:center;margin-top:8px">
+            <button class="btn btn-secondary" onclick="backToCourseOfStudy()">← Back to Course of Study</button>
           </div>
         </div>
       </div>
@@ -614,9 +634,10 @@ html,body{height:100%;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Ro
 
 /* ── State ─────────────────────────────────────── */
 let studentName  = '';
-let currentPath  = null;   // 'work' | 'nowork'
-let currentStep  = 'info'; // 'info' | 'form' | 'grade'
-let stepStatus   = { info:'active', form:'pending', grade:'pending' };
+let currentStep  = 'info'; // 'info' | 'course' | 'work' | 'grade'
+let stepStatus   = { info:'active', course:'pending', work:'pending', grade:'pending' };
+let rpContext    = 'course'; // 'course' | 'work' — which help tabs to show
+let courseParagraph = '';
 let jobs         = [];
 let editingIndex = -1;
 let submissionId = null;
@@ -626,11 +647,11 @@ let isAIThinking = false;
 
 /* ── Nav ────────────────────────────────────────── */
 function getNavSteps() {
-  const isWork = currentPath !== 'nowork';
   return [
-    { key:'info',  label:'Your Info',         icon:'👤' },
-    { key:'form',  label: isWork ? 'Work History' : 'Skills Para.', icon: isWork ? '💼' : '✍️' },
-    { key:'grade', label:'Your Grade',         icon:'📊' },
+    { key:'info',   label:'Your Info',         icon:'👤' },
+    { key:'course', label:'Course of Study',   icon:'📚' },
+    { key:'work',   label:'Work (Optional)',   icon:'💼' },
+    { key:'grade',  label:'Your Grade',        icon:'📊' },
   ];
 }
 
@@ -649,7 +670,7 @@ function renderLeftNav() {
 }
 
 /* ── Screen show ────────────────────────────────── */
-const ALL_SCREENS = ['screenWelcome','screenBulletLesson','screenWorkForm','screenJobsReview','screenNoWork','screenGrading'];
+const ALL_SCREENS = ['screenWelcome','screenBulletLesson','screenWorkForm','screenJobsReview','screenNoWork','screenWorkOptional','screenGrading'];
 function show(id) {
   ALL_SCREENS.forEach(s => {
     const el = document.getElementById(s);
@@ -657,15 +678,15 @@ function show(id) {
   });
   const stepMap = {
     screenWelcome:      'info',
-    screenBulletLesson: 'form',
-    screenWorkForm:     'form',
-    screenJobsReview:   'form',
-    screenNoWork:       'form',
+    screenNoWork:       'course',
+    screenWorkOptional: 'work',
+    screenBulletLesson: 'work',
+    screenWorkForm:     'work',
+    screenJobsReview:   'work',
     screenGrading:      'grade',
   };
   currentStep = stepMap[id] || currentStep;
-  // Mark steps done/active
-  const order = ['info','form','grade'];
+  const order = ['info','course','work','grade'];
   const idx   = order.indexOf(currentStep);
   order.forEach((k, i) => {
     stepStatus[k] = i < idx ? 'done' : i === idx ? 'active' : 'pending';
@@ -675,8 +696,13 @@ function show(id) {
   if (cp) cp.scrollTop = 0;
 }
 
+function getCourseParagraph() {
+  const el = document.getElementById('skillsParagraph');
+  return (el ? el.value.trim() : courseParagraph || '').trim();
+}
+
 /* ── Welcome ────────────────────────────────────── */
-function choosePath(path) {
+function startAssignment() {
   const name = document.getElementById('studentName').value.trim();
   if (!name) {
     document.getElementById('nameErr').style.display = 'block';
@@ -684,25 +710,30 @@ function choosePath(path) {
     return;
   }
   document.getElementById('nameErr').style.display = 'none';
-  studentName  = name;
-  currentPath  = path;
+  studentName = name;
   stepStatus.info = 'done';
+  rpContext = 'course';
   renderLeftNav();
-
-  if (path === 'nowork') {
-    show('screenNoWork');
-    sendDirectionsNoWork();
-  } else {
-    show('screenBulletLesson');
-    sendDirectionsWork();
-  }
+  show('screenNoWork');
+  sendDirectionsCourse();
 }
 
 function goBack() {
   show('screenWelcome');
-  currentPath = null;
-  stepStatus = { info:'active', form:'pending', grade:'pending' };
+  stepStatus = { info:'active', course:'pending', work:'pending', grade:'pending' };
   renderLeftNav();
+}
+
+function backToCourseOfStudy() {
+  rpContext = 'course';
+  refreshRpTab();
+  show('screenNoWork');
+}
+
+function backToWorkOptional() {
+  rpContext = 'work';
+  refreshRpTab();
+  show('screenWorkOptional');
 }
 
 /* ── Right panel tabs ───────────────────────────── */
@@ -725,10 +756,10 @@ function showRpTab(tab) {
 }
 
 function getRpContent(tab) {
-  const nw = currentPath === 'nowork';
-  if (tab === 'directions') return nw ? rpNoWorkDirections() : rpWorkDirections();
-  if (tab === 'examples')   return nw ? rpNoWorkExamples()   : rpWorkExamples();
-  if (tab === 'rubric')     return nw ? rpNoWorkRubric()     : rpWorkRubric();
+  const isCourse = rpContext === 'course';
+  if (tab === 'directions') return isCourse ? rpCourseDirections() : rpWorkDirections();
+  if (tab === 'examples')   return isCourse ? rpCourseExamples()   : rpWorkExamples();
+  if (tab === 'rubric')     return isCourse ? rpCourseRubric()     : rpWorkRubric();
   return '';
 }
 
@@ -802,7 +833,14 @@ function rpWorkRubric() {
   </div>`;
 }
 
-/* No Work path content */
+/* Course of Study content */
+function rpCourseDirections() {
+  return rpNoWorkDirections().replace('skills paragraph', 'Course of Study paragraph').replace('resume', 'resume\'s Course of Study section');
+}
+function rpCourseExamples() { return rpNoWorkExamples(); }
+function rpCourseRubric() { return rpNoWorkRubric(); }
+
+/* No Work path content (legacy helpers used by Course of Study) */
 function rpNoWorkDirections() {
   return `<div class="rtp-rule">
     <div class="rtp-rule-title">Rule 1 — Be Specific, Not General</div>
@@ -858,14 +896,20 @@ function rpNoWorkRubric() {
 }
 
 /* Chat: brief welcome when path chosen */
-function sendDirectionsWork() {
+function sendDirectionsCourse() {
   refreshRpTab();
-  setTimeout(() => addAIMsg(`Hi ${studentName}! Read the **How to Write a Strong Resume Bullet** lesson on the left first — it teaches the formula employers expect.\n\nUse the **Directions**, **Examples**, and **Rubric** tabs above for extra help. After you submit, you'll see suggestions for what each bullet could look like on a polished resume.`), 400);
+  setTimeout(() => addAIMsg(`Hi ${studentName}! Start with your **Course of Study** paragraph — this is **required** and will appear on your resume.\n\nUse the **Directions**, **Examples**, and **Rubric** tabs above for help. After that, you can optionally add work history if you have any.`), 400);
 }
 
-function sendDirectionsNoWork() {
+function sendDirectionsWorkOptional() {
+  rpContext = 'work';
   refreshRpTab();
-  setTimeout(() => addAIMsg(`Hi ${studentName}! Use the **Directions**, **Examples**, and **Rubric** tabs above to review before you start. Type your paragraph in the form on the left and ask me anything!`), 400);
+  setTimeout(() => addAIMsg(`Nice work on your Course of Study! Work history is **optional** — only add jobs if you've actually held them. If you haven't worked yet, click **No Work History — Submit Assignment**.`), 400);
+}
+
+function sendDirectionsWork() {
+  refreshRpTab();
+  setTimeout(() => addAIMsg(`Read the **How to Write a Strong Resume Bullet** lesson first — it teaches the formula employers expect.\n\nUse the **Directions**, **Examples**, and **Rubric** tabs above for extra help. After you submit, you'll see suggestions for what each bullet could look like on a polished resume.`), 400);
 }
 
 /* ── Bullet coaching ────────────────────────────── */
@@ -931,21 +975,115 @@ document.addEventListener('DOMContentLoaded', () => {
   }
 });
 
-function submitNoWork() {
-  const para = document.getElementById('skillsParagraph').value.trim();
+function continueFromCourseOfStudy() {
+  const para = getCourseParagraph();
   if (!para || para.split(/\s+/).length < 15) {
     document.getElementById('noworkErr').style.display = 'block';
     return;
   }
   document.getElementById('noworkErr').style.display = 'none';
-  stepStatus.form = 'done';
-  show('screenGrading');
-  gradeNoWork(para);
+  courseParagraph = para;
+  stepStatus.course = 'done';
+  rpContext = 'work';
+  show('screenWorkOptional');
+  sendDirectionsWorkOptional();
 }
 
-async function gradeNoWork(para) {
-  const sys = `You are a fair, encouraging instructor grading a trade school student's skills paragraph. Return ONLY valid JSON.`;
-  const msg = `Grade this trade school student's skills paragraph. They have no work experience and are writing about skills learned in their program.
+function startWorkHistory() {
+  rpContext = 'work';
+  show('screenBulletLesson');
+  sendDirectionsWork();
+}
+
+function skipWorkHistory() {
+  jobs = [];
+  submitFullAssignment();
+}
+
+async function submitFullAssignment() {
+  const para = getCourseParagraph();
+  if (!para || para.split(/\s+/).length < 15) {
+    backToCourseOfStudy();
+    document.getElementById('noworkErr').style.display = 'block';
+    return;
+  }
+  courseParagraph = para;
+  stepStatus.work = 'done';
+  show('screenGrading');
+  document.getElementById('gradingLoading').hidden = false;
+  document.getElementById('gradingResult').hidden = true;
+
+  const courseGrade = await fetchCourseGrade(para);
+  let workGrade = null;
+  if (jobs.length) workGrade = await fetchWorkGrade();
+
+  gradeResult = mergeAssignmentGrades(courseGrade, workGrade);
+  localStorage.setItem('empAssign_skillsPara', para);
+  if (jobs.length) {
+    localStorage.setItem('employerAssignment', JSON.stringify(jobs.map(j => ({
+      employer: j.employer, title: j.title, start: j.start, end: j.end,
+      tasks: j.bullets.join('\n'), isCurrent: j.current,
+      grade: workGrade?.grade || gradeResult.grade, score: workGrade?.overall || gradeResult.overall,
+      savedAt: new Date().toISOString()
+    }))));
+  } else {
+    localStorage.removeItem('employerAssignment');
+  }
+
+  submissionId = generateId();
+  gradeResult._submissionId = submissionId;
+  gradeResult._hasWork = jobs.length > 0;
+  localStorage.setItem('empAssign_submission', JSON.stringify({
+    studentName, courseParagraph: para, jobs, hasWork: jobs.length > 0,
+    submissionId, gradeResult, submittedAt: new Date().toISOString()
+  }));
+  showGradeResult();
+}
+
+function mergeAssignmentGrades(courseGrade, workGrade) {
+  if (!workGrade) {
+    return {
+      ...courseGrade,
+      summary: (courseGrade.summary || '') + ' Your Course of Study has been saved for your resume.',
+      _hasWork: false
+    };
+  }
+  const overall = Math.round(courseGrade.overall * 0.6 + workGrade.overall * 0.4);
+  const grade = overall >= 90 ? 'A' : overall >= 80 ? 'B' : overall >= 70 ? 'C' : overall >= 60 ? 'D' : 'F';
+  const courseKeys = courseGrade._rubricKeys || [];
+  const workKeys = (workGrade._rubricKeys || []).map(k => 'work_' + k);
+  const scores = {};
+  const feedback = {};
+  courseKeys.forEach(k => {
+    scores['cos_' + k] = courseGrade.scores[k];
+    feedback['cos_' + k] = courseGrade.feedback[k];
+  });
+  workKeys.forEach(k => {
+    const orig = k.replace('work_', '');
+    scores[k] = workGrade.scores[orig];
+    feedback[k] = workGrade.feedback[orig];
+  });
+  return {
+    scores,
+    feedback,
+    overall,
+    grade,
+    headline: overall >= 90 ? 'Excellent Work!' : overall >= 80 ? 'Good Work!' : overall >= 70 ? 'Nice Start!' : 'Needs More Detail',
+    strengths: [courseGrade.strengths, workGrade.strengths].filter(Boolean).join(' '),
+    summary: 'Your Course of Study and work experience have been saved for your resume. Review the feedback below to strengthen both sections.',
+    bulletSuggestions: workGrade.bulletSuggestions || [],
+    _rubricKeys: [...courseKeys.map(k => 'cos_' + k), ...workKeys],
+    _rubricLabels: [...(courseGrade._rubricLabels || []).map(l => 'Course of Study — ' + l), ...(workGrade._rubricLabels || []).map(l => 'Work — ' + l)],
+    _rubricWeights: [...(courseGrade._rubricWeights || []), ...(workGrade._rubricWeights || [])],
+    _hasWork: true,
+    _courseGrade: courseGrade,
+    _workGrade: workGrade
+  };
+}
+
+async function fetchCourseGrade(para) {
+  const sys = `You are a fair, encouraging instructor grading a trade school student's Course of Study paragraph. Return ONLY valid JSON.`;
+  const msg = `Grade this trade school student's Course of Study paragraph about skills learned in their program.
 
 Paragraph: "${para}"
 
@@ -970,22 +1108,14 @@ Scoring guide (be fair and encouraging — these are first-time students):
     const raw   = await callAPI(sys, msg, 900);
     const match = raw.match(/\{[\s\S]*\}/);
     if (!match) throw new Error('no json');
-    gradeResult = JSON.parse(match[0]);
-    gradeResult._rubricKeys    = ['specificSkills','relevance','effort','language'];
-    gradeResult._rubricLabels  = ['Specific Skills Named','Program Relevance','Effort & Length','Professional Language'];
-    gradeResult._rubricWeights = ['35%','25%','25%','15%'];
+    const result = JSON.parse(match[0]);
+    result._rubricKeys    = ['specificSkills','relevance','effort','language'];
+    result._rubricLabels  = ['Specific Skills Named','Program Relevance','Effort & Length','Professional Language'];
+    result._rubricWeights = ['35%','25%','25%','15%'];
+    return result;
   } catch(e) {
-    gradeResult = gradeNoWorkJS(para);
+    return gradeNoWorkJS(para);
   }
-
-  localStorage.setItem('empAssign_skillsPara', para);
-  submissionId = generateId();
-  gradeResult._submissionId = submissionId;
-  localStorage.setItem('empAssign_submission', JSON.stringify({
-    path:'nowork', studentName, submissionId, gradeResult,
-    submittedAt: new Date().toISOString()
-  }));
-  showGradeResult();
 }
 
 function gradeNoWorkJS(para) {
@@ -1007,7 +1137,7 @@ function gradeNoWorkJS(para) {
     overall, grade,
     headline: overall >= 90 ? 'Excellent Work!' : overall >= 80 ? 'Good Work!' : overall >= 70 ? 'Nice Start!' : 'Needs More Detail',
     strengths: 'You completed the assignment and described your trade school training.',
-    summary: 'Your paragraph will be used in your resume\'s skills section. The feedback above shows where you can strengthen it.',
+    summary: 'Your Course of Study paragraph will be used on your resume. The feedback above shows where you can strengthen it.',
     _rubricKeys:    ['specificSkills','relevance','effort','language'],
     _rubricLabels:  ['Specific Skills Named','Program Relevance','Effort & Length','Professional Language'],
     _rubricWeights: ['35%','25%','25%','15%']
@@ -1073,7 +1203,7 @@ function saveJob() {
 function cancelJobForm() {
   editingIndex = -1;
   if (jobs.length > 0) show('screenJobsReview');
-  else goBack();
+  else show('screenWorkOptional');
 }
 
 function addAnotherJob() {
@@ -1106,7 +1236,7 @@ function deleteJob(i) {
   if (!confirm('Delete this job entry?')) return;
   jobs.splice(i, 1);
   renderJobTiles();
-  if (jobs.length === 0) { clearJobForm(); document.getElementById('formTitle').textContent = 'Add Your First Job'; show('screenWorkForm'); }
+  if (jobs.length === 0) show('screenWorkOptional');
 }
 
 function renderJobTiles() {
@@ -1131,14 +1261,7 @@ function renderJobTiles() {
   }).join('');
 }
 
-async function submitWorkAssignment() {
-  if (!jobs.length) return;
-  stepStatus.form = 'done';
-  show('screenGrading');
-  await gradeWork();
-}
-
-async function gradeWork() {
+async function fetchWorkGrade() {
   const jobText = jobs.map((j, i) => {
     const bullets = j.bullets.map((b, bi) => `  Bullet ${bi+1}: ${b}`).join('\n');
     return `Job ${i+1}: ${j.title} at ${j.employer}\n${bullets}`;
@@ -1184,31 +1307,17 @@ Scoring (be generous with students who made genuine effort):
     const raw   = await callAPI(sys, msg, 1400);
     const match = raw.match(/\{[\s\S]*\}/);
     if (!match) throw new Error('no json');
-    gradeResult = JSON.parse(match[0]);
-    gradeResult._rubricKeys    = ['completeness','actionVerbs','specificity','professionalism'];
-    gradeResult._rubricLabels  = ['Completeness','Action Verbs','Specificity & Detail','Professionalism'];
-    gradeResult._rubricWeights = ['25%','25%','25%','25%'];
-    if (!Array.isArray(gradeResult.bulletSuggestions) || !gradeResult.bulletSuggestions.length) {
-      gradeResult.bulletSuggestions = buildBulletSuggestionsJS();
+    const result = JSON.parse(match[0]);
+    result._rubricKeys    = ['completeness','actionVerbs','specificity','professionalism'];
+    result._rubricLabels  = ['Completeness','Action Verbs','Specificity & Detail','Professionalism'];
+    result._rubricWeights = ['25%','25%','25%','25%'];
+    if (!Array.isArray(result.bulletSuggestions) || !result.bulletSuggestions.length) {
+      result.bulletSuggestions = buildBulletSuggestionsJS();
     }
+    return result;
   } catch(e) {
-    gradeResult = gradeWorkJS();
+    return gradeWorkJS();
   }
-
-  localStorage.setItem('employerAssignment', JSON.stringify(jobs.map(j => ({
-    employer: j.employer, title: j.title, start: j.start, end: j.end,
-    tasks: j.bullets.join('\n'), isCurrent: j.current,
-    grade: gradeResult.grade, score: gradeResult.overall,
-    savedAt: new Date().toISOString()
-  }))));
-
-  submissionId = generateId();
-  gradeResult._submissionId = submissionId;
-  localStorage.setItem('empAssign_submission', JSON.stringify({
-    path:'work', studentName, jobs, gradeResult,
-    submittedAt: new Date().toISOString()
-  }));
-  showGradeResult();
 }
 
 function suggestBulletRewrite(bullet, job) {
@@ -1299,19 +1408,14 @@ function isSubstandardGrade(g) {
 function redoAssignment() {
   gradeResult = null;
   submissionId = null;
-  stepStatus = { info: 'done', form: 'active', grade: 'pending' };
+  stepStatus = { info: 'done', course: 'active', work: 'pending', grade: 'pending' };
   document.getElementById('gradingLoading').hidden = false;
   document.getElementById('gradingResult').hidden = true;
   document.getElementById('redoPrompt').style.display = 'none';
-
-  if (currentPath === 'nowork') {
-    show('screenNoWork');
-    document.getElementById('skillsParagraph').focus();
-    addAIMsg('Take your time revising your paragraph using the rubric feedback above. **This text will go directly on your resume**, so stronger detail and specific tools or techniques will help you stand out to employers.');
-  } else {
-    show('screenJobsReview');
-    addAIMsg('Review the bullet suggestions below and edit your jobs before submitting again. **These bullets will appear on your resume**, so it is worth taking another pass to strengthen them.');
-  }
+  rpContext = 'course';
+  show('screenNoWork');
+  document.getElementById('skillsParagraph').focus();
+  addAIMsg('Take your time revising your **Course of Study** using the rubric feedback. This paragraph goes directly on your resume. You can also update your work history afterward if you added jobs.');
 }
 
 /* ── Grade display ──────────────────────────────── */
@@ -1361,22 +1465,22 @@ function showGradeResult() {
   const redoText = document.getElementById('redoPromptText');
   if (substandard && redoBox && redoText) {
     redoBox.style.display = 'block';
-    const workMsg = 'Your work experience bullets will be imported into your resume. Because this score is below what employers expect, you <strong>can and should do this assignment again</strong> — use the feedback and bullet suggestions below to strengthen your entries before you build your resume.';
-    const noworkMsg = 'Your skills paragraph will be used in the <strong>Course of Study</strong> section on your resume. Because this score is below what employers expect, you <strong>can and should do this assignment again</strong> — add more specific tools, techniques, and training details before you build your resume.';
-    redoText.innerHTML = currentPath === 'nowork' ? noworkMsg : workMsg;
+    const hasWork = gradeResult._hasWork && jobs.length > 0;
+    redoText.innerHTML = hasWork
+      ? 'Your <strong>Course of Study</strong> and work experience will appear on your resume. Because this score is below what employers expect, you <strong>can and should do this assignment again</strong> — strengthen your paragraph and bullets using the feedback below.'
+      : 'Your <strong>Course of Study</strong> paragraph will appear on your resume. Because this score is below what employers expect, you <strong>can and should do this assignment again</strong> — add more specific tools, techniques, and training details before you build your resume.';
   } else if (redoBox) {
     redoBox.style.display = 'none';
   }
 
   // Send grade summary to chat
   const ltrLabel = { A:'Excellent', B:'Good', C:'OK', D:'Below expectations', F:'Incomplete' };
-  const suggestNote = (currentPath === 'work' && (g.bulletSuggestions || []).length)
+  const hasWork = gradeResult._hasWork && jobs.length > 0;
+  const suggestNote = (hasWork && (g.bulletSuggestions || []).length)
     ? '\n\nScroll down to **What Your Bullets Could Look Like** — I rewrote each bullet to show you stronger resume wording.'
     : '';
   const redoNote = substandard
-    ? (currentPath === 'nowork'
-      ? '\n\n**Important:** This paragraph goes on your resume. Your score suggests you should **redo the assignment** and strengthen it using the rubric feedback before building your resume.'
-      : '\n\n**Important:** These bullets go on your resume. Your score suggests you should **redo the assignment** and improve your bullets using the feedback before building your resume.')
+    ? '\n\n**Important:** This content goes on your resume. Your score suggests you should **redo the assignment** and strengthen it using the rubric feedback before building your resume.'
     : '';
   addAIMsg(`**Your grade is in!** You scored **${g.overall}/100** — ${ltrLabel[ltr] || 'graded'}.\n\n${g.strengths}\n\n${g.summary}${suggestNote}${redoNote}\n\nDon't forget to **download your assignment** and submit the PDF in Canvas to receive credit.`);
 }
@@ -1387,7 +1491,7 @@ function renderBulletSuggestions() {
   if (!section || !list) return;
 
   const suggestions = (gradeResult && gradeResult.bulletSuggestions) || [];
-  if (currentPath !== 'work' || !suggestions.length) {
+  if (!gradeResult?._hasWork || !suggestions.length) {
     section.hidden = true;
     list.innerHTML = '';
     return;
@@ -1462,9 +1566,9 @@ function downloadPDF() {
   // Student row
   pdf.setFontSize(10); pdf.setFont('helvetica','normal'); pdf.setTextColor(50,50,50);
   pdf.text('Student: ' + studentName, margin, y);
-  const pathLabel = currentPath === 'nowork'
-    ? 'Path: No Work History (Skills Paragraph)'
-    : 'Path: Work History (' + jobs.length + ' job' + (jobs.length !== 1 ? 's' : '') + ')';
+  const pathLabel = jobs.length
+    ? 'Course of Study + ' + jobs.length + ' job' + (jobs.length !== 1 ? 's' : '')
+    : 'Course of Study only';
   pdf.text(pathLabel, pageW-margin, y, { align:'right' });
   y += 22;
 
@@ -1478,15 +1582,15 @@ function downloadPDF() {
   pdf.text('Your instructor uses this ID to verify your submission.', pageW/2, y+53, { align:'center' });
   y += 80;
 
-  // Content
-  if (currentPath === 'nowork') {
-    const para = document.getElementById('skillsParagraph').value.trim();
-    sectionHdr('Skills & Training Paragraph');
-    const paraLines = pdf.splitTextToSize(para, cw);
-    pdf.setFontSize(11); pdf.setFont('helvetica','normal'); pdf.setTextColor(30,30,30);
-    paraLines.forEach(line => { checkPage(16); pdf.text(line, margin, y); y += 15.5; });
-    y += 6;
-  } else {
+  // Content — Course of Study always included
+  const para = getCourseParagraph();
+  sectionHdr('Course of Study');
+  const paraLines = pdf.splitTextToSize(para, cw);
+  pdf.setFontSize(11); pdf.setFont('helvetica','normal'); pdf.setTextColor(30,30,30);
+  paraLines.forEach(line => { checkPage(16); pdf.text(line, margin, y); y += 15.5; });
+  y += 6;
+
+  if (jobs.length) {
     sectionHdr('Work Experience Entries');
     jobs.forEach((j, idx) => {
       checkPage(60);
@@ -1531,7 +1635,7 @@ function downloadPDF() {
     pdf.text(sumLines, margin, y); y += sumLines.length * 12;
   }
 
-  if (currentPath === 'work' && Array.isArray(g.bulletSuggestions) && g.bulletSuggestions.length) {
+  if (gradeResult?._hasWork && Array.isArray(g.bulletSuggestions) && g.bulletSuggestions.length) {
     sectionHdr('What Your Bullets Could Look Like');
     let lastJob = -1;
     g.bulletSuggestions.forEach(s => {
@@ -1639,14 +1743,15 @@ async function sendChat() {
 
   isAIThinking = true; showChatTyping();
 
-  const sys = `You are an AI assistant helping a trade school student complete their Work Experience Assignment. The student's name is ${studentName || 'the student'}. Their assignment path is: ${currentPath === 'nowork' ? 'No Work History (writing a skills paragraph)' : currentPath === 'work' ? 'Work History (entering job bullet points)' : 'not yet chosen'}.
+  const sys = `You are an AI assistant helping a trade school student complete their Work Experience Assignment. The student's name is ${studentName || 'the student'}.
+
+Every student must write a **Course of Study** paragraph (required). Work history is optional — only if they have held jobs.
 
 Help them with:
+- Writing a strong Course of Study paragraph about their program training
 - Writing strong bullet points using Action Verb + Specific Task + Tools/Detail/Number
-- Explaining what makes a weak vs strong bullet (with before/after examples)
-- Looking up employer addresses or job information
+- Explaining what makes weak vs strong writing (with before/after examples)
 - Understanding the rubric or directions
-- Any question that helps them complete their assignment accurately
 
 When helping with bullets, teach the formula and show a rewritten example — don't just fix it for them without explaining why. Be direct and helpful. Keep responses concise.`;
 
@@ -1702,7 +1807,7 @@ window.addEventListener('load', () => {
     body: JSON.stringify({ model:'claude-sonnet-4-6', max_tokens:10, messages:[{role:'user',content:'hi'}] })
   }).then(r => setAIStatus(r.ok ? 'ok' : 'err')).catch(() => setAIStatus('err'));
 
-  addAIMsg('Welcome! I\'m your AI assistant for this assignment.\n\nEnter your name on the left and choose your path. If you have work history, you\'ll get a short lesson on writing strong resume bullets before you start.\n\nAfter grading, you\'ll see suggestions for what each bullet could look like on a polished resume. Ask me anything at any time!');
+  addAIMsg('Welcome! I\'m your AI assistant for this assignment.\n\n**Everyone** writes a **Course of Study** paragraph (required) — it goes on your resume. **Work history is optional** — only add jobs if you\'ve actually held them.\n\nEnter your name and click **Get Started**. Ask me anything at any time!');
 });
 </script>
 </body>
