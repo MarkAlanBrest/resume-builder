@@ -458,6 +458,54 @@ const CAREER_SUGGESTIONS = [
   {match:/machinist|cnc|manufacturing/i,workSearch:['I want to work as a machinist or CNC operator in a precision manufacturing facility.','I am looking for a production or machining role where I can operate equipment and inspect finished parts.','I want a position in manufacturing where I can apply my blueprint reading, CNC, and quality control skills.']},
 ];
 
+const COURSE_OF_STUDY_SUGGESTIONS = [
+  {match:/automotive/i,examples:[
+    'During my Automotive Technology program, I developed hands-on skills in vehicle maintenance and repair. I learned to perform oil changes, tire rotations, brake inspections, and multi-point inspections on shop vehicles. I trained on hydraulic lifts, diagnostic scan tools, torque wrenches, and basic electrical testing equipment. My coursework covered engine systems, brake components, suspension fundamentals, and shop safety procedures. Throughout the program I followed OSHA standards and developed strong attention to detail while working in a professional shop environment.',
+    'Through my Automotive Technology training, I gained practical experience in diagnosing and servicing customer vehicles. I practiced fluid services, tire and brake work, electrical troubleshooting, and preventive maintenance using industry-standard tools. I also studied engine performance, steering and suspension systems, and workplace safety. I am prepared to apply these skills in an entry-level technician role.',
+  ]},
+  {match:/motorcycle|power equipment/i,examples:[
+    'During my Motorcycle and Power Equipment Technology program, I developed hands-on skills in diagnosing, repairing, and maintaining motorcycles, ATVs, and small engines. I trained on specialty tools, electrical testing equipment, carburetor and fuel system service, and drivetrain repair. My coursework covered engine teardown and reassembly, brake and suspension service, and shop safety procedures. I followed manufacturer service guidelines and developed strong troubleshooting habits in a professional shop setting.',
+    'Through my power equipment training, I gained experience servicing small engines, electrical systems, and mechanical components on motorcycles and outdoor power equipment. I practiced preventive maintenance, parts replacement, and customer-ready inspections using hand tools, lifts, and diagnostic equipment. I am prepared to apply these skills in an entry-level service role.',
+  ]},
+  {match:/building|construction/i,examples:[
+    'During my Building Technology program, I developed practical construction skills through hands-on projects in framing, drywall, roofing, and finish work. I learned to read blueprints, measure and lay out materials accurately, and use hand and power tools safely on job-site simulations. My training covered carpentry fundamentals, material handling, jobsite safety, and teamwork on crew-based projects. I followed OSHA safety standards and developed the ability to complete quality work under supervision.',
+    'Through my Building Construction Technology training, I gained experience in residential and light commercial construction tasks including framing, sheathing, trim work, and jobsite organization. I practiced using circular saws, nail guns, levels, and other common trade tools while following plans and supervisor direction. I am prepared to contribute on an entry-level construction crew.',
+  ]},
+  {match:/welding/i,examples:[
+    'During my Combination Welding program, I developed hands-on skills in MIG, TIG, and stick welding on steel and other metals. I learned to read blueprints, measure and prepare materials, and set up welding equipment for different joint types and positions. My coursework covered weld inspection, metal fabrication, cutting and grinding, and shop safety including PPE and ventilation requirements. I practiced producing quality welds on lab projects and developed attention to detail and safe work habits.',
+    'Through my welding training, I gained experience in layout, fit-up, and welding techniques used in manufacturing and construction settings. I trained with torches, grinders, and welding machines while following weld symbols and work instructions. I am prepared to apply these fabrication and welding skills in an entry-level shop or field role.',
+  ]},
+  {match:/electrical/i,examples:[
+    'During my Electrical Technology program, I gained hands-on experience in residential and commercial wiring, outlet and switch installation, and circuit breaker panel work. I learned to read wiring diagrams and blueprints, pull wire, bend conduit, and use volt meters and hand tools safely. My coursework covered the National Electrical Code, grounding procedures, lockout/tagout, and workplace safety standards. I developed problem-solving skills by troubleshooting wiring issues in lab simulations.',
+    'Through my Electrical and Industrial Maintenance training, I developed skills in electrical troubleshooting, motor controls, conduit installation, and preventive maintenance on industrial equipment. I practiced using multimeters, hand tools, and schematic diagrams to identify faults and complete repairs safely. I am prepared to support electricians or maintenance teams in an entry-level role.',
+  ]},
+  {match:/electro-mechanical|industrial maintenance/i,examples:[
+    'During my Industrial Electro-Mechanical Technology program, I developed skills in maintaining and troubleshooting mechanical systems, motors, conveyors, and basic electrical controls. I trained on hand tools, precision measuring equipment, lubrication procedures, and preventive maintenance checklists. My coursework covered PLC basics, schematic reading, lockout/tagout, and safety around powered equipment. I practiced diagnosing equipment issues in lab settings and documenting work performed.',
+    'Through my industrial maintenance training, I gained experience supporting production equipment through inspection, adjustment, and repair tasks. I learned to read technical diagrams, use diagnostic tools, and work safely around moving machinery and electrical components. I am prepared to apply these skills in an entry-level maintenance technician role.',
+  ]},
+  {match:/hvac|refrigeration|climate|ac technology/i,examples:[
+    'During my HVAC and Refrigeration program, I developed hands-on skills in installing, servicing, and troubleshooting heating, ventilation, air conditioning, and refrigeration systems. I trained on gauges, meters, brazing equipment, hand tools, and refrigerant handling procedures. My coursework covered electrical controls, airflow measurement, system charging, leak detection, and EPA refrigerant safety requirements. I followed workplace safety standards and developed strong troubleshooting habits in lab and shop settings.',
+    'Through my Refrigeration and Climate Control training, I gained experience with residential and light commercial HVAC equipment, ductwork basics, and preventive maintenance procedures. I practiced reading system pressures and temperatures, replacing components, and following manufacturer service guidelines. I am prepared to support HVAC technicians in an entry-level service or installation role.',
+  ]},
+  {match:/diesel|heavy equipment/i,examples:[
+    'During my Diesel and Heavy Equipment program, I developed hands-on skills in inspecting, diagnosing, and repairing diesel engines, hydraulics, and heavy equipment systems. I trained on shop tools, diagnostic equipment, fluid services, and preventive maintenance procedures for trucks and construction equipment. My coursework covered electrical systems, brake and suspension service, safety standards, and proper documentation of repairs. I practiced troubleshooting real equipment issues in a shop environment.',
+    'Through my Heavy Equipment Operations training, I gained experience with equipment inspections, safe operation of heavy machinery, and basic maintenance support on job sites. I learned pre-operation checks, hand signals, grade reading basics, and coordination with crew members. I am prepared to apply these skills in an entry-level equipment operation or fleet support role.',
+  ]},
+  {match:/truck|cdl/i,examples:[
+    'During my Commercial Truck Driving program, I developed the skills required for safe, professional operation of commercial motor vehicles. I trained on pre-trip and post-trip inspections, backing maneuvers, shifting techniques, and hours-of-service rules. My coursework covered DOT regulations, cargo securement, defensive driving, and vehicle control in varied road conditions. I practiced on training routes and developed the habits employers expect from entry-level CDL drivers.',
+    'Through my CDL training, I gained hands-on experience with vehicle inspections, coupling and uncoupling trailers, and operating commercial trucks in real-world driving scenarios. I learned to document trips accurately, communicate professionally, and follow all safety and compliance requirements on the road.',
+  ]},
+  {match:/machinist|cnc|manufacturing/i,examples:[
+    'During my Machinist and CNC Manufacturing program, I developed precision machining skills including blueprint reading, machine setup, and quality inspection of finished parts. I trained on lathes, mills, CNC equipment, calipers, micrometers, and other measuring tools. My coursework covered G-code basics, tool selection, workplace safety, and maintaining tight tolerances on production work. I practiced completing parts to specification and keeping a clean, organized workstation.',
+    'Through my CNC manufacturing training, I gained experience operating and setting up production equipment, reading work instructions, and inspecting parts for accuracy. I learned to identify defects, document measurements, and follow quality and safety procedures in a manufacturing environment. I am prepared to support machinists or production teams in an entry-level role.',
+  ]},
+];
+
+const COURSE_OF_STUDY_DEFAULT_EXAMPLES = [
+  'During my trade school program, I developed hands-on technical skills through lab work, shop projects, and supervised practice. I trained with industry-standard tools and equipment while learning safety procedures, troubleshooting methods, and professional work habits. My coursework covered core competencies for entry-level work in my field, including teamwork, following instructions, and completing tasks accurately. I am prepared to apply these skills on the job.',
+  'Through my program training, I gained practical experience completing real-world tasks in a shop and classroom environment. I learned to use hand and power tools safely, follow technical procedures, and maintain quality standards on assigned projects. I also developed communication skills by working with instructors and classmates on team-based work. I am ready to bring this training into an entry-level position.',
+];
+
 const STANDOUT_SUGGESTIONS = [
   'I take pride in quality work and never cut corners on safety.',
   'I am a fast learner who picks up new tools and procedures quickly.',
@@ -3025,6 +3073,18 @@ function sendTip(key){
     setTimeout(()=>addSuggestionCard('What sets you apart?',STANDOUT_SUGGESTIONS,'standout'),900);
   }
 
+  if(key==='courseOfStudy'){
+    const program=resumeData.personal.program||'';
+    const found=COURSE_OF_STUDY_SUGGESTIONS.find(item=>item.match.test(program));
+    const examples=found?found.examples:COURSE_OF_STUDY_DEFAULT_EXAMPLES;
+    const imported=resumeData._courseOfStudyFromAssignment && getCourseOfStudyText();
+    if(imported){
+      setTimeout(()=>addAIMsg(`Your **Course of Study** paragraph was loaded from your Work Experience Assignment. Review it in the form, edit anything that needs updating, then save. The examples below can help if you want to add more detail.`),400);
+    }
+    setTimeout(()=>addSuggestionCard(`Example paragraphs for ${program||'your program'} — click to use as a starting point:`,examples,'cosParagraph','replace'),imported?700:600);
+    setTimeout(()=>addAIMsg(`**Tip:** Name real tools, equipment, and procedures you used. Aim for 5–8 sentences. Only write what you actually learned — this goes directly on your resume.`),imported?1000:900);
+  }
+
   if(key==='volunteer'){
     setTimeout(()=>addAIMsg(TIPS.volunteer),300);
   }
@@ -3105,6 +3165,7 @@ function applySuggestion(idx){
   } else {
     el.value=s.text;
   }
+  if (s.targetId === 'cosParagraph') updateCosWordCount();
   el.focus();
   el.style.transition='border-color .3s';
   el.style.borderColor='var(--blue-700)';
