@@ -204,6 +204,19 @@ html,body{height:100%;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Ro
 .info-box.red h4{color:var(--red-600);margin-bottom:6px}
 .info-box.red p{color:#7f1d1d}
 
+/* ── Submission summary (grade results) ── */
+.submission-card{background:var(--white);border-radius:12px;box-shadow:0 1px 8px rgba(0,0,0,.08);overflow:hidden;margin-bottom:20px}
+.submission-card-hdr{background:var(--slate-700);color:var(--white);padding:12px 20px;font-size:14px;font-weight:700}
+.submission-block{padding:18px 20px;border-bottom:1px solid var(--slate-200)}
+.submission-block:last-child{border-bottom:none}
+.submission-block-hdr{font-size:11px;font-weight:700;color:var(--slate-500);text-transform:uppercase;letter-spacing:.6px;margin-bottom:10px;display:flex;align-items:center;gap:6px}
+.submission-block-body{font-size:14px;color:var(--slate-700);line-height:1.65}
+.submission-job{margin-bottom:14px;padding-bottom:14px;border-bottom:1px dashed var(--slate-200)}
+.submission-job:last-child{margin-bottom:0;padding-bottom:0;border-bottom:none}
+.submission-job-title{font-size:14px;font-weight:700;color:var(--slate-900)}
+.submission-job-meta{font-size:12px;color:var(--slate-500);margin:3px 0 8px}
+.submission-job-bullets{font-size:13px;color:var(--slate-600);line-height:1.7}
+
 /* ── Submission ID ── */
 .sub-id-box{background:var(--slate-50);border:2px dashed var(--slate-300);border-radius:10px;padding:14px 18px;text-align:center;margin:18px 0}
 .sub-id-label{font-size:10px;font-weight:700;color:var(--slate-500);text-transform:uppercase;letter-spacing:.5px;margin-bottom:4px}
@@ -485,7 +498,7 @@ html,body{height:100%;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Ro
       <div id="screenJobsReview" hidden>
         <div class="info-box green" style="margin-bottom:20px">
           <h4>✅ Jobs Saved</h4>
-          <p>Your saved jobs are shown below. Edit or delete any entry before submitting. When you're done, click <strong>Submit Assignment</strong>.</p>
+          <p>Your work history entries are shown below. Edit or delete any entry before submitting. When you're done, click <strong>Submit Assignment</strong> — your required Course of Study will be included too.</p>
         </div>
         <div id="jobsList" class="jobs-list"></div>
         <div class="btn-row">
@@ -555,8 +568,12 @@ html,body{height:100%;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Ro
         <!-- Result -->
         <div id="gradingResult" hidden>
           <div class="download-bar">
-            <div class="download-bar-text">You must download and submit your work in Canvas to receive credit.</div>
+            <div class="download-bar-text" id="downloadBarText">You must download and submit your work in Canvas to receive credit.</div>
             <button class="download-btn" onclick="downloadPDF()">⬇ Download Assignment</button>
+          </div>
+          <div id="submissionSummaryCard" class="submission-card" hidden>
+            <div class="submission-card-hdr">📄 Your Submission — Saved for Your Resume</div>
+            <div id="submissionSummaryBody"></div>
           </div>
           <div class="form-card">
             <div class="form-card-hdr">📊 Your Grade</div>
@@ -1419,6 +1436,46 @@ function redoAssignment() {
 }
 
 /* ── Grade display ──────────────────────────────── */
+function renderSubmissionSummary() {
+  const card = document.getElementById('submissionSummaryCard');
+  const body = document.getElementById('submissionSummaryBody');
+  const bar  = document.getElementById('downloadBarText');
+  if (!card || !body) return;
+
+  const para = getCourseParagraph();
+  const hasWork = jobs.length > 0;
+  let html = `<div class="submission-block">
+    <div class="submission-block-hdr">📚 Course of Study <span style="color:var(--red-600);font-size:10px">Required</span></div>
+    <div class="submission-block-body">${esc(para).replace(/\n/g, '<br>')}</div>
+  </div>`;
+
+  if (hasWork) {
+    html += `<div class="submission-block">
+      <div class="submission-block-hdr">💼 Work History <span style="color:var(--slate-400);font-size:10px;font-weight:600">Optional</span></div>
+      <div class="submission-block-body">`;
+    jobs.forEach(j => {
+      const loc = [j.city, j.state].filter(Boolean).join(', ');
+      const dateStr = j.current ? `${fmtMonth(j.start)} – Present` : `${fmtMonth(j.start)}${j.end ? ' – ' + fmtMonth(j.end) : ''}`;
+      const bullets = j.bullets.map(b => `• ${esc(b)}`).join('<br>');
+      html += `<div class="submission-job">
+        <div class="submission-job-title">${esc(j.title)}</div>
+        <div class="submission-job-meta">${esc(j.employer)}${loc ? ' — ' + esc(loc) : ''} | ${esc(dateStr)}</div>
+        <div class="submission-job-bullets">${bullets}</div>
+      </div>`;
+    });
+    html += `</div></div>`;
+  }
+
+  body.innerHTML = html;
+  card.hidden = false;
+
+  if (bar) {
+    bar.textContent = hasWork
+      ? 'Your submission includes Course of Study and work history. Download and submit in Canvas to receive credit.'
+      : 'Your submission includes your Course of Study. Download and submit in Canvas to receive credit.';
+  }
+}
+
 function showGradeResult() {
   document.getElementById('gradingLoading').hidden = true;
   document.getElementById('gradingResult').hidden  = false;
@@ -1434,6 +1491,8 @@ function showGradeResult() {
   document.getElementById('gradeScoreLine').textContent = `Score: ${g.overall}/100`;
   document.getElementById('gradeSummary').textContent   = g.summary || '';
   document.getElementById('subIdDisplay').textContent   = submissionId;
+
+  renderSubmissionSummary();
 
   const clr = s => s >= 85 ? '#15803d' : s >= 70 ? '#1d4ed8' : s >= 55 ? '#d97706' : '#dc2626';
   const keys    = g._rubricKeys    || [];
@@ -1482,7 +1541,10 @@ function showGradeResult() {
   const redoNote = substandard
     ? '\n\n**Important:** This content goes on your resume. Your score suggests you should **redo the assignment** and strengthen it using the rubric feedback before building your resume.'
     : '';
-  addAIMsg(`**Your grade is in!** You scored **${g.overall}/100** — ${ltrLabel[ltr] || 'graded'}.\n\n${g.strengths}\n\n${g.summary}${suggestNote}${redoNote}\n\nDon't forget to **download your assignment** and submit the PDF in Canvas to receive credit.`);
+  const includedNote = hasWork
+    ? '\n\nYour submission includes your **Course of Study** and **work history** — both are saved for your resume.'
+    : '\n\nYour submission includes your **Course of Study** — saved for your resume.';
+  addAIMsg(`**Your grade is in!** You scored **${g.overall}/100** — ${ltrLabel[ltr] || 'graded'}.\n\n${g.strengths}\n\n${g.summary}${includedNote}${suggestNote}${redoNote}\n\nDon't forget to **download your assignment** and submit the PDF in Canvas to receive credit.`);
 }
 
 function renderBulletSuggestions() {
