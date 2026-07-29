@@ -2,7 +2,7 @@
 
 import { useEffect, useMemo, useRef, useState } from "react";
 import { CAMPUSES } from "../../../lib/campuses";
-import "./admin.css";
+import "../admin.css";
 
 const ADMIN_PASSWORD_STORAGE = "courseOfStudyAdminPassword";
 
