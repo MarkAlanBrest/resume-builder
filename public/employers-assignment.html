@@ -1040,7 +1040,8 @@ async function submitFullAssignment() {
   localStorage.setItem('empAssign_skillsPara', para);
   if (jobs.length) {
     localStorage.setItem('employerAssignment', JSON.stringify(jobs.map(j => ({
-      employer: j.employer, title: j.title, start: j.start, end: j.end,
+      employer: j.employer, title: j.title, city: j.city, state: j.state,
+      start: j.start, end: j.end,
       tasks: j.bullets.join('\n'), isCurrent: j.current,
       grade: workGrade?.grade || gradeResult.grade, score: workGrade?.overall || gradeResult.overall,
       savedAt: new Date().toISOString()
