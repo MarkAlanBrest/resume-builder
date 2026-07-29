@@ -5,13 +5,28 @@ import { CAMPUSES } from "../../../lib/campuses";
 
 const ADMIN_PASSWORD_STORAGE = "courseOfStudyAdminPassword";
 
-export default function CourseOfStudyAdminPage() {
+function linesFromList(items) {
+  return Array.isArray(items) ? items.join("\n") : "";
+}
+
+function listFromLines(text) {
+  return String(text || "")
+    .split("\n")
+    .map((line) => line.trim())
+    .filter(Boolean);
+}
+
+export default function ProgramAdminPage() {
   const [password, setPassword] = useState("");
   const [passwordInput, setPasswordInput] = useState("");
   const [authenticated, setAuthenticated] = useState(false);
-  const [store, setStore] = useState({});
+  const [activeSection, setActiveSection] = useState("courseOfStudy");
   const [selectedProgram, setSelectedProgram] = useState("");
-  const [draftText, setDraftText] = useState("");
+  const [courseStore, setCourseStore] = useState({});
+  const [defaultsStore, setDefaultsStore] = useState({});
+  const [draftCourseText, setDraftCourseText] = useState("");
+  const [draftSkillsText, setDraftSkillsText] = useState("");
+  const [draftCertsText, setDraftCertsText] = useState("");
   const [status, setStatus] = useState("");
   const [loading, setLoading] = useState(false);
   const [saving, setSaving] = useState(false);
@@ -33,22 +48,32 @@ export default function CourseOfStudyAdminPage() {
 
     let cancelled = false;
 
-    async function loadStore() {
+    async function loadStores() {
       setLoading(true);
       setStatus("");
       try {
-        const res = await fetch("/api/course-of-study");
-        if (!res.ok) throw new Error("Could not load Course of Study data");
-        const data = await res.json();
-        if (!cancelled) setStore(data);
+        const [courseRes, defaultsRes] = await Promise.all([
+          fetch("/api/course-of-study"),
+          fetch("/api/program-defaults"),
+        ]);
+        if (!courseRes.ok) throw new Error("Could not load Course of Study data");
+        if (!defaultsRes.ok) throw new Error("Could not load skills and certification defaults");
+        const [courseData, defaultsData] = await Promise.all([
+          courseRes.json(),
+          defaultsRes.json(),
+        ]);
+        if (!cancelled) {
+          setCourseStore(courseData);
+          setDefaultsStore(defaultsData);
+        }
       } catch (err) {
-        if (!cancelled) setStatus(err.message || "Failed to load data");
+        if (!cancelled) setStatus(err.message || "Failed to load admin data");
       } finally {
         if (!cancelled) setLoading(false);
       }
     }
 
-    loadStore();
+    loadStores();
     return () => {
       cancelled = true;
     };
@@ -56,11 +81,16 @@ export default function CourseOfStudyAdminPage() {
 
   useEffect(() => {
     if (!selectedProgram) {
-      setDraftText("");
+      setDraftCourseText("");
+      setDraftSkillsText("");
+      setDraftCertsText("");
       return;
     }
-    setDraftText(store[selectedProgram]?.text || "");
-  }, [selectedProgram, store]);
+
+    setDraftCourseText(courseStore[selectedProgram]?.text || "");
+    setDraftSkillsText(linesFromList(defaultsStore[selectedProgram]?.skills));
+    setDraftCertsText(linesFromList(defaultsStore[selectedProgram]?.certifications));
+  }, [selectedProgram, courseStore, defaultsStore]);
 
   async function signIn() {
     const trimmed = passwordInput.trim();
@@ -75,9 +105,7 @@ export default function CourseOfStudyAdminPage() {
         body: JSON.stringify({ password: trimmed }),
       });
       const data = await res.json().catch(() => ({}));
-      if (!res.ok) {
-        throw new Error(data.error || "Incorrect password");
-      }
+      if (!res.ok) throw new Error(data.error || "Incorrect password");
 
       sessionStorage.setItem(ADMIN_PASSWORD_STORAGE, trimmed);
       setPassword(trimmed);
@@ -97,17 +125,13 @@ export default function CourseOfStudyAdminPage() {
     setPasswordInput("");
     setAuthenticated(false);
     setSelectedProgram("");
-    setDraftText("");
-    setStore({});
+    setCourseStore({});
+    setDefaultsStore({});
     setStatus("Signed out.");
   }
 
-  async function saveProgram() {
-    if (!selectedProgram) return;
-    if (!password) {
-      setStatus("Sign in before saving.");
-      return;
-    }
+  async function saveCourseOfStudy() {
+    if (!selectedProgram || !password) return;
 
     setSaving(true);
     setStatus("");
@@ -117,17 +141,14 @@ export default function CourseOfStudyAdminPage() {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           program: selectedProgram,
-          text: draftText,
+          text: draftCourseText,
           password,
         }),
       });
-
       const data = await res.json().catch(() => ({}));
-      if (!res.ok) {
-        throw new Error(data.error || "Save failed");
-      }
+      if (!res.ok) throw new Error(data.error || "Save failed");
 
-      setStore((prev) => ({
+      setCourseStore((prev) => ({
         ...prev,
         [selectedProgram]: { text: data.text, updatedAt: data.updatedAt },
       }));
@@ -139,17 +160,74 @@ export default function CourseOfStudyAdminPage() {
     }
   }
 
-  const selectedMeta = selectedProgram ? store[selectedProgram] : null;
+  async function saveProgramDefaults() {
+    if (!selectedProgram || !password) return;
+
+    setSaving(true);
+    setStatus("");
+    try {
+      const res = await fetch("/api/program-defaults", {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          program: selectedProgram,
+          skills: listFromLines(draftSkillsText),
+          certifications: listFromLines(draftCertsText),
+          password,
+        }),
+      });
+      const data = await res.json().catch(() => ({}));
+      if (!res.ok) throw new Error(data.error || "Save failed");
+
+      setDefaultsStore((prev) => ({
+        ...prev,
+        [selectedProgram]: {
+          skills: data.skills,
+          certifications: data.certifications,
+          updatedAt: data.updatedAt,
+        },
+      }));
+      setStatus(`Saved skills and certifications for ${selectedProgram}.`);
+    } catch (err) {
+      setStatus(err.message || "Save failed");
+    } finally {
+      setSaving(false);
+    }
+  }
+
+  function programStatus(program) {
+    const hasCourse = !!courseStore[program]?.text?.trim();
+    const hasDefaults =
+      !!defaultsStore[program]?.skills?.length ||
+      !!defaultsStore[program]?.certifications?.length;
+
+    if (activeSection === "courseOfStudy") {
+      return hasCourse ? "Set" : "Empty";
+    }
+    return hasDefaults ? "Set" : "Empty";
+  }
+
+  function programStatusStyle(program) {
+    const label = programStatus(program);
+    return label === "Set" ? styles.badgeDone : styles.badgeEmpty;
+  }
+
+  const selectedCourseMeta = selectedProgram ? courseStore[selectedProgram] : null;
+  const selectedDefaultsMeta = selectedProgram ? defaultsStore[selectedProgram] : null;
+  const updatedAt =
+    activeSection === "courseOfStudy"
+      ? selectedCourseMeta?.updatedAt
+      : selectedDefaultsMeta?.updatedAt;
 
   if (!authenticated) {
     return (
       <div style={styles.page}>
         <div style={styles.shell}>
           <header style={styles.header}>
-            <h1 style={styles.title}>Course of Study Admin</h1>
+            <h1 style={styles.title}>Program Admin</h1>
             <p style={styles.subtitle}>
-              Sign in with the staff admin password to manage Course of Study
-              content for each program.
+              Sign in with the staff admin password to manage program content for
+              the resume builder.
             </p>
           </header>
 
@@ -189,11 +267,11 @@ export default function CourseOfStudyAdminPage() {
         <header style={styles.header}>
           <div style={styles.headerRow}>
             <div>
-              <h1 style={styles.title}>Course of Study Admin</h1>
+              <h1 style={styles.title}>Program Admin</h1>
               <p style={styles.subtitle}>
-                Manage the Course of Study paragraph for each program. Students
-                no longer edit this in the resume builder — it is pulled
-                automatically when they download their resume.
+                Manage Course of Study paragraphs and the default skills and
+                certifications that are recommended and pre-filled for each
+                program in the resume builder.
               </p>
             </div>
             <button type="button" onClick={signOut} style={styles.secondaryBtn}>
@@ -201,6 +279,29 @@ export default function CourseOfStudyAdminPage() {
             </button>
           </div>
         </header>
+
+        <div style={styles.tabRow}>
+          <button
+            type="button"
+            onClick={() => setActiveSection("courseOfStudy")}
+            style={{
+              ...styles.tabBtn,
+              ...(activeSection === "courseOfStudy" ? styles.tabBtnActive : {}),
+            }}
+          >
+            Course of Study
+          </button>
+          <button
+            type="button"
+            onClick={() => setActiveSection("skillsCerts")}
+            style={{
+              ...styles.tabBtn,
+              ...(activeSection === "skillsCerts" ? styles.tabBtnActive : {}),
+            }}
+          >
+            Skills & Certifications
+          </button>
+        </div>
 
         <div style={styles.layout}>
           <aside style={styles.sidebar}>
@@ -212,7 +313,6 @@ export default function CourseOfStudyAdminPage() {
                 <div key={campus} style={styles.campusBlock}>
                   <div style={styles.campusLabel}>{campus}</div>
                   {programs.map((program) => {
-                    const hasText = !!store[program]?.text?.trim();
                     const active = selectedProgram === program;
                     return (
                       <button
@@ -225,8 +325,8 @@ export default function CourseOfStudyAdminPage() {
                         }}
                       >
                         <span>{program}</span>
-                        <span style={hasText ? styles.badgeDone : styles.badgeEmpty}>
-                          {hasText ? "Set" : "Empty"}
+                        <span style={programStatusStyle(program)}>
+                          {programStatus(program)}
                         </span>
                       </button>
                     );
@@ -238,23 +338,21 @@ export default function CourseOfStudyAdminPage() {
 
           <main style={styles.editorCard}>
             {!selectedProgram ? (
-              <p style={styles.helpText}>Select a program to edit its Course of Study.</p>
-            ) : (
+              <p style={styles.helpText}>Select a program to edit its settings.</p>
+            ) : activeSection === "courseOfStudy" ? (
               <>
                 <div style={styles.editorHeader}>
                   <div>
                     <h2 style={styles.cardTitle}>{selectedProgram}</h2>
-                    {selectedMeta?.updatedAt ? (
-                      <p style={styles.helpText}>
-                        Last updated {new Date(selectedMeta.updatedAt).toLocaleString()}
-                      </p>
-                    ) : (
-                      <p style={styles.helpText}>No content saved yet.</p>
-                    )}
+                    <p style={styles.helpText}>
+                      {updatedAt
+                        ? `Last updated ${new Date(updatedAt).toLocaleString()}`
+                        : "No Course of Study saved yet."}
+                    </p>
                   </div>
                   <button
                     type="button"
-                    onClick={saveProgram}
+                    onClick={saveCourseOfStudy}
                     disabled={saving}
                     style={styles.primaryBtn}
                   >
@@ -262,15 +360,56 @@ export default function CourseOfStudyAdminPage() {
                   </button>
                 </div>
                 <textarea
-                  value={draftText}
-                  onChange={(e) => setDraftText(e.target.value)}
+                  value={draftCourseText}
+                  onChange={(e) => setDraftCourseText(e.target.value)}
                   rows={14}
-                  placeholder="Write the Course of Study paragraph that should appear on resumes for this program…"
+                  placeholder="Write the Course of Study paragraph for this program…"
                   style={styles.textarea}
                 />
+              </>
+            ) : (
+              <>
+                <div style={styles.editorHeader}>
+                  <div>
+                    <h2 style={styles.cardTitle}>{selectedProgram}</h2>
+                    <p style={styles.helpText}>
+                      {updatedAt
+                        ? `Last updated ${new Date(updatedAt).toLocaleString()}`
+                        : "No defaults saved yet."}
+                    </p>
+                  </div>
+                  <button
+                    type="button"
+                    onClick={saveProgramDefaults}
+                    disabled={saving}
+                    style={styles.primaryBtn}
+                  >
+                    {saving ? "Saving…" : "Save"}
+                  </button>
+                </div>
+                <label style={styles.fieldLabel}>Default skills</label>
                 <p style={styles.helpText}>
-                  This text is added to every resume for students in this program.
+                  One skill per line. These are pre-filled and shown as suggestions
+                  in the resume builder.
                 </p>
+                <textarea
+                  value={draftSkillsText}
+                  onChange={(e) => setDraftSkillsText(e.target.value)}
+                  rows={8}
+                  placeholder={"Diagnostics\nBrake service\nOil changes"}
+                  style={{ ...styles.textarea, minHeight: "180px" }}
+                />
+                <label style={{ ...styles.fieldLabel, marginTop: "18px" }}>
+                  Default certifications
+                </label>
+                <p style={styles.helpText}>One certification per line.</p>
+                <textarea
+                  value={draftCertsText}
+                  onChange={(e) => setDraftCertsText(e.target.value)}
+                  rows={8}
+                  placeholder={"OSHA 10\nEPA Section 609\nASE Student Certification"}
+                  style={{ ...styles.textarea, minHeight: "180px" }}
+                />
               </>
             )}
             {status ? <p style={styles.status}>{status}</p> : null}
@@ -299,6 +438,26 @@ const styles = {
   },
   title: { margin: 0, fontSize: "28px" },
   subtitle: { margin: "8px 0 0", color: "#475569", lineHeight: 1.6 },
+  tabRow: {
+    display: "flex",
+    gap: "10px",
+    marginBottom: "20px",
+    flexWrap: "wrap",
+  },
+  tabBtn: {
+    background: "#fff",
+    border: "1px solid #cbd5e1",
+    borderRadius: "999px",
+    padding: "10px 18px",
+    fontWeight: 600,
+    cursor: "pointer",
+    fontSize: "14px",
+  },
+  tabBtnActive: {
+    background: "#eff6ff",
+    borderColor: "#93c5fd",
+    color: "#1d4ed8",
+  },
   card: {
     background: "#fff",
     border: "1px solid #e2e8f0",
@@ -328,6 +487,12 @@ const styles = {
     minHeight: "420px",
   },
   cardTitle: { margin: "0 0 8px", fontSize: "18px" },
+  fieldLabel: {
+    display: "block",
+    fontSize: "14px",
+    fontWeight: 700,
+    marginBottom: "4px",
+  },
   helpText: { margin: "0 0 12px", color: "#64748b", fontSize: "14px", lineHeight: 1.5 },
   row: { display: "flex", gap: "10px", flexWrap: "wrap" },
   input: {

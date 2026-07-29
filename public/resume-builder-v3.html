@@ -435,16 +435,6 @@ const MILITARY_DUTY_EXAMPLES = [
   ]},
 ];
 
-const SKILL_CERT_TIP_EXAMPLES = [
-  {match:/automotive|motorcycle|power equipment/i,skills:['Diagnostics','Brake service','Oil changes','Tire rotation','Electrical testing','Shop safety'],certs:['ASE Student Certification','EPA Section 609','OSHA 10','Manufacturer training']},
-  {match:/hvac|refrigeration|climate|ac technology/i,skills:['Refrigerant handling','System troubleshooting','Electrical testing','Brazing','Preventive maintenance','Customer service'],certs:['EPA Section 608','OSHA 10','NATE Ready-to-Work','R-410A Safety']},
-  {match:/welding/i,skills:['MIG welding','TIG welding','Stick welding','Blueprint reading','Metal fabrication','Weld inspection'],certs:['AWS Certification','OSHA 10','Forklift Certification','First Aid/CPR']},
-  {match:/electrical|electro-mechanical|industrial maintenance/i,skills:['Electrical troubleshooting','Motor controls','PLC basics','Preventive maintenance','Blueprint/schematic reading','Lockout/tagout'],certs:['OSHA 10','NFPA 70E Awareness','First Aid/CPR','Forklift Certification']},
-  {match:/building|construction/i,skills:['Blueprint reading','Power tools','Framing','Drywall','Measuring and layout','Job-site safety'],certs:['OSHA 10','Forklift Certification','First Aid/CPR','Scissor Lift/Aerial Lift']},
-  {match:/truck|cdl|diesel|heavy equipment/i,skills:['Pre-trip inspections','Diesel maintenance','Hydraulics','Preventive maintenance','DOT safety','Equipment operation'],certs:['CDL Permit or License','OSHA 10','Forklift Certification','DOT Medical Card']},
-  {match:/machinist|cnc|manufacturing/i,skills:['CNC operation','Blueprint reading','Precision measurement','Calipers and micrometers','Machine setup','Quality control'],certs:['NIMS Certification','OSHA 10','Forklift Certification','Lean Manufacturing']},
-];
-
 // ── Career & Duty Suggestions ────────────────────
 const CAREER_SUGGESTIONS = [
   {match:/automotive|motorcycle|power equipment/i,workSearch:['I want to work as an automotive technician at a dealership performing diagnostics, repairs, and maintenance.','I am looking for an entry-level position at an auto shop doing oil changes, brake service, and vehicle inspections.','I want a job at a dealership or independent shop where I can grow my diagnostic and repair skills.']},
@@ -505,8 +495,15 @@ function clearProgress(){
 }
 
 
-// ── Course of Study (admin-managed) ───────────────
+// ── Admin-managed program content ───────────────
 let courseOfStudyCatalog = null;
+let programDefaultsCatalog = null;
+let currentProgramDefaults = null;
+
+const FALLBACK_PROGRAM_DEFAULTS = {
+  skills: ['Safety procedures','Hand and power tools','Customer service','Teamwork','Problem solving','Time management'],
+  certifications: ['OSHA 10','First Aid/CPR','Forklift Certification']
+};
 
 async function loadCourseOfStudyCatalog() {
   if (courseOfStudyCatalog) return courseOfStudyCatalog;
@@ -527,6 +524,37 @@ async function resolveCourseOfStudyForResume() {
     console.warn('Course of Study lookup failed', e);
   }
   return `Completed hands-on training in ${program || 'trade program'} at ${school}, building practical skills, safety awareness, and job-ready competencies for entry-level work in the field.`;
+}
+
+async function loadProgramDefaultsCatalog() {
+  if (programDefaultsCatalog) return programDefaultsCatalog;
+  const res = await fetch('/api/program-defaults');
+  if (!res.ok) throw new Error('Could not load program defaults');
+  programDefaultsCatalog = await res.json();
+  return programDefaultsCatalog;
+}
+
+async function resolveProgramDefaults(program) {
+  try {
+    const catalog = await loadProgramDefaultsCatalog();
+    const entry = catalog?.[program];
+    if (entry?.skills?.length || entry?.certifications?.length) {
+      return {
+        skills: Array.isArray(entry.skills) ? entry.skills : [],
+        certifications: Array.isArray(entry.certifications) ? entry.certifications : [],
+      };
+    }
+  } catch(e) {
+    console.warn('Program defaults lookup failed', e);
+  }
+  return { ...FALLBACK_PROGRAM_DEFAULTS, skills: [...FALLBACK_PROGRAM_DEFAULTS.skills], certifications: [...FALLBACK_PROGRAM_DEFAULTS.certifications] };
+}
+
+async function showSkillsSection() {
+  const program = resumeData.personal.program || '';
+  currentProgramDefaults = await resolveProgramDefaults(program);
+  showCenter('skills');
+  sendTip('skills');
 }
 
 // ── App Start ─────────────────────────────────────
@@ -609,7 +637,7 @@ function showSection(key) {
   else if (key === 'education') { showCenter('education'); sendTip('education'); }
   else if (key === 'volunteer') { showCenter('volunteer'); sendTip('volunteer'); }
   else if (key === 'certifications') { showSection('skills'); }
-  else if (key === 'skills') { showCenter('skills'); sendTip('skills'); }
+  else if (key === 'skills') { showSkillsSection(); }
   else if (key === 'template') { showCenter('template'); sendTip('template'); }
 }
 
@@ -2314,8 +2342,18 @@ function renderVolunteerDone() {
 
 // ── Skills & References ───────────────────────────
 function renderSkillsForm() {
-  const existing = Array.isArray(resumeData.skills) && resumeData.skills.length ? resumeData.skills.join(', ') : '';
-  const existingCerts = resumeData.certifications.length ? resumeData.certifications.map(c=>[c.name,c.org,c.year].filter(Boolean).join(', ')).join('\n') : '';
+  const hasSavedSkills = Array.isArray(resumeData.skills) && resumeData.skills.length;
+  const hasSavedCerts = resumeData.certifications.length;
+  const defaultSkills = (!hasSavedSkills && currentProgramDefaults?.skills?.length)
+    ? currentProgramDefaults.skills.join(', ')
+    : '';
+  const defaultCerts = (!hasSavedCerts && currentProgramDefaults?.certifications?.length)
+    ? currentProgramDefaults.certifications.join('\n')
+    : '';
+  const existing = hasSavedSkills ? resumeData.skills.join(', ') : defaultSkills;
+  const existingCerts = hasSavedCerts
+    ? resumeData.certifications.map(c=>[c.name,c.org,c.year].filter(Boolean).join(', ')).join('\n')
+    : defaultCerts;
   return `<div class="section-hdr"><div class="section-hdr-icon">⚡</div><div><div class="section-hdr-title">Skills &amp; Certifications</div><div class="section-hdr-sub">List both sides — I'll organize them</div></div></div>
   <div class="two-panel-grid">
     <div class="form-card">
@@ -2808,12 +2846,9 @@ function sendTip(key){
 
   if(key==='skills'){
     const program=resumeData.personal.program||'';
-    const found=SKILL_CERT_TIP_EXAMPLES.find(item=>item.match.test(program))||{
-      skills:['Safety procedures','Hand and power tools','Customer service','Teamwork','Problem solving','Time management'],
-      certs:['OSHA 10','First Aid/CPR','Forklift Certification']
-    };
+    const found=currentProgramDefaults || FALLBACK_PROGRAM_DEFAULTS;
     setTimeout(()=>addSuggestionCard(`Suggested skills for ${program||'your program'} — click to add:`,found.skills,'skillsDump','append'),600);
-    setTimeout(()=>addSuggestionCard('Suggested certifications — click to add:',found.certs,'certsDump','append'),900);
+    setTimeout(()=>addSuggestionCard('Suggested certifications — click to add:',found.certifications,'certsDump','append'),900);
   }
 }
 
@@ -2826,11 +2861,8 @@ function buildWorkTip() {
 
 function buildSkillsCertsTip() {
   const program = resumeData.personal.program || '';
-  const found = SKILL_CERT_TIP_EXAMPLES.find(item=>item.match.test(program)) || {
-    skills:['Safety procedures','Hand and power tools','Customer service','Teamwork','Problem solving','Time management'],
-    certs:['OSHA 10','First Aid/CPR','Forklift Certification']
-  };
-  return `${TIPS.skills} Recommended examples for ${program || 'your program'}:\n\nSkills:\n${found.skills.map(s=>`• ${s}`).join('\n')}\n\nCertifications:\n${found.certs.map(c=>`• ${c}`).join('\n')}`;
+  const found = currentProgramDefaults || FALLBACK_PROGRAM_DEFAULTS;
+  return `${TIPS.skills} Recommended examples for ${program || 'your program'}:\n\nSkills:\n${found.skills.map(s=>`• ${s}`).join('\n')}\n\nCertifications:\n${found.certifications.map(c=>`• ${c}`).join('\n')}`;
 }
 
 const _suggPool=[];
