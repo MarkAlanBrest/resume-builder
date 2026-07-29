@@ -25,20 +25,22 @@
   },
   "Building Construction Technology": {
     "skills": [
-      "Blueprint reading",
-      "Power tools",
+      "Construction Safety",
       "Framing",
-      "Drywall",
-      "Measuring and layout",
-      "Job-site safety"
+      "Drywall Installation",
+      "Blueprint Reading",
+      "Measuring and Layout",
+      "Hand Tool Operation",
+      "Power Tool Operation",
+      "Jobsite Safety",
+      "Basic Plumbing",
+      "Basic Electrical",
+      "Interior Finish Work",
+      "Material Cutting and Assembly",
+      "Building Trade Practices"
     ],
-    "certifications": [
-      "OSHA 10",
-      "Forklift Certification",
-      "First Aid/CPR",
-      "Scissor Lift/Aerial Lift"
-    ],
-    "updatedAt": null
+    "certifications": [],
+    "updatedAt": "2026-07-29T19:29:09.473Z"
   },
   "Building Technology": {
     "skills": [
@@ -90,54 +92,71 @@
   },
   "Commercial Truck Driving CDL": {
     "skills": [
-      "Pre-trip inspections",
-      "Diesel maintenance",
-      "Hydraulics",
-      "Preventive maintenance",
-      "DOT safety",
-      "Equipment operation"
+      "Pre-Trip Inspections",
+      "Post-Trip Inspections",
+      "Backing Maneuvers",
+      "Straight-Line Backing",
+      "Offset Backing",
+      "Alley Dock Backing",
+      "Road Driving",
+      "Trip Planning",
+      "Logbook Management",
+      "DOT Compliance",
+      "FMCSA Compliance",
+      "Defensive Driving",
+      "Coupling and Uncoupling",
+      "Tractor-Trailer Operation",
+      "Vehicle Safety Inspections"
     ],
     "certifications": [
-      "CDL Permit or License",
-      "OSHA 10",
-      "Forklift Certification",
+      "Class A CDL License",
       "DOT Medical Card"
     ],
-    "updatedAt": null
+    "updatedAt": "2026-07-29T19:29:09.473Z"
   },
   "Commercial Truck Driving with CDL License": {
     "skills": [
-      "Pre-trip inspections",
-      "Diesel maintenance",
-      "Hydraulics",
-      "Preventive maintenance",
-      "DOT safety",
-      "Equipment operation"
+      "Vehicle Safety Inspections",
+      "Pre-Trip Inspections",
+      "Post-Trip Inspections",
+      "Tractor-Trailer Maneuvering",
+      "Coupling and Uncoupling",
+      "Trip Planning",
+      "Logbook Awareness",
+      "Defensive Driving",
+      "DOT Compliance",
+      "FMCSA Compliance",
+      "Road Safety",
+      "Backing Maneuvers",
+      "Commercial Vehicle Operation"
     ],
     "certifications": [
-      "CDL Permit or License",
-      "OSHA 10",
-      "Forklift Certification",
+      "Class A CDL License",
       "DOT Medical Card"
     ],
-    "updatedAt": null
+    "updatedAt": "2026-07-29T19:29:09.473Z"
   },
   "Diesel Technology": {
     "skills": [
-      "Pre-trip inspections",
-      "Diesel maintenance",
-      "Hydraulics",
-      "Preventive maintenance",
-      "DOT safety",
-      "Equipment operation"
+      "Diesel Engine Diagnostics",
+      "Diesel Engine Maintenance",
+      "Diesel Engine Repair",
+      "Electrical Troubleshooting",
+      "Brake Service",
+      "Suspension Service",
+      "Preventive Maintenance",
+      "Fuel System Service",
+      "Air System Service",
+      "Diagnostic Scan Tools",
+      "Reading Service Manuals",
+      "Fluid and Filter Service",
+      "Shop Safety",
+      "Service Documentation"
     ],
     "certifications": [
-      "CDL Permit or License",
-      "OSHA 10",
-      "Forklift Certification",
-      "DOT Medical Card"
+      "EPA Section 609 Certification"
     ],
-    "updatedAt": null
+    "updatedAt": "2026-07-29T19:29:09.473Z"
   },
   "Diesel and Heavy Equipment Repair Technology": {
     "skills": [
@@ -258,54 +277,66 @@
   },
   "HVAC Technology": {
     "skills": [
-      "Refrigerant handling",
-      "System troubleshooting",
-      "Electrical testing",
+      "HVAC Installation",
+      "HVAC Service",
+      "Refrigeration Service",
+      "Refrigerant Recovery",
+      "Refrigerant Charging",
+      "Electrical Troubleshooting",
       "Brazing",
-      "Preventive maintenance",
-      "Customer service"
+      "Piping",
+      "Reading HVAC Schematics",
+      "Airflow Testing",
+      "Preventive Maintenance",
+      "Heating Systems",
+      "Air Conditioning Systems",
+      "Safety and Code Compliance"
     ],
     "certifications": [
-      "EPA Section 608",
-      "OSHA 10",
-      "NATE Ready-to-Work",
-      "R-410A Safety"
+      "EPA Section 608 Universal Certification",
+      "R-410A Safety Certification"
     ],
-    "updatedAt": null
+    "updatedAt": "2026-07-29T19:29:09.473Z"
   },
   "Heavy Equipment Operations with CDL": {
     "skills": [
-      "Pre-trip inspections",
-      "Diesel maintenance",
-      "Hydraulics",
-      "Preventive maintenance",
-      "DOT safety",
-      "Equipment operation"
+      "Heavy Equipment Operation",
+      "Bulldozer Operation",
+      "Excavator Operation",
+      "Loader Operation",
+      "Pre-Operation Inspections",
+      "CDL Driving Skills",
+      "Equipment Safety Procedures",
+      "Basic Maintenance Awareness",
+      "Jobsite Communication",
+      "Jobsite Safety",
+      "Equipment Transportation",
+      "Daily Equipment Inspections"
     ],
     "certifications": [
-      "CDL Permit or License",
-      "OSHA 10",
-      "Forklift Certification",
+      "Class A CDL License",
       "DOT Medical Card"
     ],
-    "updatedAt": null
+    "updatedAt": "2026-07-29T19:29:09.473Z"
   },
   "Industrial Electro-Mechanical Technology": {
     "skills": [
-      "Electrical troubleshooting",
-      "Motor controls",
-      "PLC basics",
-      "Preventive maintenance",
-      "Blueprint/schematic reading",
-      "Lockout/tagout"
+      "Electrical Troubleshooting",
+      "Mechanical Repair",
+      "PLC Fundamentals",
+      "Automation Systems",
+      "Motor Controls",
+      "Motors and Drives",
+      "Preventive Maintenance",
+      "Blueprint Reading",
+      "Schematic Reading",
+      "Industrial Equipment Maintenance",
+      "Integrated Electrical-Mechanical Systems",
+      "Lockout/Tagout",
+      "Test Equipment Use"
     ],
-    "certifications": [
-      "OSHA 10",
-      "NFPA 70E Awareness",
-      "First Aid/CPR",
-      "Forklift Certification"
-    ],
-    "updatedAt": null
+    "certifications": [],
+    "updatedAt": "2026-07-29T19:29:09.473Z"
   },
   "Machinist and CNC Manufacturing": {
     "skills": [
