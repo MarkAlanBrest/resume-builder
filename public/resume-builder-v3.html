@@ -368,9 +368,9 @@ const PRESET_COLORS = [
 
 const ICON_SETS = {
   none:   {label:'None',    preview:'EXPERIENCE',    font:'Calibri',         icons:{}},
-  emoji:  {label:'Emoji',   preview:'💼 EXPERIENCE', font:'Segoe UI Emoji',  icons:{Objective:'🎯 ',Experience:'💼 ','Military Service':'🎖️ ',Education:'🎓 ',Volunteer:'🤝 ',Certifications:'📜 ',Skills:'⚡ ','Skills & Certifications':'⚡ ','Skills Learned':'⚡ '}},
-  shapes: {label:'Shapes',  preview:'◆ EXPERIENCE',  font:'Segoe UI Symbol', icons:{Objective:'◆ ',Experience:'◆ ','Military Service':'◆ ',Education:'◆ ',Volunteer:'◆ ',Certifications:'◆ ',Skills:'◆ ','Skills & Certifications':'◆ ','Skills Learned':'◆ '}},
-  arrows: {label:'Arrows',  preview:'▸ EXPERIENCE',  font:'Segoe UI Symbol', icons:{Objective:'▸ ',Experience:'▸ ','Military Service':'▸ ',Education:'▸ ',Volunteer:'▸ ',Certifications:'▸ ',Skills:'▸ ','Skills & Certifications':'▸ ','Skills Learned':'▸ '}},
+  emoji:  {label:'Emoji',   preview:'💼 EXPERIENCE', font:'Segoe UI Emoji',  icons:{Objective:'🎯 ',Experience:'💼 ','Military Service':'🎖️ ',Education:'🎓 ',Volunteer:'🤝 ',Certifications:'📜 ',Skills:'⚡ ','Skills & Certifications':'⚡ ','Course of Study':'📚 '}},
+  shapes: {label:'Shapes',  preview:'◆ EXPERIENCE',  font:'Segoe UI Symbol', icons:{Objective:'◆ ',Experience:'◆ ','Military Service':'◆ ',Education:'◆ ',Volunteer:'◆ ',Certifications:'◆ ',Skills:'◆ ','Skills & Certifications':'◆ ','Course of Study':'◆ '}},
+  arrows: {label:'Arrows',  preview:'▸ EXPERIENCE',  font:'Segoe UI Symbol', icons:{Objective:'▸ ',Experience:'▸ ','Military Service':'▸ ',Education:'▸ ',Volunteer:'▸ ',Certifications:'▸ ',Skills:'▸ ','Skills & Certifications':'▸ ','Course of Study':'▸ '}},
 };
 
 // ── Sections ─────────────────────────────────────
@@ -379,6 +379,7 @@ const SECTIONS = [
   {key:'career',        label:'Career Profile',  icon:'🎯'},
   {key:'work',          label:'Work Experience', icon:'💼'},
   {key:'military',      label:'Military',        icon:'🎖️'},
+  {key:'courseOfStudy', label:'Course of Study', icon:'📚'},
   {key:'education',     label:'Education',       icon:'🎓'},
   {key:'volunteer',     label:'Volunteer',       icon:'🤝'},
   {key:'skills',        label:'Skills & Certs',  icon:'⚡'},
@@ -390,11 +391,12 @@ const TIPS = {
   personal:`Fill in your contact information carefully — this is how employers reach you. Make sure your email looks professional and your phone number is correct. Select your campus and program from the dropdowns.`,
   career:`Be specific about the type of job and employer you're targeting. Examples: "I want to work as an automotive technician at a dealership doing diagnostics and hands-on repairs." "I am looking for an entry-level HVAC position where I can install, maintain, and troubleshoot residential systems." "I want a welding job in manufacturing or construction where I can use MIG/TIG skills and read blueprints." Pick up to 3 qualities that describe you as a worker.`,
   work:`When describing your duties, just write naturally — don't worry about formatting. Mention specific tools, equipment, tasks, and anything you're proud of. I'll convert it into professional bullet points for you.`,
+  courseOfStudy:`Write a paragraph about the skills, tools, and training you gained in your program. This becomes the **Course of Study** section on your resume — it appears right above Education. If you completed the Work Experience Assignment, your paragraph is already loaded. I'll polish it to sound professional when you save.`,
   education:`Your trade program has been pre-filled below. Confirm the details and add your graduation year. Then add your high school diploma or any other education you have.`,
   skills:`Write out every skill and certification you have — tools, equipment, software, techniques, licenses, OSHA/EPA/CDL cards, manufacturer training, anything relevant. I'll clean it up, remove duplicates, and organize it professionally.`,
   military:`Add your military service below — active duty, reserves, or National Guard. In the Duties box, describe your role naturally: what you did every day, equipment you operated or maintained, people you supervised or trained, and anything you're proud of. I'll turn it into professional resume bullets that highlight leadership, reliability, technical skills, and teamwork — all things trade employers value.`,
   volunteer:`Add any volunteer work, community service, church activities, or unpaid experience. Even informal roles count — helping at events, working with youth groups, assisting neighbors. Describe what you did and I'll write professional bullets for it.`,
-  template:`Pick the style and color that matches the field you're entering. Classic and Executive are safe for any employer. Modern works well for technical roles. Bold makes a strong first impression.`,
+  template:`Pick the style and color that matches the field you're entering. Classic and Executive are safe for any employer. Modern works well for technical roles. Bold makes a strong first impression. Your **Course of Study** section appears on every resume, right above Education.`,
 };
 
 const WORK_TIP_EXAMPLES = [
@@ -473,6 +475,7 @@ let isAIThinking = false;
 
 const resumeData = {
   personal:{},careerContext:{},workExperience:[],militaryService:[],education:[],volunteer:[],certifications:[],skills:[],references:'Available upon request',
+  courseOfStudy:'',
   _assignmentImported: false
 };
 const sectionStatus = {};
@@ -534,15 +537,38 @@ function loadAssignmentJobs() {
   } catch(e) { return []; }
 }
 
+function loadAssignmentCourseOfStudy() {
+  try {
+    const saved = localStorage.getItem('empAssign_skillsPara');
+    if (!saved || !saved.trim()) return '';
+    return saved.trim();
+  } catch(e) { return ''; }
+}
+
 function importAssignmentIfNeeded() {
-  if (resumeData._assignmentImported) return 0;
+  if (resumeData._assignmentImported) return { jobs: 0, hasCourseOfStudy: !!getCourseOfStudyText() };
+
+  let jobCount = 0;
   const jobs = loadAssignmentJobs();
-  if (!jobs.length) return 0;
-  resumeData._assignmentImported = true;
-  resumeData.workExperience = [...resumeData.workExperience, ...jobs];
-  setStatus('work', 'done');
+  if (jobs.length) {
+    resumeData.workExperience = [...resumeData.workExperience, ...jobs];
+    jobCount = jobs.length;
+    setStatus('work', 'done');
+  }
+
+  const para = loadAssignmentCourseOfStudy();
+  if (para) {
+    resumeData.courseOfStudy = para;
+    resumeData._courseOfStudyFromAssignment = true;
+  }
+
+  if (jobCount || para) resumeData._assignmentImported = true;
   saveProgress();
-  return jobs.length;
+  return { jobs: jobCount, hasCourseOfStudy: !!para };
+}
+
+function getCourseOfStudyText() {
+  return (resumeData.courseOfStudy || localStorage.getItem('empAssign_skillsPara') || '').trim();
 }
 
 async function polishImportedJobs() {
@@ -572,8 +598,17 @@ async function polishImportedJobs() {
 function startApp() {
   renderLeftNav();
   showCenter('welcome');
-  const hasAssignment = !!localStorage.getItem('employerAssignment');
-  addAIMsg(`Welcome! I'm your AI resume assistant. I'll guide you through each section and answer any questions you have.${hasAssignment ? '\n\n**Your Work Experience Assignment was found** — your jobs will be automatically loaded into the Work Experience section.' : ' Click **Start Fresh** to begin, or upload an existing resume to get started faster.'}`);
+  const hasWorkAssignment = !!localStorage.getItem('employerAssignment');
+  const hasCourseOfStudy = !!localStorage.getItem('empAssign_skillsPara');
+  let assignNote = '';
+  if (hasWorkAssignment && hasCourseOfStudy) {
+    assignNote = '\n\n**Your Work Experience Assignment was found** — your jobs and Course of Study paragraph will both be automatically loaded into your resume.';
+  } else if (hasWorkAssignment) {
+    assignNote = '\n\n**Your Work Experience Assignment was found** — your jobs will be automatically loaded into the Work Experience section.';
+  } else if (hasCourseOfStudy) {
+    assignNote = '\n\n**Your Work Experience Assignment was found** — your Course of Study paragraph will be automatically loaded into your resume.';
+  }
+  addAIMsg(`Welcome! I'm your AI resume assistant. I'll guide you through each section and answer any questions you have.${assignNote || ' Click **Start Fresh** to begin, or upload an existing resume to get started faster.'}\n\nEvery resume includes a **Course of Study** section — AI will polish your assignment paragraph or write one from your program details.`);
 }
 
 // ── Left Nav ──────────────────────────────────────
@@ -617,6 +652,8 @@ function showCenter(view, data) {
     military:          renderMilitaryForm,
     militaryApproval:  renderMilitaryApproval,
     militaryDone:      renderMilitaryDone,
+    courseOfStudy:     renderCourseOfStudyForm,
+    courseOfStudyDone: renderCourseOfStudyDone,
     education:         renderEduForm,
     eduApproval:    renderEduApproval,
     eduDone:        renderEduDone,
@@ -650,6 +687,7 @@ function showSection(key) {
     if (unpolished?.length) { polishImportedJobs(); } else { showCenter('work'); sendTip('work'); }
   }
   else if (key === 'military') { showCenter('military'); sendTip('military'); }
+  else if (key === 'courseOfStudy') { importAssignmentIfNeeded(); showCenter('courseOfStudy'); sendTip('courseOfStudy'); }
   else if (key === 'education') { showCenter('education'); sendTip('education'); }
   else if (key === 'volunteer') { showCenter('volunteer'); sendTip('volunteer'); }
   else if (key === 'certifications') { showSection('skills'); }
@@ -663,9 +701,13 @@ function renderWelcome() {
   const hasSaved       = !!(saved && (saved.personal?.firstName || saved.workExperience?.length));
   const savedName      = saved?.personal?.firstName ? ` for ${escHtml(saved.personal.firstName)}` : '';
   const assignJobs     = loadAssignmentJobs();
-  const assignBanner   = assignJobs.length
+  const assignCourse   = loadAssignmentCourseOfStudy();
+  const assignParts    = [];
+  if (assignJobs.length) assignParts.push(`${assignJobs.length} job${assignJobs.length>1?'s':''} for Work Experience`);
+  if (assignCourse) assignParts.push('Course of Study paragraph');
+  const assignBanner   = assignParts.length
     ? `<div class="prefill-banner" style="margin:0 0 16px;text-align:left;background:#f0fdf4;border-color:#bbf7d0;color:#15803d">
-        💼 <strong>${assignJobs.length} job${assignJobs.length>1?'s':''} from your Work Experience Assignment</strong> will be automatically added to your resume.
+        💼 <strong>From your Work Experience Assignment:</strong> ${assignParts.join(' and ')} will be automatically added to your resume.
       </div>`
     : '';
   return `<div class="welcome-card">
@@ -694,11 +736,16 @@ function startFresh() {
   resumeData.volunteer=[];
   resumeData.certifications=[];
   resumeData.skills=[];
+  resumeData.courseOfStudy='';
   resumeData.references='Available upon request';
   resumeData._assignmentImported=false;
+  resumeData._courseOfStudyFromAssignment=false;
   SECTIONS.forEach(s=>sectionStatus[s.key]='pending');
   const imported = importAssignmentIfNeeded();
-  if (imported) addAIMsg(`✅ **${imported} job${imported>1?'s':''} imported** from your Work Experience Assignment and added to the Work Experience section. You can review and edit them there.`);
+  const importNotes = [];
+  if (imported.jobs) importNotes.push(`**${imported.jobs} job${imported.jobs>1?'s':''}** imported into Work Experience`);
+  if (imported.hasCourseOfStudy) importNotes.push('your **Course of Study** paragraph imported from your assignment');
+  if (importNotes.length) addAIMsg(`✅ ${importNotes.join(' and ')}. You can review and edit them in the builder.`);
   renderLeftNav();
   showSection('personal');
 }
@@ -709,8 +756,9 @@ function continueProgress() {
   Object.assign(resumeData, saved);
   if (saved.personal?.firstName)                            setStatus('personal','done');
   if (saved.careerContext?.objective)                       setStatus('career','done');
-  if (saved.workExperience?.length || saved.militaryService?.length || saved.education?.length) setStatus('work','done');
-  if (saved.militaryService?.length || saved.education?.length) setStatus('military','done');
+  if (saved.workExperience?.length || saved.militaryService?.length || saved.courseOfStudy || saved.education?.length) setStatus('work','done');
+  if (saved.militaryService?.length || saved.courseOfStudy || saved.education?.length) setStatus('military','done');
+  if (saved.courseOfStudy?.trim())                          setStatus('courseOfStudy','done');
   if (saved.education?.length)                             setStatus('education','done');
   if (saved.volunteer?.length)                              setStatus('volunteer','done');
   if (saved.skills?.length || saved.certifications?.length) {
@@ -719,11 +767,17 @@ function continueProgress() {
   }
   const imported = importAssignmentIfNeeded();
   const name = saved.personal?.firstName ? `, ${saved.personal.firstName}` : '';
-  addAIMsg(`Welcome back${name}! I've restored your progress.${imported ? ` Also loaded **${imported} job${imported>1?'s':''}** from your Work Experience Assignment.` : ''} Use the menu on the left to pick up where you left off.`);
+  const importNotes = [];
+  if (imported.jobs) importNotes.push(`**${imported.jobs} job${imported.jobs>1?'s':''}** from your Work Experience Assignment`);
+  if (imported.hasCourseOfStudy) importNotes.push('your **Course of Study** paragraph from your assignment');
+  const importMsg = importNotes.length ? ` Also loaded ${importNotes.join(' and ')}.` : '';
+  addAIMsg(`Welcome back${name}! I've restored your progress.${importMsg} Use the menu on the left to pick up where you left off.`);
   if      (!saved.personal?.firstName)          showSection('personal');
   else if (!saved.careerContext?.objective)      showSection('career');
-  else if (!saved.workExperience?.length && !saved.militaryService?.length && !saved.education?.length) showSection('work');
-  else if (!saved.education?.length)            showSection('military');
+  else if (!saved.workExperience?.length && !saved.militaryService?.length && !saved.courseOfStudy && !saved.education?.length) showSection('work');
+  else if (!saved.militaryService?.length && !saved.courseOfStudy && !saved.education?.length) showSection('military');
+  else if (!saved.courseOfStudy?.trim())                    showSection('courseOfStudy');
+  else if (!saved.education?.length)                        showSection('education');
   else if (!saved.skills?.length && !saved.certifications?.length) showSection('skills');
   else                                           showSection('template');
 }
@@ -1439,8 +1493,8 @@ function toggleMilCurJob(cb) {
 
 function skipMilitary() {
   setStatus('military','done');
-  addAIMsg(`No military service recorded. Let's add your education — your trade program is already pre-filled.`);
-  showSection('education');
+  addAIMsg(`No military service recorded. Next, write your **Course of Study** paragraph — this required section appears on every resume above Education.`);
+  showSection('courseOfStudy');
 }
 
 function collectMilitaryData() {
@@ -1555,7 +1609,7 @@ function renderMilitaryDone() {
     <div class="done-sub">${resumeData.militaryService.length} service record(s) on your resume.</div>
     <div class="done-actions">
       <button class="btn btn-ghost" onclick="showSection('military')">Add Another</button>
-      <button class="btn btn-primary btn-lg" onclick="showSection('education')">Continue to Education →</button>
+      <button class="btn btn-primary btn-lg" onclick="showSection('courseOfStudy')">Continue to Course of Study →</button>
     </div>
   </div>`;
 }
@@ -1638,7 +1692,7 @@ function toggleCurJob(cb) {
 
 function skipToEdu() {
   setStatus('work','done');
-  addAIMsg(`Work history saved. Have you served in the military? Add your service record or skip ahead to Education.`);
+  addAIMsg(`Work history saved. Have you served in the military? Add your service record or skip ahead — you'll write your **Course of Study** paragraph next.`);
   showSection('military');
 }
 
@@ -1831,6 +1885,86 @@ function renderWorkDone() {
       <button class="btn btn-ghost" onclick="showSection('work')">Add Another Position</button>
       <button class="btn btn-ghost" onclick="skipMilitary()">Skip Military</button>
       <button class="btn btn-primary btn-lg" onclick="showSection('military')">Continue to Military →</button>
+    </div>
+  </div>`;
+}
+
+// ── Course of Study ───────────────────────────────
+function renderCourseOfStudyForm() {
+  const draft = resumeData.courseOfStudy || getCourseOfStudyText() || '';
+  const imported = resumeData._courseOfStudyFromAssignment && draft;
+  const words = draft.trim().split(/\s+/).filter(Boolean).length;
+  const importBanner = imported
+    ? `<div class="prefill-banner" style="margin-bottom:16px;text-align:left;background:#f0fdf4;border-color:#bbf7d0;color:#15803d">📚 Loaded from your Work Experience Assignment — review and edit before saving.</div>`
+    : '';
+  return `<div class="section-hdr"><div class="section-hdr-icon">📚</div><div><div class="section-hdr-title">Course of Study</div><div class="section-hdr-sub">Required — appears on your resume above Education</div></div></div>
+  ${importBanner}
+  <div class="form-card">
+    <div class="form-card-hdr">📚 Course of Study Paragraph</div>
+    <div class="form-card-body">
+      <p style="font-size:14px;color:var(--slate-600);margin-bottom:16px;line-height:1.6">Describe the skills, tools, equipment, and training you gained in your program. Write in your own words — I'll polish it into professional resume language when you save.</p>
+      <div class="f-group" id="fg-cos">
+        <label>Your paragraph *</label>
+        <textarea id="cosParagraph" rows="10" placeholder="During my program, I developed hands-on skills in…" oninput="updateCosWordCount()">${escHtml(draft)}</textarea>
+        <div class="field-hint" id="cosWordCount" style="margin-top:6px;font-size:12px;color:var(--slate-500)">${words} word${words!==1?'s':''} — aim for at least 50</div>
+        <span class="f-err" id="cosErr" style="display:none">Please write at least a few sentences about your program training.</span>
+      </div>
+    </div>
+    <div class="form-card-footer">
+      <button class="btn btn-ghost" onclick="showSection('military')">← Back</button>
+      <button class="btn btn-primary btn-lg" onclick="submitCourseOfStudy()">Save &amp; Polish →</button>
+    </div>
+  </div>`;
+}
+
+function updateCosWordCount() {
+  const el = document.getElementById('cosParagraph');
+  const hint = document.getElementById('cosWordCount');
+  if (!el || !hint) return;
+  const words = el.value.trim().split(/\s+/).filter(Boolean).length;
+  hint.textContent = `${words} word${words !== 1 ? 's' : ''} — ${words < 50 ? 'aim for at least 50' : '✓ Good length'}`;
+  hint.style.color = words >= 50 ? 'var(--green-600)' : 'var(--slate-500)';
+}
+
+async function submitCourseOfStudy() {
+  const text = document.getElementById('cosParagraph')?.value.trim() || '';
+  const err = document.getElementById('cosErr');
+  if (!text || text.split(/\s+/).filter(Boolean).length < 15) {
+    if (err) err.style.display = 'block';
+    return;
+  }
+  if (err) err.style.display = 'none';
+  resumeData.courseOfStudy = text;
+  localStorage.setItem('empAssign_skillsPara', text);
+
+  const ci = document.getElementById('centerInner');
+  ci.innerHTML = `<div style="text-align:center;padding:60px 20px;color:var(--slate-500)"><div style="font-size:32px;margin-bottom:12px">✨</div><div style="font-size:15px;font-weight:600">Polishing your Course of Study…</div></div>`;
+
+  try {
+    const polished = await buildCourseOfStudyForResume();
+    resumeData.courseOfStudy = polished;
+  } catch(e) {
+    resumeData.courseOfStudy = text;
+  }
+  saveProgress();
+  setStatus('courseOfStudy', 'done');
+  addAIMsg(`**Course of Study saved!** This section will appear on your resume right above Education. Next, confirm your education details.`);
+  showCenter('courseOfStudyDone');
+}
+
+function renderCourseOfStudyDone() {
+  const preview = (resumeData.courseOfStudy || '').trim();
+  const previewHtml = preview
+    ? `<div style="background:var(--slate-50);border:1px solid var(--slate-200);border-radius:10px;padding:16px 18px;margin:16px 0;text-align:left"><div style="font-size:11px;font-weight:700;color:var(--slate-500);text-transform:uppercase;letter-spacing:.5px;margin-bottom:8px">Preview</div><p style="font-size:14px;color:var(--slate-700);line-height:1.65;margin:0">${escHtml(preview)}</p></div>`
+    : '';
+  return `<div class="done-card">
+    <span class="done-icon">✅</span>
+    <div class="done-title">Course of Study Saved</div>
+    <div class="done-sub">This section is ready for your resume.</div>
+    ${previewHtml}
+    <div class="done-actions">
+      <button class="btn btn-ghost" onclick="showSection('courseOfStudy')">Edit</button>
+      <button class="btn btn-primary btn-lg" onclick="showSection('education')">Continue to Education →</button>
     </div>
   </div>`;
 }
@@ -2461,7 +2595,7 @@ function renderSkillsApproval() {
 function confirmSkills() {
   setStatus('skills','done');
   setStatus('certifications','done');
-  addAIMsg(`Skills saved! All sections are complete. Now choose a style and color for your resume.`);
+  addAIMsg(`Skills saved! All sections are complete. Now choose a style and color for your resume. A **Course of Study** section will be automatically added and polished by AI when you download.`);
   showSection('template');
 }
 
@@ -2499,6 +2633,7 @@ function renderTemplateConfig() {
       <div style="border:2px solid #facc15;border-radius:8px;padding:16px;background:#fef9c3;">
         <div style="font-weight:bold;color:#92400e;margin-bottom:8px;font-size:15px;">⚠ Important: Review Before Using</div>
         <p style="margin-bottom:12px;font-size:14px;color:#78350f;line-height:1.5;">This resume was generated using AI. You must carefully review, edit, and approve all content before using it. Do not assume the information is correct. Verify dates, employers, skills, and all details to ensure the resume is accurate and professional.</p>
+        <p style="margin-bottom:12px;font-size:14px;color:#78350f;line-height:1.5;">A <strong>Course of Study</strong> section is included on every resume. If you completed the assignment paragraph, AI will polish it for you. Otherwise, AI will write a professional summary from your program and education details.</p>
         <label style="display:flex;align-items:flex-start;gap:10px;font-size:14px;font-weight:600;color:#78350f;cursor:pointer;margin-bottom:14px;">
           <input type="checkbox" id="reviewConfirmed" onchange="document.getElementById('genBtn').disabled=!this.checked;document.getElementById('genBtn').style.opacity=this.checked?'1':'0.45'" style="margin-top:2px;width:16px;height:16px;accent-color:#eab308;flex-shrink:0;">
           I understand that I must review and edit this resume before using it.
@@ -2577,33 +2712,35 @@ function buildPreviewHTML(style,hex) {
   return '';
 }
 
+async function buildCourseOfStudyForResume() {
+  const savedPara = getCourseOfStudyText();
+  const tradeEdu = (resumeData.education||[]).find(e=>e.school||e.degree)||resumeData.education?.[0];
+  const program = resumeData.personal.program || tradeEdu?.fieldOfStudy || tradeEdu?.degree || 'Trade Program';
+  const school  = tradeEdu?.school || resumeData.personal.campus || 'Trade School';
+  const inProgress = !tradeEdu?.gradYear || tradeEdu.gradYear === 'In Progress';
+  const tense = inProgress ? 'present tense — student is currently enrolled' : 'past tense — student has completed the program';
+  const sys = (savedPara && savedPara.length > 40)
+    ? `You are polishing a trade school student's resume. The student wrote this Course of Study paragraph themselves: "${savedPara}". Rewrite it as a single polished, professional paragraph (4–6 sentences) for a resume. Correct grammar, strengthen the language, and make it sound like it was written by a professional resume writer. Keep the same skills and content — do not add certifications or tools not mentioned. Program: ${program}. School: ${school}. Use ${tense}. No "I" or student's name. Return only the paragraph.`
+    : `Write a single professional paragraph (4–6 sentences) for a "Course of Study" section on a trade school student's resume. Program: ${program}. School: ${school}. Use ${tense}. Describe the hands-on technical skills, equipment, safety practices, and competencies the student gained through the program. Write in implied first person — no "I" or the student's name. Professional resume language only. Return only the paragraph, no labels or headings.`;
+  try {
+    const r = await callClaude(sys, [{role:'user', content:'Write the Course of Study paragraph.'}]);
+    const para = r.trim().replace(/^["']|["']$/g, '');
+    if (para.length > 40) return para;
+  } catch(e) { /* fall through to saved or basic fallback */ }
+  if (savedPara) return savedPara;
+  return `Completed coursework and hands-on training in ${program} at ${school}, developing practical skills, safety awareness, and job-ready competencies for entry-level employment in the field.`;
+}
+
 async function generateResume() {
   const btn = document.getElementById('genBtn');
   btn.disabled=true; btn.textContent='Building resume…';
   try {
     const color = getColorObj(selectedColorHex);
-    let buildData = resumeData;
-
-    // Add Skills Learned section only when student has no work history at all
-    const weakEmployment = (resumeData.workExperience||[]).length === 0;
-    const tradeEdu = (resumeData.education||[]).find(e=>e.school||e.degree)||resumeData.education?.[0];
-    if (weakEmployment && tradeEdu) {
-      btn.textContent = 'Building education skills section…';
-      const program = resumeData.personal.program || tradeEdu.fieldOfStudy || tradeEdu.degree || 'Trade Program';
-      const school  = tradeEdu.school || 'Trade School';
-      const inProgress = tradeEdu.gradYear === 'In Progress' || !tradeEdu.gradYear;
-      const tense = inProgress ? 'present tense — student is currently enrolled' : 'past tense — student has completed the program';
-      const savedPara = localStorage.getItem('empAssign_skillsPara');
-      // If student wrote a skills paragraph in their assignment, polish it; otherwise generate from scratch
-      const sys = (savedPara && savedPara.trim().length > 40)
-        ? `You are polishing a trade school student's resume. The student wrote this Education Skills paragraph themselves: "${savedPara.trim()}". Rewrite it as a single polished, professional paragraph (4–6 sentences) for a resume. Correct grammar, strengthen the language, and make it sound like it was written by a professional resume writer. Keep the same skills and content — do not add certifications or tools not mentioned. Program: ${program}. School: ${school}. Use ${tense}. No "I" or student's name. Return only the paragraph.`
-        : `Write a single professional paragraph (4–6 sentences) for an "Education Skills" section on a trade school student's resume. Program: ${program}. School: ${school}. Use ${tense}. Describe the hands-on technical skills, equipment, safety practices, and competencies the student gained through the program. Write in implied first person — no "I" or the student's name. Professional resume language only. Return only the paragraph, no labels or headings.`;
-      try {
-        const r = await callClaude(sys,[{role:'user',content:'Write the education skills paragraph.'}]);
-        const para = r.trim().replace(/^["']|["']$/g,'');
-        if (para.length > 40) buildData = {...resumeData, educationSkills: para};
-      } catch(e) { /* AI failed — proceed without education skills section */ }
-    }
+    btn.textContent = 'Writing Course of Study section…';
+    const courseOfStudy = await buildCourseOfStudyForResume();
+    const buildData = {...resumeData, courseOfStudy};
+    resumeData.courseOfStudy = courseOfStudy;
+    saveProgress();
 
     btn.textContent = 'Building resume…';
     const doc = await buildDocument(buildData, selectedStyle, color);
@@ -2612,7 +2749,11 @@ async function generateResume() {
     saveAs(blob, resumeFilename(p));
     setStatus('template','done');
     btn.disabled=false; btn.textContent='Download Again ↓';
-    addAIMsg(`Your resume has been downloaded!${buildData.educationSkills?' A Skills Learned section was automatically added based on your program.':''} Change the style or color anytime and click Download Again to try a different look.`);
+    const fromAssignment = !!getCourseOfStudyText() && resumeData._courseOfStudyFromAssignment;
+    const cosNote = fromAssignment
+      ? ' Your **Course of Study** section was polished from your assignment paragraph.'
+      : ' A professional **Course of Study** section was added based on your program.';
+    addAIMsg(`Your resume has been downloaded!${cosNote} Change the style or color anytime and click Download Again to try a different look.`);
   } catch(err) { btn.disabled=false; btn.textContent='Generate & Download ↓'; addAIMsg(`Error generating file: ${err.message}`); console.error(err); }
 }
 
@@ -2632,7 +2773,9 @@ function militaryBlock(mil){const items=[];const loc=[mil.city,mil.state].filter
 function volunteerBlock(v){const items=[],loc=[v.city,v.state].filter(Boolean).join(', '),end=v.current?'Present':[v.endMonth,v.endYear].filter(Boolean).join(' '),dates=[[v.startMonth,v.startYear].filter(Boolean).join(' '),end].filter(Boolean).join(' – ');items.push(new docx.Paragraph({spacing:{before:320,after:60},children:[new docx.TextRun({text:v.role||'Volunteer',bold:true,size:26,color:'1a1a1a'}),new docx.TextRun({text:`, ${v.organization}${loc?', '+loc:''}`,size:24,color:'444444'})]}));if(dates)items.push(new docx.Paragraph({spacing:{before:0,after:160},children:[new docx.TextRun({text:dates,italics:true,size:22,color:'777777'})]}));(v.bulletLines||[]).forEach(b=>items.push(bullet(b)));return items;}
 
 
-function scLabel(data){const s=data.skills?.length,c=data.certifications?.length;return s&&c?'Skills & Certifications':c?'Certifications':'Skills';}
+function courseOfStudyText(data) {
+  return (data.courseOfStudy || data.educationSkills || '').trim();
+}
 function scItems(data){return [...(Array.isArray(data.skills)?data.skills:[]),...(data.certifications||[]).map(c=>c.name)];}
 function skillsCertsGrid(items){
   const nb={style:docx.BorderStyle.NONE,size:0,color:'FFFFFF'};
@@ -2657,9 +2800,9 @@ function buildClassic(data,color){
   if(c.objective){ch.push(sec('Objective'));ch.push(bodyTxt(c.objective,{after:140}));}
   if(data.workExperience?.length){ch.push(sec('Experience'));data.workExperience.forEach(j=>jobBlock(j).forEach(q=>ch.push(q)));}
   if(data.militaryService?.length){ch.push(sec('Military Service'));data.militaryService.forEach(m=>militaryBlock(m).forEach(q=>ch.push(q)));}
+  if(courseOfStudyText(data)){ch.push(sec('Course of Study'));ch.push(bodyTxt(courseOfStudyText(data),{after:140}));}
   if(data.education?.length){ch.push(sec('Education'));data.education.forEach(e=>ch.push(eduBlock(e)));}
   if(data.volunteer?.length){ch.push(sec('Volunteer'));data.volunteer.forEach(v=>volunteerBlock(v).forEach(q=>ch.push(q)));}
-  if(data.educationSkills){ch.push(sec('Skills Learned'));ch.push(bodyTxt(data.educationSkills,{after:140}));}
   const _sc=scItems(data);if(_sc.length){ch.push(sec(scLabel(data)));ch.push(skillsCertsGrid(_sc));}
   ch.push(spacer(200));
   return new docx.Document({sections:[{properties:{page:{margin:{top:M,bottom:M,left:M,right:M}}},children:ch}]});
@@ -2676,9 +2819,9 @@ function buildModern(data,color){
   if(c.objective){main.push(mainSec('Objective'));main.push(bodyTxt(c.objective,{after:120}));}
   if(data.workExperience?.length){main.push(mainSec('Experience'));data.workExperience.forEach(j=>jobBlock(j).forEach(q=>main.push(q)));}
   if(data.militaryService?.length){main.push(mainSec('Military Service'));data.militaryService.forEach(m=>militaryBlock(m).forEach(q=>main.push(q)));}
+  if(courseOfStudyText(data)){main.push(mainSec('Course of Study'));main.push(bodyTxt(courseOfStudyText(data),{after:120}));}
   if(data.education?.length){main.push(mainSec('Education'));data.education.forEach(e=>main.push(eduBlock(e)));}
   if(data.volunteer?.length){main.push(mainSec('Volunteer'));data.volunteer.forEach(v=>volunteerBlock(v).forEach(q=>main.push(q)));}
-  if(data.educationSkills){main.push(mainSec('Skills Learned'));main.push(bodyTxt(data.educationSkills,{after:120}));}
   main.push(spacer(200));
   const nb={style:docx.BorderStyle.NONE,size:0,color:'FFFFFF'};
   return new docx.Document({sections:[{properties:{page:{margin:{top:0,bottom:0,left:0,right:0}}},children:[new docx.Table({width:{size:100,type:docx.WidthType.PERCENTAGE},borders:{top:nb,bottom:nb,left:nb,right:nb,insideH:nb,insideV:nb},rows:[new docx.TableRow({children:[new docx.TableCell({width:{size:twip(2.5),type:docx.WidthType.DXA},shading:{fill:ac,type:docx.ShadingType.CLEAR,color:'auto'},margins:{top:twip(.45),bottom:twip(.45),left:twip(.3),right:twip(.25)},children:side}),new docx.TableCell({width:{size:twip(5.0),type:docx.WidthType.DXA},margins:{top:twip(.4),bottom:twip(.4),left:twip(.35),right:twip(.35)},children:main})]})]})]},]});
@@ -2693,9 +2836,9 @@ function buildBold(data,color){
   if(c.objective){ch.push(sec('Objective'));ch.push(bodyTxt(c.objective,{after:120}));}
   if(data.workExperience?.length){ch.push(sec('Experience'));data.workExperience.forEach(j=>jobBlock(j).forEach(q=>ch.push(q)));}
   if(data.militaryService?.length){ch.push(sec('Military Service'));data.militaryService.forEach(m=>militaryBlock(m).forEach(q=>ch.push(q)));}
+  if(courseOfStudyText(data)){ch.push(sec('Course of Study'));ch.push(bodyTxt(courseOfStudyText(data),{after:120}));}
   if(data.education?.length){ch.push(sec('Education'));data.education.forEach(e=>ch.push(eduBlock(e)));}
   if(data.volunteer?.length){ch.push(sec('Volunteer'));data.volunteer.forEach(v=>volunteerBlock(v).forEach(q=>ch.push(q)));}
-  if(data.educationSkills){ch.push(sec('Skills Learned'));ch.push(bodyTxt(data.educationSkills,{after:120}));}
   const _sc=scItems(data);if(_sc.length){ch.push(sec(scLabel(data)));ch.push(skillsCertsGrid(_sc));}
   ch.push(spacer(200));
   return new docx.Document({sections:[{properties:{page:{margin:{top:0,bottom:bm,left:bm,right:bm}}},children:ch}]});
@@ -2711,9 +2854,9 @@ function buildExecutive(data,color){
   if(c.objective){ch.push(sec('Professional Summary'));ch.push(bodyTxt(c.objective,{after:120}));}
   if(data.workExperience?.length){ch.push(sec('Experience'));data.workExperience.forEach(job=>{const loc=[job.city,job.state].filter(Boolean).join(', '),end=job.current?'Present':[job.endMonth,job.endYear].filter(Boolean).join(' '),dates=`${[job.startMonth,job.startYear].filter(Boolean).join(' ')} – ${end}`;ch.push(new docx.Paragraph({tabStops:[{type:docx.TabStopType.RIGHT,position:twip(6.8)}],spacing:{before:280,after:60},children:[new docx.TextRun({text:`${job.jobTitle}, ${job.employer}${loc?', '+loc:''}`,bold:true,size:26,color:'1a1a1a'}),new docx.TextRun({text:'\t'+dates,italics:true,size:22,color:'888888'})]}));(job.bulletLines||[]).forEach(b=>ch.push(bullet(b)));});}
   if(data.militaryService?.length){ch.push(sec('Military Service'));data.militaryService.forEach(m=>militaryBlock(m).forEach(q=>ch.push(q)));}
+  if(courseOfStudyText(data)){ch.push(sec('Course of Study'));ch.push(bodyTxt(courseOfStudyText(data),{after:120}));}
   if(data.education?.length){ch.push(sec('Education'));data.education.forEach(e=>ch.push(eduBlock(e)));}
   if(data.volunteer?.length){ch.push(sec('Volunteer'));data.volunteer.forEach(v=>volunteerBlock(v).forEach(q=>ch.push(q)));}
-  if(data.educationSkills){ch.push(sec('Skills Learned'));ch.push(bodyTxt(data.educationSkills,{after:120}));}
   const _sc=scItems(data);if(_sc.length){ch.push(sec(scLabel(data)));ch.push(skillsCertsGrid(_sc));}
   ch.push(spacer(200));
   return new docx.Document({sections:[{properties:{page:{margin:{top:M,bottom:M,left:M,right:M}}},children:ch}]});
@@ -2730,13 +2873,13 @@ function buildFlip(data,color){
   const sideSec=t=>new docx.Paragraph({children:sectionHeaderRuns(t,{size:22,color:st}),border:{bottom:{style:docx.BorderStyle.SINGLE,size:3,color:st==='FFFFFF'?'6699CC':'777777'}},spacing:{before:260,after:120}});
   const _sc=scItems(data);
   if(_sc.length){side.push(sideSec(scLabel(data)));_sc.forEach(s=>side.push(bullet(s,{size:20,color:sideContact,after:70})));}
+  if(courseOfStudyText(data)){side.push(sideSec('Course of Study'));side.push(bodyTxt(courseOfStudyText(data),{after:100,size:20}));}
   if(data.education?.length){side.push(sideSec('Education'));data.education.forEach(e=>{const f=e.fieldOfStudy?`, ${e.fieldOfStudy}`:'';const loc=[e.city,e.state].filter(Boolean).join(', ');side.push(new docx.Paragraph({spacing:{before:0,after:60},children:[new docx.TextRun({text:`${e.degree}${f}`,bold:true,size:20,color:st})]}));side.push(new docx.Paragraph({spacing:{before:0,after:80},children:[new docx.TextRun({text:[e.school,loc,eduGradDate(e)].filter(Boolean).join(', '),size:19,color:sideContact})]}));});}
   const mainSec=t=>new docx.Paragraph({children:sectionHeaderRuns(t,{size:26,color:ac}),border:{bottom:{style:docx.BorderStyle.SINGLE,size:4,color:ac}},spacing:{before:260,after:140}});
   if(c.objective){main.push(mainSec('Objective'));main.push(bodyTxt(c.objective,{after:120}));}
   if(data.workExperience?.length){main.push(mainSec('Experience'));data.workExperience.forEach(j=>jobBlock(j).forEach(q=>main.push(q)));}
   if(data.militaryService?.length){main.push(mainSec('Military Service'));data.militaryService.forEach(m=>militaryBlock(m).forEach(q=>main.push(q)));}
   if(data.volunteer?.length){main.push(mainSec('Volunteer'));data.volunteer.forEach(v=>volunteerBlock(v).forEach(q=>main.push(q)));}
-  if(data.educationSkills){main.push(mainSec('Skills Learned'));main.push(bodyTxt(data.educationSkills,{after:120}));}
   main.push(spacer(200));
   return new docx.Document({sections:[{properties:{page:{margin:{top:0,bottom:0,left:0,right:0}}},children:[new docx.Table({width:{size:100,type:docx.WidthType.PERCENTAGE},borders:{top:nb,bottom:nb,left:nb,right:nb,insideH:nb,insideV:nb},rows:[new docx.TableRow({children:[new docx.TableCell({width:{size:twip(5.0),type:docx.WidthType.DXA},margins:{top:twip(.4),bottom:twip(.4),left:twip(.4),right:twip(.3)},children:main}),new docx.TableCell({width:{size:twip(2.5),type:docx.WidthType.DXA},shading:{fill:ac,type:docx.ShadingType.CLEAR,color:'auto'},margins:{top:twip(.45),bottom:twip(.45),left:twip(.25),right:twip(.3)},children:side})]})]})]},]});
 }
@@ -2752,6 +2895,7 @@ function buildTopLeft(data,color){
   const sideSec=t=>new docx.Paragraph({children:sectionHeaderRuns(t,{size:21,color:'333333'}),border:{bottom:{style:docx.BorderStyle.SINGLE,size:2,color:'CCCCCC'}},spacing:{before:220,after:110}});
   const _sc=scItems(data);
   if(_sc.length){side.push(sideSec(scLabel(data)));_sc.forEach(s=>side.push(bullet(s,{size:20,color:'444444',after:70})));}
+  if(courseOfStudyText(data)){side.push(sideSec('Course of Study'));side.push(bodyTxt(courseOfStudyText(data),{after:100,size:20}));}
   if(data.education?.length){side.push(sideSec('Education'));data.education.forEach(e=>{const f=e.fieldOfStudy?`, ${e.fieldOfStudy}`:'';const loc=[e.city,e.state].filter(Boolean).join(', ');side.push(new docx.Paragraph({spacing:{before:0,after:80},children:[new docx.TextRun({text:`${e.degree}${f}`,bold:true,size:20,color:'222222'}),new docx.TextRun({text:`, ${[e.school,loc,eduGradDate(e)].filter(Boolean).join(', ')}`,size:19,color:'666666'})]})  );});}
   const main=[];
   const mainSec=t=>new docx.Paragraph({children:sectionHeaderRuns(t,{size:26,color:ac}),border:{bottom:{style:docx.BorderStyle.SINGLE,size:4,color:ac}},spacing:{before:240,after:140}});
@@ -2759,7 +2903,6 @@ function buildTopLeft(data,color){
   if(data.workExperience?.length){main.push(mainSec('Experience'));data.workExperience.forEach(j=>jobBlock(j).forEach(q=>main.push(q)));}
   if(data.militaryService?.length){main.push(mainSec('Military Service'));data.militaryService.forEach(m=>militaryBlock(m).forEach(q=>main.push(q)));}
   if(data.volunteer?.length){main.push(mainSec('Volunteer'));data.volunteer.forEach(v=>volunteerBlock(v).forEach(q=>main.push(q)));}
-  if(data.educationSkills){main.push(mainSec('Skills Learned'));main.push(bodyTxt(data.educationSkills,{after:120}));}
   main.push(spacer(200));
   const bodyRow=new docx.TableRow({children:[new docx.TableCell({width:{size:twip(2.3),type:docx.WidthType.DXA},shading:{fill:'EEEEEE',type:docx.ShadingType.CLEAR,color:'auto'},margins:{top:twip(.35),bottom:twip(.35),left:twip(.3),right:twip(.25)},children:side}),new docx.TableCell({width:{size:twip(5.2),type:docx.WidthType.DXA},margins:{top:twip(.35),bottom:twip(.35),left:twip(.35),right:twip(.4)},children:main})]});
   return new docx.Document({sections:[{properties:{page:{margin:{top:0,bottom:0,left:0,right:0}}},children:[new docx.Table({width:{size:100,type:docx.WidthType.PERCENTAGE},borders:{top:nb,bottom:nb,left:nb,right:nb,insideH:nb,insideV:nb},rows:[hdrRow,bodyRow]})]},]});
@@ -2779,12 +2922,12 @@ function buildTopRight(data,color){
   if(data.workExperience?.length){main.push(mainSec('Experience'));data.workExperience.forEach(j=>jobBlock(j).forEach(q=>main.push(q)));}
   if(data.militaryService?.length){main.push(mainSec('Military Service'));data.militaryService.forEach(m=>militaryBlock(m).forEach(q=>main.push(q)));}
   if(data.volunteer?.length){main.push(mainSec('Volunteer'));data.volunteer.forEach(v=>volunteerBlock(v).forEach(q=>main.push(q)));}
-  if(data.educationSkills){main.push(mainSec('Skills Learned'));main.push(bodyTxt(data.educationSkills,{after:120}));}
   main.push(spacer(200));
   const side=[];
   const sideSec=t=>new docx.Paragraph({children:sectionHeaderRuns(t,{size:22,color:st}),border:{bottom:{style:docx.BorderStyle.SINGLE,size:3,color:st==='FFFFFF'?'6699CC':'777777'}},spacing:{before:240,after:120}});
   const _sc=scItems(data);
   if(_sc.length){side.push(sideSec(scLabel(data)));_sc.forEach(s=>side.push(bullet(s,{size:20,color:sideContact,after:70})));}
+  if(courseOfStudyText(data)){side.push(sideSec('Course of Study'));side.push(bodyTxt(courseOfStudyText(data),{after:100,size:20}));}
   if(data.education?.length){side.push(sideSec('Education'));data.education.forEach(e=>{const f=e.fieldOfStudy?`, ${e.fieldOfStudy}`:'';const loc=[e.city,e.state].filter(Boolean).join(', ');side.push(new docx.Paragraph({spacing:{before:0,after:60},children:[new docx.TextRun({text:`${e.degree}${f}`,bold:true,size:20,color:st})]}));side.push(new docx.Paragraph({spacing:{before:0,after:80},children:[new docx.TextRun({text:[e.school,loc,eduGradDate(e)].filter(Boolean).join(', '),size:19,color:sideContact})]}));});}
   const bodyRow=new docx.TableRow({children:[new docx.TableCell({width:{size:twip(5.2),type:docx.WidthType.DXA},margins:{top:twip(.35),bottom:twip(.35),left:twip(.4),right:twip(.3)},children:main}),new docx.TableCell({width:{size:twip(2.3),type:docx.WidthType.DXA},shading:{fill:ac,type:docx.ShadingType.CLEAR,color:'auto'},margins:{top:twip(.35),bottom:twip(.35),left:twip(.25),right:twip(.3)},children:side})]});
   return new docx.Document({sections:[{properties:{page:{margin:{top:0,bottom:0,left:0,right:0}}},children:[new docx.Table({width:{size:100,type:docx.WidthType.PERCENTAGE},borders:{top:nb,bottom:nb,left:nb,right:nb,insideH:nb,insideV:nb},rows:[hdrRow,bodyRow]})]},]});
@@ -2802,8 +2945,8 @@ function buildSplit(data,color){
   const side=[],main=[];
   const _sc=scItems(data);
   if(_sc.length){side.push(sideSec(scLabel(data)));_sc.forEach(s=>side.push(bullet(s,{size:20,after:70})));}
+  if(courseOfStudyText(data)){side.push(sideSec('Course of Study'));side.push(bodyTxt(courseOfStudyText(data),{after:100,size:20}));}
   if(data.education?.length){side.push(sideSec('Education'));data.education.forEach(e=>{const f=e.fieldOfStudy?`, ${e.fieldOfStudy}`:'';const loc=[e.city,e.state].filter(Boolean).join(', ');side.push(new docx.Paragraph({spacing:{before:0,after:50},children:[new docx.TextRun({text:`${e.degree}${f}`,bold:true,size:20,color:'1a1a1a',font:'Calibri'})]}));side.push(new docx.Paragraph({spacing:{before:0,after:120},children:[new docx.TextRun({text:[e.school,loc,eduGradDate(e)].filter(Boolean).join(', '),size:19,color:'555555',font:'Calibri'})]}));});}
-  if(data.educationSkills){side.push(sideSec('Skills Learned'));side.push(bodyTxt(data.educationSkills,{after:100,size:20}));}
   if(c.objective){main.push(mainSec('Objective'));main.push(bodyTxt(c.objective,{after:120}));}
   if(data.workExperience?.length){main.push(mainSec('Experience'));data.workExperience.forEach(j=>jobBlock(j).forEach(q=>main.push(q)));}
   if(data.militaryService?.length){main.push(mainSec('Military Service'));data.militaryService.forEach(m=>militaryBlock(m).forEach(q=>main.push(q)));}
