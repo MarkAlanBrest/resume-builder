@@ -391,7 +391,7 @@ const TIPS = {
   personal:`Fill in your contact information carefully — this is how employers reach you. Make sure your email looks professional and your phone number is correct. Select your campus and program from the dropdowns.`,
   career:`Be specific about the type of job and employer you're targeting. Examples: "I want to work as an automotive technician at a dealership doing diagnostics and hands-on repairs." "I am looking for an entry-level HVAC position where I can install, maintain, and troubleshoot residential systems." "I want a welding job in manufacturing or construction where I can use MIG/TIG skills and read blueprints." Pick up to 3 qualities that describe you as a worker.`,
   work:`When describing your duties, just write naturally — don't worry about formatting. Mention specific tools, equipment, tasks, and anything you're proud of. I'll convert it into professional bullet points for you.`,
-  courseOfStudy:`Write a paragraph about the skills, tools, and training you gained in your program. This becomes the **Course of Study** section on your resume — it appears right above Education. If you completed the Work Experience Assignment, your paragraph is already loaded. I'll polish it to sound professional when you save.`,
+  courseOfStudy:`Write a paragraph about the skills, tools, and training you gained in your program — or click **Generate from My Program** and AI will write a professional paragraph from your campus and program selection. This becomes the **Course of Study** section on your resume, right above Education.`,
   education:`Your trade program has been pre-filled below. Confirm the details and add your graduation year. Then add your high school diploma or any other education you have.`,
   skills:`Write out every skill and certification you have — tools, equipment, software, techniques, licenses, OSHA/EPA/CDL cards, manufacturer training, anything relevant. I'll clean it up, remove duplicates, and organize it professionally.`,
   military:`Add your military service below — active duty, reserves, or National Guard. In the Duties box, describe your role naturally: what you did every day, equipment you operated or maintained, people you supervised or trained, and anything you're proud of. I'll turn it into professional resume bullets that highlight leadership, reliability, technical skills, and teamwork — all things trade employers value.`,
@@ -577,13 +577,101 @@ function importAssignmentIfNeeded() {
 }
 
 function getCourseOfStudyText() {
-  return (resumeData.courseOfStudy || localStorage.getItem('empAssign_skillsPara') || '').trim();
+  if (resumeData.courseOfStudy?.trim()) return resumeData.courseOfStudy.trim();
+  if (resumeData._courseOfStudyFromAssignment) {
+    const saved = localStorage.getItem('empAssign_skillsPara');
+    if (saved?.trim()) return saved.trim();
+  }
+  return '';
+}
+
+function getTradeProgramContext() {
+  const tradeEdu = (resumeData.education||[]).find(e=>e.school||e.degree)||resumeData.education?.[0];
+  const program = resumeData.personal.program || tradeEdu?.fieldOfStudy || tradeEdu?.degree || 'Trade Program';
+  const school  = tradeEdu?.school || resumeData.personal.campus || 'Trade School';
+  const inProgress = !tradeEdu?.gradYear || tradeEdu.gradYear === 'In Progress';
+  return {
+    program, school, inProgress,
+    tense: inProgress ? 'present tense' : 'past tense',
+    tenseLong: inProgress ? 'present tense — student is currently enrolled' : 'past tense — student has completed the program',
+  };
+}
+
+function programWorkExamples() {
+  const program = resumeData.personal.program || '';
+  for (const entry of WORK_TIP_EXAMPLES) {
+    if (entry.match.test(program)) return entry.examples;
+  }
+  return WORK_TIP_EXAMPLES[WORK_TIP_EXAMPLES.length - 1]?.examples || [];
+}
+
+function programSkillKeywords() {
+  const program = resumeData.personal.program || '';
+  for (const entry of SKILL_CERT_TIP_EXAMPLES) {
+    if (entry.match.test(program)) return entry.skills;
+  }
+  return [];
+}
+
+function buildCourseOfStudyFallback() {
+  const { program, school, inProgress } = getTradeProgramContext();
+  const skills = programSkillKeywords();
+  const examples = programWorkExamples();
+  const skillNote = skills.length ? skills.slice(0, 5).join(', ') : 'hands-on technical skills and safety practices';
+  const trainingVerb = inProgress ? 'Training in' : 'Completed training in';
+  const exampleLine = examples[0] ? examples[0].replace(/\.$/,'') : 'building practical, job-ready competencies';
+  return trimCourseOfStudyForResume(
+    `${trainingVerb} ${program} at ${school}, developing ${skillNote} through shop projects, lab work, and industry-standard procedures. ${exampleLine} while following workplace safety standards and preparing for entry-level employment in the field.`
+  );
+}
+
+function fallbackWorkBullets(job) {
+  const examples = programWorkExamples();
+  const title = (job.jobTitle || '').trim();
+  const employer = (job.employer || '').trim() || 'the employer';
+  if (examples.length >= 3) {
+    return examples.slice(0, 4).map(b => cleanCareerText(b));
+  }
+  const lead = job.current ? 'Perform' : 'Performed';
+  return [
+    cleanCareerText(`${lead} core duties as ${title || 'a team member'} at ${employer}, completing assigned tasks with attention to quality and safety.`),
+    cleanCareerText(`${job.current ? 'Follow' : 'Followed'} workplace safety procedures and communicated clearly with supervisors and coworkers.`),
+    cleanCareerText(`${job.current ? 'Maintain' : 'Maintained'} a clean, organized work area and support daily operations as directed.`),
+    cleanCareerText(`${job.current ? 'Assist' : 'Assisted'} customers, teammates, or crew members to keep workflow efficient and professional.`),
+  ].slice(0, 4);
+}
+
+async function generateWorkBullets(job, opts = {}) {
+  const existing = (job.bulletLines || []).filter(Boolean);
+  const fallback = fallbackWorkBullets(job);
+  if (!opts.forceAI && existing.length >= 3) return existing;
+
+  const { program } = getTradeProgramContext();
+  const tense = job.current ? 'present tense' : 'past tense';
+  const duties = existing.join('\n') || job.duties || `${job.jobTitle || 'Team member'} at ${job.employer || 'employer'}`;
+
+  try {
+    const sys = `Write resume bullet points for a trade school student${program ? ' studying ' + program : ''}. Job: ${job.jobTitle || 'entry-level role'} at ${job.employer || 'employer'}. Notes: "${duties}". Write 4 strong professional resume bullets in ${tense}. Each starts with a strong action verb. Infer realistic entry-level responsibilities from the job title and employer type. No bullet characters, no "I". Plain text, one bullet per line.`;
+    const result = await callClaude(sys, [{ role: 'user', content: 'Write the bullet points.' }]);
+    const parsed = parseBulletLines(result);
+    if (parsed.length >= 3) return parsed;
+    return mergeBulletLines(existing.length ? existing : fallback, parsed, 3);
+  } catch (e) {
+    return existing.length ? mergeBulletLines(existing, fallback, 3) : fallback;
+  }
+}
+
+async function ensureAllWorkBullets() {
+  for (const job of resumeData.workExperience || []) {
+    if ((job.bulletLines || []).filter(Boolean).length < 3) {
+      job.bulletLines = await generateWorkBullets(job);
+    }
+  }
 }
 
 async function polishImportedJobs() {
   const ci = document.getElementById('centerInner');
   const toProcess = resumeData.workExperience.filter(j => j._fromAssignment && !j._bulletPolished);
-  const prog = resumeData.personal.program || '';
   for (let idx = 0; idx < toProcess.length; idx++) {
     const job = toProcess[idx];
     const originalBullets = (job.bulletLines || []).filter(Boolean);
@@ -592,16 +680,8 @@ async function polishImportedJobs() {
       continue;
     }
     ci.innerHTML = `<div style="text-align:center;padding:60px 20px;color:var(--slate-500)"><div style="font-size:32px;margin-bottom:12px">⚙️</div><div style="font-size:15px;font-weight:600;margin-bottom:6px">Writing professional bullets…</div><div style="font-size:13px">${escHtml(job.jobTitle||'Job')} at ${escHtml(job.employer)} (${idx+1} of ${toProcess.length})</div></div>`;
-    const tense = job.current ? 'present tense' : 'past tense';
-    const duties = originalBullets.join('\n') || job.duties || '';
-    const sys = `Write resume bullet points for a trade school student${prog?' studying '+prog:''}. Job: ${job.jobTitle} at ${job.employer}. The student described their duties as: "${duties}". Write 3–5 polished, professional resume bullets in ${tense}. Each starts with a strong action verb. No bullet characters, no "I". Plain text, one bullet per line.`;
-    try {
-      const result = await callClaude(sys,[{role:'user',content:'Write the bullet points.'}]);
-      job.bulletLines = mergeBulletLines(originalBullets, parseBulletLines(result));
-      job._bulletPolished = true;
-    } catch(e) {
-      job._bulletPolished = true;
-    }
+    job.bulletLines = await generateWorkBullets(job);
+    job._bulletPolished = true;
   }
   saveProgress();
   showCenter('work');
@@ -1706,7 +1786,8 @@ function renderWorkForm(pf={}) {
   </div>` : '';
   const subTitle = isEditing ? 'Editing a saved position' : jobs.length ? `${jobs.length} position(s) saved — add another or continue` : 'Add your work history';
   const cardTitle = isEditing ? 'Edit Position' : jobs.length ? 'Add Another Position' : 'Position Details';
-  const dutiesLabel = isEditing ? 'Current Bullets — edit or rewrite *' : 'Describe Your Duties *';
+  const dutiesLabel = isEditing ? 'Current Bullets — edit or rewrite *' : 'Describe Your Duties (optional)';
+  const dutiesHint = isEditing ? '' : '<div class="field-hint" style="margin-top:4px;font-size:12px;color:var(--slate-500)">A few words is enough — or leave blank and AI will write professional bullets from your job title and employer.</div>';
   const dutiesValue = isEditing ? escHtml((pf.bulletLines||[]).join('\n')) : '';
   const footerLeft = isEditing
     ? `<button class="btn btn-ghost" onclick="cancelEditWork()">Cancel</button>`
@@ -1724,7 +1805,7 @@ function renderWorkForm(pf={}) {
         <div class="f-group" id="fg-sd"><label>Start Date *</label><div class="date-pair"><select id="startMo"><option value="">Month</option>${moOpts(pf.startMonth)}</select><input id="startYr" value="${escHtml(pf.startYear||'')}" placeholder="Year" maxlength="4" inputmode="numeric"></div><span class="f-err">Required</span></div>
         <div class="f-group" id="fg-ed"><label>End Date</label><div class="date-pair"><select id="endMo" ${pf.current?'disabled':''}><option value="">Month</option>${moOpts(pf.endMonth)}</select><input id="endYr" value="${escHtml(pf.current?'':pf.endYear||'')}" placeholder="Year" maxlength="4" inputmode="numeric" ${pf.current?'disabled':''}></div><label class="check-opt-inline"><input type="checkbox" id="curJob" ${pf.current?'checked':''} onchange="toggleCurJob(this)"><span>I currently work here</span></label><span class="f-err">Enter an end date after the start date, or mark current.</span></div>
       </div>
-      <div class="f-row single"><div class="f-group" id="fg-duties"><label>${dutiesLabel}</label><textarea id="duties" rows="4" placeholder="Describe what you did — tools, equipment, tasks, and responsibilities.">${dutiesValue}</textarea><span class="f-err">Please describe your duties.</span></div></div>
+      <div class="f-row single"><div class="f-group" id="fg-duties"><label>${dutiesLabel}</label><textarea id="duties" rows="4" placeholder="Optional — e.g. operated register, stocked shelves, helped customers…">${dutiesValue}</textarea>${dutiesHint}<span class="f-err">If you enter duties, use real tasks — not &quot;idk&quot; or &quot;none.&quot;</span></div></div>
     </div>
     <div class="form-card-footer">
       ${footerLeft}
@@ -1748,6 +1829,9 @@ function skipToEdu() {
 async function submitWork() {
   let work = collectWorkData();
   applyWorkData(work);
+  if (!work.duties || work.duties.length < 3) {
+    work.duties = `${work.jobTitle} at ${work.employer}`;
+  }
   if (!validateWorkData(work)) return;
 
   const btn = document.querySelector('button[onclick="submitWork()"]');
@@ -1774,14 +1858,13 @@ async function submitWork() {
   pendingWork = work;
   const ci = document.getElementById('centerInner');
   ci.innerHTML = `<div style="text-align:center;padding:60px 20px;color:var(--slate-500)"><div style="font-size:32px;margin-bottom:12px">⚙️</div>Generating bullet points…</div>`;
-  const prog = resumeData.personal.program || '';
-  const tense = work.current ? 'present tense' : 'past tense';
-  const sys = `Write resume bullet points for a trade school student studying ${prog}. Job: ${pendingWork.jobTitle} at ${pendingWork.employer}. Duties/notes may be weak or incomplete: "${pendingWork.duties}". Use the job title, employer, and program to infer realistic entry-level responsibilities without inventing specific certifications, metrics, or tools not implied by the role. Write 3–5 bullets, ${tense}, each starting with a strong action verb. Each line starts with •. Return only the bullet points.`;
   try {
-    const result = await callClaude(sys,[{role:'user',content:'Write the bullet points.'}]);
-    pendingWork.bulletLines = parseBulletLines(result);
+    pendingWork.bulletLines = await generateWorkBullets(pendingWork, { forceAI: true });
     showCenter('workApproval');
-  } catch(e) { addAIMsg('Could not connect — please try again.'); showSection('work'); }
+  } catch(e) {
+    pendingWork.bulletLines = fallbackWorkBullets(pendingWork);
+    showCenter('workApproval');
+  }
 }
 
 function collectWorkData() {
@@ -1813,7 +1896,7 @@ function validateWorkData(w) {
   if (w.state && !US_STATES.has(w.state)) { setFieldError('fg-wstate','Use a valid 2-letter state or leave blank.'); valid=false; } else clearFieldError('fg-wstate');
   if (!w.startMonth || !isReasonableYear(w.startYear)) { setFieldError('fg-sd','Enter a valid start month and year.'); valid=false; } else clearFieldError('fg-sd');
   if (!w.current && (!w.endMonth || !isReasonableYear(w.endYear) || compareWorkDates(w.endMonth,w.endYear,w.startMonth,w.startYear) < 0)) { setFieldError('fg-ed','Enter an end date after the start date, or mark current.'); valid=false; } else clearFieldError('fg-ed');
-  if (!isProfessionalDuties(w.duties)) { setFieldError('fg-duties','Enter at least one duty, task, tool, or responsibility.'); valid=false; } else clearFieldError('fg-duties');
+  if (w.duties && !isProfessionalDuties(w.duties)) { setFieldError('fg-duties','If you enter duties, describe a real task or leave the field blank for AI suggestions.'); valid=false; } else clearFieldError('fg-duties');
   return valid;
 }
 
@@ -1905,14 +1988,22 @@ function saveObjectiveInline(){
 async function regenBullets() {
   const ci = document.getElementById('centerInner');
   ci.innerHTML = `<div style="text-align:center;padding:60px 20px;color:var(--slate-500)"><div style="font-size:32px;margin-bottom:12px">⚙️</div>Rewriting bullet points…</div>`;
-  const prog = resumeData.personal.program||'';
-  const tense = pendingWork.current?'present tense':'past tense';
-  const sys = `Write DIFFERENT resume bullet points for a trade school student studying ${prog}. Job: ${pendingWork.jobTitle} at ${pendingWork.employer}. Duties/notes may be weak or incomplete: "${pendingWork.duties}". Use the job title, employer, and program to infer realistic entry-level responsibilities without inventing specific certifications, metrics, or tools not implied by the role. Use different action verbs. 3–5 bullets, ${tense}. Each line starts with •. Return only the bullet points.`;
-  try { const r=await callClaude(sys,[{role:'user',content:'Write alternate bullets.'}]); pendingWork.bulletLines=parseBulletLines(r); showCenter('workApproval'); }
-  catch(e) { addAIMsg('Could not connect.'); showCenter('workApproval'); }
+  try {
+    pendingWork.bulletLines = await generateWorkBullets(pendingWork, { forceAI: true });
+    showCenter('workApproval');
+  } catch(e) {
+    addAIMsg('Could not connect — showing fallback bullets.');
+    pendingWork.bulletLines = fallbackWorkBullets(pendingWork);
+    showCenter('workApproval');
+  }
 }
 
-function confirmWork() {
+async function confirmWork() {
+  const ci = document.getElementById('centerInner');
+  if ((pendingWork.bulletLines || []).filter(Boolean).length < 3) {
+    ci.innerHTML = `<div style="text-align:center;padding:60px 20px;color:var(--slate-500)"><div style="font-size:32px;margin-bottom:12px">⚙️</div>Finalizing bullet points…</div>`;
+    pendingWork.bulletLines = await generateWorkBullets(pendingWork);
+  }
   if (editingWorkIndex >= 0) {
     resumeData.workExperience[editingWorkIndex] = {...pendingWork};
     editingWorkIndex = -1;
@@ -1921,6 +2012,7 @@ function confirmWork() {
   }
   resumeData.workExperience.sort((a,b)=>workSortValue(b)-workSortValue(a));
   pendingWork = {};
+  saveProgress();
   setStatus('work','done');
   showCenter('workDone');
 }
@@ -1951,16 +2043,17 @@ function renderCourseOfStudyForm() {
   <div class="form-card">
     <div class="form-card-hdr">📚 Course of Study Paragraph</div>
     <div class="form-card-body">
-      <p style="font-size:14px;color:var(--slate-600);margin-bottom:16px;line-height:1.6">Describe the skills, tools, equipment, and training you gained in your program. Write in your own words — I'll polish and condense it to about the same length as your resume objective when you save.</p>
+      <p style="font-size:14px;color:var(--slate-600);margin-bottom:16px;line-height:1.6">Describe the skills, tools, equipment, and training you gained in your program — <strong>or skip writing</strong> and let AI build a professional paragraph from your campus and program selection.</p>
       <div class="f-group" id="fg-cos">
-        <label>Your paragraph *</label>
-        <textarea id="cosParagraph" rows="10" placeholder="During my program, I developed hands-on skills in…" oninput="updateCosWordCount()">${escHtml(draft)}</textarea>
-        <div class="field-hint" id="cosWordCount" style="margin-top:6px;font-size:12px;color:var(--slate-500)">${words} word${words!==1?'s':''} — aim for at least 50</div>
-        <span class="f-err" id="cosErr" style="display:none">Please write at least a few sentences about your program training.</span>
+        <label>Your paragraph (optional if you generate)</label>
+        <textarea id="cosParagraph" rows="10" placeholder="During my program, I developed hands-on skills in… — or click Generate from My Program below" oninput="updateCosWordCount()">${escHtml(draft)}</textarea>
+        <div class="field-hint" id="cosWordCount" style="margin-top:6px;font-size:12px;color:var(--slate-500)">${words} word${words!==1?'s':''} — write your own or generate from your program</div>
+        <span class="f-err" id="cosErr" style="display:none">Please write at least a few sentences, or click Generate from My Program.</span>
       </div>
     </div>
     <div class="form-card-footer">
       <button class="btn btn-ghost" onclick="showSection('military')">← Back</button>
+      <button class="btn btn-secondary" onclick="autoGenerateCourseOfStudy()">Generate from My Program →</button>
       <button class="btn btn-primary btn-lg" onclick="submitCourseOfStudy()">Save &amp; Polish →</button>
     </div>
   </div>`;
@@ -1973,6 +2066,21 @@ function updateCosWordCount() {
   const words = el.value.trim().split(/\s+/).filter(Boolean).length;
   hint.textContent = `${words} word${words !== 1 ? 's' : ''} — ${words < 30 ? 'write a bit more detail' : '✓ Good — will be condensed for your resume'}`;
   hint.style.color = words >= 30 ? 'var(--green-600)' : 'var(--slate-500)';
+}
+
+async function autoGenerateCourseOfStudy() {
+  const ci = document.getElementById('centerInner');
+  ci.innerHTML = `<div style="text-align:center;padding:60px 20px;color:var(--slate-500)"><div style="font-size:32px;margin-bottom:12px">✨</div><div style="font-size:15px;font-weight:600">Writing your Course of Study…</div><div style="font-size:13px;margin-top:6px">Based on your program and campus</div></div>`;
+  resumeData._courseOfStudyFromAssignment = false;
+  try {
+    resumeData.courseOfStudy = await buildCourseOfStudyForResume({ forceRegen: true });
+  } catch(e) {
+    resumeData.courseOfStudy = buildCourseOfStudyFallback();
+  }
+  saveProgress();
+  setStatus('courseOfStudy', 'done');
+  addAIMsg(`**Course of Study ready!** AI wrote a professional paragraph from your **${getTradeProgramContext().program}** program. You can edit it anytime before downloading.`);
+  showCenter('courseOfStudyDone');
 }
 
 async function submitCourseOfStudy() {
@@ -2787,30 +2895,29 @@ function trimCourseOfStudyForResume(text) {
   return out || words.slice(0, target).join(' ');
 }
 
-async function buildCourseOfStudyForResume() {
+async function buildCourseOfStudyForResume(opts = {}) {
+  const forceRegen = opts.forceRegen || false;
   const existing = (resumeData.courseOfStudy || '').trim();
   const existingWords = existing ? existing.split(/\s+/).filter(Boolean).length : 0;
   const target = courseOfStudyTargetWords();
-  if (existing && existingWords > 0 && existingWords <= target + 15) {
+  if (!forceRegen && existing && existingWords > 0 && existingWords <= target + 15) {
     return trimCourseOfStudyForResume(existing);
   }
   const savedPara = getCourseOfStudyText();
-  const tradeEdu = (resumeData.education||[]).find(e=>e.school||e.degree)||resumeData.education?.[0];
-  const program = resumeData.personal.program || tradeEdu?.fieldOfStudy || tradeEdu?.degree || 'Trade Program';
-  const school  = tradeEdu?.school || resumeData.personal.campus || 'Trade School';
-  const inProgress = !tradeEdu?.gradYear || tradeEdu.gradYear === 'In Progress';
-  const tense = inProgress ? 'present tense — student is currently enrolled' : 'past tense — student has completed the program';
+  const { program, school, tenseLong } = getTradeProgramContext();
+  const skills = programSkillKeywords();
+  const skillHint = skills.length ? `Typical program skills include: ${skills.slice(0, 6).join(', ')}.` : '';
   const lengthNote = 'Write 2–3 concise sentences only — about the same length as a resume objective (roughly 40–70 words). Do not write a long paragraph.';
-  const sys = (savedPara && savedPara.length > 40)
-    ? `You are polishing a trade school student's resume. The student wrote this Course of Study draft: "${savedPara}". Condense and rewrite it as a short, polished resume paragraph. ${lengthNote} Keep the strongest skills and training — cut filler and repetition. Do not add certifications or tools not mentioned. Program: ${program}. School: ${school}. Use ${tense}. No "I" or student's name. Return only the paragraph.`
-    : `Write a short "Course of Study" paragraph for a trade school student's resume. Program: ${program}. School: ${school}. Use ${tense}. ${lengthNote} Mention hands-on technical skills, equipment, safety practices, and competencies from the program. Implied first person — no "I" or the student's name. Return only the paragraph.`;
+  const sys = (savedPara && savedPara.length > 40 && !forceRegen)
+    ? `You are polishing a trade school student's resume. The student wrote this Course of Study draft: "${savedPara}". Condense and rewrite it as a short, polished resume paragraph. ${lengthNote} Keep the strongest skills and training — cut filler and repetition. Do not add certifications or tools not mentioned. Program: ${program}. School: ${school}. Use ${tenseLong}. No "I" or student's name. Return only the paragraph.`
+    : `Write a short "Course of Study" paragraph for a trade school student's resume. Program: ${program}. School: ${school}. Use ${tenseLong}. ${lengthNote} ${skillHint} Mention hands-on technical skills, equipment, safety practices, and competencies typical for this trade program. Sound specific and professional — not generic. Implied first person — no "I" or the student's name. Return only the paragraph.`;
   try {
     const r = await callClaude(sys, [{role:'user', content:'Write the Course of Study paragraph.'}]);
     const para = r.trim().replace(/^["']|["']$/g, '');
     if (para.length > 40) return trimCourseOfStudyForResume(para);
-  } catch(e) { /* fall through to saved or basic fallback */ }
-  if (savedPara) return trimCourseOfStudyForResume(savedPara);
-  return trimCourseOfStudyForResume(`Completed hands-on training in ${program} at ${school}, building practical skills, safety awareness, and job-ready competencies for entry-level work in the field.`);
+  } catch(e) { /* fall through */ }
+  if (savedPara && !forceRegen) return trimCourseOfStudyForResume(savedPara);
+  return buildCourseOfStudyFallback();
 }
 
 async function generateResume() {
@@ -2818,10 +2925,15 @@ async function generateResume() {
   btn.disabled=true; btn.textContent='Building resume…';
   try {
     const color = getColorObj(selectedColorHex);
+    if ((resumeData.workExperience || []).length) {
+      btn.textContent = 'Writing work experience bullets…';
+      await ensureAllWorkBullets();
+    }
     btn.textContent = 'Writing Course of Study section…';
     const courseOfStudy = await buildCourseOfStudyForResume();
     const buildData = {...resumeData, courseOfStudy};
     resumeData.courseOfStudy = courseOfStudy;
+    setStatus('courseOfStudy', 'done');
     saveProgress();
 
     btn.textContent = 'Building resume…';
@@ -2831,11 +2943,14 @@ async function generateResume() {
     saveAs(blob, resumeFilename(p));
     setStatus('template','done');
     btn.disabled=false; btn.textContent='Download Again ↓';
-    const fromAssignment = !!getCourseOfStudyText() && resumeData._courseOfStudyFromAssignment;
+    const fromAssignment = resumeData._courseOfStudyFromAssignment && getCourseOfStudyText();
     const cosNote = fromAssignment
       ? ' Your **Course of Study** section was polished from your assignment paragraph.'
-      : ' A professional **Course of Study** section was added based on your program.';
-    addAIMsg(`Your resume has been downloaded!${cosNote} Change the style or color anytime and click Download Again to try a different look.`);
+      : ' A professional **Course of Study** section was added from your program details.';
+    const workNote = (resumeData.workExperience || []).length
+      ? ' Work experience bullets were written or polished for your resume.'
+      : '';
+    addAIMsg(`Your resume has been downloaded!${cosNote}${workNote} Change the style or color anytime and click Download Again to try a different look.`);
   } catch(err) { btn.disabled=false; btn.textContent='Generate & Download ↓'; addAIMsg(`Error generating file: ${err.message}`); console.error(err); }
 }
 
