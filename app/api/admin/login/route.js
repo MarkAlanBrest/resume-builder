@@ -1,4 +1,5 @@
 import { verifyAdminPassword } from "../../../../lib/adminAuth";
+import { getStorageMode } from "../../../../lib/jsonStore";
 
 export const runtime = "nodejs";
 
@@ -11,9 +12,9 @@ export async function POST(req) {
   }
 
   const password = body?.password || "";
-  if (!verifyAdminPassword(password)) {
+  if (!(await verifyAdminPassword(password))) {
     return Response.json({ error: "Incorrect password" }, { status: 401 });
   }
 
-  return Response.json({ ok: true });
+  return Response.json({ ok: true, storage: getStorageMode() });
 }

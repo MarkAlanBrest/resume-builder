@@ -31,16 +31,49 @@ export default function ProgramAdminPage() {
   const [loading, setLoading] = useState(false);
   const [saving, setSaving] = useState(false);
   const [loggingIn, setLoggingIn] = useState(false);
+  const [restoringSession, setRestoringSession] = useState(true);
+  const [storageMode, setStorageMode] = useState("unknown");
 
   const programsByCampus = useMemo(() => CAMPUSES, []);
 
   useEffect(() => {
-    const savedPassword = sessionStorage.getItem(ADMIN_PASSWORD_STORAGE) || "";
-    if (savedPassword) {
-      setPassword(savedPassword);
-      setPasswordInput(savedPassword);
-      setAuthenticated(true);
+    let cancelled = false;
+
+    async function restoreSession() {
+      const savedPassword = (sessionStorage.getItem(ADMIN_PASSWORD_STORAGE) || "").trim();
+      if (!savedPassword) {
+        if (!cancelled) setRestoringSession(false);
+        return;
+      }
+
+      try {
+        const res = await fetch("/api/admin/login", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ password: savedPassword }),
+        });
+        const data = await res.json().catch(() => ({}));
+        if (!cancelled) {
+          if (res.ok) {
+            setPassword(savedPassword);
+            setPasswordInput(savedPassword);
+            setAuthenticated(true);
+            if (data.storage) setStorageMode(data.storage);
+          } else {
+            sessionStorage.removeItem(ADMIN_PASSWORD_STORAGE);
+          }
+        }
+      } catch {
+        if (!cancelled) sessionStorage.removeItem(ADMIN_PASSWORD_STORAGE);
+      } finally {
+        if (!cancelled) setRestoringSession(false);
+      }
     }
+
+    restoreSession();
+    return () => {
+      cancelled = true;
+    };
   }, []);
 
   useEffect(() => {
@@ -65,6 +98,11 @@ export default function ProgramAdminPage() {
         if (!cancelled) {
           setCourseStore(courseData);
           setDefaultsStore(defaultsData);
+          const statusRes = await fetch("/api/admin/status");
+          if (statusRes.ok) {
+            const statusData = await statusRes.json();
+            if (statusData.storage) setStorageMode(statusData.storage);
+          }
         }
       } catch (err) {
         if (!cancelled) setStatus(err.message || "Failed to load admin data");
@@ -110,7 +148,12 @@ export default function ProgramAdminPage() {
       sessionStorage.setItem(ADMIN_PASSWORD_STORAGE, trimmed);
       setPassword(trimmed);
       setAuthenticated(true);
-      setStatus("Signed in.");
+      if (data.storage) setStorageMode(data.storage);
+      setStatus(
+        data.storage === "ephemeral"
+          ? "Signed in. Note: saves on this deployment are temporary until Vercel Blob storage is connected."
+          : "Signed in."
+      );
     } catch (err) {
       setAuthenticated(false);
       setStatus(err.message || "Sign in failed");
@@ -219,6 +262,16 @@ export default function ProgramAdminPage() {
       ? selectedCourseMeta?.updatedAt
       : selectedDefaultsMeta?.updatedAt;
 
+  if (restoringSession) {
+    return (
+      <div style={styles.page}>
+        <div style={styles.shell}>
+          <p style={styles.helpText}>Checking saved sign-in…</p>
+        </div>
+      </div>
+    );
+  }
+
   if (!authenticated) {
     return (
       <div style={styles.page}>
@@ -234,7 +287,8 @@ export default function ProgramAdminPage() {
           <section style={{ ...styles.card, maxWidth: "480px" }}>
             <h2 style={styles.cardTitle}>Staff Sign In</h2>
             <p style={styles.helpText}>
-              Use the shared admin password provided by your department.
+              The password is case-sensitive. Make sure there are no extra spaces
+              before or after it.
             </p>
             <div style={styles.row}>
               <input
@@ -273,6 +327,12 @@ export default function ProgramAdminPage() {
                 certifications that are recommended and pre-filled for each
                 program in the resume builder.
               </p>
+              {storageMode === "ephemeral" ? (
+                <p style={styles.warningText}>
+                  Saves are temporary on this deployment. Connect Vercel Blob
+                  storage in the project settings for permanent admin edits.
+                </p>
+              ) : null}
             </div>
             <button type="button" onClick={signOut} style={styles.secondaryBtn}>
               Sign Out
@@ -592,5 +652,14 @@ const styles = {
     background: "#eff6ff",
     color: "#1e3a8a",
     fontSize: "14px",
+  },
+  warningText: {
+    margin: "10px 0 0",
+    padding: "10px 12px",
+    borderRadius: "8px",
+    background: "#fff7ed",
+    color: "#9a3412",
+    fontSize: "13px",
+    lineHeight: 1.5,
   },
 };
