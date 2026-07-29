@@ -1,20 +1,27 @@
 {
   "Automotive Technology": {
     "skills": [
-      "Diagnostics",
-      "Brake service",
-      "Oil changes",
-      "Tire rotation",
-      "Electrical testing",
-      "Shop safety"
+      "Auto Engine Performance",
+      "Heating and Air Conditioning Systems",
+      "Manual Transmissions",
+      "Automatic Transmissions",
+      "Engine Repair and Testing",
+      "Suspension and Steering",
+      "Braking Systems",
+      "Electrical Systems",
+      "Fabrication Basics",
+      "Alternative Energy",
+      "Automotive Diagnostics",
+      "Wheel Alignment",
+      "Wheel Balancing",
+      "Tire Service",
+      "Brake Lathe Operation",
+      "Fuel Injection Testing",
+      "Electronic Testing",
+      "Air Conditioning Recovery and Recharging"
     ],
-    "certifications": [
-      "ASE Student Certification",
-      "EPA Section 609",
-      "OSHA 10",
-      "Manufacturer training"
-    ],
-    "updatedAt": null
+    "certifications": [],
+    "updatedAt": "2026-07-29T19:21:13.177Z"
   },
   "Building Construction Technology": {
     "skills": [
@@ -35,37 +42,51 @@
   },
   "Building Technology": {
     "skills": [
-      "Blueprint reading",
-      "Power tools",
+      "Residential Construction",
+      "Home Remodeling",
+      "Trim Work",
+      "Door Installation",
+      "Window Installation",
       "Framing",
+      "Light Electrical",
+      "Light Plumbing",
+      "Blueprint Reading",
       "Drywall",
-      "Measuring and layout",
-      "Job-site safety"
+      "Masonry",
+      "Roofing",
+      "Siding",
+      "Tool Safety",
+      "Safe Operation of Construction Tools and Equipment"
     ],
-    "certifications": [
-      "OSHA 10",
-      "Forklift Certification",
-      "First Aid/CPR",
-      "Scissor Lift/Aerial Lift"
-    ],
-    "updatedAt": null
+    "certifications": [],
+    "updatedAt": "2026-07-29T19:21:13.177Z"
   },
   "Combination Welding": {
     "skills": [
-      "MIG welding",
-      "TIG welding",
-      "Stick welding",
-      "Blueprint reading",
-      "Metal fabrication",
-      "Weld inspection"
+      "Welding Fabrication",
+      "Welding Mathematics",
+      "Oxy Fuel Cutting",
+      "Shielded Metal Arc Welding",
+      "Gas Metal Arc Welding",
+      "Gas Tungsten Arc Welding",
+      "Flux-Cored Arc Welding",
+      "Non-Ferrous Welding",
+      "Plasma Cutting",
+      "Arc Cutting",
+      "Pipe Welding",
+      "Welding Blueprint Reading",
+      "MIG Welding",
+      "TIG Welding",
+      "Stick Welding",
+      "Plate Welding",
+      "Pipe-to-Plate Welding",
+      "Grinding",
+      "Beveling",
+      "Hydraulic Shear Operation",
+      "Horizontal Band Saw Operation"
     ],
-    "certifications": [
-      "AWS Certification",
-      "OSHA 10",
-      "Forklift Certification",
-      "First Aid/CPR"
-    ],
-    "updatedAt": null
+    "certifications": [],
+    "updatedAt": "2026-07-29T19:21:13.177Z"
   },
   "Commercial Truck Driving CDL": {
     "skills": [
@@ -120,54 +141,120 @@
   },
   "Diesel and Heavy Equipment Repair Technology": {
     "skills": [
-      "Pre-trip inspections",
-      "Diesel maintenance",
-      "Hydraulics",
-      "Preventive maintenance",
-      "DOT safety",
-      "Equipment operation"
+      "Diesel Engine Diagnosis",
+      "Diesel Engine Troubleshooting",
+      "Diesel Engine Disassembly",
+      "Diesel Engine Repair",
+      "Piston Replacement",
+      "Bearing Replacement",
+      "Gear Replacement",
+      "Valve Replacement",
+      "Bushing Replacement",
+      "Ignition System Installation",
+      "Steering and Suspension Repair",
+      "Transmission Repair",
+      "Transmission Replacement",
+      "Chassis Diagnosis",
+      "Chassis Assembly Replacement",
+      "Pneumatic Brake Repair",
+      "Hydraulic Brake Repair",
+      "Diesel Engine Performance",
+      "Engine Electronics",
+      "Power Trains",
+      "DC Electrical Systems",
+      "CAT Engines",
+      "Cummins Engines",
+      "Detroit Engines",
+      "Reading Prints and Schematics",
+      "Fabrication",
+      "Precision Measuring",
+      "Proprietary Information Systems",
+      "Computerized Diagnostics",
+      "Fuel Injection Testing",
+      "Engine Testing",
+      "Electronic Circuit Testing"
     ],
     "certifications": [
-      "CDL Permit or License",
-      "OSHA 10",
-      "Forklift Certification",
-      "DOT Medical Card"
+      "Snap-On 503 Multi-meter",
+      "Certificate of Completion – DOT Entry Level Commercial Driver Training",
+      "Class A Commercial Driver's License – OH"
     ],
-    "updatedAt": null
+    "updatedAt": "2026-07-29T19:21:13.177Z"
   },
   "Electrical Technology": {
     "skills": [
-      "Electrical troubleshooting",
-      "Motor controls",
-      "PLC basics",
-      "Preventive maintenance",
-      "Blueprint/schematic reading",
-      "Lockout/tagout"
+      "Electricity",
+      "Blueprint Reading",
+      "Construction Wiring",
+      "Machine Control",
+      "Motor Control",
+      "Electrical Motors",
+      "Residential Circuitry",
+      "Commercial Circuitry",
+      "Electrical Services",
+      "Conduit Installation",
+      "Conduit Bending",
+      "NEC Residential",
+      "AC/DC Power",
+      "Programmable Controllers",
+      "Telecommunications",
+      "Solid-State Electronics",
+      "Electronic Control",
+      "Meter Use",
+      "Oscilloscope Use",
+      "Three-Phase Motors",
+      "Single-Phase Motors",
+      "Residential Electrical Components",
+      "Commercial Electrical Components",
+      "Industrial Electrical Components",
+      "Programmable Logic Controllers"
     ],
-    "certifications": [
-      "OSHA 10",
-      "NFPA 70E Awareness",
-      "First Aid/CPR",
-      "Forklift Certification"
-    ],
-    "updatedAt": null
+    "certifications": [],
+    "updatedAt": "2026-07-29T19:21:13.177Z"
   },
   "Electrical and Industrial Maintenance": {
     "skills": [
-      "Electrical troubleshooting",
-      "Motor controls",
-      "PLC basics",
-      "Preventive maintenance",
-      "Blueprint/schematic reading",
-      "Lockout/tagout"
+      "Commercial Electricity",
+      "Industrial Electricity",
+      "Welding",
+      "HVAC",
+      "Pneumatics",
+      "Hydraulics",
+      "Gaskets and Seals",
+      "Pumps",
+      "Plumbing",
+      "Equipment Maintenance",
+      "Forklift Operation",
+      "Wind Power Generation",
+      "Solar Power",
+      "Industrial Safety Procedures",
+      "Conduit Bending",
+      "Motor Controls",
+      "Electric Motors",
+      "Test Meter Use",
+      "Service Panels",
+      "Refrigeration Equipment",
+      "Air Conditioning Systems",
+      "Heating Systems",
+      "Precision Measuring",
+      "Pneumatic Equipment",
+      "Hydraulic Equipment",
+      "Pumps and Valves",
+      "Plumbing Tools and Fixtures",
+      "Arc Welding",
+      "MIG Welding",
+      "Cutting Torch Operation",
+      "Fluid Control",
+      "Brazing",
+      "Fusion",
+      "Industrial Mechanics",
+      "Electrical Services",
+      "Electric Power",
+      "Programmable Logic Controllers",
+      "Basic Rigging"
     ],
-    "certifications": [
-      "OSHA 10",
-      "NFPA 70E Awareness",
-      "First Aid/CPR",
-      "Forklift Certification"
-    ],
-    "updatedAt": null
+    "certifications": [],
+    "updatedAt": "2026-07-29T19:21:13.177Z"
   },
   "HVAC Technology": {
     "skills": [
@@ -222,70 +309,144 @@
   },
   "Machinist and CNC Manufacturing": {
     "skills": [
-      "CNC operation",
-      "Blueprint reading",
-      "Precision measurement",
-      "Calipers and micrometers",
-      "Machine setup",
-      "Quality control"
+      "CNC Mill Setup",
+      "CNC Mill Programming",
+      "FANUC Controls",
+      "CNC Lathe Setup",
+      "CNC Lathe Programming",
+      "HAAS Controls",
+      "BobCAD",
+      "Conversational Programming",
+      "Manual Lathe Setup and Operation",
+      "Manual Mill Setup and Operation",
+      "Dimensional Blueprint Reading",
+      "Geometric Dimensioning and Tolerancing",
+      "Fabrication",
+      "Shop Mathematics",
+      "Trigonometry",
+      "Horizontal Band Saw Operation",
+      "Vertical Band Saw Operation",
+      "Milling Machine Operation",
+      "Lathe Operation",
+      "Hydraulic Press Operation",
+      "Drill Press Operation",
+      "Fixture Use",
+      "Precision Measuring",
+      "Surface Grinding",
+      "Pedestal Grinding"
     ],
-    "certifications": [
-      "NIMS Certification",
-      "OSHA 10",
-      "Forklift Certification",
-      "Lean Manufacturing"
-    ],
-    "updatedAt": null
+    "certifications": [],
+    "updatedAt": "2026-07-29T19:21:13.177Z"
   },
   "Motorcycle and Power Equipment Technology": {
     "skills": [
-      "Diagnostics",
-      "Brake service",
-      "Oil changes",
-      "Tire rotation",
-      "Electrical testing",
-      "Shop safety"
+      "Hydraulics",
+      "Small Engine Operation",
+      "Small Engine Maintenance",
+      "Motorcycle Basics",
+      "Electrical Fundamentals",
+      "Electrical System Analysis",
+      "Fuel Systems",
+      "Fuel System Analysis",
+      "Drive Trains",
+      "Motorcycle Repair",
+      "Motorcycle Diagnostics",
+      "Small Engine Repair",
+      "Small Engine Performance",
+      "Power Equipment Analysis",
+      "Electrical Diagnostics",
+      "Small Engine Diagnosis",
+      "Small Engine Troubleshooting",
+      "Small Engine Disassembly",
+      "Piston Replacement",
+      "Bearing Replacement",
+      "Gear Replacement",
+      "Valve Replacement",
+      "Bushing Replacement",
+      "Ignition System Installation",
+      "Multi-Point Vehicle Service",
+      "Steering and Suspension Replacement",
+      "Clutch Replacement",
+      "Transmission Replacement",
+      "Carburetor Diagnosis and Maintenance",
+      "Fuel Injection Diagnosis and Maintenance",
+      "Hydraulic Brake Repair",
+      "Equipment Maintenance",
+      "Multimeter Use",
+      "Tachometer Use",
+      "Temperature Probe Use",
+      "Tire Machine Operation",
+      "Boring Bar Use",
+      "Valve Cutting"
     ],
     "certifications": [
-      "ASE Student Certification",
-      "EPA Section 609",
-      "OSHA 10",
-      "Manufacturer training"
+      "Snap-On Multimeter",
+      "10-Hour OSHA Hazard Course"
     ],
-    "updatedAt": null
+    "updatedAt": "2026-07-29T19:21:13.177Z"
   },
   "Refrigeration and AC Technology": {
     "skills": [
-      "Refrigerant handling",
-      "System troubleshooting",
-      "Electrical testing",
-      "Brazing",
-      "Preventive maintenance",
-      "Customer service"
+      "Refrigeration Fundamentals",
+      "Refrigeration Processes",
+      "Electricity",
+      "Electrical Circuitry",
+      "Climate Control",
+      "Heating Systems",
+      "Commercial Refrigeration",
+      "Commercial Applications",
+      "Sheet Metal Basics",
+      "Air Distribution Systems",
+      "Air Conditioning",
+      "Heat Pumps",
+      "Manual J",
+      "Commercial Walk-In Cooler Service",
+      "Commercial Walk-In Freezer Service",
+      "Reach-In Cooler Service",
+      "Reach-In Freezer Service",
+      "Ice Machine Service",
+      "Central Air Conditioning",
+      "Gas Furnaces",
+      "Oil Furnaces",
+      "Electric Furnaces",
+      "Two-Stage Furnaces",
+      "Modulating Furnaces",
+      "Hydronic Systems",
+      "Sheet Metal Fabrication",
+      "Brake Operation",
+      "Shear Operation",
+      "Roll Former Operation"
     ],
-    "certifications": [
-      "EPA Section 608",
-      "OSHA 10",
-      "NATE Ready-to-Work",
-      "R-410A Safety"
-    ],
-    "updatedAt": null
+    "certifications": [],
+    "updatedAt": "2026-07-29T19:21:13.177Z"
   },
   "Refrigeration and Climate Control": {
     "skills": [
-      "Refrigerant handling",
-      "System troubleshooting",
-      "Electrical testing",
-      "Brazing",
-      "Preventive maintenance",
-      "Customer service"
+      "Refrigeration Fundamentals",
+      "Refrigeration Processes",
+      "Electricity",
+      "Electrical Circuitry",
+      "Climate Control",
+      "Heating Systems",
+      "Commercial Refrigeration",
+      "Commercial Applications",
+      "Air Distribution Systems",
+      "Air Conditioning",
+      "Heat Pumps",
+      "Manual J",
+      "Commercial Walk-In Cooler Service",
+      "Commercial Walk-In Freezer Service",
+      "Reach-In Cooler Service",
+      "Reach-In Freezer Service",
+      "Ice Machine Service",
+      "Central Air Conditioning",
+      "Gas Furnaces",
+      "Oil Furnaces",
+      "Electric Furnaces",
+      "Two-Stage Furnaces",
+      "Modulating Furnaces"
     ],
-    "certifications": [
-      "EPA Section 608",
-      "OSHA 10",
-      "NATE Ready-to-Work",
-      "R-410A Safety"
-    ],
-    "updatedAt": null
+    "certifications": [],
+    "updatedAt": "2026-07-29T19:21:13.177Z"
   }
 }
