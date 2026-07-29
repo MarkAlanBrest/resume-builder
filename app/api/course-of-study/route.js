@@ -10,7 +10,7 @@ export const runtime = "nodejs";
 export async function GET(req) {
   const { searchParams } = new URL(req.url);
   const program = searchParams.get("program");
-  const store = readCourseOfStudyStore();
+  const store = await readCourseOfStudyStore();
 
   if (program) {
     const entry = store[program] || { text: "", updatedAt: null };
@@ -29,7 +29,7 @@ export async function PUT(req) {
   }
 
   const { program, text, password } = body;
-  if (!verifyAdminPassword(password)) {
+  if (!(await verifyAdminPassword(password))) {
     return Response.json({ error: "Incorrect password" }, { status: 401 });
   }
 
@@ -37,6 +37,6 @@ export async function PUT(req) {
     return Response.json({ error: "Invalid program" }, { status: 400 });
   }
 
-  const entry = updateProgramCourseOfStudy(program, text);
+  const entry = await updateProgramCourseOfStudy(program, text);
   return Response.json({ program, ...entry });
 }
