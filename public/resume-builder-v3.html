@@ -88,6 +88,18 @@ html,body{height:100%;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Ro
 .f-err{font-size:11px;color:var(--red-600);display:none;margin-top:1px}
 .f-group.has-error input,.f-group.has-error select,.f-group.has-error textarea{border-color:var(--red-600)}
 .f-group.has-error .f-err{display:block}
+.f-group.has-error .bullet-row input{border-color:var(--red-600)}
+
+/* ── Bullet inputs ── */
+.bullet-section{margin-top:4px}
+.bullet-hint{font-size:13px;color:var(--slate-600);line-height:1.5;margin-bottom:12px;padding:10px 12px;background:#fffbeb;border:1px solid #fde68a;border-radius:8px}
+.bullet-row{display:flex;align-items:center;gap:8px;margin-bottom:10px}
+.bullet-num{font-size:13px;font-weight:700;color:var(--slate-500);min-width:18px;text-align:right;flex-shrink:0}
+.bullet-row input{flex:1;padding:9px 12px;border:1.5px solid var(--slate-200);border-radius:7px;font-size:14px;color:var(--slate-900);background:var(--slate-50);font-family:inherit;outline:none;transition:border-color .15s,box-shadow .15s}
+.bullet-row input:focus{border-color:var(--blue-700);box-shadow:0 0 0 3px rgba(29,78,216,.1);background:var(--white)}
+.req-tag,.opt-tag{font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.4px;padding:2px 7px;border-radius:20px;flex-shrink:0;white-space:nowrap}
+.req-tag{background:#dbeafe;color:var(--blue-800)}
+.opt-tag{background:var(--slate-100);color:var(--slate-500)}
 
 /* ── Date Pair ── */
 .date-pair{display:grid;grid-template-columns:1.6fr 1fr;gap:8px}
@@ -390,7 +402,7 @@ const SECTIONS = [
 const TIPS = {
   personal:`Fill in your contact information carefully — this is how employers reach you. Make sure your email looks professional and your phone number is correct. Select your campus and program from the dropdowns.`,
   career:`Be specific about the type of job and employer you're targeting. Examples: "I want to work as an automotive technician at a dealership doing diagnostics and hands-on repairs." "I am looking for an entry-level HVAC position where I can install, maintain, and troubleshoot residential systems." "I want a welding job in manufacturing or construction where I can use MIG/TIG skills and read blueprints." Pick up to 3 qualities that describe you as a worker.`,
-  work:`When describing your duties, just write naturally — don't worry about formatting. Mention specific tools, equipment, tasks, and anything you're proud of. I'll convert it into professional bullet points for you.`,
+  work:`Write 3–5 bullet points for each job — one duty per line. Use the formula: Action Verb + Specific Task + Tools/Detail. Mention specific tools, equipment, and tasks. Bullets 1–3 are required. Use "Rewrite Bullets" on the review screen if you want AI to polish them.`,
   courseOfStudy:`Write a paragraph about the skills, tools, and training you gained in your program. This becomes the **Course of Study** section on your resume — it appears right above Education. If you completed the Work Experience Assignment, your paragraph is already loaded. I'll polish it to sound professional when you save.`,
   education:`Your trade program has been pre-filled below. Confirm the details and add your graduation year. Then add your high school diploma or any other education you have.`,
   skills:`Write out every skill and certification you have — tools, equipment, software, techniques, licenses, OSHA/EPA/CDL cards, manufacturer training, anything relevant. I'll clean it up, remove duplicates, and organize it professionally.`,
@@ -573,7 +585,7 @@ function getCourseOfStudyText() {
 
 async function polishImportedJobs() {
   const ci = document.getElementById('centerInner');
-  const toProcess = resumeData.workExperience.filter(j => j._fromAssignment && !j._bulletPolished);
+  const toProcess = resumeData.workExperience.filter(j => j._fromAssignment && !j._bulletPolished && (j.bulletLines || []).filter(Boolean).length < 3);
   const prog = resumeData.personal.program || '';
   for (let idx = 0; idx < toProcess.length; idx++) {
     const job = toProcess[idx];
@@ -1377,6 +1389,69 @@ function isProfessionalDuties(value) {
   return words.length >= 1;
 }
 
+const WORK_BULLET_PLACEHOLDERS = [
+  'Performed oil changes, tire rotations, and brake inspections on customer vehicles',
+  'Operated shop equipment including hydraulic lifts and diagnostic scan tools',
+  'Maintained a clean, organized work bay and followed all shop safety procedures',
+  '(Optional) Add a fourth bullet point…',
+  '(Optional) Add a fifth bullet point…'
+];
+
+function stripBulletPrefix(text) {
+  return String(text || '').replace(/^[•\-\*]\s*/, '').trim();
+}
+
+function collectWorkBullets() {
+  const lines = [];
+  for (let i = 1; i <= 5; i++) {
+    const el = document.getElementById('wb' + i);
+    if (!el) continue;
+    const val = stripBulletPrefix(el.value);
+    if (val) lines.push(cleanCareerText(val));
+  }
+  return lines;
+}
+
+function workBulletValue(pf, index) {
+  const bullets = pf.bulletLines || [];
+  const fromDuties = (pf.duties || '').split('\n').map(stripBulletPrefix).filter(Boolean);
+  const source = bullets.length ? bullets : fromDuties;
+  return escHtml(source[index] || '');
+}
+
+function renderWorkBulletFields(pf = {}) {
+  const rows = [1, 2, 3, 4, 5].map(i => {
+    const req = i <= 3;
+    return `<div class="bullet-row"><span class="bullet-num">${i}.</span><input type="text" id="wb${i}" value="${workBulletValue(pf, i - 1)}" placeholder="${WORK_BULLET_PLACEHOLDERS[i - 1]}"><span class="${req ? 'req-tag' : 'opt-tag'}">${req ? 'Required' : 'Optional'}</span></div>`;
+  }).join('');
+  return `<div class="bullet-section">
+    <div class="bullet-hint">Use the formula: <strong>Action Verb + Specific Task + Tools/Detail</strong>. Bullets 1–3 are required; 4–5 are optional.</div>
+    ${rows}
+  </div>`;
+}
+
+function applyWorkBullets(bulletLines = []) {
+  for (let i = 1; i <= 5; i++) {
+    const el = document.getElementById('wb' + i);
+    if (el) el.value = bulletLines[i - 1] || '';
+  }
+}
+
+function firstEmptyWorkBulletId() {
+  for (let i = 1; i <= 5; i++) {
+    const el = document.getElementById('wb' + i);
+    if (el && !el.value.trim()) return 'wb' + i;
+  }
+  return 'wb5';
+}
+
+function isValidWorkBullet(text) {
+  const cleaned = stripBulletPrefix(text);
+  if (!cleaned || cleaned.length < 3 || !/[A-Za-z]{2,}/.test(cleaned)) return false;
+  if (/^(idk|dunno|whatever|none|n\/a|na)$/i.test(cleaned)) return false;
+  return true;
+}
+
 function monthIndex(month) {
   const idx = MONTHS.indexOf(month);
   return idx >= 0 ? idx : -1;
@@ -1657,8 +1732,7 @@ function renderWorkForm(pf={}) {
   </div>` : '';
   const subTitle = isEditing ? 'Editing a saved position' : jobs.length ? `${jobs.length} position(s) saved — add another or continue` : 'Add your work history';
   const cardTitle = isEditing ? 'Edit Position' : jobs.length ? 'Add Another Position' : 'Position Details';
-  const dutiesLabel = isEditing ? 'Current Bullets — edit or rewrite *' : 'Describe Your Duties *';
-  const dutiesValue = isEditing ? escHtml((pf.bulletLines||[]).join('\n')) : '';
+  const dutiesLabel = 'Job Duties — Bullet Points';
   const footerLeft = isEditing
     ? `<button class="btn btn-ghost" onclick="cancelEditWork()">Cancel</button>`
     : jobs.length
@@ -1675,11 +1749,11 @@ function renderWorkForm(pf={}) {
         <div class="f-group" id="fg-sd"><label>Start Date *</label><div class="date-pair"><select id="startMo"><option value="">Month</option>${moOpts(pf.startMonth)}</select><input id="startYr" value="${escHtml(pf.startYear||'')}" placeholder="Year" maxlength="4" inputmode="numeric"></div><span class="f-err">Required</span></div>
         <div class="f-group" id="fg-ed"><label>End Date</label><div class="date-pair"><select id="endMo" ${pf.current?'disabled':''}><option value="">Month</option>${moOpts(pf.endMonth)}</select><input id="endYr" value="${escHtml(pf.current?'':pf.endYear||'')}" placeholder="Year" maxlength="4" inputmode="numeric" ${pf.current?'disabled':''}></div><label class="check-opt-inline"><input type="checkbox" id="curJob" ${pf.current?'checked':''} onchange="toggleCurJob(this)"><span>I currently work here</span></label><span class="f-err">Enter an end date after the start date, or mark current.</span></div>
       </div>
-      <div class="f-row single"><div class="f-group" id="fg-duties"><label>${dutiesLabel}</label><textarea id="duties" rows="4" placeholder="Describe what you did — tools, equipment, tasks, and responsibilities.">${dutiesValue}</textarea><span class="f-err">Please describe your duties.</span></div></div>
+      <div class="f-row single"><div class="f-group" id="fg-duties"><label>${dutiesLabel} *</label>${renderWorkBulletFields(pf)}<span class="f-err">Enter at least 3 bullet points describing your duties.</span></div></div>
     </div>
     <div class="form-card-footer">
       ${footerLeft}
-      <button class="btn btn-primary" onclick="submitWork()">${isEditing?'Update Work History →':'Build →'}</button>
+      <button class="btn btn-primary" onclick="submitWork()">${isEditing?'Update Work History →':'Save →'}</button>
     </div>
   </div>`;
 }
@@ -1712,31 +1786,25 @@ async function submitWork() {
     if (!validateWorkData(work)) return;
     if (review?.issues?.length) {
       review.issues.forEach(issue=>setFieldError(WORK_FIELD_GROUPS[issue.field], issue.message || 'Please revise this field.'));
-      addAIMsg('I found a few work experience items that need your review. Please fix the highlighted fields, then generate bullets again.');
+      addAIMsg('I found a few work experience items that need your review. Please fix the highlighted fields, then save again.');
       return;
     }
   } catch(e) {
     addAIMsg('I could not complete the work experience spelling and professionalism review. Please check your connection or API key, then try again.');
     return;
   } finally {
-    if (btn && currentSection === 'work') { btn.disabled = false; btn.textContent = 'Build →'; }
+    if (btn && currentSection === 'work') { btn.disabled = false; btn.textContent = editingWorkIndex >= 0 ? 'Update Work History →' : 'Save →'; }
   }
 
   pendingWork = work;
-  const ci = document.getElementById('centerInner');
-  ci.innerHTML = `<div style="text-align:center;padding:60px 20px;color:var(--slate-500)"><div style="font-size:32px;margin-bottom:12px">⚙️</div>Generating bullet points…</div>`;
-  const prog = resumeData.personal.program || '';
-  const tense = work.current ? 'present tense' : 'past tense';
-  const sys = `Write resume bullet points for a trade school student studying ${prog}. Job: ${pendingWork.jobTitle} at ${pendingWork.employer}. Duties/notes may be weak or incomplete: "${pendingWork.duties}". Use the job title, employer, and program to infer realistic entry-level responsibilities without inventing specific certifications, metrics, or tools not implied by the role. Write 3–5 bullets, ${tense}, each starting with a strong action verb. Each line starts with •. Return only the bullet points.`;
-  try {
-    const result = await callClaude(sys,[{role:'user',content:'Write the bullet points.'}]);
-    pendingWork.bulletLines = result.trim().split('\n').map(l=>l.trim().replace(/^[•\-\*]\s*/,'')).filter(l=>l.length>0).map(l=>cleanCareerText(l));
-    showCenter('workApproval');
-  } catch(e) { addAIMsg('Could not connect — please try again.'); showSection('work'); }
+  pendingWork.bulletLines = work.bulletLines;
+  pendingWork.duties = work.bulletLines.join('\n');
+  showCenter('workApproval');
 }
 
 function collectWorkData() {
   const cur = document.getElementById('curJob').checked;
+  const bulletLines = collectWorkBullets();
   return {
     employer:cleanEmployerName(document.getElementById('empName').value),
     jobTitle:cleanJobTitle(document.getElementById('jobTitle').value),
@@ -1747,13 +1815,15 @@ function collectWorkData() {
     endMonth:cur?'':document.getElementById('endMo').value,
     endYear:cur?'Present':document.getElementById('endYr').value.trim(),
     current:cur,
-    duties:cleanCareerText(document.getElementById('duties').value),
+    bulletLines,
+    duties:bulletLines.join('\n'),
   };
 }
 
 function applyWorkData(w) {
-  const pairs = [['empName',w.employer],['jobTitle',w.jobTitle],['wCity',w.city],['wState',w.state],['startMo',w.startMonth],['startYr',w.startYear],['endMo',w.endMonth],['endYr',w.current?'':w.endYear],['duties',w.duties]];
+  const pairs = [['empName',w.employer],['jobTitle',w.jobTitle],['wCity',w.city],['wState',w.state],['startMo',w.startMonth],['startYr',w.startYear],['endMo',w.endMonth],['endYr',w.current?'':w.endYear]];
   pairs.forEach(([id,value])=>{ const el=document.getElementById(id); if(el) el.value=value || ''; });
+  applyWorkBullets(w.bulletLines || (w.duties || '').split('\n').map(stripBulletPrefix).filter(Boolean));
 }
 
 function validateWorkData(w) {
@@ -1764,7 +1834,8 @@ function validateWorkData(w) {
   if (w.state && !US_STATES.has(w.state)) { setFieldError('fg-wstate','Use a valid 2-letter state or leave blank.'); valid=false; } else clearFieldError('fg-wstate');
   if (!w.startMonth || !isReasonableYear(w.startYear)) { setFieldError('fg-sd','Enter a valid start month and year.'); valid=false; } else clearFieldError('fg-sd');
   if (!w.current && (!w.endMonth || !isReasonableYear(w.endYear) || compareWorkDates(w.endMonth,w.endYear,w.startMonth,w.startYear) < 0)) { setFieldError('fg-ed','Enter an end date after the start date, or mark current.'); valid=false; } else clearFieldError('fg-ed');
-  if (!isProfessionalDuties(w.duties)) { setFieldError('fg-duties','Enter at least one duty, task, tool, or responsibility.'); valid=false; } else clearFieldError('fg-duties');
+  const validBullets = (w.bulletLines || []).filter(isValidWorkBullet);
+  if (validBullets.length < 3) { setFieldError('fg-duties','Enter at least 3 bullet points describing your duties.'); valid=false; } else clearFieldError('fg-duties');
   return valid;
 }
 
@@ -1775,8 +1846,8 @@ Rules:
 - Omit unchanged correction fields.
 - Keep the student's meaning. Do not invent employers, job titles, locations, tools, certifications, or responsibilities.
 - Correct employer capitalization only when obvious, such as "mcdonalds" to "McDonald's".
-- Make jobTitle and duties professional and resume-ready. Duties may be weak, rough notes, or very short phrases; use the job title and employer to infer likely resume-safe wording when reasonable.
-- If duties are weak but not empty, do not add an issue. Polish them and let bullet generation expand them.
+- Make jobTitle and duties professional and resume-ready. Duties are bullet points joined with newlines; polish wording without changing the count of bullets.
+- If duties are weak but not empty, do not add an issue. Polish them and keep each bullet on its own line.
 - If employer/jobTitle/duties are fake, empty, inappropriate, or impossible to understand at all, add an issue.
 - field must be one of: employer,jobTitle,city,state,duties.`;
   const raw = await callClaude(sys,[{role:'user',content:JSON.stringify(work)}]);
@@ -1786,7 +1857,10 @@ Rules:
   if (parsed.corrections?.jobTitle) corrections.jobTitle = cleanJobTitle(parsed.corrections.jobTitle);
   if (parsed.corrections?.city) corrections.city = cleanPlaceName(parsed.corrections.city);
   if (parsed.corrections?.state) corrections.state = parsed.corrections.state.trim().toUpperCase();
-  if (parsed.corrections?.duties) corrections.duties = cleanCareerText(parsed.corrections.duties);
+  if (parsed.corrections?.duties) {
+    corrections.duties = cleanCareerText(parsed.corrections.duties);
+    corrections.bulletLines = parsed.corrections.duties.split('\n').map(stripBulletPrefix).map(cleanCareerText).filter(Boolean);
+  }
   const issues = (parsed.issues || []).filter(issue=>WORK_FIELD_GROUPS[issue.field] && issue.message);
   return {corrections, issues};
 }
@@ -1858,7 +1932,7 @@ async function regenBullets() {
   ci.innerHTML = `<div style="text-align:center;padding:60px 20px;color:var(--slate-500)"><div style="font-size:32px;margin-bottom:12px">⚙️</div>Rewriting bullet points…</div>`;
   const prog = resumeData.personal.program||'';
   const tense = pendingWork.current?'present tense':'past tense';
-  const sys = `Write DIFFERENT resume bullet points for a trade school student studying ${prog}. Job: ${pendingWork.jobTitle} at ${pendingWork.employer}. Duties/notes may be weak or incomplete: "${pendingWork.duties}". Use the job title, employer, and program to infer realistic entry-level responsibilities without inventing specific certifications, metrics, or tools not implied by the role. Use different action verbs. 3–5 bullets, ${tense}. Each line starts with •. Return only the bullet points.`;
+  const sys = `Write DIFFERENT resume bullet points for a trade school student studying ${prog}. Job: ${pendingWork.jobTitle} at ${pendingWork.employer}. Current bullets: ${JSON.stringify(pendingWork.bulletLines || [])}. Use the job title, employer, and program to infer realistic entry-level responsibilities without inventing specific certifications, metrics, or tools not implied by the role. Use different action verbs. 3–5 bullets, ${tense}. Each line starts with •. Return only the bullet points.`;
   try { const r=await callClaude(sys,[{role:'user',content:'Write alternate bullets.'}]); pendingWork.bulletLines=r.trim().split('\n').map(l=>l.replace(/^[•\-\*]\s*/,'')).filter(l=>l.length>0).map(l=>cleanCareerText(l)); showCenter('workApproval'); }
   catch(e) { addAIMsg('Could not connect.'); showCenter('workApproval'); }
 }
@@ -3064,7 +3138,7 @@ function buildWorkTip() {
   const program = resumeData.personal.program || '';
   const found = WORK_TIP_EXAMPLES.find(item=>item.match.test(program));
   const examples = (found || {examples:['Helped customers, completed assigned tasks, and followed workplace procedures.','Used tools, equipment, or software safely to complete daily responsibilities.','Kept work areas organized and communicated with supervisors and team members.']}).examples;
-  return `${TIPS.work} Since your program is ${program || 'not selected yet'}, here are examples you can model your duties after:\n\n${examples.map(e=>`• ${e}`).join('\n')}`;
+  return `${TIPS.work} Since your program is ${program || 'not selected yet'}, here are examples you can model your bullet points after:\n\n${examples.map(e=>`• ${e}`).join('\n')}`;
 }
 
 function buildSkillsCertsTip() {
@@ -3135,7 +3209,7 @@ async function refreshDutySuggestions(title){
     if(!Array.isArray(items)||!items.length)throw new Error('bad');
     const itemsHtml=items.slice(0,3).map(text=>{
       const idx=_suggPool.length;
-      _suggPool.push({text:String(text).trim(),targetId:'duties',mode:'append'});
+      _suggPool.push({text:String(text).trim(),targetId:firstEmptyWorkBulletId(),mode:'replace'});
       return `<div class="sugg-item" onclick="applySuggestion(${idx})"><span class="sugg-text">${escHtml(String(text).trim())}</span><button class="sugg-use" onclick="event.stopPropagation();applySuggestion(${idx})">Use ↵</button></div>`;
     }).join('');
     _dutySuggBubble.innerHTML=`<div class="sugg-label">Suggestions for "${escHtml(t)}" — click to use:</div>${itemsHtml}`;
