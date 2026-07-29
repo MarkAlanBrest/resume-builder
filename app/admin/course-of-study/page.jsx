@@ -1,7 +1,8 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { CAMPUSES } from "../../../lib/campuses";
+import "./admin.css";
 
 const ADMIN_PASSWORD_STORAGE = "courseOfStudyAdminPassword";
 
@@ -16,60 +17,57 @@ function listFromLines(text) {
     .filter(Boolean);
 }
 
-function AdminFocusStyles() {
+function AdminPage({ children }) {
+  const pageRef = useRef(null);
+  const keyboardFocusRef = useRef(false);
+
+  useEffect(() => {
+    const page = pageRef.current;
+    if (!page) return;
+
+    const markKeyboard = (e) => {
+      if (e.key === "Tab") keyboardFocusRef.current = true;
+    };
+    const markPointer = () => {
+      keyboardFocusRef.current = false;
+    };
+    const blurMouseFocus = (e) => {
+      const target = e.target;
+      if (
+        (target instanceof HTMLButtonElement || target instanceof HTMLAnchorElement) &&
+        page.contains(target) &&
+        !keyboardFocusRef.current
+      ) {
+        target.blur();
+      }
+      keyboardFocusRef.current = false;
+    };
+
+    page.addEventListener("keydown", markKeyboard, true);
+    page.addEventListener("mousedown", markPointer, true);
+    page.addEventListener("touchstart", markPointer, true);
+    page.addEventListener("focusin", blurMouseFocus, true);
+
+    return () => {
+      page.removeEventListener("keydown", markKeyboard, true);
+      page.removeEventListener("mousedown", markPointer, true);
+      page.removeEventListener("touchstart", markPointer, true);
+      page.removeEventListener("focusin", blurMouseFocus, true);
+    };
+  }, []);
+
   return (
-    <style>{`
-      .program-admin-page button,
-      .program-admin-page a.tool-link {
-        -webkit-tap-highlight-color: transparent;
-        outline: none;
-      }
-      .program-admin-page button:focus,
-      .program-admin-page a.tool-link:focus {
-        outline: none;
-        box-shadow: none;
-      }
-      .program-admin-page button:focus-visible,
-      .program-admin-page a.tool-link:focus-visible {
-        outline: 2px solid #93c5fd;
-        outline-offset: 2px;
-      }
-    `}</style>
+    <div ref={pageRef} style={styles.page} className="program-admin-page">
+      {children}
+    </div>
   );
-}
-
-function suppressMouseFocus(e) {
-  e.preventDefault();
-}
-
-function blurAfterClick(handler) {
-  return (e) => {
-    handler?.(e);
-    e.currentTarget.blur();
-  };
 }
 
 function AdminButton({ onClick, style, disabled, children, ...props }) {
   return (
-    <button
-      type="button"
-      onMouseDown={suppressMouseFocus}
-      onClick={blurAfterClick(onClick)}
-      disabled={disabled}
-      style={style}
-      {...props}
-    >
+    <button type="button" onClick={onClick} disabled={disabled} style={style} {...props}>
       {children}
     </button>
-  );
-}
-
-function AdminPage({ children }) {
-  return (
-    <div style={styles.page} className="program-admin-page">
-      <AdminFocusStyles />
-      {children}
-    </div>
   );
 }
 
@@ -539,8 +537,7 @@ const styles = {
     outline: "none",
   },
   tabBtnActive: {
-    background: "#eff6ff",
-    borderColor: "#93c5fd",
+    background: "#dbeafe",
     color: "#1d4ed8",
   },
   card: {
@@ -645,8 +642,7 @@ const styles = {
     outline: "none",
   },
   programBtnActive: {
-    background: "#eff6ff",
-    borderColor: "#93c5fd",
+    background: "#dbeafe",
   },
   badgeDone: {
     fontSize: "11px",

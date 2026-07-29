@@ -1,0 +1,24 @@
+.program-admin-page button,
+.program-admin-page a.tool-link {
+  -webkit-tap-highlight-color: transparent;
+  outline: none !important;
+  box-shadow: none !important;
+}
+
+.program-admin-page button:focus,
+.program-admin-page button:focus-visible,
+.program-admin-page button:active,
+.program-admin-page a.tool-link:focus,
+.program-admin-page a.tool-link:focus-visible,
+.program-admin-page a.tool-link:active {
+  outline: none !important;
+  box-shadow: none !important;
+}
+
+.program-admin-page button::-moz-focus-inner {
+  border: 0;
+}
+
+.program-admin-page a.tool-link:visited {
+  color: #1d4ed8;
+}
