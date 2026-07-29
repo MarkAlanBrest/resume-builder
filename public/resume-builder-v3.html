@@ -1902,7 +1902,7 @@ function renderCourseOfStudyForm() {
   <div class="form-card">
     <div class="form-card-hdr">📚 Course of Study Paragraph</div>
     <div class="form-card-body">
-      <p style="font-size:14px;color:var(--slate-600);margin-bottom:16px;line-height:1.6">Describe the skills, tools, equipment, and training you gained in your program. Write in your own words — I'll polish it into professional resume language when you save.</p>
+      <p style="font-size:14px;color:var(--slate-600);margin-bottom:16px;line-height:1.6">Describe the skills, tools, equipment, and training you gained in your program. Write in your own words — I'll polish and condense it to about the same length as your resume objective when you save.</p>
       <div class="f-group" id="fg-cos">
         <label>Your paragraph *</label>
         <textarea id="cosParagraph" rows="10" placeholder="During my program, I developed hands-on skills in…" oninput="updateCosWordCount()">${escHtml(draft)}</textarea>
@@ -1922,8 +1922,8 @@ function updateCosWordCount() {
   const hint = document.getElementById('cosWordCount');
   if (!el || !hint) return;
   const words = el.value.trim().split(/\s+/).filter(Boolean).length;
-  hint.textContent = `${words} word${words !== 1 ? 's' : ''} — ${words < 50 ? 'aim for at least 50' : '✓ Good length'}`;
-  hint.style.color = words >= 50 ? 'var(--green-600)' : 'var(--slate-500)';
+  hint.textContent = `${words} word${words !== 1 ? 's' : ''} — ${words < 30 ? 'write a bit more detail' : '✓ Good — will be condensed for your resume'}`;
+  hint.style.color = words >= 30 ? 'var(--green-600)' : 'var(--slate-500)';
 }
 
 async function submitCourseOfStudy() {
@@ -2711,6 +2711,30 @@ function buildPreviewHTML(style,hex) {
   return '';
 }
 
+function courseOfStudyTargetWords() {
+  const obj = (resumeData.careerContext?.objective || '').trim();
+  const objWords = obj ? obj.split(/\s+/).filter(Boolean).length : 0;
+  return objWords > 15 ? Math.min(Math.round(objWords * 1.1), 75) : 60;
+}
+
+function trimCourseOfStudyForResume(text) {
+  const raw = (text || '').trim();
+  if (!raw) return raw;
+  const target = courseOfStudyTargetWords();
+  const words = raw.split(/\s+/).filter(Boolean);
+  if (words.length <= target) return raw;
+  const sentences = raw.match(/[^.!?]+[.!?]+|[^.!?]+$/g)?.map(s => s.trim()).filter(Boolean) || [raw];
+  let out = '', count = 0;
+  for (let i = 0; i < sentences.length && i < 3; i++) {
+    const s = sentences[i];
+    const w = s.split(/\s+/).filter(Boolean).length;
+    if (out && count + w > target) break;
+    out += (out ? ' ' : '') + s;
+    count += w;
+  }
+  return out || words.slice(0, target).join(' ');
+}
+
 async function buildCourseOfStudyForResume() {
   const savedPara = getCourseOfStudyText();
   const tradeEdu = (resumeData.education||[]).find(e=>e.school||e.degree)||resumeData.education?.[0];
@@ -2718,16 +2742,17 @@ async function buildCourseOfStudyForResume() {
   const school  = tradeEdu?.school || resumeData.personal.campus || 'Trade School';
   const inProgress = !tradeEdu?.gradYear || tradeEdu.gradYear === 'In Progress';
   const tense = inProgress ? 'present tense — student is currently enrolled' : 'past tense — student has completed the program';
+  const lengthNote = 'Write 2–3 concise sentences only — about the same length as a resume objective (roughly 40–70 words). Do not write a long paragraph.';
   const sys = (savedPara && savedPara.length > 40)
-    ? `You are polishing a trade school student's resume. The student wrote this Course of Study paragraph themselves: "${savedPara}". Rewrite it as a single polished, professional paragraph (4–6 sentences) for a resume. Correct grammar, strengthen the language, and make it sound like it was written by a professional resume writer. Keep the same skills and content — do not add certifications or tools not mentioned. Program: ${program}. School: ${school}. Use ${tense}. No "I" or student's name. Return only the paragraph.`
-    : `Write a single professional paragraph (4–6 sentences) for a "Course of Study" section on a trade school student's resume. Program: ${program}. School: ${school}. Use ${tense}. Describe the hands-on technical skills, equipment, safety practices, and competencies the student gained through the program. Write in implied first person — no "I" or the student's name. Professional resume language only. Return only the paragraph, no labels or headings.`;
+    ? `You are polishing a trade school student's resume. The student wrote this Course of Study draft: "${savedPara}". Condense and rewrite it as a short, polished resume paragraph. ${lengthNote} Keep the strongest skills and training — cut filler and repetition. Do not add certifications or tools not mentioned. Program: ${program}. School: ${school}. Use ${tense}. No "I" or student's name. Return only the paragraph.`
+    : `Write a short "Course of Study" paragraph for a trade school student's resume. Program: ${program}. School: ${school}. Use ${tense}. ${lengthNote} Mention hands-on technical skills, equipment, safety practices, and competencies from the program. Implied first person — no "I" or the student's name. Return only the paragraph.`;
   try {
     const r = await callClaude(sys, [{role:'user', content:'Write the Course of Study paragraph.'}]);
     const para = r.trim().replace(/^["']|["']$/g, '');
-    if (para.length > 40) return para;
+    if (para.length > 40) return trimCourseOfStudyForResume(para);
   } catch(e) { /* fall through to saved or basic fallback */ }
-  if (savedPara) return savedPara;
-  return `Completed coursework and hands-on training in ${program} at ${school}, developing practical skills, safety awareness, and job-ready competencies for entry-level employment in the field.`;
+  if (savedPara) return trimCourseOfStudyForResume(savedPara);
+  return trimCourseOfStudyForResume(`Completed hands-on training in ${program} at ${school}, building practical skills, safety awareness, and job-ready competencies for entry-level work in the field.`);
 }
 
 async function generateResume() {
