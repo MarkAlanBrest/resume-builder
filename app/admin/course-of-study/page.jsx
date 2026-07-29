@@ -19,23 +19,48 @@ function listFromLines(text) {
 function AdminFocusStyles() {
   return (
     <style>{`
-      .program-admin-page button:focus:not(:focus-visible) {
+      .program-admin-page button,
+      .program-admin-page a.tool-link {
+        -webkit-tap-highlight-color: transparent;
+        outline: none;
+      }
+      .program-admin-page button:focus,
+      .program-admin-page a.tool-link:focus {
         outline: none;
         box-shadow: none;
       }
-      .program-admin-page button:focus-visible {
-        outline: 2px solid #93c5fd;
-        outline-offset: 2px;
-      }
-      .program-admin-page a.tool-link:focus:not(:focus-visible) {
-        outline: none;
-        box-shadow: none;
-      }
+      .program-admin-page button:focus-visible,
       .program-admin-page a.tool-link:focus-visible {
         outline: 2px solid #93c5fd;
         outline-offset: 2px;
       }
     `}</style>
+  );
+}
+
+function suppressMouseFocus(e) {
+  e.preventDefault();
+}
+
+function blurAfterClick(handler) {
+  return (e) => {
+    handler?.(e);
+    e.currentTarget.blur();
+  };
+}
+
+function AdminButton({ onClick, style, disabled, children, ...props }) {
+  return (
+    <button
+      type="button"
+      onMouseDown={suppressMouseFocus}
+      onClick={blurAfterClick(onClick)}
+      disabled={disabled}
+      style={style}
+      {...props}
+    >
+      {children}
+    </button>
   );
 }
 
@@ -291,14 +316,13 @@ export default function ProgramAdminPage() {
                 placeholder="Admin password"
                 style={styles.input}
               />
-              <button
-                type="button"
+              <AdminButton
                 onClick={signIn}
                 disabled={loggingIn}
                 style={styles.primaryBtn}
               >
                 {loggingIn ? "Signing in…" : "Sign In"}
-              </button>
+              </AdminButton>
             </div>
             {status ? <p style={styles.status}>{status}</p> : null}
           </section>
@@ -321,15 +345,14 @@ export default function ProgramAdminPage() {
               </p>
               <StudentToolLinks />
             </div>
-            <button type="button" onClick={signOut} style={styles.secondaryBtn}>
+            <AdminButton onClick={signOut} style={styles.secondaryBtn}>
               Sign Out
-            </button>
+            </AdminButton>
           </div>
         </header>
 
         <div style={styles.tabRow}>
-          <button
-            type="button"
+          <AdminButton
             onClick={() => setActiveSection("courseOfStudy")}
             style={{
               ...styles.tabBtn,
@@ -337,9 +360,8 @@ export default function ProgramAdminPage() {
             }}
           >
             Course of Study
-          </button>
-          <button
-            type="button"
+          </AdminButton>
+          <AdminButton
             onClick={() => setActiveSection("skillsCerts")}
             style={{
               ...styles.tabBtn,
@@ -347,7 +369,7 @@ export default function ProgramAdminPage() {
             }}
           >
             Skills & Certifications
-          </button>
+          </AdminButton>
         </div>
 
         <div style={styles.layout}>
@@ -362,9 +384,8 @@ export default function ProgramAdminPage() {
                   {programs.map((program) => {
                     const active = selectedProgram === program;
                     return (
-                      <button
+                      <AdminButton
                         key={program}
-                        type="button"
                         onClick={() => setSelectedProgram(program)}
                         style={{
                           ...styles.programBtn,
@@ -375,7 +396,7 @@ export default function ProgramAdminPage() {
                         <span style={programStatusStyle(program)}>
                           {programStatus(program)}
                         </span>
-                      </button>
+                      </AdminButton>
                     );
                   })}
                 </div>
@@ -397,14 +418,13 @@ export default function ProgramAdminPage() {
                         : "No Course of Study saved yet."}
                     </p>
                   </div>
-                  <button
-                    type="button"
+                  <AdminButton
                     onClick={saveCourseOfStudy}
                     disabled={saving}
                     style={styles.primaryBtn}
                   >
                     {saving ? "Saving…" : "Save"}
-                  </button>
+                  </AdminButton>
                 </div>
                 <textarea
                   value={draftCourseText}
@@ -425,14 +445,13 @@ export default function ProgramAdminPage() {
                         : "No defaults saved yet."}
                     </p>
                   </div>
-                  <button
-                    type="button"
+                  <AdminButton
                     onClick={saveProgramDefaults}
                     disabled={saving}
                     style={styles.primaryBtn}
                   >
                     {saving ? "Saving…" : "Save"}
-                  </button>
+                  </AdminButton>
                 </div>
                 <label style={styles.fieldLabel}>Default skills</label>
                 <p style={styles.helpText}>
