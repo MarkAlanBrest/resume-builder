@@ -394,7 +394,7 @@ const TIPS = {
   skills:`Write out every skill and certification you have — tools, equipment, software, techniques, licenses, OSHA/EPA/CDL cards, manufacturer training, anything relevant. I'll clean it up, remove duplicates, and organize it professionally.`,
   military:`Add your military service below — active duty, reserves, or National Guard. In the Duties box, describe your role naturally: what you did every day, equipment you operated or maintained, people you supervised or trained, and anything you're proud of. I'll turn it into professional resume bullets that highlight leadership, reliability, technical skills, and teamwork — all things trade employers value.`,
   volunteer:`Add any volunteer work, community service, church activities, or unpaid experience. Even informal roles count — helping at events, working with youth groups, assisting neighbors. Describe what you did and I'll write professional bullets for it.`,
-  template:`Pick the style and color that matches the field you're entering. Classic and Executive are safe for any employer. Modern works well for technical roles. Bold makes a strong first impression.`,
+  template:`Pick the style and color that matches the field you're entering. Classic and Executive are safe for any employer. Modern works well for technical roles. Bold makes a strong first impression. Every resume automatically includes a **Course of Study** section — AI will polish your assignment paragraph or write one from your program details.`,
 };
 
 const WORK_TIP_EXAMPLES = [
@@ -2507,7 +2507,7 @@ function renderSkillsApproval() {
 function confirmSkills() {
   setStatus('skills','done');
   setStatus('certifications','done');
-  addAIMsg(`Skills saved! All sections are complete. Now choose a style and color for your resume.`);
+  addAIMsg(`Skills saved! All sections are complete. Now choose a style and color for your resume. A **Course of Study** section will be automatically added and polished by AI when you download.`);
   showSection('template');
 }
 
@@ -2545,6 +2545,7 @@ function renderTemplateConfig() {
       <div style="border:2px solid #facc15;border-radius:8px;padding:16px;background:#fef9c3;">
         <div style="font-weight:bold;color:#92400e;margin-bottom:8px;font-size:15px;">⚠ Important: Review Before Using</div>
         <p style="margin-bottom:12px;font-size:14px;color:#78350f;line-height:1.5;">This resume was generated using AI. You must carefully review, edit, and approve all content before using it. Do not assume the information is correct. Verify dates, employers, skills, and all details to ensure the resume is accurate and professional.</p>
+        <p style="margin-bottom:12px;font-size:14px;color:#78350f;line-height:1.5;">A <strong>Course of Study</strong> section is included on every resume. If you completed the assignment paragraph, AI will polish it for you. Otherwise, AI will write a professional summary from your program and education details.</p>
         <label style="display:flex;align-items:flex-start;gap:10px;font-size:14px;font-weight:600;color:#78350f;cursor:pointer;margin-bottom:14px;">
           <input type="checkbox" id="reviewConfirmed" onchange="document.getElementById('genBtn').disabled=!this.checked;document.getElementById('genBtn').style.opacity=this.checked?'1':'0.45'" style="margin-top:2px;width:16px;height:16px;accent-color:#eab308;flex-shrink:0;">
           I understand that I must review and edit this resume before using it.
@@ -2623,37 +2624,35 @@ function buildPreviewHTML(style,hex) {
   return '';
 }
 
+async function buildCourseOfStudyForResume() {
+  const savedPara = getCourseOfStudyText();
+  const tradeEdu = (resumeData.education||[]).find(e=>e.school||e.degree)||resumeData.education?.[0];
+  const program = resumeData.personal.program || tradeEdu?.fieldOfStudy || tradeEdu?.degree || 'Trade Program';
+  const school  = tradeEdu?.school || resumeData.personal.campus || 'Trade School';
+  const inProgress = !tradeEdu?.gradYear || tradeEdu.gradYear === 'In Progress';
+  const tense = inProgress ? 'present tense — student is currently enrolled' : 'past tense — student has completed the program';
+  const sys = (savedPara && savedPara.length > 40)
+    ? `You are polishing a trade school student's resume. The student wrote this Course of Study paragraph themselves: "${savedPara}". Rewrite it as a single polished, professional paragraph (4–6 sentences) for a resume. Correct grammar, strengthen the language, and make it sound like it was written by a professional resume writer. Keep the same skills and content — do not add certifications or tools not mentioned. Program: ${program}. School: ${school}. Use ${tense}. No "I" or student's name. Return only the paragraph.`
+    : `Write a single professional paragraph (4–6 sentences) for a "Course of Study" section on a trade school student's resume. Program: ${program}. School: ${school}. Use ${tense}. Describe the hands-on technical skills, equipment, safety practices, and competencies the student gained through the program. Write in implied first person — no "I" or the student's name. Professional resume language only. Return only the paragraph, no labels or headings.`;
+  try {
+    const r = await callClaude(sys, [{role:'user', content:'Write the Course of Study paragraph.'}]);
+    const para = r.trim().replace(/^["']|["']$/g, '');
+    if (para.length > 40) return para;
+  } catch(e) { /* fall through to saved or basic fallback */ }
+  if (savedPara) return savedPara;
+  return `Completed coursework and hands-on training in ${program} at ${school}, developing practical skills, safety awareness, and job-ready competencies for entry-level employment in the field.`;
+}
+
 async function generateResume() {
   const btn = document.getElementById('genBtn');
   btn.disabled=true; btn.textContent='Building resume…';
   try {
     const color = getColorObj(selectedColorHex);
-    let buildData = resumeData;
-
-    const savedPara = getCourseOfStudyText();
-    const hasWork = (resumeData.workExperience || []).length > 0;
-    const tradeEdu = (resumeData.education||[]).find(e=>e.school||e.degree)||resumeData.education?.[0];
-    const shouldBuildCourseOfStudy = !!savedPara || (!hasWork && !!tradeEdu);
-
-    if (shouldBuildCourseOfStudy) {
-      btn.textContent = 'Building Course of Study section…';
-      const program = resumeData.personal.program || tradeEdu?.fieldOfStudy || tradeEdu?.degree || 'Trade Program';
-      const school  = tradeEdu?.school || 'Trade School';
-      const inProgress = tradeEdu?.gradYear === 'In Progress' || !tradeEdu?.gradYear;
-      const tense = inProgress ? 'present tense — student is currently enrolled' : 'past tense — student has completed the program';
-      const sys = (savedPara && savedPara.length > 40)
-        ? `You are polishing a trade school student's resume. The student wrote this Course of Study paragraph themselves: "${savedPara}". Rewrite it as a single polished, professional paragraph (4–6 sentences) for a resume. Correct grammar, strengthen the language, and make it sound like it was written by a professional resume writer. Keep the same skills and content — do not add certifications or tools not mentioned. Program: ${program}. School: ${school}. Use ${tense}. No "I" or student's name. Return only the paragraph.`
-        : `Write a single professional paragraph (4–6 sentences) for a "Course of Study" section on a trade school student's resume. Program: ${program}. School: ${school}. Use ${tense}. Describe the hands-on technical skills, equipment, safety practices, and competencies the student gained through the program. Write in implied first person — no "I" or the student's name. Professional resume language only. Return only the paragraph, no labels or headings.`;
-      try {
-        const r = await callClaude(sys,[{role:'user',content:'Write the Course of Study paragraph.'}]);
-        const para = r.trim().replace(/^["']|["']$/g,'');
-        if (para.length > 40) buildData = {...resumeData, courseOfStudy: para};
-      } catch(e) { /* AI failed — use saved paragraph if available */ }
-    }
-
-    if (!buildData.courseOfStudy && savedPara) {
-      buildData = {...buildData, courseOfStudy: savedPara};
-    }
+    btn.textContent = 'Writing Course of Study section…';
+    const courseOfStudy = await buildCourseOfStudyForResume();
+    const buildData = {...resumeData, courseOfStudy};
+    resumeData.courseOfStudy = courseOfStudy;
+    saveProgress();
 
     btn.textContent = 'Building resume…';
     const doc = await buildDocument(buildData, selectedStyle, color);
@@ -2662,7 +2661,10 @@ async function generateResume() {
     saveAs(blob, resumeFilename(p));
     setStatus('template','done');
     btn.disabled=false; btn.textContent='Download Again ↓';
-    const cosNote = buildData.courseOfStudy ? ' A **Course of Study** section was added from your assignment.' : '';
+    const fromAssignment = !!getCourseOfStudyText() && resumeData._courseOfStudyFromAssignment;
+    const cosNote = fromAssignment
+      ? ' Your **Course of Study** section was polished from your assignment paragraph.'
+      : ' A professional **Course of Study** section was added based on your program.';
     addAIMsg(`Your resume has been downloaded!${cosNote} Change the style or color anytime and click Download Again to try a different look.`);
   } catch(err) { btn.disabled=false; btn.textContent='Generate & Download ↓'; addAIMsg(`Error generating file: ${err.message}`); console.error(err); }
 }
