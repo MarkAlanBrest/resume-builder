@@ -391,9 +391,9 @@ const TIPS = {
   personal:`Fill in your contact information carefully — this is how employers reach you. Make sure your email looks professional and your phone number is correct. Select your campus and program from the dropdowns.`,
   career:`Be specific about the type of job and employer you're targeting. Examples: "I want to work as an automotive technician at a dealership doing diagnostics and hands-on repairs." "I am looking for an entry-level HVAC position where I can install, maintain, and troubleshoot residential systems." "I want a welding job in manufacturing or construction where I can use MIG/TIG skills and read blueprints." Pick up to 3 qualities that describe you as a worker.`,
   work:`When describing your duties, just write naturally — don't worry about formatting. Mention specific tools, equipment, tasks, and anything you're proud of. I'll convert it into professional bullet points for you.`,
-  courseOfStudy:`Write a paragraph about the skills, tools, and training you gained in your program. This becomes the **Course of Study** section on your resume — it appears right above Education. If you completed the Work Experience Assignment, your paragraph is already loaded. I'll polish it to sound professional when you save.`,
+  courseOfStudy:`Write a paragraph about the skills, tools, and training you gained in your program. Example lines for your program appear in the AI panel on the right — click + Add only for items that match what you actually learned.`,
   education:`Your trade program has been pre-filled below. Confirm the details and add your graduation year. Then add your high school diploma or any other education you have.`,
-  skills:`Write out every skill and certification you have — tools, equipment, software, techniques, licenses, OSHA/EPA/CDL cards, manufacturer training, anything relevant. I'll clean it up, remove duplicates, and organize it professionally.`,
+  skills:`List only skills and certifications you actually have. The AI panel may suggest examples for your program — those are optional ideas, not added to your resume unless you click + Add. Only what you enter here goes on your resume.`,
   military:`Add your military service below — active duty, reserves, or National Guard. In the Duties box, describe your role naturally: what you did every day, equipment you operated or maintained, people you supervised or trained, and anything you're proud of. I'll turn it into professional resume bullets that highlight leadership, reliability, technical skills, and teamwork — all things trade employers value.`,
   volunteer:`Add any volunteer work, community service, church activities, or unpaid experience. Even informal roles count — helping at events, working with youth groups, assisting neighbors. Describe what you did and I'll write professional bullets for it.`,
   template:`Pick the style and color that matches the field you're entering. Classic and Executive are safe for any employer. Modern works well for technical roles. Bold makes a strong first impression. Your **Course of Study** section appears on every resume, right above Education.`,
@@ -457,6 +457,81 @@ const CAREER_SUGGESTIONS = [
   {match:/truck|cdl|diesel|heavy equipment/i,workSearch:['I am looking for a CDL driver position with a trucking or logistics company.','I want to work for a fleet operation or construction company as a professional driver or diesel technician.','I am seeking a heavy equipment operator or diesel maintenance role where I can put my training and CDL to use.']},
   {match:/machinist|cnc|manufacturing/i,workSearch:['I want to work as a machinist or CNC operator in a precision manufacturing facility.','I am looking for a production or machining role where I can operate equipment and inspect finished parts.','I want a position in manufacturing where I can apply my blueprint reading, CNC, and quality control skills.']},
 ];
+
+const COURSE_OF_STUDY_SUGGESTIONS = [
+  {match:/automotive/i,snippets:[
+    'Oil changes, brake service, tire rotations, and multi-point inspections',
+    'Hydraulic lifts, scan tools, torque wrenches, and electrical testing',
+    'Engine systems, brakes, suspension, and shop safety procedures',
+    'OSHA standards and attention to detail in a shop environment',
+  ]},
+  {match:/motorcycle|power equipment/i,snippets:[
+    'Small engine diagnosis, repair, and preventive maintenance',
+    'Fuel systems, drivetrain service, and electrical troubleshooting',
+    'Engine teardown, brake work, and suspension service',
+    'Manufacturer guidelines and shop safety procedures',
+  ]},
+  {match:/building|construction/i,snippets:[
+    'Framing, drywall, roofing, and finish carpentry projects',
+    'Blueprint reading, measuring, layout, and hand/power tools',
+    'Jobsite safety, material handling, and crew teamwork',
+    'Circular saws, nail guns, levels, and quality workmanship',
+  ]},
+  {match:/welding/i,snippets:[
+    'MIG, TIG, and stick welding on steel and other metals',
+    'Blueprint reading, material prep, and weld setup',
+    'Cutting, grinding, fabrication, and weld inspection',
+    'PPE, ventilation, and shop safety standards',
+  ]},
+  {match:/electrical/i,snippets:[
+    'Residential and commercial wiring and circuit installation',
+    'Blueprint and wiring diagram reading, conduit bending',
+    'NEC basics, grounding, lockout/tagout, and safe tool use',
+    'Panel work, troubleshooting, and lab wiring practice',
+  ]},
+  {match:/electro-mechanical|industrial maintenance/i,snippets:[
+    'Mechanical and electrical troubleshooting on production equipment',
+    'Motors, conveyors, lubrication, and preventive maintenance',
+    'PLC basics, schematic reading, and lockout/tagout',
+    'Precision measuring tools and equipment documentation',
+  ]},
+  {match:/hvac|refrigeration|climate|ac technology/i,snippets:[
+    'Installing and servicing heating, cooling, and refrigeration systems',
+    'Gauges, meters, brazing equipment, and hand tools',
+    'System charging, leak detection, and airflow measurement',
+    'EPA refrigerant safety and electrical controls',
+  ]},
+  {match:/diesel|heavy equipment/i,snippets:[
+    'Diesel engine and heavy equipment inspection and repair',
+    'Hydraulics, fluid services, and diagnostic equipment',
+    'Brake, suspension, and electrical systems service',
+    'Shop safety, documentation, and preventive maintenance',
+  ]},
+  {match:/truck|cdl/i,snippets:[
+    'Pre-trip and post-trip inspections and backing maneuvers',
+    'Hours-of-service rules and DOT regulations',
+    'Cargo securement and defensive driving',
+    'Trip documentation and safe vehicle operation',
+  ]},
+  {match:/machinist|cnc|manufacturing/i,snippets:[
+    'Lathe, mill, and CNC machine setup and operation',
+    'Blueprint reading, calipers, micrometers, and quality checks',
+    'G-code basics, tolerances, and tool selection',
+    'Work instructions, defect identification, and workstation organization',
+  ]},
+];
+
+const COURSE_OF_STUDY_DEFAULT_SNIPPETS = [
+  'Hands-on lab and shop training with industry-standard tools',
+  'Safety procedures, troubleshooting, and following work instructions',
+  'Teamwork, communication, and completing tasks accurately',
+  'Core technical skills for entry-level work in the trade',
+];
+
+function getCourseOfStudySnippets(program) {
+  const found = COURSE_OF_STUDY_SUGGESTIONS.find(item => item.match.test(program || ''));
+  return (found ? found.snippets : COURSE_OF_STUDY_DEFAULT_SNIPPETS).slice(0, 4);
+}
 
 const STANDOUT_SUGGESTIONS = [
   'I take pride in quality work and never cut corners on safety.',
@@ -754,6 +829,9 @@ function continueProgress() {
   const saved = loadProgress();
   if (!saved) { startFresh(); return; }
   Object.assign(resumeData, saved);
+  if (Array.isArray(resumeData.education)) {
+    resumeData.education = resumeData.education.map(normalizeEduEntry);
+  }
   if (saved.personal?.firstName)                            setStatus('personal','done');
   if (saved.careerContext?.objective)                       setStatus('career','done');
   if (saved.workExperience?.length || saved.militaryService?.length || saved.courseOfStudy || saved.education?.length) setStatus('work','done');
@@ -817,6 +895,70 @@ function setUploadFile(file) {
   btn.disabled = false; btn.style.opacity = '1';
 }
 
+function normalizeFactToken(value) {
+  return String(value || '').toLowerCase().replace(/[^a-z0-9]+/g, ' ').trim();
+}
+
+function itemAppearsInSource(item, sourceText) {
+  const norm = normalizeFactToken(item);
+  if (!norm || norm.length < 2) return false;
+  const hay = normalizeFactToken(sourceText);
+  if (!hay) return false;
+  if (hay.includes(norm)) return true;
+  const words = norm.split(/\s+/).filter(w => w.length > 2);
+  if (words.length > 1) return words.every(w => hay.includes(w));
+  return false;
+}
+
+function parseSkillList(raw) {
+  return [...new Set(String(raw || '').split(/[\n,;]+/).map(s => cleanProgramName(s.trim())).filter(s => s.length > 1))];
+}
+
+function filterSkillsToSource(skills, sourceText) {
+  if (!sourceText) return skills || [];
+  const allowed = parseSkillList(sourceText);
+  if (!allowed.length) return [];
+  return (skills || []).filter(skill => {
+    const norm = normalizeFactToken(skill);
+    return allowed.some(token => {
+      const t = normalizeFactToken(token);
+      return t === norm || (t.length >= 4 && norm.length >= 4 && (t.includes(norm) || norm.includes(t)));
+    });
+  });
+}
+
+function filterCertsToSource(certs, sourceText) {
+  if (!sourceText) return certs || [];
+  const rawLines = String(sourceText || '').split(/[\n;]+/).map(l => l.trim()).filter(Boolean);
+  if (!rawLines.length) return [];
+  return (certs || []).filter(cert => {
+    const name = cert?.name || '';
+    if (itemAppearsInSource(name, sourceText)) return true;
+    return rawLines.some(line => {
+      const ln = normalizeFactToken(line);
+      const cn = normalizeFactToken(name);
+      return ln && cn && (ln.includes(cn) || cn.includes(ln));
+    });
+  });
+}
+
+function sanitizeParsedResume(parsed, sourceText) {
+  const out = {...parsed};
+  if (!sourceText) return out;
+  const beforeSkills = (parsed.skills || []).length;
+  const beforeCerts = (parsed.certifications || []).length;
+  out.skills = filterSkillsToSource(parsed.skills, sourceText);
+  out.certifications = filterCertsToSource(parsed.certifications, sourceText);
+  out._droppedInvented = (beforeSkills - out.skills.length) + (beforeCerts - out.certifications.length);
+  if (Array.isArray(out.workExperience)) {
+    out.workExperience = out.workExperience.map(job => ({
+      ...job,
+      bulletLines: (job.bulletLines || []).filter(b => itemAppearsInSource(b, sourceText)),
+    }));
+  }
+  return out;
+}
+
 async function extractResume() {
   if (!selectedResumeFile) return;
   const btn = document.getElementById('extractBtn');
@@ -829,7 +971,10 @@ async function extractResume() {
     if (ext === 'txt') text = await readAsText(selectedResumeFile);
     else if (ext === 'pdf') { b64 = await readAsBase64(selectedResumeFile); useDoc = true; }
     else if (ext === 'docx') text = await readDocx(selectedResumeFile);
-    const parsed = await parseResume(text, useDoc, b64);
+    resumeData.skills = [];
+    resumeData.certifications = [];
+    let parsed = await parseResume(text, useDoc, b64);
+    parsed = sanitizeParsedResume(parsed, text);
     hideChatTyping();
     if (parsed.personal) Object.assign(resumeData.personal, parsed.personal);
     const found = [];
@@ -844,24 +989,25 @@ async function extractResume() {
       found.push('military service');
     }
     if (parsed.education?.length) {
-      resumeData.education = parsed.education;
+      resumeData.education = parsed.education.map(normalizeEduEntry);
       setStatus('education','done');
       found.push(`${parsed.education.length} education entr${parsed.education.length===1?'y':'ies'}`);
     }
     if (parsed.certifications?.length) {
-      resumeData.certifications = parsed.certifications;
+      resumeData.certifications = parsed.certifications.map(cleanCertObject).filter(c => c.name);
       setStatus('certifications','done');
       found.push('certifications');
     }
     if (parsed.skills?.length) {
-      resumeData.skills = parsed.skills;
+      resumeData.skills = parsed.skills.map(s => cleanProgramName(String(s).trim())).filter(Boolean);
       found.push('skills');
     }
     saveProgress();
     const p = resumeData.personal;
     const name = [p.firstName,p.lastName].filter(Boolean).join(' ');
-    const summary = found.length ? `I found: **${found.join(', ')}**. Each section is pre-filled — review and confirm the details before continuing.` : `I found your contact info. Fill in the remaining sections below.`;
-    addAIMsg(`Got it${name?' for '+name:''}! ${summary}`);
+    const summary = found.length ? `I found: **${found.join(', ')}**. Only information explicitly on your resume was loaded — review and confirm each section.` : `I found your contact info. Fill in the remaining sections below.`;
+    const droppedNote = parsed._droppedInvented > 0 ? ` I left out ${parsed._droppedInvented} item(s) that were not clearly written on the uploaded resume.` : '';
+    addAIMsg(`Got it${name?' for '+name:''}! ${summary}${droppedNote}`);
     showSection('personal');
   } catch(err) {
     hideChatTyping();
@@ -875,14 +1021,17 @@ function readAsBase64(f) { return new Promise((res,rej)=>{ const r=new FileReade
 function readDocx(f) { return new Promise((res,rej)=>{ const r=new FileReader(); r.onload=async e=>{ try{ const result=await mammoth.extractRawText({arrayBuffer:e.target.result}); res(result.value); }catch(err){rej(err);} }; r.onerror=rej; r.readAsArrayBuffer(f); }); }
 
 async function parseResume(text, useDoc, b64) {
-  const instruction = `Extract all information from this resume. Return ONLY valid JSON using this exact structure (use empty string or empty array if not found):
+  const instruction = `Extract information from this resume. Return ONLY valid JSON using this exact structure (use empty string or empty array if not found):
 {"personal":{"firstName":"","lastName":"","email":"","phone":"","address":"","city":"","state":"","zip":""},"workExperience":[{"employer":"","jobTitle":"","city":"","state":"","startMonth":"","startYear":"","endMonth":"","endYear":"","current":false,"bulletLines":[]}],"militaryService":[{"branch":"","rank":"","jobTitle":"","city":"","state":"","startMonth":"","startYear":"","endMonth":"","endYear":"","current":false,"bulletLines":[]}],"education":[{"school":"","degree":"","fieldOfStudy":"","city":"","state":"","gradMonth":"","gradYear":""}],"certifications":[{"name":"","org":"","year":""}],"skills":[]}
 Rules:
+- Extract ONLY information explicitly written on the resume. Do not infer, guess, or add plausible items.
+- If a section is missing or empty on the resume, return an empty array for it.
 - startMonth/endMonth must be full month names (January, February…) or empty string
 - militaryService: only include entries with actual military service. branch must be one of: United States Army, United States Navy, United States Marine Corps, United States Air Force, United States Space Force, United States Coast Guard, Army National Guard, Air National Guard, Army Reserve, Navy Reserve, Marine Corps Reserve, Air Force Reserve, Coast Guard Reserve
 - education gradYear: 4-digit year string or "In Progress"
-- skills: flat array of skill strings
-- certifications: include any licenses, credentials, or certificates found`;
+- bulletLines: copy duty bullets only if they are explicitly written for that job. Do not generate or infer duties. Use [] if none are listed.
+- skills: only items explicitly listed in a Skills section or clearly labeled skill list on the resume. Do not infer skills from job descriptions, program, or trade. Use [] if no skills section exists.
+- certifications: only licenses, certifications, or credentials explicitly named on the resume (e.g. OSHA 10, EPA 608, CDL, Eagle Scout). Do not infer certifications from job titles, program, age, or industry. Use [] if none are listed.`;
   let messages;
   if (useDoc) messages=[{role:'user',content:[{type:'document',source:{type:'base64',media_type:'application/pdf',data:b64}},{type:'text',text:instruction}]}];
   else messages=[{role:'user',content:`${instruction}\n\nResume:\n${text}`}];
@@ -1891,8 +2040,10 @@ function renderWorkDone() {
 
 // ── Course of Study ───────────────────────────────
 function renderCourseOfStudyForm() {
-  const draft = resumeData.courseOfStudy || getCourseOfStudyText() || '';
-  const imported = resumeData._courseOfStudyFromAssignment && draft;
+  const imported = resumeData._courseOfStudyFromAssignment && getCourseOfStudyText();
+  const draft = imported
+    ? (resumeData.courseOfStudy || getCourseOfStudyText() || '')
+    : (resumeData.courseOfStudy || '');
   const words = draft.trim().split(/\s+/).filter(Boolean).length;
   const importBanner = imported
     ? `<div class="prefill-banner" style="margin-bottom:16px;text-align:left;background:#f0fdf4;border-color:#bbf7d0;color:#15803d">📚 Loaded from your Work Experience Assignment — review and edit before saving.</div>`
@@ -1902,7 +2053,7 @@ function renderCourseOfStudyForm() {
   <div class="form-card">
     <div class="form-card-hdr">📚 Course of Study Paragraph</div>
     <div class="form-card-body">
-      <p style="font-size:14px;color:var(--slate-600);margin-bottom:16px;line-height:1.6">Describe the skills, tools, equipment, and training you gained in your program. Write in your own words — I'll polish and condense it to about the same length as your resume objective when you save.</p>
+      <p style="font-size:14px;color:var(--slate-600);margin-bottom:16px;line-height:1.6">Write your own paragraph about the skills, tools, and training from your program. <strong>Example lines for your program are in the AI panel on the right</strong> — click <strong>+ Add</strong> only for training you actually had, then turn them into complete sentences.</p>
       <div class="f-group" id="fg-cos">
         <label>Your paragraph *</label>
         <textarea id="cosParagraph" rows="10" placeholder="During my program, I developed hands-on skills in…" oninput="updateCosWordCount()">${escHtml(draft)}</textarea>
@@ -1998,6 +2149,64 @@ function programDegree(program) {
   return PROGRAM_DEGREE_MAP[program] || 'Diploma';
 }
 
+const DEGREE_TYPES = new Set([
+  'Diploma',
+  'Associate in Specialized Technology',
+  'High School Diploma',
+  'GED / High School Equivalency',
+  "Associate's Degree",
+  "Bachelor's Degree",
+  "Master's Degree",
+  'Vocational Certificate',
+  'Other',
+]);
+
+function isDegreeType(value) {
+  return DEGREE_TYPES.has((value || '').trim());
+}
+
+function isKnownProgramName(value) {
+  const v = (value || '').trim();
+  if (!v) return false;
+  const lower = v.toLowerCase();
+  return Object.values(CAMPUSES).flat().some(program => program.toLowerCase() === lower);
+}
+
+function normalizeEduEntry(edu = {}) {
+  const out = {...edu};
+  let degree = (out.degree || '').trim();
+  let field = (out.fieldOfStudy || '').trim();
+
+  if (degree && field && degree.toLowerCase() === field.toLowerCase()) {
+    out.fieldOfStudy = field;
+    out.degree = programDegree(field);
+    return out;
+  }
+
+  if (degree && !isDegreeType(degree) && isKnownProgramName(degree)) {
+    out.fieldOfStudy = field || degree;
+    out.degree = programDegree(out.fieldOfStudy);
+    return out;
+  }
+
+  if (!degree && field) {
+    out.fieldOfStudy = field;
+    out.degree = programDegree(field);
+    return out;
+  }
+
+  out.degree = degree;
+  out.fieldOfStudy = field;
+  return out;
+}
+
+function eduDegreeLine(edu, separator = ', ') {
+  const {degree, fieldOfStudy: field} = normalizeEduEntry(edu);
+  if (!degree && !field) return '';
+  if (!field || degree.toLowerCase() === field.toLowerCase()) return degree || field;
+  return `${degree}${separator}${field}`;
+}
+
 function campusLoc(campus) {
   if (campus.includes('New Castle'))     return {city:'New Castle',state:'PA'};
   if (campus.includes('East Liverpool')) return {city:'East Liverpool',state:'OH'};
@@ -2026,7 +2235,7 @@ function renderEduForm(prefill) {
   const isInProgress = pf.gradYear === 'In Progress';
   const banner = pf.isPrefilled ? `<div class="prefill-banner">ℹ️ Pre-filled from your program. Add your graduation month/year and confirm.</div>` : '';
   const saved = resumeData.education;
-  const savedList = saved.length ? `<div class="form-card" style="margin-bottom:16px"><div class="form-card-hdr">🎓 Saved Education (${saved.length})</div><div class="form-card-body" style="padding-bottom:14px">${sortedEducation().map(({edu:e,index:i})=>`<div style="display:flex;justify-content:space-between;align-items:center;gap:10px;padding:8px 0;border-bottom:1px solid var(--slate-100)"><div><div style="font-size:14px;font-weight:600">${escHtml(e.degree)}${e.fieldOfStudy?' – '+escHtml(e.fieldOfStudy):''}</div><div style="font-size:12px;color:var(--slate-500)">${escHtml(e.school)} | ${escHtml(eduGradDate(e))}</div></div><div style="display:flex;gap:6px"><button class="btn btn-ghost" style="padding:6px 10px;font-size:12px" onclick="editEdu(${i})">Edit</button><button class="btn btn-ghost" style="padding:6px 10px;font-size:12px" onclick="deleteEdu(${i})">Delete</button></div></div>`).join('')}</div></div>` : '';
+  const savedList = saved.length ? `<div class="form-card" style="margin-bottom:16px"><div class="form-card-hdr">🎓 Saved Education (${saved.length})</div><div class="form-card-body" style="padding-bottom:14px">${sortedEducation().map(({edu:e,index:i})=>`<div style="display:flex;justify-content:space-between;align-items:center;gap:10px;padding:8px 0;border-bottom:1px solid var(--slate-100)"><div><div style="font-size:14px;font-weight:600">${escHtml(eduDegreeLine(e,' – '))}</div><div style="font-size:12px;color:var(--slate-500)">${escHtml(e.school)} | ${escHtml(eduGradDate(e))}</div></div><div style="display:flex;gap:6px"><button class="btn btn-ghost" style="padding:6px 10px;font-size:12px" onclick="editEdu(${i})">Edit</button><button class="btn btn-ghost" style="padding:6px 10px;font-size:12px" onclick="deleteEdu(${i})">Delete</button></div></div>`).join('')}</div></div>` : '';
   return `<div class="section-hdr"><div class="section-hdr-icon">🎓</div><div><div class="section-hdr-title">Education</div><div class="section-hdr-sub">${saved.length?saved.length+' entr(ies) saved':'Schools, degrees, and credentials'}</div></div></div>
   ${savedList}
   <div class="form-card">
@@ -2067,7 +2276,7 @@ function toggleInProg(cb) {
 }
 
 async function submitEdu() {
-  let edu = collectEduData();
+  let edu = normalizeEduEntry(collectEduData());
   applyEduData(edu);
   if (!validateEduData(edu)) return;
 
@@ -2076,7 +2285,7 @@ async function submitEdu() {
   try {
     const review = await reviewEduData(edu);
     if (review?.corrections && Object.keys(review.corrections).length) {
-      edu = {...edu, ...review.corrections};
+      edu = normalizeEduEntry({...edu, ...review.corrections});
       applyEduData(edu);
     }
     if (!validateEduData(edu)) return;
@@ -2085,7 +2294,7 @@ async function submitEdu() {
       addAIMsg('I found a few education items that need your review. Please fix the highlighted fields, then continue.');
       return;
     }
-    pendingEdu = edu;
+    pendingEdu = normalizeEduEntry(edu);
     showCenter('eduApproval');
   } catch(e) {
     addAIMsg('I could not complete the education spelling and professionalism review. Please check your connection or API key, then try again.');
@@ -2098,7 +2307,7 @@ const EDU_FIELD_GROUPS = {school:'fg-sch',degree:'fg-deg',fieldOfStudy:'fg-field
 
 function collectEduData() {
   const inProgress = document.getElementById('inProg').checked;
-  return {
+  return normalizeEduEntry({
     school:cleanSchoolName(document.getElementById('schoolName').value),
     degree:document.getElementById('degType').value,
     fieldOfStudy:cleanProgramName(document.getElementById('fieldStudy').value),
@@ -2106,7 +2315,7 @@ function collectEduData() {
     state:document.getElementById('eduState').value.trim().toUpperCase(),
     gradMonth:inProgress?'':document.getElementById('gradMonth').value,
     gradYear:inProgress?'In Progress':document.getElementById('gradYear').value.trim(),
-  };
+  });
 }
 
 function applyEduData(e) {
@@ -2138,6 +2347,7 @@ Rules:
 - Omit unchanged correction fields.
 - Keep the student's meaning. Do not invent schools, degrees, programs, dates, or locations.
 - Correct obvious school/program capitalization and spelling.
+- degree must be the credential type only (Diploma, Associate in Specialized Technology, High School Diploma, etc.). Program names belong in fieldOfStudy, never in degree.
 - Do not change degree unless it clearly maps to the selected meaning.
 - City, state, and fieldOfStudy are optional; do not add an issue when those are blank.
 - If gradYear is "In Progress", do not require gradMonth.
@@ -2156,7 +2366,7 @@ Rules:
     if (month) corrections.gradMonth = month;
   }
   if (parsed.corrections?.gradYear) corrections.gradYear = parsed.corrections.gradYear.trim();
-  const reviewed = {...edu, ...corrections};
+  const reviewed = normalizeEduEntry({...edu, ...corrections});
   const issues = (parsed.issues || []).filter(issue=>{
     if (!EDU_FIELD_GROUPS[issue.field] || !issue.message) return false;
     if (['city','state','fieldOfStudy'].includes(issue.field) && !reviewed[issue.field]) return false;
@@ -2210,7 +2420,7 @@ function renderEduApproval() {
     <div class="approval-hdr">✓ Education — Review</div>
     <div class="approval-body">
       <div class="a-row"><span class="a-label">School</span><span class="a-value">${escHtml(e.school)}${loc?' — '+escHtml(loc):''}</span></div>
-      <div class="a-row"><span class="a-label">Degree</span><span class="a-value">${escHtml(e.degree)}${e.fieldOfStudy?' – '+escHtml(e.fieldOfStudy):''}</span></div>
+      <div class="a-row"><span class="a-label">Degree</span><span class="a-value">${escHtml(eduDegreeLine(e,' – '))}</span></div>
       <div class="a-row"><span class="a-label">Graduation</span><span class="a-value">${escHtml(eduGradDate(e))}</span></div>
     </div>
     <div class="approval-footer">
@@ -2221,11 +2431,12 @@ function renderEduApproval() {
 }
 
 function confirmEdu() {
+  const saved = normalizeEduEntry({...pendingEdu});
   if (editingEduIndex >= 0) {
-    resumeData.education[editingEduIndex] = {...pendingEdu};
+    resumeData.education[editingEduIndex] = saved;
     editingEduIndex = -1;
   } else {
-    resumeData.education.push({...pendingEdu});
+    resumeData.education.push(saved);
   }
   resumeData.education.sort((a,b)=>eduSortValue(b)-eduSortValue(a));
   pendingEdu = {};
@@ -2504,7 +2715,7 @@ function renderVolunteerDone() {
 function renderSkillsForm() {
   const existing = Array.isArray(resumeData.skills) && resumeData.skills.length ? resumeData.skills.join(', ') : '';
   const existingCerts = resumeData.certifications.length ? resumeData.certifications.map(c=>[c.name,c.org,c.year].filter(Boolean).join(', ')).join('\n') : '';
-  return `<div class="section-hdr"><div class="section-hdr-icon">⚡</div><div><div class="section-hdr-title">Skills &amp; Certifications</div><div class="section-hdr-sub">List both sides — I'll organize them</div></div></div>
+  return `<div class="section-hdr"><div class="section-hdr-icon">⚡</div><div><div class="section-hdr-title">Skills &amp; Certifications</div><div class="section-hdr-sub">Only what you type here goes on your resume — AI suggestions are optional</div></div></div>
   <div class="two-panel-grid">
     <div class="form-card">
       <div class="form-card-hdr">⚡ Skills</div>
@@ -2525,7 +2736,7 @@ function renderSkillsForm() {
   </div>
   <div class="form-card">
     <div class="form-card-footer">
-      <button class="btn btn-primary" onclick="submitSkills()">Build →</button>
+      <button class="btn btn-primary" onclick="submitSkills()">Save →</button>
     </div>
   </div>`;
 }
@@ -2539,26 +2750,16 @@ async function submitSkills() {
   fgCert.classList.remove('has-error');
   const rawSkills = el.value.trim();
   const rawCerts = certEl.value.trim();
-  const ci = document.getElementById('centerInner');
-  ci.innerHTML = `<div style="text-align:center;padding:60px 20px;color:var(--slate-500)"><div style="font-size:32px;margin-bottom:12px">⚡</div>Organizing your skills and certifications…</div>`;
-  const prog = resumeData.personal.program||'';
-  const sys = `You organize skills and certifications for a trade school student's resume. Return ONLY valid JSON — no explanations, no questions, no other text. Shape: {"skills":["MIG/TIG Welding","Blueprint Reading"],"certifications":[{"name":"OSHA 10","org":"OSHA","year":""}]}. Rules: clean spelling/capitalization/duplicates, make professional, do not invent certifications, omit certifications array entries that were not provided.`;
-  const userMsg = `Program: ${prog}\nRaw skills: ${rawSkills}\nRaw certifications: ${rawCerts || 'none'}`;
-  try {
-    const result = await callClaude(sys,[{role:'user',content:userMsg}]);
-    let data;
-    try { data=JSON.parse(result.trim().replace(/^```(?:json)?\s*/i,'').replace(/\s*```$/,'')); }
-    catch { data={skills:result.split('\n').map(l=>l.replace(/^[•\-\*"\[,\]]+\s*/,'').replace(/[",\]]+$/,'').trim()).filter(l=>l.length>1&&l.length<=80),certifications:parseCertLines(rawCerts)}; }
-    resumeData.skills = Array.isArray(data.skills) ? data.skills.map(s=>cleanProgramName(String(s).trim())).filter(Boolean) : [];
-    resumeData.certifications = Array.isArray(data.certifications) ? data.certifications.map(cleanCertObject).filter(c=>c.name) : parseCertLines(rawCerts);
-    resumeData.references = 'Available upon request';
-    if (!resumeData.skills.length || resumeData.skills.some(s => s.length > 80 || /\*\*/.test(s) || /^(please|for best|note:|provide|share|raw |to org)/i.test(s))) {
-      addAIMsg('There was a problem organizing your skills — please try again.');
-      showSection('skills');
-      return;
-    }
-    showCenter('skillsApproval');
-  } catch(e) { addAIMsg('Could not connect — try again.'); showSection('skills'); }
+  resumeData.skills = parseSkillList(rawSkills);
+  resumeData.certifications = parseCertLines(rawCerts).map(cleanCertObject).filter(c => c.name);
+  resumeData.references = 'Available upon request';
+  if (!resumeData.skills.length) {
+    fg.classList.add('has-error');
+    addAIMsg('Please list at least a few skills you actually have.');
+    showSection('skills');
+    return;
+  }
+  showCenter('skillsApproval');
 }
 
 function parseCertLines(raw) {
@@ -2737,8 +2938,8 @@ function trimCourseOfStudyForResume(text) {
 
 async function buildCourseOfStudyForResume() {
   const savedPara = getCourseOfStudyText();
-  const tradeEdu = (resumeData.education||[]).find(e=>e.school||e.degree)||resumeData.education?.[0];
-  const program = resumeData.personal.program || tradeEdu?.fieldOfStudy || tradeEdu?.degree || 'Trade Program';
+  const tradeEdu = normalizeEduEntry((resumeData.education||[]).find(e=>e.school||e.degree)||resumeData.education?.[0]||{});
+  const program = resumeData.personal.program || tradeEdu.fieldOfStudy || tradeEdu.degree || 'Trade Program';
   const school  = tradeEdu?.school || resumeData.personal.campus || 'Trade School';
   const inProgress = !tradeEdu?.gradYear || tradeEdu.gradYear === 'In Progress';
   const tense = inProgress ? 'present tense — student is currently enrolled' : 'past tense — student has completed the program';
@@ -2762,11 +2963,15 @@ async function generateResume() {
     const color = getColorObj(selectedColorHex);
     btn.textContent = 'Writing Course of Study section…';
     const courseOfStudy = await buildCourseOfStudyForResume();
-    const buildData = {...resumeData, courseOfStudy};
     resumeData.courseOfStudy = courseOfStudy;
     saveProgress();
 
     btn.textContent = 'Building resume…';
+    const buildData = {
+      ...resumeData,
+      courseOfStudy,
+      education: (resumeData.education || []).map(normalizeEduEntry),
+    };
     const doc = await buildDocument(buildData, selectedStyle, color);
     const blob = await docx.Packer.toBlob(doc);
     const p=resumeData.personal;
@@ -2790,7 +2995,7 @@ function spacer(a=200){return new docx.Paragraph({spacing:{before:0,after:a}})}
 function bodyTxt(text,opts={}){return new docx.Paragraph({children:[new docx.TextRun({text,size:opts.size||24,color:opts.color||'2a2a2a',italics:opts.italic||false,font:'Calibri'})],indent:opts.indent?{left:twip(opts.indent)}:undefined,spacing:{before:0,after:opts.after!==undefined?opts.after:200,line:288,lineRule:'auto'},alignment:opts.align||docx.AlignmentType.LEFT})}
 function bullet(text,opts={}){const after=opts.after!==undefined?opts.after:160;return new docx.Paragraph({children:bulletRuns(text,opts),indent:{left:twip(0.36),hanging:twip(0.14)},spacing:{before:0,after,line:276,lineRule:'auto'}})}
 function jobBlock(job){const items=[],loc=[job.city,job.state].filter(Boolean).join(', '),end=job.current?'Present':[job.endMonth,job.endYear].filter(Boolean).join(' '),dates=`${[job.startMonth,job.startYear].filter(Boolean).join(' ')} – ${end}`;items.push(new docx.Paragraph({spacing:{before:320,after:60},children:[new docx.TextRun({text:job.jobTitle,bold:true,size:26,color:'1a1a1a'}),new docx.TextRun({text:`, ${job.employer}${loc?', '+loc:''}`,size:24,color:'444444'})]}));items.push(new docx.Paragraph({spacing:{before:0,after:160},children:[new docx.TextRun({text:dates,italics:true,size:22,color:'777777'})]}));(job.bulletLines||[]).forEach(b=>items.push(bullet(b)));return items;}
-function eduBlock(edu){const loc=[edu.city,edu.state].filter(Boolean).join(', '),field=edu.fieldOfStudy?`, ${edu.fieldOfStudy}`:'';return new docx.Paragraph({spacing:{before:280,after:160},children:[new docx.TextRun({text:`${edu.degree}${field}`,bold:true,size:24,color:'1a1a1a'}),new docx.TextRun({text:`, ${edu.school}${loc?', '+loc:''}${eduGradDate(edu)?', '+eduGradDate(edu):''}`,size:22,color:'555555'})]})}
+function eduBlock(edu){const e=normalizeEduEntry(edu);const loc=[e.city,e.state].filter(Boolean).join(', ');return new docx.Paragraph({spacing:{before:280,after:160},children:[new docx.TextRun({text:eduDegreeLine(e),bold:true,size:24,color:'1a1a1a'}),new docx.TextRun({text:`, ${e.school}${loc?', '+loc:''}${eduGradDate(e)?', '+eduGradDate(e):''}`,size:22,color:'555555'})]})}
 function certBlock(cert){return new docx.Paragraph({spacing:{before:200,after:140},children:[new docx.TextRun({text:cert.name,bold:true,size:24}),...(cert.org||cert.year?[new docx.TextRun({text:`  —  ${[cert.org,cert.year].filter(Boolean).join(', ')}`,size:22,color:'666666'})]:[])]})}
 function militaryBlock(mil){const items=[];const loc=[mil.city,mil.state].filter(Boolean).join(', ');const end=mil.current?'Present':[mil.endMonth,mil.endYear].filter(Boolean).join(' ');const dates=`${[mil.startMonth,mil.startYear].filter(Boolean).join(' ')} – ${end}`;items.push(new docx.Paragraph({spacing:{before:320,after:60},children:[new docx.TextRun({text:mil.rank||'',bold:true,size:26,color:'1a1a1a'}),new docx.TextRun({text:`, ${mil.branch}${mil.jobTitle?', '+mil.jobTitle:''}`,size:24,color:'444444'})]}));if(loc)items.push(new docx.Paragraph({spacing:{before:0,after:40},children:[new docx.TextRun({text:loc,italics:true,size:22,color:'777777'})]}));items.push(new docx.Paragraph({spacing:{before:0,after:160},children:[new docx.TextRun({text:dates,italics:true,size:22,color:'777777'})]}));(mil.bulletLines||[]).forEach(b=>items.push(bullet(b)));return items;}
 
@@ -2898,7 +3103,7 @@ function buildFlip(data,color){
   const sideSec=t=>new docx.Paragraph({children:sectionHeaderRuns(t,{size:22,color:st}),border:{bottom:{style:docx.BorderStyle.SINGLE,size:3,color:st==='FFFFFF'?'6699CC':'777777'}},spacing:{before:260,after:120}});
   const _sc=scItems(data);
   if(_sc.length){side.push(sideSec(scLabel(data)));_sc.forEach(s=>side.push(bullet(s,{size:20,color:sideContact,after:70})));}
-  if(data.education?.length){side.push(sideSec('Education'));data.education.forEach(e=>{const f=e.fieldOfStudy?`, ${e.fieldOfStudy}`:'';const loc=[e.city,e.state].filter(Boolean).join(', ');side.push(new docx.Paragraph({spacing:{before:0,after:60},children:[new docx.TextRun({text:`${e.degree}${f}`,bold:true,size:20,color:st})]}));side.push(new docx.Paragraph({spacing:{before:0,after:80},children:[new docx.TextRun({text:[e.school,loc,eduGradDate(e)].filter(Boolean).join(', '),size:19,color:sideContact})]}));});}
+  if(data.education?.length){side.push(sideSec('Education'));data.education.forEach(e=>{const loc=[e.city,e.state].filter(Boolean).join(', ');side.push(new docx.Paragraph({spacing:{before:0,after:60},children:[new docx.TextRun({text:eduDegreeLine(e),bold:true,size:20,color:st})]}));side.push(new docx.Paragraph({spacing:{before:0,after:80},children:[new docx.TextRun({text:[e.school,loc,eduGradDate(e)].filter(Boolean).join(', '),size:19,color:sideContact})]}));});}
   const mainSec=t=>new docx.Paragraph({children:sectionHeaderRuns(t,{size:26,color:ac}),border:{bottom:{style:docx.BorderStyle.SINGLE,size:4,color:ac}},spacing:{before:260,after:140}});
   if(c.objective){main.push(mainSec('Objective'));main.push(bodyTxt(c.objective,{after:120}));}
   if(courseOfStudyText(data)){main.push(mainSec('Course of Study'));main.push(bodyTxt(courseOfStudyText(data),{after:120}));}
@@ -2920,7 +3125,7 @@ function buildTopLeft(data,color){
   const sideSec=t=>new docx.Paragraph({children:sectionHeaderRuns(t,{size:21,color:'333333'}),border:{bottom:{style:docx.BorderStyle.SINGLE,size:2,color:'CCCCCC'}},spacing:{before:220,after:110}});
   const _sc=scItems(data);
   if(_sc.length){side.push(sideSec(scLabel(data)));_sc.forEach(s=>side.push(bullet(s,{size:20,color:'444444',after:70})));}
-  if(data.education?.length){side.push(sideSec('Education'));data.education.forEach(e=>{const f=e.fieldOfStudy?`, ${e.fieldOfStudy}`:'';const loc=[e.city,e.state].filter(Boolean).join(', ');side.push(new docx.Paragraph({spacing:{before:0,after:80},children:[new docx.TextRun({text:`${e.degree}${f}`,bold:true,size:20,color:'222222'}),new docx.TextRun({text:`, ${[e.school,loc,eduGradDate(e)].filter(Boolean).join(', ')}`,size:19,color:'666666'})]})  );});}
+  if(data.education?.length){side.push(sideSec('Education'));data.education.forEach(e=>{const loc=[e.city,e.state].filter(Boolean).join(', ');side.push(new docx.Paragraph({spacing:{before:0,after:80},children:[new docx.TextRun({text:eduDegreeLine(e),bold:true,size:20,color:'222222'}),new docx.TextRun({text:`, ${[e.school,loc,eduGradDate(e)].filter(Boolean).join(', ')}`,size:19,color:'666666'})]})  );});}
   const main=[];
   const mainSec=t=>new docx.Paragraph({children:sectionHeaderRuns(t,{size:26,color:ac}),border:{bottom:{style:docx.BorderStyle.SINGLE,size:4,color:ac}},spacing:{before:240,after:140}});
   if(c.objective){main.push(mainSec('Objective'));main.push(bodyTxt(c.objective,{after:120}));}
@@ -2953,7 +3158,7 @@ function buildTopRight(data,color){
   const sideSec=t=>new docx.Paragraph({children:sectionHeaderRuns(t,{size:22,color:st}),border:{bottom:{style:docx.BorderStyle.SINGLE,size:3,color:st==='FFFFFF'?'6699CC':'777777'}},spacing:{before:240,after:120}});
   const _sc=scItems(data);
   if(_sc.length){side.push(sideSec(scLabel(data)));_sc.forEach(s=>side.push(bullet(s,{size:20,color:sideContact,after:70})));}
-  if(data.education?.length){side.push(sideSec('Education'));data.education.forEach(e=>{const f=e.fieldOfStudy?`, ${e.fieldOfStudy}`:'';const loc=[e.city,e.state].filter(Boolean).join(', ');side.push(new docx.Paragraph({spacing:{before:0,after:60},children:[new docx.TextRun({text:`${e.degree}${f}`,bold:true,size:20,color:st})]}));side.push(new docx.Paragraph({spacing:{before:0,after:80},children:[new docx.TextRun({text:[e.school,loc,eduGradDate(e)].filter(Boolean).join(', '),size:19,color:sideContact})]}));});}
+  if(data.education?.length){side.push(sideSec('Education'));data.education.forEach(e=>{const loc=[e.city,e.state].filter(Boolean).join(', ');side.push(new docx.Paragraph({spacing:{before:0,after:60},children:[new docx.TextRun({text:eduDegreeLine(e),bold:true,size:20,color:st})]}));side.push(new docx.Paragraph({spacing:{before:0,after:80},children:[new docx.TextRun({text:[e.school,loc,eduGradDate(e)].filter(Boolean).join(', '),size:19,color:sideContact})]}));});}
   const bodyRow=new docx.TableRow({children:[new docx.TableCell({width:{size:twip(5.2),type:docx.WidthType.DXA},margins:{top:twip(.35),bottom:twip(.35),left:twip(.4),right:twip(.3)},children:main}),new docx.TableCell({width:{size:twip(2.3),type:docx.WidthType.DXA},shading:{fill:ac,type:docx.ShadingType.CLEAR,color:'auto'},margins:{top:twip(.35),bottom:twip(.35),left:twip(.25),right:twip(.3)},children:side})]});
   return new docx.Document({sections:[{properties:{page:{margin:{top:0,bottom:0,left:0,right:0}}},children:[new docx.Table({width:{size:100,type:docx.WidthType.PERCENTAGE},borders:{top:nb,bottom:nb,left:nb,right:nb,insideH:nb,insideV:nb},rows:[hdrRow,bodyRow]})]},]});
 }
@@ -2970,7 +3175,7 @@ function buildSplit(data,color){
   const side=[],main=[];
   const _sc=scItems(data);
   if(_sc.length){side.push(sideSec(scLabel(data)));_sc.forEach(s=>side.push(bullet(s,{size:20,after:70})));}
-  if(data.education?.length){side.push(sideSec('Education'));data.education.forEach(e=>{const f=e.fieldOfStudy?`, ${e.fieldOfStudy}`:'';const loc=[e.city,e.state].filter(Boolean).join(', ');side.push(new docx.Paragraph({spacing:{before:0,after:50},children:[new docx.TextRun({text:`${e.degree}${f}`,bold:true,size:20,color:'1a1a1a',font:'Calibri'})]}));side.push(new docx.Paragraph({spacing:{before:0,after:120},children:[new docx.TextRun({text:[e.school,loc,eduGradDate(e)].filter(Boolean).join(', '),size:19,color:'555555',font:'Calibri'})]}));});}
+  if(data.education?.length){side.push(sideSec('Education'));data.education.forEach(e=>{const loc=[e.city,e.state].filter(Boolean).join(', ');side.push(new docx.Paragraph({spacing:{before:0,after:50},children:[new docx.TextRun({text:eduDegreeLine(e),bold:true,size:20,color:'1a1a1a',font:'Calibri'})]}));side.push(new docx.Paragraph({spacing:{before:0,after:120},children:[new docx.TextRun({text:[e.school,loc,eduGradDate(e)].filter(Boolean).join(', '),size:19,color:'555555',font:'Calibri'})]}));});}
   if(c.objective){main.push(mainSec('Objective'));main.push(bodyTxt(c.objective,{after:120}));}
   if(courseOfStudyText(data)){main.push(mainSec('Course of Study'));main.push(bodyTxt(courseOfStudyText(data),{after:120}));}
   if(data.workExperience?.length){main.push(mainSec('Experience'));data.workExperience.forEach(j=>jobBlock(j).forEach(q=>main.push(q)));}
@@ -3013,7 +3218,7 @@ async function callClaude(system,messages,opts){
 
 // ── Right Panel Chat ──────────────────────────────
 function sendTip(key){
-  const tip=key==='skills'?TIPS.skills:key!=='work'?TIPS[key]:null;
+  const tip=key==='skills'?TIPS.skills:(key!=='work' && key!=='courseOfStudy')?TIPS[key]:null;
   if(tip)setTimeout(()=>addAIMsg(tip),300);
   if(key==='template')setTimeout(()=>runResumeReview(),700);
 
@@ -3023,6 +3228,16 @@ function sendTip(key){
     const workItems=found?found.workSearch:['I want to work in a skilled trade where I can apply my hands-on training.','I am looking for an entry-level position where I can learn from experienced tradespeople.','I want a job that lets me use the skills I developed in my program right away.'];
     setTimeout(()=>addSuggestionCard('What are you looking for in a job?',workItems,'workSearch'),600);
     setTimeout(()=>addSuggestionCard('What sets you apart?',STANDOUT_SUGGESTIONS,'standout'),900);
+  }
+
+  if(key==='courseOfStudy'){
+    const program=resumeData.personal.program||'';
+    const snippets=getCourseOfStudySnippets(program);
+    const imported=resumeData._courseOfStudyFromAssignment && getCourseOfStudyText();
+    setTimeout(()=>addAIMsg(imported
+      ? `Your **Course of Study** from your assignment is in the form on the left. Use the example lines below only if you want to add more detail.`
+      : `Write your Course of Study paragraph in the form on the left. These are **short example lines only** — click **+ Add** for items that match your real training.`),imported?400:300);
+    setTimeout(()=>addSuggestionCard(`Example training topics for ${program||'your program'}:`,snippets,'cosParagraph','append'),imported?650:550);
   }
 
   if(key==='volunteer'){
@@ -3055,8 +3270,9 @@ function sendTip(key){
       skills:['Safety procedures','Hand and power tools','Customer service','Teamwork','Problem solving','Time management'],
       certs:['OSHA 10','First Aid/CPR','Forklift Certification']
     };
-    setTimeout(()=>addSuggestionCard(`Suggested skills for ${program||'your program'} — click to add:`,found.skills,'skillsDump','append'),600);
-    setTimeout(()=>addSuggestionCard('Suggested certifications — click to add:',found.certs,'certsDump','append'),900);
+    setTimeout(()=>addAIMsg(`**Suggestions only** — the examples below are not added to your resume unless you click **+ Add**. Only enter skills and certifications you actually have.`),500);
+    setTimeout(()=>addSuggestionCard(`Example skills for ${program||'your program'} — + Add only if you have them:`,found.skills,'skillsDump','append'),700);
+    setTimeout(()=>addSuggestionCard('Example certifications — + Add only if you have them:',found.certs,'certsDump','append'),1000);
   }
 }
 
@@ -3101,10 +3317,15 @@ function applySuggestion(idx){
   if(!el)return;
   if(s.mode==='append'){
     const cur=el.value.trim();
-    el.value=cur?cur+'\n'+s.text:s.text;
+    if(s.targetId==='cosParagraph'){
+      el.value=cur?cur+' '+s.text:s.text;
+    } else {
+      el.value=cur?cur+'\n'+s.text:s.text;
+    }
   } else {
     el.value=s.text;
   }
+  if (s.targetId === 'cosParagraph') updateCosWordCount();
   el.focus();
   el.style.transition='border-color .3s';
   el.style.borderColor='var(--blue-700)';
