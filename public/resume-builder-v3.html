@@ -391,7 +391,7 @@ const TIPS = {
   personal:`Fill in your contact information carefully — this is how employers reach you. Make sure your email looks professional and your phone number is correct. Select your campus and program from the dropdowns.`,
   career:`Be specific about the type of job and employer you're targeting. Examples: "I want to work as an automotive technician at a dealership doing diagnostics and hands-on repairs." "I am looking for an entry-level HVAC position where I can install, maintain, and troubleshoot residential systems." "I want a welding job in manufacturing or construction where I can use MIG/TIG skills and read blueprints." Pick up to 3 qualities that describe you as a worker.`,
   work:`When describing your duties, just write naturally — don't worry about formatting. Mention specific tools, equipment, tasks, and anything you're proud of. I'll convert it into professional bullet points for you.`,
-  courseOfStudy:`Write a paragraph about the skills, tools, and training you gained in your program. This becomes the **Course of Study** section on your resume — it appears right above Education. If you completed the Work Experience Assignment, your paragraph is already loaded. I'll polish it to sound professional when you save.`,
+  courseOfStudy:`Write a paragraph about the skills, tools, and training you gained in your program. This becomes the **Course of Study** section on your resume — it appears right above Education. I'll polish it to sound professional when you save.`,
   education:`Your trade program has been pre-filled below. Confirm the details and add your graduation year. Then add your high school diploma or any other education you have.`,
   skills:`Write out every skill and certification you have — tools, equipment, software, techniques, licenses, OSHA/EPA/CDL cards, manufacturer training, anything relevant. I'll clean it up, remove duplicates, and organize it professionally.`,
   military:`Add your military service below — active duty, reserves, or National Guard. In the Duties box, describe your role naturally: what you did every day, equipment you operated or maintained, people you supervised or trained, and anything you're proud of. I'll turn it into professional resume bullets that highlight leadership, reliability, technical skills, and teamwork — all things trade employers value.`,
@@ -475,8 +475,7 @@ let isAIThinking = false;
 
 const resumeData = {
   personal:{},careerContext:{},workExperience:[],militaryService:[],education:[],volunteer:[],certifications:[],skills:[],references:'Available upon request',
-  courseOfStudy:'',
-  _assignmentImported: false
+  courseOfStudy:''
 };
 const sectionStatus = {};
 SECTIONS.forEach(s => sectionStatus[s.key] = 'pending');
@@ -508,107 +507,15 @@ function clearProgress(){
   localStorage.removeItem('rb_progress');
 }
 
-
-// ── Assignment Import ─────────────────────────────
-function loadAssignmentJobs() {
-  try {
-    const raw = localStorage.getItem('employerAssignment');
-    if (!raw) return [];
-    const saved = JSON.parse(raw);
-    if (!Array.isArray(saved) || !saved.length) return [];
-    return saved.map(j => {
-      const [sy, sm] = (j.start || '').split('-');
-      const [ey, em] = (j.end   || '').split('-');
-      const startMonth = sm ? MONTHS[parseInt(sm,10)-1] || '' : '';
-      const startYear  = sy || '';
-      const endMonth   = em ? MONTHS[parseInt(em,10)-1] || '' : '';
-      const endYear    = j.isCurrent ? 'Present' : (ey || '');
-      const bulletLines = (j.tasks || '').split('\n').map(b => b.trim()).filter(Boolean);
-      return {
-        employer: j.employer || '', jobTitle: j.title || '',
-        city: j.city || '', state: j.state || '',
-        startMonth, startYear, endMonth, endYear,
-        current: !!j.isCurrent,
-        duties: bulletLines.join('\n'),
-        bulletLines,
-        _fromAssignment: true
-      };
-    });
-  } catch(e) { return []; }
-}
-
-function loadAssignmentCourseOfStudy() {
-  try {
-    const saved = localStorage.getItem('empAssign_skillsPara');
-    if (!saved || !saved.trim()) return '';
-    return saved.trim();
-  } catch(e) { return ''; }
-}
-
-function importAssignmentIfNeeded() {
-  if (resumeData._assignmentImported) return { jobs: 0, hasCourseOfStudy: !!getCourseOfStudyText() };
-
-  let jobCount = 0;
-  const jobs = loadAssignmentJobs();
-  if (jobs.length) {
-    resumeData.workExperience = [...resumeData.workExperience, ...jobs];
-    jobCount = jobs.length;
-    setStatus('work', 'done');
-  }
-
-  const para = loadAssignmentCourseOfStudy();
-  if (para) {
-    resumeData.courseOfStudy = para;
-    resumeData._courseOfStudyFromAssignment = true;
-  }
-
-  if (jobCount || para) resumeData._assignmentImported = true;
-  saveProgress();
-  return { jobs: jobCount, hasCourseOfStudy: !!para };
-}
-
 function getCourseOfStudyText() {
-  return (resumeData.courseOfStudy || localStorage.getItem('empAssign_skillsPara') || '').trim();
-}
-
-async function polishImportedJobs() {
-  const ci = document.getElementById('centerInner');
-  const toProcess = resumeData.workExperience.filter(j => j._fromAssignment && !j._bulletPolished);
-  const prog = resumeData.personal.program || '';
-  for (let idx = 0; idx < toProcess.length; idx++) {
-    const job = toProcess[idx];
-    ci.innerHTML = `<div style="text-align:center;padding:60px 20px;color:var(--slate-500)"><div style="font-size:32px;margin-bottom:12px">⚙️</div><div style="font-size:15px;font-weight:600;margin-bottom:6px">Writing professional bullets…</div><div style="font-size:13px">${escHtml(job.jobTitle||'Job')} at ${escHtml(job.employer)} (${idx+1} of ${toProcess.length})</div></div>`;
-    const tense = job.current ? 'present tense' : 'past tense';
-    const duties = (job.bulletLines||[]).filter(Boolean).join('\n') || job.duties || '';
-    const sys = `Write resume bullet points for a trade school student${prog?' studying '+prog:''}. Job: ${job.jobTitle} at ${job.employer}. The student described their duties as: "${duties}". Write 3–5 polished, professional resume bullets in ${tense}. Each starts with a strong action verb. No bullet characters, no "I". Plain text, one bullet per line.`;
-    try {
-      const result = await callClaude(sys,[{role:'user',content:'Write the bullet points.'}]);
-      job.bulletLines = result.trim().split('\n').map(l=>l.trim().replace(/^[•\-\*]\s*/,'')).filter(l=>l.length>0).map(l=>cleanCareerText(l));
-      job._bulletPolished = true;
-    } catch(e) {
-      job._bulletPolished = true;
-    }
-  }
-  setStatus('work','done');
-  showCenter('work');
-  sendTip('work');
+  return (resumeData.courseOfStudy || '').trim();
 }
 
 // ── App Start ─────────────────────────────────────
 function startApp() {
   renderLeftNav();
   showCenter('welcome');
-  const hasWorkAssignment = !!localStorage.getItem('employerAssignment');
-  const hasCourseOfStudy = !!localStorage.getItem('empAssign_skillsPara');
-  let assignNote = '';
-  if (hasWorkAssignment && hasCourseOfStudy) {
-    assignNote = '\n\n**Your Work Experience Assignment was found** — your jobs and Course of Study paragraph will both be automatically loaded into your resume.';
-  } else if (hasWorkAssignment) {
-    assignNote = '\n\n**Your Work Experience Assignment was found** — your jobs will be automatically loaded into the Work Experience section.';
-  } else if (hasCourseOfStudy) {
-    assignNote = '\n\n**Your Work Experience Assignment was found** — your Course of Study paragraph will be automatically loaded into your resume.';
-  }
-  addAIMsg(`Welcome! I'm your AI resume assistant. I'll guide you through each section and answer any questions you have.${assignNote || ' Click **Start Fresh** to begin, or upload an existing resume to get started faster.'}\n\nEvery resume includes a **Course of Study** section — AI will polish your assignment paragraph or write one from your program details.`);
+  addAIMsg(`Welcome! I'm your AI resume assistant. I'll guide you through each section and answer any questions you have. Click **Start Fresh** to begin, or upload an existing resume to get started faster.\n\nEvery resume includes a **Course of Study** section — AI will help you write and polish one from your program details.`);
 }
 
 // ── Left Nav ──────────────────────────────────────
@@ -681,13 +588,9 @@ function showSection(key) {
   clearChat();
   if (key === 'personal') { showCenter('personal'); sendTip('personal'); }
   else if (key === 'career') { showCenter('career'); sendTip('career'); }
-  else if (key === 'work') {
-    importAssignmentIfNeeded();
-    const unpolished = resumeData.workExperience?.filter(j => j._fromAssignment && !j._bulletPolished);
-    if (unpolished?.length) { polishImportedJobs(); } else { showCenter('work'); sendTip('work'); }
-  }
+  else if (key === 'work') { showCenter('work'); sendTip('work'); }
   else if (key === 'military') { showCenter('military'); sendTip('military'); }
-  else if (key === 'courseOfStudy') { importAssignmentIfNeeded(); showCenter('courseOfStudy'); sendTip('courseOfStudy'); }
+  else if (key === 'courseOfStudy') { showCenter('courseOfStudy'); sendTip('courseOfStudy'); }
   else if (key === 'education') { showCenter('education'); sendTip('education'); }
   else if (key === 'volunteer') { showCenter('volunteer'); sendTip('volunteer'); }
   else if (key === 'certifications') { showSection('skills'); }
@@ -700,22 +603,11 @@ function renderWelcome() {
   const saved          = loadProgress();
   const hasSaved       = !!(saved && (saved.personal?.firstName || saved.workExperience?.length));
   const savedName      = saved?.personal?.firstName ? ` for ${escHtml(saved.personal.firstName)}` : '';
-  const assignJobs     = loadAssignmentJobs();
-  const assignCourse   = loadAssignmentCourseOfStudy();
-  const assignParts    = [];
-  if (assignJobs.length) assignParts.push(`${assignJobs.length} job${assignJobs.length>1?'s':''} for Work Experience`);
-  if (assignCourse) assignParts.push('Course of Study paragraph');
-  const assignBanner   = assignParts.length
-    ? `<div class="prefill-banner" style="margin:0 0 16px;text-align:left;background:#f0fdf4;border-color:#bbf7d0;color:#15803d">
-        💼 <strong>From your Work Experience Assignment:</strong> ${assignParts.join(' and ')} will be automatically added to your resume.
-      </div>`
-    : '';
   return `<div class="welcome-card">
     <span class="welcome-icon">🎓</span>
     <div class="welcome-title">Build Your Professional Resume</div>
     <div class="welcome-sub">I'll guide you through each section. Fill out the forms in this panel, ask me questions in the chat, and I'll generate a polished resume when you're done.</div>
     ${hasSaved ? `<div class="prefill-banner" style="margin:0 0 16px;text-align:left">📋 Saved progress found${savedName}. Continue where you left off or start over.</div>` : ''}
-    ${assignBanner}
     <div class="welcome-actions">
       ${hasSaved ? `<button class="btn btn-primary btn-lg" onclick="continueProgress()">Continue Where I Left Off</button>` : ''}
       <button class="btn ${hasSaved ? 'btn-ghost' : 'btn-primary'} btn-lg" onclick="startFresh()">${hasSaved ? 'Start Over' : 'Start Fresh'}</button>
@@ -738,14 +630,7 @@ function startFresh() {
   resumeData.skills=[];
   resumeData.courseOfStudy='';
   resumeData.references='Available upon request';
-  resumeData._assignmentImported=false;
-  resumeData._courseOfStudyFromAssignment=false;
   SECTIONS.forEach(s=>sectionStatus[s.key]='pending');
-  const imported = importAssignmentIfNeeded();
-  const importNotes = [];
-  if (imported.jobs) importNotes.push(`**${imported.jobs} job${imported.jobs>1?'s':''}** imported into Work Experience`);
-  if (imported.hasCourseOfStudy) importNotes.push('your **Course of Study** paragraph imported from your assignment');
-  if (importNotes.length) addAIMsg(`✅ ${importNotes.join(' and ')}. You can review and edit them in the builder.`);
   renderLeftNav();
   showSection('personal');
 }
@@ -765,13 +650,8 @@ function continueProgress() {
     setStatus('skills','done');
     setStatus('certifications','done');
   }
-  const imported = importAssignmentIfNeeded();
   const name = saved.personal?.firstName ? `, ${saved.personal.firstName}` : '';
-  const importNotes = [];
-  if (imported.jobs) importNotes.push(`**${imported.jobs} job${imported.jobs>1?'s':''}** from your Work Experience Assignment`);
-  if (imported.hasCourseOfStudy) importNotes.push('your **Course of Study** paragraph from your assignment');
-  const importMsg = importNotes.length ? ` Also loaded ${importNotes.join(' and ')}.` : '';
-  addAIMsg(`Welcome back${name}! I've restored your progress.${importMsg} Use the menu on the left to pick up where you left off.`);
+  addAIMsg(`Welcome back${name}! I've restored your progress. Use the menu on the left to pick up where you left off.`);
   if      (!saved.personal?.firstName)          showSection('personal');
   else if (!saved.careerContext?.objective)      showSection('career');
   else if (!saved.workExperience?.length && !saved.militaryService?.length && !saved.courseOfStudy && !saved.education?.length) showSection('work');
@@ -1644,7 +1524,7 @@ function renderWorkForm(pf={}) {
           <div>
             <div style="font-size:15px;font-weight:700;color:var(--slate-800)">${escHtml(j.jobTitle||'Position')}</div>
             <div style="font-size:13px;color:var(--slate-600);margin-top:2px">${escHtml(j.employer)}${loc?` &bull; ${escHtml(loc)}`:''}</div>
-            <div style="font-size:12px;color:var(--slate-400);margin-top:2px">${escHtml(dateStr)}${j._fromAssignment?' &nbsp;<span style="background:#f0fdf4;color:#15803d;font-size:11px;font-weight:600;padding:1px 7px;border-radius:20px">From Assignment</span>':''}</div>
+            <div style="font-size:12px;color:var(--slate-400);margin-top:2px">${escHtml(dateStr)}</div>
           </div>
           <div style="display:flex;gap:6px;flex-shrink:0">
             <button class="btn btn-ghost" style="padding:5px 10px;font-size:12px" onclick="editWork(${i})">Edit</button>
@@ -1891,14 +1771,9 @@ function renderWorkDone() {
 
 // ── Course of Study ───────────────────────────────
 function renderCourseOfStudyForm() {
-  const draft = resumeData.courseOfStudy || getCourseOfStudyText() || '';
-  const imported = resumeData._courseOfStudyFromAssignment && draft;
+  const draft = resumeData.courseOfStudy || '';
   const words = draft.trim().split(/\s+/).filter(Boolean).length;
-  const importBanner = imported
-    ? `<div class="prefill-banner" style="margin-bottom:16px;text-align:left;background:#f0fdf4;border-color:#bbf7d0;color:#15803d">📚 Loaded from your Work Experience Assignment — review and edit before saving.</div>`
-    : '';
   return `<div class="section-hdr"><div class="section-hdr-icon">📚</div><div><div class="section-hdr-title">Course of Study</div><div class="section-hdr-sub">Required — appears on your resume above Education</div></div></div>
-  ${importBanner}
   <div class="form-card">
     <div class="form-card-hdr">📚 Course of Study Paragraph</div>
     <div class="form-card-body">
@@ -1935,7 +1810,6 @@ async function submitCourseOfStudy() {
   }
   if (err) err.style.display = 'none';
   resumeData.courseOfStudy = text;
-  localStorage.setItem('empAssign_skillsPara', text);
 
   const ci = document.getElementById('centerInner');
   ci.innerHTML = `<div style="text-align:center;padding:60px 20px;color:var(--slate-500)"><div style="font-size:32px;margin-bottom:12px">✨</div><div style="font-size:15px;font-weight:600">Polishing your Course of Study…</div></div>`;
@@ -2773,11 +2647,7 @@ async function generateResume() {
     saveAs(blob, resumeFilename(p));
     setStatus('template','done');
     btn.disabled=false; btn.textContent='Download Again ↓';
-    const fromAssignment = !!getCourseOfStudyText() && resumeData._courseOfStudyFromAssignment;
-    const cosNote = fromAssignment
-      ? ' Your **Course of Study** section was polished from your assignment paragraph.'
-      : ' A professional **Course of Study** section was added based on your program.';
-    addAIMsg(`Your resume has been downloaded!${cosNote} Change the style or color anytime and click Download Again to try a different look.`);
+    addAIMsg(`Your resume has been downloaded! A professional **Course of Study** section was included based on your program. Change the style or color anytime and click Download Again to try a different look.`);
   } catch(err) { btn.disabled=false; btn.textContent='Generate & Download ↓'; addAIMsg(`Error generating file: ${err.message}`); console.error(err); }
 }
 
@@ -3030,13 +2900,8 @@ function sendTip(key){
   }
 
   if(key==='work'){
-    const imported = resumeData.workExperience?.filter(j=>j._fromAssignment);
-    if(imported?.length){
-      setTimeout(()=>addAIMsg(`✅ **${imported.length} job${imported.length>1?'s':''} imported from your Work Experience Assignment** — already loaded below. Review the bullet points, make any edits, then add more jobs if needed.`),300);
-    } else {
-      setTimeout(()=>addAIMsg(`Write naturally — describe what you did, the tools you used, and anything you're proud of. I'll turn it into professional bullet points. Enter your job title first and I'll generate suggestions specific to that role.`),300);
-      setTimeout(()=>addDutySuggCard(),700);
-    }
+    setTimeout(()=>addAIMsg(`Write naturally — describe what you did, the tools you used, and anything you're proud of. I'll turn it into professional bullet points. Enter your job title first and I'll generate suggestions specific to that role.`),300);
+    setTimeout(()=>addDutySuggCard(),700);
   }
 
   if(key==='military'){

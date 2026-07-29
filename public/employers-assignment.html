@@ -352,14 +352,14 @@ html,body{height:100%;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Ro
         <div class="welcome-card">
           <span class="welcome-icon">📋</span>
           <div class="welcome-title">Work Experience Assignment</div>
-          <div class="welcome-sub">This assignment builds content for your resume. Everyone completes a <strong>Course of Study</strong> paragraph (required). If you have held a job, you can also add your <strong>work history</strong> (optional).</div>
+          <div class="welcome-sub">Complete a <strong>Course of Study</strong> paragraph (required). If you have held a job, you can also add your <strong>work history</strong> (optional).</div>
           <div class="name-field">
             <label for="studentName">Your Full Name <span class="req">*</span></label>
             <input type="text" id="studentName" placeholder="First and Last Name" autocomplete="name">
           </div>
           <div class="info-box blue" style="margin:20px 0;text-align:left">
             <h4>What you'll complete</h4>
-            <p><strong>Required:</strong> Course of Study — a paragraph about skills and training from your program. This goes on every resume.<br><strong>Optional:</strong> Work history — only if you have held one or more jobs.</p>
+            <p><strong>Required:</strong> Course of Study — a paragraph about skills and training from your program.<br><strong>Optional:</strong> Work history — only if you have held one or more jobs.</p>
           </div>
           <div class="btn-row" style="justify-content:center;margin-top:8px">
             <button class="btn btn-primary btn-lg" onclick="startAssignment()">Get Started →</button>
@@ -514,7 +514,7 @@ html,body{height:100%;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Ro
         <div class="form-card">
           <div class="form-card-hdr">📚 Course of Study <span style="font-size:11px;font-weight:600;opacity:.85;margin-left:6px">Required</span></div>
           <div class="form-card-body">
-            <p style="font-size:14px;color:var(--slate-600);margin-bottom:18px;line-height:1.6">Write a paragraph in your own words about what you learned in your program. Be specific and honest — this will appear in the <strong>Course of Study</strong> section on your resume. Ask the AI assistant on the right if you need help getting started.</p>
+            <p style="font-size:14px;color:var(--slate-600);margin-bottom:18px;line-height:1.6">Write a paragraph in your own words about what you learned in your program. Be specific and honest. Ask the AI assistant on the right if you need help getting started.</p>
             <div class="field">
               <label for="skillsParagraph">Your Course of Study paragraph <span class="req">*</span></label>
               <textarea id="skillsParagraph" rows="10" placeholder="Example: During my Automotive Technology program, I developed hands-on skills in vehicle maintenance and repair. I learned to perform oil changes, brake inspections, and tire rotations using professional shop equipment…"></textarea>
@@ -540,7 +540,7 @@ html,body{height:100%;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Ro
               <span class="cb-icon">💼</span>
               <div>
                 <span class="cb-title">Yes, I Have Work History</span>
-                <span class="cb-desc">I've worked one or more jobs and want to add them to my resume.</span>
+                <span class="cb-desc">I've worked one or more jobs and want to add them to this assignment.</span>
               </div>
             </button>
             <button class="choice-btn" onclick="skipWorkHistory()">
@@ -573,7 +573,7 @@ html,body{height:100%;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Ro
             <button class="download-btn" onclick="downloadPDF()">⬇ Download Assignment</button>
           </div>
           <div id="submissionSummaryCard" class="submission-card" hidden>
-            <div class="submission-card-hdr">📄 Your Submission — Saved for Your Resume</div>
+            <div class="submission-card-hdr">📄 Your Submission</div>
             <div id="submissionSummaryBody"></div>
           </div>
           <div class="form-card">
@@ -598,7 +598,7 @@ html,body{height:100%;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Ro
                 <div id="bulletSuggestList"></div>
               </div>
               <div id="redoPrompt" class="info-box red" style="margin-top:16px;display:none">
-                <h4>Redo This Assignment for Your Resume</h4>
+                <h4>Redo This Assignment</h4>
                 <p id="redoPromptText"></p>
                 <div class="btn-row" style="margin-top:14px;margin-bottom:0">
                   <button class="btn btn-primary" onclick="redoAssignment()">↺ Do the Assignment Again</button>
@@ -879,7 +879,7 @@ function rpNoWorkDirections() {
   </div>
   <div class="rtp-rule">
     <div class="rtp-rule-title">Rule 5 — Only Write What You Actually Learned</div>
-    This paragraph goes directly on your resume. If an employer asks about it, you need to back it up.
+    This paragraph is the core of your assignment. Be specific and honest — if an employer asked about it, you need to back it up.
   </div>`;
 }
 
@@ -917,7 +917,7 @@ function rpNoWorkRubric() {
 /* Chat: brief welcome when path chosen */
 function sendDirectionsCourse() {
   refreshRpTab();
-  setTimeout(() => addAIMsg(`Hi ${studentName}! Start with your **Course of Study** paragraph — this is **required** and will appear on your resume.\n\nUse the **Directions**, **Examples**, and **Rubric** tabs above for help. After that, you can optionally add work history if you have any.`), 400);
+  setTimeout(() => addAIMsg(`Hi ${studentName}! Start with your **Course of Study** paragraph — this is **required**.\n\nUse the **Directions**, **Examples**, and **Rubric** tabs above for help. After that, you can optionally add work history if you have any.`), 400);
 }
 
 function sendDirectionsWorkOptional() {
@@ -1037,17 +1037,6 @@ async function submitFullAssignment() {
   if (jobs.length) workGrade = await fetchWorkGrade();
 
   gradeResult = mergeAssignmentGrades(courseGrade, workGrade);
-  localStorage.setItem('empAssign_skillsPara', para);
-  if (jobs.length) {
-    localStorage.setItem('employerAssignment', JSON.stringify(jobs.map(j => ({
-      employer: j.employer, title: j.title, start: j.start, end: j.end,
-      tasks: j.bullets.join('\n'), isCurrent: j.current,
-      grade: workGrade?.grade || gradeResult.grade, score: workGrade?.overall || gradeResult.overall,
-      savedAt: new Date().toISOString()
-    }))));
-  } else {
-    localStorage.removeItem('employerAssignment');
-  }
 
   submissionId = generateId();
   gradeResult._submissionId = submissionId;
@@ -1063,7 +1052,7 @@ function mergeAssignmentGrades(courseGrade, workGrade) {
   if (!workGrade) {
     return {
       ...courseGrade,
-      summary: (courseGrade.summary || '') + ' Your Course of Study has been saved for your resume.',
+      summary: (courseGrade.summary || '') + ' Review the feedback below to strengthen your Course of Study.',
       _hasWork: false
     };
   }
@@ -1089,7 +1078,7 @@ function mergeAssignmentGrades(courseGrade, workGrade) {
     grade,
     headline: overall >= 90 ? 'Excellent Work!' : overall >= 80 ? 'Good Work!' : overall >= 70 ? 'Nice Start!' : 'Needs More Detail',
     strengths: [courseGrade.strengths, workGrade.strengths].filter(Boolean).join(' '),
-    summary: 'Your Course of Study and work experience have been saved for your resume. Review the feedback below to strengthen both sections.',
+    summary: 'Review the feedback below to strengthen your Course of Study and work experience.',
     bulletSuggestions: workGrade.bulletSuggestions || [],
     _rubricKeys: [...courseKeys.map(k => 'cos_' + k), ...workKeys],
     _rubricLabels: [...(courseGrade._rubricLabels || []).map(l => 'Course of Study — ' + l), ...(workGrade._rubricLabels || []).map(l => 'Work — ' + l)],
@@ -1156,7 +1145,7 @@ function gradeNoWorkJS(para) {
     overall, grade,
     headline: overall >= 90 ? 'Excellent Work!' : overall >= 80 ? 'Good Work!' : overall >= 70 ? 'Nice Start!' : 'Needs More Detail',
     strengths: 'You completed the assignment and described your trade school training.',
-    summary: 'Your Course of Study paragraph will be used on your resume. The feedback above shows where you can strengthen it.',
+    summary: 'Review the feedback above to see where you can strengthen your Course of Study paragraph.',
     _rubricKeys:    ['specificSkills','relevance','effort','language'],
     _rubricLabels:  ['Specific Skills Named','Program Relevance','Effort & Length','Professional Language'],
     _rubricWeights: ['35%','25%','25%','15%']
@@ -1407,7 +1396,7 @@ function gradeWorkJS() {
     overall, grade,
     headline: overall >= 90 ? 'Excellent Work!' : overall >= 80 ? 'Good Work!' : overall >= 70 ? 'Nice Start!' : 'Needs More Detail',
     strengths: 'You completed the work experience section with real job information — that\'s the foundation of a strong resume.',
-    summary: 'Your work experience has been saved and will be ready to use when you build your resume. Review the bullet suggestions below to see how to strengthen your wording.',
+    summary: 'Review the bullet suggestions below to see how to strengthen your wording.',
     bulletSuggestions: buildBulletSuggestionsJS(),
     _rubricKeys:    ['completeness','actionVerbs','specificity','professionalism'],
     _rubricLabels:  ['Completeness','Action Verbs','Specificity & Detail','Professionalism'],
@@ -1436,7 +1425,7 @@ function redoAssignment() {
   rpContext = 'course';
   show('screenNoWork');
   document.getElementById('skillsParagraph').focus();
-  addAIMsg('Take your time revising your **Course of Study** using the rubric feedback. This paragraph goes directly on your resume. You can also update your work history afterward if you added jobs.');
+  addAIMsg('Take your time revising your **Course of Study** using the rubric feedback. You can also update your work history afterward if you added jobs.');
 }
 
 /* ── Grade display ──────────────────────────────── */
@@ -1530,8 +1519,8 @@ function showGradeResult() {
     redoBox.style.display = 'block';
     const hasWork = gradeResult._hasWork && jobs.length > 0;
     redoText.innerHTML = hasWork
-      ? 'Your <strong>Course of Study</strong> and work experience will appear on your resume. Because this score is below what employers expect, you <strong>can and should do this assignment again</strong> — strengthen your paragraph and bullets using the feedback below.'
-      : 'Your <strong>Course of Study</strong> paragraph will appear on your resume. Because this score is below what employers expect, you <strong>can and should do this assignment again</strong> — add more specific tools, techniques, and training details before you build your resume.';
+      ? 'Because this score is below what employers expect, you <strong>can and should do this assignment again</strong> — strengthen your Course of Study paragraph and work bullets using the feedback below.'
+      : 'Because this score is below what employers expect, you <strong>can and should do this assignment again</strong> — add more specific tools, techniques, and training details to your Course of Study paragraph.';
   } else if (redoBox) {
     redoBox.style.display = 'none';
   }
@@ -1543,11 +1532,11 @@ function showGradeResult() {
     ? '\n\nScroll down to **What Your Bullets Could Look Like** — I rewrote each bullet to show you stronger resume wording.'
     : '';
   const redoNote = substandard
-    ? '\n\n**Important:** This content goes on your resume. Your score suggests you should **redo the assignment** and strengthen it using the rubric feedback before building your resume.'
+    ? '\n\n**Important:** Your score suggests you should **redo the assignment** and strengthen it using the rubric feedback.'
     : '';
   const includedNote = hasWork
-    ? '\n\nYour submission includes your **Course of Study** and **work history** — both are saved for your resume.'
-    : '\n\nYour submission includes your **Course of Study** — saved for your resume.';
+    ? '\n\nYour submission includes your **Course of Study** and **work history**.'
+    : '\n\nYour submission includes your **Course of Study**.';
   addAIMsg(`**Your grade is in!** You scored **${g.overall}/100** — ${ltrLabel[ltr] || 'graded'}.\n\n${g.strengths}\n\n${g.summary}${includedNote}${suggestNote}${redoNote}\n\nDon't forget to **download your assignment** and submit the PDF in Canvas to receive credit.`);
 }
 
@@ -1873,7 +1862,7 @@ window.addEventListener('load', () => {
     body: JSON.stringify({ model:'claude-sonnet-4-6', max_tokens:10, messages:[{role:'user',content:'hi'}] })
   }).then(r => setAIStatus(r.ok ? 'ok' : 'err')).catch(() => setAIStatus('err'));
 
-  addAIMsg('Welcome! I\'m your AI assistant for this assignment.\n\n**Everyone** writes a **Course of Study** paragraph (required) — it goes on your resume. **Work history is optional** — only add jobs if you\'ve actually held them.\n\nEnter your name and click **Get Started**. Ask me anything at any time!');
+  addAIMsg('Welcome! I\'m your AI assistant for this assignment.\n\n**Everyone** writes a **Course of Study** paragraph (required). **Work history is optional** — only add jobs if you\'ve actually held them.\n\nEnter your name and click **Get Started**. Ask me anything at any time!');
 });
 </script>
 </body>
