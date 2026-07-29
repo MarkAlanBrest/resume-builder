@@ -16,6 +16,30 @@ function listFromLines(text) {
     .filter(Boolean);
 }
 
+function AdminFocusStyles() {
+  return (
+    <style>{`
+      .program-admin-page button:focus:not(:focus-visible) {
+        outline: none;
+        box-shadow: none;
+      }
+      .program-admin-page button:focus-visible {
+        outline: 2px solid #93c5fd;
+        outline-offset: 2px;
+      }
+    `}</style>
+  );
+}
+
+function AdminPage({ children }) {
+  return (
+    <div style={styles.page} className="program-admin-page">
+      <AdminFocusStyles />
+      {children}
+    </div>
+  );
+}
+
 export default function ProgramAdminPage() {
   const [password, setPassword] = useState("");
   const [passwordInput, setPasswordInput] = useState("");
@@ -221,7 +245,7 @@ export default function ProgramAdminPage() {
 
   if (!authenticated) {
     return (
-      <div style={styles.page}>
+      <AdminPage>
         <div style={styles.shell}>
           <header style={styles.header}>
             <h1 style={styles.title}>Program Admin</h1>
@@ -257,12 +281,12 @@ export default function ProgramAdminPage() {
             {status ? <p style={styles.status}>{status}</p> : null}
           </section>
         </div>
-      </div>
+      </AdminPage>
     );
   }
 
   return (
-    <div style={styles.page}>
+    <AdminPage>
       <div style={styles.shell}>
         <header style={styles.header}>
           <div style={styles.headerRow}>
@@ -416,7 +440,7 @@ export default function ProgramAdminPage() {
           </main>
         </div>
       </div>
-    </div>
+    </AdminPage>
   );
 }
 
@@ -452,6 +476,7 @@ const styles = {
     fontWeight: 600,
     cursor: "pointer",
     fontSize: "14px",
+    outline: "none",
   },
   tabBtnActive: {
     background: "#eff6ff",
@@ -521,6 +546,7 @@ const styles = {
     padding: "10px 18px",
     fontWeight: 600,
     cursor: "pointer",
+    outline: "none",
   },
   secondaryBtn: {
     background: "#e2e8f0",
@@ -531,6 +557,7 @@ const styles = {
     fontWeight: 600,
     cursor: "pointer",
     whiteSpace: "nowrap",
+    outline: "none",
   },
   campusBlock: { marginBottom: "18px" },
   campusLabel: {
@@ -555,6 +582,7 @@ const styles = {
     marginBottom: "8px",
     cursor: "pointer",
     fontSize: "14px",
+    outline: "none",
   },
   programBtnActive: {
     background: "#eff6ff",
