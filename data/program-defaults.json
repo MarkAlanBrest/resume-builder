@@ -1,0 +1,291 @@
+{
+  "Automotive Technology": {
+    "skills": [
+      "Diagnostics",
+      "Brake service",
+      "Oil changes",
+      "Tire rotation",
+      "Electrical testing",
+      "Shop safety"
+    ],
+    "certifications": [
+      "ASE Student Certification",
+      "EPA Section 609",
+      "OSHA 10",
+      "Manufacturer training"
+    ],
+    "updatedAt": null
+  },
+  "Building Construction Technology": {
+    "skills": [
+      "Blueprint reading",
+      "Power tools",
+      "Framing",
+      "Drywall",
+      "Measuring and layout",
+      "Job-site safety"
+    ],
+    "certifications": [
+      "OSHA 10",
+      "Forklift Certification",
+      "First Aid/CPR",
+      "Scissor Lift/Aerial Lift"
+    ],
+    "updatedAt": null
+  },
+  "Building Technology": {
+    "skills": [
+      "Blueprint reading",
+      "Power tools",
+      "Framing",
+      "Drywall",
+      "Measuring and layout",
+      "Job-site safety"
+    ],
+    "certifications": [
+      "OSHA 10",
+      "Forklift Certification",
+      "First Aid/CPR",
+      "Scissor Lift/Aerial Lift"
+    ],
+    "updatedAt": null
+  },
+  "Combination Welding": {
+    "skills": [
+      "MIG welding",
+      "TIG welding",
+      "Stick welding",
+      "Blueprint reading",
+      "Metal fabrication",
+      "Weld inspection"
+    ],
+    "certifications": [
+      "AWS Certification",
+      "OSHA 10",
+      "Forklift Certification",
+      "First Aid/CPR"
+    ],
+    "updatedAt": null
+  },
+  "Commercial Truck Driving CDL": {
+    "skills": [
+      "Pre-trip inspections",
+      "Diesel maintenance",
+      "Hydraulics",
+      "Preventive maintenance",
+      "DOT safety",
+      "Equipment operation"
+    ],
+    "certifications": [
+      "CDL Permit or License",
+      "OSHA 10",
+      "Forklift Certification",
+      "DOT Medical Card"
+    ],
+    "updatedAt": null
+  },
+  "Commercial Truck Driving with CDL License": {
+    "skills": [
+      "Pre-trip inspections",
+      "Diesel maintenance",
+      "Hydraulics",
+      "Preventive maintenance",
+      "DOT safety",
+      "Equipment operation"
+    ],
+    "certifications": [
+      "CDL Permit or License",
+      "OSHA 10",
+      "Forklift Certification",
+      "DOT Medical Card"
+    ],
+    "updatedAt": null
+  },
+  "Diesel Technology": {
+    "skills": [
+      "Pre-trip inspections",
+      "Diesel maintenance",
+      "Hydraulics",
+      "Preventive maintenance",
+      "DOT safety",
+      "Equipment operation"
+    ],
+    "certifications": [
+      "CDL Permit or License",
+      "OSHA 10",
+      "Forklift Certification",
+      "DOT Medical Card"
+    ],
+    "updatedAt": null
+  },
+  "Diesel and Heavy Equipment Repair Technology": {
+    "skills": [
+      "Pre-trip inspections",
+      "Diesel maintenance",
+      "Hydraulics",
+      "Preventive maintenance",
+      "DOT safety",
+      "Equipment operation"
+    ],
+    "certifications": [
+      "CDL Permit or License",
+      "OSHA 10",
+      "Forklift Certification",
+      "DOT Medical Card"
+    ],
+    "updatedAt": null
+  },
+  "Electrical Technology": {
+    "skills": [
+      "Electrical troubleshooting",
+      "Motor controls",
+      "PLC basics",
+      "Preventive maintenance",
+      "Blueprint/schematic reading",
+      "Lockout/tagout"
+    ],
+    "certifications": [
+      "OSHA 10",
+      "NFPA 70E Awareness",
+      "First Aid/CPR",
+      "Forklift Certification"
+    ],
+    "updatedAt": null
+  },
+  "Electrical and Industrial Maintenance": {
+    "skills": [
+      "Electrical troubleshooting",
+      "Motor controls",
+      "PLC basics",
+      "Preventive maintenance",
+      "Blueprint/schematic reading",
+      "Lockout/tagout"
+    ],
+    "certifications": [
+      "OSHA 10",
+      "NFPA 70E Awareness",
+      "First Aid/CPR",
+      "Forklift Certification"
+    ],
+    "updatedAt": null
+  },
+  "HVAC Technology": {
+    "skills": [
+      "Refrigerant handling",
+      "System troubleshooting",
+      "Electrical testing",
+      "Brazing",
+      "Preventive maintenance",
+      "Customer service"
+    ],
+    "certifications": [
+      "EPA Section 608",
+      "OSHA 10",
+      "NATE Ready-to-Work",
+      "R-410A Safety"
+    ],
+    "updatedAt": null
+  },
+  "Heavy Equipment Operations with CDL": {
+    "skills": [
+      "Pre-trip inspections",
+      "Diesel maintenance",
+      "Hydraulics",
+      "Preventive maintenance",
+      "DOT safety",
+      "Equipment operation"
+    ],
+    "certifications": [
+      "CDL Permit or License",
+      "OSHA 10",
+      "Forklift Certification",
+      "DOT Medical Card"
+    ],
+    "updatedAt": null
+  },
+  "Industrial Electro-Mechanical Technology": {
+    "skills": [
+      "Electrical troubleshooting",
+      "Motor controls",
+      "PLC basics",
+      "Preventive maintenance",
+      "Blueprint/schematic reading",
+      "Lockout/tagout"
+    ],
+    "certifications": [
+      "OSHA 10",
+      "NFPA 70E Awareness",
+      "First Aid/CPR",
+      "Forklift Certification"
+    ],
+    "updatedAt": null
+  },
+  "Machinist and CNC Manufacturing": {
+    "skills": [
+      "CNC operation",
+      "Blueprint reading",
+      "Precision measurement",
+      "Calipers and micrometers",
+      "Machine setup",
+      "Quality control"
+    ],
+    "certifications": [
+      "NIMS Certification",
+      "OSHA 10",
+      "Forklift Certification",
+      "Lean Manufacturing"
+    ],
+    "updatedAt": null
+  },
+  "Motorcycle and Power Equipment Technology": {
+    "skills": [
+      "Diagnostics",
+      "Brake service",
+      "Oil changes",
+      "Tire rotation",
+      "Electrical testing",
+      "Shop safety"
+    ],
+    "certifications": [
+      "ASE Student Certification",
+      "EPA Section 609",
+      "OSHA 10",
+      "Manufacturer training"
+    ],
+    "updatedAt": null
+  },
+  "Refrigeration and AC Technology": {
+    "skills": [
+      "Refrigerant handling",
+      "System troubleshooting",
+      "Electrical testing",
+      "Brazing",
+      "Preventive maintenance",
+      "Customer service"
+    ],
+    "certifications": [
+      "EPA Section 608",
+      "OSHA 10",
+      "NATE Ready-to-Work",
+      "R-410A Safety"
+    ],
+    "updatedAt": null
+  },
+  "Refrigeration and Climate Control": {
+    "skills": [
+      "Refrigerant handling",
+      "System troubleshooting",
+      "Electrical testing",
+      "Brazing",
+      "Preventive maintenance",
+      "Customer service"
+    ],
+    "certifications": [
+      "EPA Section 608",
+      "OSHA 10",
+      "NATE Ready-to-Work",
+      "R-410A Safety"
+    ],
+    "updatedAt": null
+  }
+}
