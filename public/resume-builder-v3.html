@@ -379,7 +379,6 @@ const SECTIONS = [
   {key:'career',        label:'Career Profile',  icon:'🎯'},
   {key:'work',          label:'Work Experience', icon:'💼'},
   {key:'military',      label:'Military',        icon:'🎖️'},
-  {key:'courseOfStudy', label:'Course of Study', icon:'📚'},
   {key:'education',     label:'Education',       icon:'🎓'},
   {key:'volunteer',     label:'Volunteer',       icon:'🤝'},
   {key:'skills',        label:'Skills & Certs',  icon:'⚡'},
@@ -391,12 +390,11 @@ const TIPS = {
   personal:`Fill in your contact information carefully — this is how employers reach you. Make sure your email looks professional and your phone number is correct. Select your campus and program from the dropdowns.`,
   career:`Be specific about the type of job and employer you're targeting. Examples: "I want to work as an automotive technician at a dealership doing diagnostics and hands-on repairs." "I am looking for an entry-level HVAC position where I can install, maintain, and troubleshoot residential systems." "I want a welding job in manufacturing or construction where I can use MIG/TIG skills and read blueprints." Pick up to 3 qualities that describe you as a worker.`,
   work:`When describing your duties, just write naturally — don't worry about formatting. Mention specific tools, equipment, tasks, and anything you're proud of. I'll convert it into professional bullet points for you.`,
-  courseOfStudy:`Write a paragraph about the skills, tools, and training you gained in your program. This becomes the **Course of Study** section on your resume — it appears right above Education. I'll polish it to sound professional when you save.`,
   education:`Your trade program has been pre-filled below. Confirm the details and add your graduation year. Then add your high school diploma or any other education you have.`,
   skills:`Write out every skill and certification you have — tools, equipment, software, techniques, licenses, OSHA/EPA/CDL cards, manufacturer training, anything relevant. I'll clean it up, remove duplicates, and organize it professionally.`,
   military:`Add your military service below — active duty, reserves, or National Guard. In the Duties box, describe your role naturally: what you did every day, equipment you operated or maintained, people you supervised or trained, and anything you're proud of. I'll turn it into professional resume bullets that highlight leadership, reliability, technical skills, and teamwork — all things trade employers value.`,
   volunteer:`Add any volunteer work, community service, church activities, or unpaid experience. Even informal roles count — helping at events, working with youth groups, assisting neighbors. Describe what you did and I'll write professional bullets for it.`,
-  template:`Pick the style and color that matches the field you're entering. Classic and Executive are safe for any employer. Modern works well for technical roles. Bold makes a strong first impression. Your **Course of Study** section appears on every resume, right above Education.`,
+  template:`Pick the style and color that matches the field you're entering. Classic and Executive are safe for any employer. Modern works well for technical roles. Bold makes a strong first impression. Your program's **Course of Study** section is added automatically when you download.`,
 };
 
 const WORK_TIP_EXAMPLES = [
@@ -474,8 +472,7 @@ let chatHistory = [];
 let isAIThinking = false;
 
 const resumeData = {
-  personal:{},careerContext:{},workExperience:[],militaryService:[],education:[],volunteer:[],certifications:[],skills:[],references:'Available upon request',
-  courseOfStudy:''
+  personal:{},careerContext:{},workExperience:[],militaryService:[],education:[],volunteer:[],certifications:[],skills:[],references:'Available upon request'
 };
 const sectionStatus = {};
 SECTIONS.forEach(s => sectionStatus[s.key] = 'pending');
@@ -507,15 +504,36 @@ function clearProgress(){
   localStorage.removeItem('rb_progress');
 }
 
-function getCourseOfStudyText() {
-  return (resumeData.courseOfStudy || '').trim();
+
+// ── Course of Study (admin-managed) ───────────────
+let courseOfStudyCatalog = null;
+
+async function loadCourseOfStudyCatalog() {
+  if (courseOfStudyCatalog) return courseOfStudyCatalog;
+  const res = await fetch('/api/course-of-study');
+  if (!res.ok) throw new Error('Could not load Course of Study data');
+  courseOfStudyCatalog = await res.json();
+  return courseOfStudyCatalog;
+}
+
+async function resolveCourseOfStudyForResume() {
+  const program = resumeData.personal.program || '';
+  const school = resumeData.personal.campus || 'Trade School';
+  try {
+    const catalog = await loadCourseOfStudyCatalog();
+    const text = catalog?.[program]?.text?.trim();
+    if (text) return text;
+  } catch(e) {
+    console.warn('Course of Study lookup failed', e);
+  }
+  return `Completed hands-on training in ${program || 'trade program'} at ${school}, building practical skills, safety awareness, and job-ready competencies for entry-level work in the field.`;
 }
 
 // ── App Start ─────────────────────────────────────
 function startApp() {
   renderLeftNav();
   showCenter('welcome');
-  addAIMsg(`Welcome! I'm your AI resume assistant. I'll guide you through each section and answer any questions you have. Click **Start Fresh** to begin, or upload an existing resume to get started faster.\n\nEvery resume includes a **Course of Study** section — AI will help you write and polish one from your program details.`);
+  addAIMsg(`Welcome! I'm your AI resume assistant. I'll guide you through each section and answer any questions you have. Click **Start Fresh** to begin, or upload an existing resume to get started faster.\n\nYour program's **Course of Study** section is added automatically when you download your resume.`);
 }
 
 // ── Left Nav ──────────────────────────────────────
@@ -559,8 +577,6 @@ function showCenter(view, data) {
     military:          renderMilitaryForm,
     militaryApproval:  renderMilitaryApproval,
     militaryDone:      renderMilitaryDone,
-    courseOfStudy:     renderCourseOfStudyForm,
-    courseOfStudyDone: renderCourseOfStudyDone,
     education:         renderEduForm,
     eduApproval:    renderEduApproval,
     eduDone:        renderEduDone,
@@ -590,7 +606,6 @@ function showSection(key) {
   else if (key === 'career') { showCenter('career'); sendTip('career'); }
   else if (key === 'work') { showCenter('work'); sendTip('work'); }
   else if (key === 'military') { showCenter('military'); sendTip('military'); }
-  else if (key === 'courseOfStudy') { showCenter('courseOfStudy'); sendTip('courseOfStudy'); }
   else if (key === 'education') { showCenter('education'); sendTip('education'); }
   else if (key === 'volunteer') { showCenter('volunteer'); sendTip('volunteer'); }
   else if (key === 'certifications') { showSection('skills'); }
@@ -628,7 +643,6 @@ function startFresh() {
   resumeData.volunteer=[];
   resumeData.certifications=[];
   resumeData.skills=[];
-  resumeData.courseOfStudy='';
   resumeData.references='Available upon request';
   SECTIONS.forEach(s=>sectionStatus[s.key]='pending');
   renderLeftNav();
@@ -641,9 +655,8 @@ function continueProgress() {
   Object.assign(resumeData, saved);
   if (saved.personal?.firstName)                            setStatus('personal','done');
   if (saved.careerContext?.objective)                       setStatus('career','done');
-  if (saved.workExperience?.length || saved.militaryService?.length || saved.courseOfStudy || saved.education?.length) setStatus('work','done');
-  if (saved.militaryService?.length || saved.courseOfStudy || saved.education?.length) setStatus('military','done');
-  if (saved.courseOfStudy?.trim())                          setStatus('courseOfStudy','done');
+  if (saved.workExperience?.length || saved.militaryService?.length || saved.education?.length) setStatus('work','done');
+  if (saved.militaryService?.length || saved.education?.length) setStatus('military','done');
   if (saved.education?.length)                             setStatus('education','done');
   if (saved.volunteer?.length)                              setStatus('volunteer','done');
   if (saved.skills?.length || saved.certifications?.length) {
@@ -654,9 +667,8 @@ function continueProgress() {
   addAIMsg(`Welcome back${name}! I've restored your progress. Use the menu on the left to pick up where you left off.`);
   if      (!saved.personal?.firstName)          showSection('personal');
   else if (!saved.careerContext?.objective)      showSection('career');
-  else if (!saved.workExperience?.length && !saved.militaryService?.length && !saved.courseOfStudy && !saved.education?.length) showSection('work');
-  else if (!saved.militaryService?.length && !saved.courseOfStudy && !saved.education?.length) showSection('military');
-  else if (!saved.courseOfStudy?.trim())                    showSection('courseOfStudy');
+  else if (!saved.workExperience?.length && !saved.militaryService?.length && !saved.education?.length) showSection('work');
+  else if (!saved.militaryService?.length && !saved.education?.length) showSection('military');
   else if (!saved.education?.length)                        showSection('education');
   else if (!saved.skills?.length && !saved.certifications?.length) showSection('skills');
   else                                           showSection('template');
@@ -1373,8 +1385,8 @@ function toggleMilCurJob(cb) {
 
 function skipMilitary() {
   setStatus('military','done');
-  addAIMsg(`No military service recorded. Next, write your **Course of Study** paragraph — this required section appears on every resume above Education.`);
-  showSection('courseOfStudy');
+  addAIMsg(`No military service recorded. Next, confirm your **education** details.`);
+  showSection('education');
 }
 
 function collectMilitaryData() {
@@ -1489,7 +1501,7 @@ function renderMilitaryDone() {
     <div class="done-sub">${resumeData.militaryService.length} service record(s) on your resume.</div>
     <div class="done-actions">
       <button class="btn btn-ghost" onclick="showSection('military')">Add Another</button>
-      <button class="btn btn-primary btn-lg" onclick="showSection('courseOfStudy')">Continue to Course of Study →</button>
+      <button class="btn btn-primary btn-lg" onclick="showSection('education')">Continue to Education →</button>
     </div>
   </div>`;
 }
@@ -1572,7 +1584,7 @@ function toggleCurJob(cb) {
 
 function skipToEdu() {
   setStatus('work','done');
-  addAIMsg(`Work history saved. Have you served in the military? Add your service record or skip ahead — you'll write your **Course of Study** paragraph next.`);
+  addAIMsg(`Work history saved. Have you served in the military? Add your service record or skip ahead to **education**.`);
   showSection('military');
 }
 
@@ -1765,80 +1777,6 @@ function renderWorkDone() {
       <button class="btn btn-ghost" onclick="showSection('work')">Add Another Position</button>
       <button class="btn btn-ghost" onclick="skipMilitary()">Skip Military</button>
       <button class="btn btn-primary btn-lg" onclick="showSection('military')">Continue to Military →</button>
-    </div>
-  </div>`;
-}
-
-// ── Course of Study ───────────────────────────────
-function renderCourseOfStudyForm() {
-  const draft = resumeData.courseOfStudy || '';
-  const words = draft.trim().split(/\s+/).filter(Boolean).length;
-  return `<div class="section-hdr"><div class="section-hdr-icon">📚</div><div><div class="section-hdr-title">Course of Study</div><div class="section-hdr-sub">Required — appears on your resume above Education</div></div></div>
-  <div class="form-card">
-    <div class="form-card-hdr">📚 Course of Study Paragraph</div>
-    <div class="form-card-body">
-      <p style="font-size:14px;color:var(--slate-600);margin-bottom:16px;line-height:1.6">Describe the skills, tools, equipment, and training you gained in your program. Write in your own words — I'll polish and condense it to about the same length as your resume objective when you save.</p>
-      <div class="f-group" id="fg-cos">
-        <label>Your paragraph *</label>
-        <textarea id="cosParagraph" rows="10" placeholder="During my program, I developed hands-on skills in…" oninput="updateCosWordCount()">${escHtml(draft)}</textarea>
-        <div class="field-hint" id="cosWordCount" style="margin-top:6px;font-size:12px;color:var(--slate-500)">${words} word${words!==1?'s':''} — aim for at least 50</div>
-        <span class="f-err" id="cosErr" style="display:none">Please write at least a few sentences about your program training.</span>
-      </div>
-    </div>
-    <div class="form-card-footer">
-      <button class="btn btn-ghost" onclick="showSection('military')">← Back</button>
-      <button class="btn btn-primary btn-lg" onclick="submitCourseOfStudy()">Save &amp; Polish →</button>
-    </div>
-  </div>`;
-}
-
-function updateCosWordCount() {
-  const el = document.getElementById('cosParagraph');
-  const hint = document.getElementById('cosWordCount');
-  if (!el || !hint) return;
-  const words = el.value.trim().split(/\s+/).filter(Boolean).length;
-  hint.textContent = `${words} word${words !== 1 ? 's' : ''} — ${words < 30 ? 'write a bit more detail' : '✓ Good — will be condensed for your resume'}`;
-  hint.style.color = words >= 30 ? 'var(--green-600)' : 'var(--slate-500)';
-}
-
-async function submitCourseOfStudy() {
-  const text = document.getElementById('cosParagraph')?.value.trim() || '';
-  const err = document.getElementById('cosErr');
-  if (!text || text.split(/\s+/).filter(Boolean).length < 15) {
-    if (err) err.style.display = 'block';
-    return;
-  }
-  if (err) err.style.display = 'none';
-  resumeData.courseOfStudy = text;
-
-  const ci = document.getElementById('centerInner');
-  ci.innerHTML = `<div style="text-align:center;padding:60px 20px;color:var(--slate-500)"><div style="font-size:32px;margin-bottom:12px">✨</div><div style="font-size:15px;font-weight:600">Polishing your Course of Study…</div></div>`;
-
-  try {
-    const polished = await buildCourseOfStudyForResume();
-    resumeData.courseOfStudy = polished;
-  } catch(e) {
-    resumeData.courseOfStudy = text;
-  }
-  saveProgress();
-  setStatus('courseOfStudy', 'done');
-  addAIMsg(`**Course of Study saved!** This section will appear on your resume right above Education. Next, confirm your education details.`);
-  showCenter('courseOfStudyDone');
-}
-
-function renderCourseOfStudyDone() {
-  const preview = (resumeData.courseOfStudy || '').trim();
-  const previewHtml = preview
-    ? `<div style="background:var(--slate-50);border:1px solid var(--slate-200);border-radius:10px;padding:16px 18px;margin:16px 0;text-align:left"><div style="font-size:11px;font-weight:700;color:var(--slate-500);text-transform:uppercase;letter-spacing:.5px;margin-bottom:8px">Preview</div><p style="font-size:14px;color:var(--slate-700);line-height:1.65;margin:0">${escHtml(preview)}</p></div>`
-    : '';
-  return `<div class="done-card">
-    <span class="done-icon">✅</span>
-    <div class="done-title">Course of Study Saved</div>
-    <div class="done-sub">This section is ready for your resume.</div>
-    ${previewHtml}
-    <div class="done-actions">
-      <button class="btn btn-ghost" onclick="showSection('courseOfStudy')">Edit</button>
-      <button class="btn btn-primary btn-lg" onclick="showSection('education')">Continue to Education →</button>
     </div>
   </div>`;
 }
@@ -2469,7 +2407,7 @@ function renderSkillsApproval() {
 function confirmSkills() {
   setStatus('skills','done');
   setStatus('certifications','done');
-  addAIMsg(`Skills saved! All sections are complete. Now choose a style and color for your resume. A **Course of Study** section will be automatically added and polished by AI when you download.`);
+  addAIMsg(`Skills saved! All sections are complete. Now choose a style and color for your resume. Your program's **Course of Study** section will be added automatically when you download.`);
   showSection('template');
 }
 
@@ -2585,60 +2523,14 @@ function buildPreviewHTML(style,hex) {
   return '';
 }
 
-function courseOfStudyTargetWords() {
-  const obj = (resumeData.careerContext?.objective || '').trim();
-  const objWords = obj ? obj.split(/\s+/).filter(Boolean).length : 0;
-  return objWords > 15 ? Math.min(Math.round(objWords * 1.1), 75) : 60;
-}
-
-function trimCourseOfStudyForResume(text) {
-  const raw = (text || '').trim();
-  if (!raw) return raw;
-  const target = courseOfStudyTargetWords();
-  const words = raw.split(/\s+/).filter(Boolean);
-  if (words.length <= target) return raw;
-  const sentences = raw.match(/[^.!?]+[.!?]+|[^.!?]+$/g)?.map(s => s.trim()).filter(Boolean) || [raw];
-  let out = '', count = 0;
-  for (let i = 0; i < sentences.length && i < 3; i++) {
-    const s = sentences[i];
-    const w = s.split(/\s+/).filter(Boolean).length;
-    if (out && count + w > target) break;
-    out += (out ? ' ' : '') + s;
-    count += w;
-  }
-  return out || words.slice(0, target).join(' ');
-}
-
-async function buildCourseOfStudyForResume() {
-  const savedPara = getCourseOfStudyText();
-  const tradeEdu = (resumeData.education||[]).find(e=>e.school||e.degree)||resumeData.education?.[0];
-  const program = resumeData.personal.program || tradeEdu?.fieldOfStudy || tradeEdu?.degree || 'Trade Program';
-  const school  = tradeEdu?.school || resumeData.personal.campus || 'Trade School';
-  const inProgress = !tradeEdu?.gradYear || tradeEdu.gradYear === 'In Progress';
-  const tense = inProgress ? 'present tense — student is currently enrolled' : 'past tense — student has completed the program';
-  const lengthNote = 'Write 2–3 concise sentences only — about the same length as a resume objective (roughly 40–70 words). Do not write a long paragraph.';
-  const sys = (savedPara && savedPara.length > 40)
-    ? `You are polishing a trade school student's resume. The student wrote this Course of Study draft: "${savedPara}". Condense and rewrite it as a short, polished resume paragraph. ${lengthNote} Keep the strongest skills and training — cut filler and repetition. Do not add certifications or tools not mentioned. Program: ${program}. School: ${school}. Use ${tense}. No "I" or student's name. Return only the paragraph.`
-    : `Write a short "Course of Study" paragraph for a trade school student's resume. Program: ${program}. School: ${school}. Use ${tense}. ${lengthNote} Mention hands-on technical skills, equipment, safety practices, and competencies from the program. Implied first person — no "I" or the student's name. Return only the paragraph.`;
-  try {
-    const r = await callClaude(sys, [{role:'user', content:'Write the Course of Study paragraph.'}]);
-    const para = r.trim().replace(/^["']|["']$/g, '');
-    if (para.length > 40) return trimCourseOfStudyForResume(para);
-  } catch(e) { /* fall through to saved or basic fallback */ }
-  if (savedPara) return trimCourseOfStudyForResume(savedPara);
-  return trimCourseOfStudyForResume(`Completed hands-on training in ${program} at ${school}, building practical skills, safety awareness, and job-ready competencies for entry-level work in the field.`);
-}
-
 async function generateResume() {
   const btn = document.getElementById('genBtn');
   btn.disabled=true; btn.textContent='Building resume…';
   try {
     const color = getColorObj(selectedColorHex);
-    btn.textContent = 'Writing Course of Study section…';
-    const courseOfStudy = await buildCourseOfStudyForResume();
+    btn.textContent = 'Loading Course of Study…';
+    const courseOfStudy = await resolveCourseOfStudyForResume();
     const buildData = {...resumeData, courseOfStudy};
-    resumeData.courseOfStudy = courseOfStudy;
-    saveProgress();
 
     btn.textContent = 'Building resume…';
     const doc = await buildDocument(buildData, selectedStyle, color);
@@ -2647,7 +2539,7 @@ async function generateResume() {
     saveAs(blob, resumeFilename(p));
     setStatus('template','done');
     btn.disabled=false; btn.textContent='Download Again ↓';
-    addAIMsg(`Your resume has been downloaded! A professional **Course of Study** section was included based on your program. Change the style or color anytime and click Download Again to try a different look.`);
+    addAIMsg(`Your resume has been downloaded! Your program's **Course of Study** section was included automatically. Change the style or color anytime and click Download Again to try a different look.`);
   } catch(err) { btn.disabled=false; btn.textContent='Generate & Download ↓'; addAIMsg(`Error generating file: ${err.message}`); console.error(err); }
 }
 
