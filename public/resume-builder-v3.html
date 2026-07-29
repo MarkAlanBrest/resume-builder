@@ -391,7 +391,7 @@ const TIPS = {
   personal:`Fill in your contact information carefully — this is how employers reach you. Make sure your email looks professional and your phone number is correct. Select your campus and program from the dropdowns.`,
   career:`Be specific about the type of job and employer you're targeting. Examples: "I want to work as an automotive technician at a dealership doing diagnostics and hands-on repairs." "I am looking for an entry-level HVAC position where I can install, maintain, and troubleshoot residential systems." "I want a welding job in manufacturing or construction where I can use MIG/TIG skills and read blueprints." Pick up to 3 qualities that describe you as a worker.`,
   work:`When describing your duties, just write naturally — don't worry about formatting. Mention specific tools, equipment, tasks, and anything you're proud of. I'll convert it into professional bullet points for you.`,
-  courseOfStudy:`Write a paragraph about the skills, tools, and training you gained in your program. This becomes the **Course of Study** section on your resume — it appears right above Education. Use the **+ Add** suggestions in the AI panel to insert professional lines for your program, then edit them to match what you actually learned.`,
+  courseOfStudy:`Write a paragraph about the skills, tools, and training you gained in your program. Example lines for your program appear in the AI panel on the right — click + Add only for items that match what you actually learned.`,
   education:`Your trade program has been pre-filled below. Confirm the details and add your graduation year. Then add your high school diploma or any other education you have.`,
   skills:`List only skills and certifications you actually have. The AI panel may suggest examples for your program — those are optional ideas, not added to your resume unless you click + Add. Only what you enter here goes on your resume.`,
   military:`Add your military service below — active duty, reserves, or National Guard. In the Duties box, describe your role naturally: what you did every day, equipment you operated or maintained, people you supervised or trained, and anything you're proud of. I'll turn it into professional resume bullets that highlight leadership, reliability, technical skills, and teamwork — all things trade employers value.`,
@@ -460,99 +460,77 @@ const CAREER_SUGGESTIONS = [
 
 const COURSE_OF_STUDY_SUGGESTIONS = [
   {match:/automotive/i,snippets:[
-    'During my Automotive Technology program, I developed hands-on skills in vehicle maintenance and repair.',
-    'I learned to perform oil changes, tire rotations, brake inspections, and multi-point inspections on shop vehicles.',
-    'I trained on hydraulic lifts, diagnostic scan tools, torque wrenches, and basic electrical testing equipment.',
-    'My coursework covered engine systems, brake components, suspension fundamentals, and shop safety procedures.',
-    'Throughout the program I followed OSHA standards and developed strong attention to detail in a professional shop environment.',
-    'I am prepared to apply these diagnostic, service, and safety skills in an entry-level automotive technician role.',
+    'Oil changes, brake service, tire rotations, and multi-point inspections',
+    'Hydraulic lifts, scan tools, torque wrenches, and electrical testing',
+    'Engine systems, brakes, suspension, and shop safety procedures',
+    'OSHA standards and attention to detail in a shop environment',
   ]},
   {match:/motorcycle|power equipment/i,snippets:[
-    'During my Motorcycle and Power Equipment Technology program, I developed hands-on skills in diagnosing and repairing motorcycles, ATVs, and small engines.',
-    'I trained on specialty tools, electrical testing equipment, fuel system service, and drivetrain repair.',
-    'My coursework covered engine teardown and reassembly, brake and suspension service, and shop safety procedures.',
-    'I practiced preventive maintenance, parts replacement, and customer-ready inspections using lifts and diagnostic equipment.',
-    'Throughout the program I followed manufacturer service guidelines and developed strong troubleshooting habits.',
-    'I am prepared to apply these skills in an entry-level power equipment or motorcycle service role.',
+    'Small engine diagnosis, repair, and preventive maintenance',
+    'Fuel systems, drivetrain service, and electrical troubleshooting',
+    'Engine teardown, brake work, and suspension service',
+    'Manufacturer guidelines and shop safety procedures',
   ]},
   {match:/building|construction/i,snippets:[
-    'During my Building Technology program, I developed practical construction skills through hands-on framing, drywall, roofing, and finish work.',
-    'I learned to read blueprints, measure and lay out materials accurately, and use hand and power tools safely.',
-    'My training covered carpentry fundamentals, material handling, jobsite safety, and teamwork on crew-based projects.',
-    'I practiced using circular saws, nail guns, levels, and other common trade tools while following plans and supervisor direction.',
-    'Throughout the program I followed OSHA safety standards and developed the ability to complete quality work under supervision.',
-    'I am prepared to contribute on an entry-level residential or commercial construction crew.',
+    'Framing, drywall, roofing, and finish carpentry projects',
+    'Blueprint reading, measuring, layout, and hand/power tools',
+    'Jobsite safety, material handling, and crew teamwork',
+    'Circular saws, nail guns, levels, and quality workmanship',
   ]},
   {match:/welding/i,snippets:[
-    'During my Combination Welding program, I developed hands-on skills in MIG, TIG, and stick welding on steel and other metals.',
-    'I learned to read blueprints, measure and prepare materials, and set up welding equipment for different joint types and positions.',
-    'My coursework covered weld inspection, metal fabrication, cutting and grinding, and shop safety including PPE and ventilation.',
-    'I practiced producing quality welds on lab projects and developed attention to detail and safe work habits.',
-    'I trained with torches, grinders, and welding machines while following weld symbols and work instructions.',
-    'I am prepared to apply these fabrication and welding skills in an entry-level shop or field role.',
+    'MIG, TIG, and stick welding on steel and other metals',
+    'Blueprint reading, material prep, and weld setup',
+    'Cutting, grinding, fabrication, and weld inspection',
+    'PPE, ventilation, and shop safety standards',
   ]},
   {match:/electrical/i,snippets:[
-    'During my Electrical Technology program, I gained hands-on experience in residential and commercial wiring and circuit installation.',
-    'I learned to read wiring diagrams and blueprints, pull wire, bend conduit, and use volt meters and hand tools safely.',
-    'My coursework covered the National Electrical Code, grounding procedures, lockout/tagout, and workplace safety standards.',
-    'I practiced outlet and switch installation, panel work, and troubleshooting wiring issues in lab simulations.',
-    'Throughout the program I developed problem-solving skills and attention to detail while working on electrical systems.',
-    'I am prepared to support electricians or maintenance teams in an entry-level electrical role.',
+    'Residential and commercial wiring and circuit installation',
+    'Blueprint and wiring diagram reading, conduit bending',
+    'NEC basics, grounding, lockout/tagout, and safe tool use',
+    'Panel work, troubleshooting, and lab wiring practice',
   ]},
   {match:/electro-mechanical|industrial maintenance/i,snippets:[
-    'During my Industrial Electro-Mechanical Technology program, I developed skills in maintaining and troubleshooting mechanical and electrical systems.',
-    'I trained on hand tools, precision measuring equipment, lubrication procedures, and preventive maintenance checklists.',
-    'My coursework covered motors, conveyors, PLC basics, schematic reading, lockout/tagout, and safety around powered equipment.',
-    'I practiced diagnosing equipment issues in lab settings and documenting work performed.',
-    'Throughout the program I learned to read technical diagrams and work safely around moving machinery.',
-    'I am prepared to apply these skills in an entry-level industrial maintenance technician role.',
+    'Mechanical and electrical troubleshooting on production equipment',
+    'Motors, conveyors, lubrication, and preventive maintenance',
+    'PLC basics, schematic reading, and lockout/tagout',
+    'Precision measuring tools and equipment documentation',
   ]},
   {match:/hvac|refrigeration|climate|ac technology/i,snippets:[
-    'During my HVAC and Refrigeration program, I developed hands-on skills in installing, servicing, and troubleshooting heating, cooling, and refrigeration systems.',
-    'I trained on gauges, meters, brazing equipment, hand tools, and refrigerant handling procedures.',
-    'My coursework covered electrical controls, airflow measurement, system charging, leak detection, and EPA refrigerant safety requirements.',
-    'I practiced reading system pressures and temperatures, replacing components, and following manufacturer service guidelines.',
-    'Throughout the program I followed workplace safety standards and developed strong troubleshooting habits in lab and shop settings.',
-    'I am prepared to support HVAC technicians in an entry-level service or installation role.',
+    'Installing and servicing heating, cooling, and refrigeration systems',
+    'Gauges, meters, brazing equipment, and hand tools',
+    'System charging, leak detection, and airflow measurement',
+    'EPA refrigerant safety and electrical controls',
   ]},
   {match:/diesel|heavy equipment/i,snippets:[
-    'During my Diesel and Heavy Equipment program, I developed hands-on skills in inspecting, diagnosing, and repairing diesel engines and heavy equipment systems.',
-    'I trained on shop tools, diagnostic equipment, fluid services, and preventive maintenance procedures for trucks and construction equipment.',
-    'My coursework covered hydraulics, electrical systems, brake and suspension service, and proper documentation of repairs.',
-    'I practiced troubleshooting real equipment issues in a shop environment while following safety standards.',
-    'Through heavy equipment training I learned pre-operation inspections, safe operation basics, and jobsite coordination with crew members.',
-    'I am prepared to apply these skills in an entry-level diesel, fleet, or equipment support role.',
+    'Diesel engine and heavy equipment inspection and repair',
+    'Hydraulics, fluid services, and diagnostic equipment',
+    'Brake, suspension, and electrical systems service',
+    'Shop safety, documentation, and preventive maintenance',
   ]},
   {match:/truck|cdl/i,snippets:[
-    'During my Commercial Truck Driving program, I developed the skills required for safe, professional operation of commercial motor vehicles.',
-    'I trained on pre-trip and post-trip inspections, backing maneuvers, shifting techniques, and hours-of-service rules.',
-    'My coursework covered DOT regulations, cargo securement, defensive driving, and vehicle control in varied road conditions.',
-    'I practiced coupling and uncoupling trailers and operating commercial trucks in real-world driving scenarios.',
-    'Throughout the program I learned to document trips accurately and follow all safety and compliance requirements on the road.',
-    'I am prepared to apply these habits and skills as an entry-level professional CDL driver.',
+    'Pre-trip and post-trip inspections and backing maneuvers',
+    'Hours-of-service rules and DOT regulations',
+    'Cargo securement and defensive driving',
+    'Trip documentation and safe vehicle operation',
   ]},
   {match:/machinist|cnc|manufacturing/i,snippets:[
-    'During my Machinist and CNC Manufacturing program, I developed precision machining skills including blueprint reading, machine setup, and quality inspection.',
-    'I trained on lathes, mills, CNC equipment, calipers, micrometers, and other measuring tools.',
-    'My coursework covered G-code basics, tool selection, workplace safety, and maintaining tight tolerances on production work.',
-    'I practiced completing parts to specification and keeping a clean, organized workstation.',
-    'Throughout the program I learned to read work instructions, inspect parts for accuracy, and follow quality procedures.',
-    'I am prepared to support machinists or production teams in an entry-level manufacturing role.',
+    'Lathe, mill, and CNC machine setup and operation',
+    'Blueprint reading, calipers, micrometers, and quality checks',
+    'G-code basics, tolerances, and tool selection',
+    'Work instructions, defect identification, and workstation organization',
   ]},
 ];
 
 const COURSE_OF_STUDY_DEFAULT_SNIPPETS = [
-  'During my trade school program, I developed hands-on technical skills through lab work, shop projects, and supervised practice.',
-  'I trained with industry-standard tools and equipment while learning safety procedures and professional work habits.',
-  'My coursework covered core competencies for entry-level work in my field, including teamwork and following instructions.',
-  'Throughout the program I practiced completing assigned tasks accurately and communicating with instructors and classmates.',
-  'I developed troubleshooting skills and attention to detail while working in a hands-on training environment.',
-  'I am prepared to apply these skills in an entry-level position in my chosen trade.',
+  'Hands-on lab and shop training with industry-standard tools',
+  'Safety procedures, troubleshooting, and following work instructions',
+  'Teamwork, communication, and completing tasks accurately',
+  'Core technical skills for entry-level work in the trade',
 ];
 
 function getCourseOfStudySnippets(program) {
   const found = COURSE_OF_STUDY_SUGGESTIONS.find(item => item.match.test(program || ''));
-  return found ? found.snippets : COURSE_OF_STUDY_DEFAULT_SNIPPETS;
+  return (found ? found.snippets : COURSE_OF_STUDY_DEFAULT_SNIPPETS).slice(0, 4);
 }
 
 const STANDOUT_SUGGESTIONS = [
@@ -2062,8 +2040,10 @@ function renderWorkDone() {
 
 // ── Course of Study ───────────────────────────────
 function renderCourseOfStudyForm() {
-  const draft = resumeData.courseOfStudy || getCourseOfStudyText() || '';
-  const imported = resumeData._courseOfStudyFromAssignment && draft;
+  const imported = resumeData._courseOfStudyFromAssignment && getCourseOfStudyText();
+  const draft = imported
+    ? (resumeData.courseOfStudy || getCourseOfStudyText() || '')
+    : (resumeData.courseOfStudy || '');
   const words = draft.trim().split(/\s+/).filter(Boolean).length;
   const importBanner = imported
     ? `<div class="prefill-banner" style="margin-bottom:16px;text-align:left;background:#f0fdf4;border-color:#bbf7d0;color:#15803d">📚 Loaded from your Work Experience Assignment — review and edit before saving.</div>`
@@ -2073,7 +2053,7 @@ function renderCourseOfStudyForm() {
   <div class="form-card">
     <div class="form-card-hdr">📚 Course of Study Paragraph</div>
     <div class="form-card-body">
-      <p style="font-size:14px;color:var(--slate-600);margin-bottom:16px;line-height:1.6">Describe the skills, tools, equipment, and training you gained in your program. Write in your own words — I'll polish and condense it to about the same length as your resume objective when you save.</p>
+      <p style="font-size:14px;color:var(--slate-600);margin-bottom:16px;line-height:1.6">Write your own paragraph about the skills, tools, and training from your program. <strong>Example lines for your program are in the AI panel on the right</strong> — click <strong>+ Add</strong> only for training you actually had, then turn them into complete sentences.</p>
       <div class="f-group" id="fg-cos">
         <label>Your paragraph *</label>
         <textarea id="cosParagraph" rows="10" placeholder="During my program, I developed hands-on skills in…" oninput="updateCosWordCount()">${escHtml(draft)}</textarea>
@@ -2735,7 +2715,7 @@ function renderVolunteerDone() {
 function renderSkillsForm() {
   const existing = Array.isArray(resumeData.skills) && resumeData.skills.length ? resumeData.skills.join(', ') : '';
   const existingCerts = resumeData.certifications.length ? resumeData.certifications.map(c=>[c.name,c.org,c.year].filter(Boolean).join(', ')).join('\n') : '';
-  return `<div class="section-hdr"><div class="section-hdr-icon">⚡</div><div><div class="section-hdr-title">Skills &amp; Certifications</div><div class="section-hdr-sub">List both sides — I'll organize them</div></div></div>
+  return `<div class="section-hdr"><div class="section-hdr-icon">⚡</div><div><div class="section-hdr-title">Skills &amp; Certifications</div><div class="section-hdr-sub">Only what you type here goes on your resume — AI suggestions are optional</div></div></div>
   <div class="two-panel-grid">
     <div class="form-card">
       <div class="form-card-hdr">⚡ Skills</div>
@@ -3238,7 +3218,7 @@ async function callClaude(system,messages,opts){
 
 // ── Right Panel Chat ──────────────────────────────
 function sendTip(key){
-  const tip=key==='skills'?TIPS.skills:key!=='work'?TIPS[key]:null;
+  const tip=key==='skills'?TIPS.skills:(key!=='work' && key!=='courseOfStudy')?TIPS[key]:null;
   if(tip)setTimeout(()=>addAIMsg(tip),300);
   if(key==='template')setTimeout(()=>runResumeReview(),700);
 
@@ -3254,11 +3234,10 @@ function sendTip(key){
     const program=resumeData.personal.program||'';
     const snippets=getCourseOfStudySnippets(program);
     const imported=resumeData._courseOfStudyFromAssignment && getCourseOfStudyText();
-    if(imported){
-      setTimeout(()=>addAIMsg(`Your **Course of Study** paragraph was loaded from your Work Experience Assignment. Review it below, then click **+ Add** on any suggestion that fits what you learned.`),400);
-    }
-    setTimeout(()=>addSuggestionCard(`Suggested Course of Study for ${program||'your program'} — click + Add:`,snippets,'cosParagraph','append'),imported?700:600);
-    setTimeout(()=>addAIMsg(`**Tip:** Add the lines that match your real training, then edit the wording so it sounds like you. Aim for 5–8 sentences total.`),imported?1000:900);
+    setTimeout(()=>addAIMsg(imported
+      ? `Your **Course of Study** from your assignment is in the form on the left. Use the example lines below only if you want to add more detail.`
+      : `Write your Course of Study paragraph in the form on the left. These are **short example lines only** — click **+ Add** for items that match your real training.`),imported?400:300);
+    setTimeout(()=>addSuggestionCard(`Example training topics for ${program||'your program'}:`,snippets,'cosParagraph','append'),imported?650:550);
   }
 
   if(key==='volunteer'){
