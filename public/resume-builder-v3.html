@@ -393,7 +393,7 @@ const TIPS = {
   work:`When describing your duties, just write naturally — don't worry about formatting. Mention specific tools, equipment, tasks, and anything you're proud of. I'll convert it into professional bullet points for you.`,
   courseOfStudy:`Write a paragraph about the skills, tools, and training you gained in your program. This becomes the **Course of Study** section on your resume — it appears right above Education. Use the **+ Add** suggestions in the AI panel to insert professional lines for your program, then edit them to match what you actually learned.`,
   education:`Your trade program has been pre-filled below. Confirm the details and add your graduation year. Then add your high school diploma or any other education you have.`,
-  skills:`Write out every skill and certification you have — tools, equipment, software, techniques, licenses, OSHA/EPA/CDL cards, manufacturer training, anything relevant. I'll clean it up, remove duplicates, and organize it professionally.`,
+  skills:`List only skills and certifications you actually have. The AI panel may suggest examples for your program — those are optional ideas, not added to your resume unless you click + Add. Only what you enter here goes on your resume.`,
   military:`Add your military service below — active duty, reserves, or National Guard. In the Duties box, describe your role naturally: what you did every day, equipment you operated or maintained, people you supervised or trained, and anything you're proud of. I'll turn it into professional resume bullets that highlight leadership, reliability, technical skills, and teamwork — all things trade employers value.`,
   volunteer:`Add any volunteer work, community service, church activities, or unpaid experience. Even informal roles count — helping at events, working with youth groups, assisting neighbors. Describe what you did and I'll write professional bullets for it.`,
   template:`Pick the style and color that matches the field you're entering. Classic and Executive are safe for any employer. Modern works well for technical roles. Bold makes a strong first impression. Your **Course of Study** section appears on every resume, right above Education.`,
@@ -917,6 +917,70 @@ function setUploadFile(file) {
   btn.disabled = false; btn.style.opacity = '1';
 }
 
+function normalizeFactToken(value) {
+  return String(value || '').toLowerCase().replace(/[^a-z0-9]+/g, ' ').trim();
+}
+
+function itemAppearsInSource(item, sourceText) {
+  const norm = normalizeFactToken(item);
+  if (!norm || norm.length < 2) return false;
+  const hay = normalizeFactToken(sourceText);
+  if (!hay) return false;
+  if (hay.includes(norm)) return true;
+  const words = norm.split(/\s+/).filter(w => w.length > 2);
+  if (words.length > 1) return words.every(w => hay.includes(w));
+  return false;
+}
+
+function parseSkillList(raw) {
+  return [...new Set(String(raw || '').split(/[\n,;]+/).map(s => cleanProgramName(s.trim())).filter(s => s.length > 1))];
+}
+
+function filterSkillsToSource(skills, sourceText) {
+  if (!sourceText) return skills || [];
+  const allowed = parseSkillList(sourceText);
+  if (!allowed.length) return [];
+  return (skills || []).filter(skill => {
+    const norm = normalizeFactToken(skill);
+    return allowed.some(token => {
+      const t = normalizeFactToken(token);
+      return t === norm || (t.length >= 4 && norm.length >= 4 && (t.includes(norm) || norm.includes(t)));
+    });
+  });
+}
+
+function filterCertsToSource(certs, sourceText) {
+  if (!sourceText) return certs || [];
+  const rawLines = String(sourceText || '').split(/[\n;]+/).map(l => l.trim()).filter(Boolean);
+  if (!rawLines.length) return [];
+  return (certs || []).filter(cert => {
+    const name = cert?.name || '';
+    if (itemAppearsInSource(name, sourceText)) return true;
+    return rawLines.some(line => {
+      const ln = normalizeFactToken(line);
+      const cn = normalizeFactToken(name);
+      return ln && cn && (ln.includes(cn) || cn.includes(ln));
+    });
+  });
+}
+
+function sanitizeParsedResume(parsed, sourceText) {
+  const out = {...parsed};
+  if (!sourceText) return out;
+  const beforeSkills = (parsed.skills || []).length;
+  const beforeCerts = (parsed.certifications || []).length;
+  out.skills = filterSkillsToSource(parsed.skills, sourceText);
+  out.certifications = filterCertsToSource(parsed.certifications, sourceText);
+  out._droppedInvented = (beforeSkills - out.skills.length) + (beforeCerts - out.certifications.length);
+  if (Array.isArray(out.workExperience)) {
+    out.workExperience = out.workExperience.map(job => ({
+      ...job,
+      bulletLines: (job.bulletLines || []).filter(b => itemAppearsInSource(b, sourceText)),
+    }));
+  }
+  return out;
+}
+
 async function extractResume() {
   if (!selectedResumeFile) return;
   const btn = document.getElementById('extractBtn');
@@ -929,7 +993,10 @@ async function extractResume() {
     if (ext === 'txt') text = await readAsText(selectedResumeFile);
     else if (ext === 'pdf') { b64 = await readAsBase64(selectedResumeFile); useDoc = true; }
     else if (ext === 'docx') text = await readDocx(selectedResumeFile);
-    const parsed = await parseResume(text, useDoc, b64);
+    resumeData.skills = [];
+    resumeData.certifications = [];
+    let parsed = await parseResume(text, useDoc, b64);
+    parsed = sanitizeParsedResume(parsed, text);
     hideChatTyping();
     if (parsed.personal) Object.assign(resumeData.personal, parsed.personal);
     const found = [];
@@ -949,19 +1016,20 @@ async function extractResume() {
       found.push(`${parsed.education.length} education entr${parsed.education.length===1?'y':'ies'}`);
     }
     if (parsed.certifications?.length) {
-      resumeData.certifications = parsed.certifications;
+      resumeData.certifications = parsed.certifications.map(cleanCertObject).filter(c => c.name);
       setStatus('certifications','done');
       found.push('certifications');
     }
     if (parsed.skills?.length) {
-      resumeData.skills = parsed.skills;
+      resumeData.skills = parsed.skills.map(s => cleanProgramName(String(s).trim())).filter(Boolean);
       found.push('skills');
     }
     saveProgress();
     const p = resumeData.personal;
     const name = [p.firstName,p.lastName].filter(Boolean).join(' ');
-    const summary = found.length ? `I found: **${found.join(', ')}**. Each section is pre-filled — review and confirm the details before continuing.` : `I found your contact info. Fill in the remaining sections below.`;
-    addAIMsg(`Got it${name?' for '+name:''}! ${summary}`);
+    const summary = found.length ? `I found: **${found.join(', ')}**. Only information explicitly on your resume was loaded — review and confirm each section.` : `I found your contact info. Fill in the remaining sections below.`;
+    const droppedNote = parsed._droppedInvented > 0 ? ` I left out ${parsed._droppedInvented} item(s) that were not clearly written on the uploaded resume.` : '';
+    addAIMsg(`Got it${name?' for '+name:''}! ${summary}${droppedNote}`);
     showSection('personal');
   } catch(err) {
     hideChatTyping();
@@ -975,14 +1043,17 @@ function readAsBase64(f) { return new Promise((res,rej)=>{ const r=new FileReade
 function readDocx(f) { return new Promise((res,rej)=>{ const r=new FileReader(); r.onload=async e=>{ try{ const result=await mammoth.extractRawText({arrayBuffer:e.target.result}); res(result.value); }catch(err){rej(err);} }; r.onerror=rej; r.readAsArrayBuffer(f); }); }
 
 async function parseResume(text, useDoc, b64) {
-  const instruction = `Extract all information from this resume. Return ONLY valid JSON using this exact structure (use empty string or empty array if not found):
+  const instruction = `Extract information from this resume. Return ONLY valid JSON using this exact structure (use empty string or empty array if not found):
 {"personal":{"firstName":"","lastName":"","email":"","phone":"","address":"","city":"","state":"","zip":""},"workExperience":[{"employer":"","jobTitle":"","city":"","state":"","startMonth":"","startYear":"","endMonth":"","endYear":"","current":false,"bulletLines":[]}],"militaryService":[{"branch":"","rank":"","jobTitle":"","city":"","state":"","startMonth":"","startYear":"","endMonth":"","endYear":"","current":false,"bulletLines":[]}],"education":[{"school":"","degree":"","fieldOfStudy":"","city":"","state":"","gradMonth":"","gradYear":""}],"certifications":[{"name":"","org":"","year":""}],"skills":[]}
 Rules:
+- Extract ONLY information explicitly written on the resume. Do not infer, guess, or add plausible items.
+- If a section is missing or empty on the resume, return an empty array for it.
 - startMonth/endMonth must be full month names (January, February…) or empty string
 - militaryService: only include entries with actual military service. branch must be one of: United States Army, United States Navy, United States Marine Corps, United States Air Force, United States Space Force, United States Coast Guard, Army National Guard, Air National Guard, Army Reserve, Navy Reserve, Marine Corps Reserve, Air Force Reserve, Coast Guard Reserve
 - education gradYear: 4-digit year string or "In Progress"
-- skills: flat array of skill strings
-- certifications: include any licenses, credentials, or certificates found`;
+- bulletLines: copy duty bullets only if they are explicitly written for that job. Do not generate or infer duties. Use [] if none are listed.
+- skills: only items explicitly listed in a Skills section or clearly labeled skill list on the resume. Do not infer skills from job descriptions, program, or trade. Use [] if no skills section exists.
+- certifications: only licenses, certifications, or credentials explicitly named on the resume (e.g. OSHA 10, EPA 608, CDL, Eagle Scout). Do not infer certifications from job titles, program, age, or industry. Use [] if none are listed.`;
   let messages;
   if (useDoc) messages=[{role:'user',content:[{type:'document',source:{type:'base64',media_type:'application/pdf',data:b64}},{type:'text',text:instruction}]}];
   else messages=[{role:'user',content:`${instruction}\n\nResume:\n${text}`}];
@@ -2685,7 +2756,7 @@ function renderSkillsForm() {
   </div>
   <div class="form-card">
     <div class="form-card-footer">
-      <button class="btn btn-primary" onclick="submitSkills()">Build →</button>
+      <button class="btn btn-primary" onclick="submitSkills()">Save →</button>
     </div>
   </div>`;
 }
@@ -2699,26 +2770,16 @@ async function submitSkills() {
   fgCert.classList.remove('has-error');
   const rawSkills = el.value.trim();
   const rawCerts = certEl.value.trim();
-  const ci = document.getElementById('centerInner');
-  ci.innerHTML = `<div style="text-align:center;padding:60px 20px;color:var(--slate-500)"><div style="font-size:32px;margin-bottom:12px">⚡</div>Organizing your skills and certifications…</div>`;
-  const prog = resumeData.personal.program||'';
-  const sys = `You organize skills and certifications for a trade school student's resume. Return ONLY valid JSON — no explanations, no questions, no other text. Shape: {"skills":["MIG/TIG Welding","Blueprint Reading"],"certifications":[{"name":"OSHA 10","org":"OSHA","year":""}]}. Rules: clean spelling/capitalization/duplicates, make professional, do not invent certifications, omit certifications array entries that were not provided.`;
-  const userMsg = `Program: ${prog}\nRaw skills: ${rawSkills}\nRaw certifications: ${rawCerts || 'none'}`;
-  try {
-    const result = await callClaude(sys,[{role:'user',content:userMsg}]);
-    let data;
-    try { data=JSON.parse(result.trim().replace(/^```(?:json)?\s*/i,'').replace(/\s*```$/,'')); }
-    catch { data={skills:result.split('\n').map(l=>l.replace(/^[•\-\*"\[,\]]+\s*/,'').replace(/[",\]]+$/,'').trim()).filter(l=>l.length>1&&l.length<=80),certifications:parseCertLines(rawCerts)}; }
-    resumeData.skills = Array.isArray(data.skills) ? data.skills.map(s=>cleanProgramName(String(s).trim())).filter(Boolean) : [];
-    resumeData.certifications = Array.isArray(data.certifications) ? data.certifications.map(cleanCertObject).filter(c=>c.name) : parseCertLines(rawCerts);
-    resumeData.references = 'Available upon request';
-    if (!resumeData.skills.length || resumeData.skills.some(s => s.length > 80 || /\*\*/.test(s) || /^(please|for best|note:|provide|share|raw |to org)/i.test(s))) {
-      addAIMsg('There was a problem organizing your skills — please try again.');
-      showSection('skills');
-      return;
-    }
-    showCenter('skillsApproval');
-  } catch(e) { addAIMsg('Could not connect — try again.'); showSection('skills'); }
+  resumeData.skills = parseSkillList(rawSkills);
+  resumeData.certifications = parseCertLines(rawCerts).map(cleanCertObject).filter(c => c.name);
+  resumeData.references = 'Available upon request';
+  if (!resumeData.skills.length) {
+    fg.classList.add('has-error');
+    addAIMsg('Please list at least a few skills you actually have.');
+    showSection('skills');
+    return;
+  }
+  showCenter('skillsApproval');
 }
 
 function parseCertLines(raw) {
@@ -2897,8 +2958,8 @@ function trimCourseOfStudyForResume(text) {
 
 async function buildCourseOfStudyForResume() {
   const savedPara = getCourseOfStudyText();
-  const tradeEdu = (resumeData.education||[]).find(e=>e.school||e.degree)||resumeData.education?.[0];
-  const program = resumeData.personal.program || tradeEdu?.fieldOfStudy || tradeEdu?.degree || 'Trade Program';
+  const tradeEdu = normalizeEduEntry((resumeData.education||[]).find(e=>e.school||e.degree)||resumeData.education?.[0]||{});
+  const program = resumeData.personal.program || tradeEdu.fieldOfStudy || tradeEdu.degree || 'Trade Program';
   const school  = tradeEdu?.school || resumeData.personal.campus || 'Trade School';
   const inProgress = !tradeEdu?.gradYear || tradeEdu.gradYear === 'In Progress';
   const tense = inProgress ? 'present tense — student is currently enrolled' : 'past tense — student has completed the program';
@@ -3230,8 +3291,9 @@ function sendTip(key){
       skills:['Safety procedures','Hand and power tools','Customer service','Teamwork','Problem solving','Time management'],
       certs:['OSHA 10','First Aid/CPR','Forklift Certification']
     };
-    setTimeout(()=>addSuggestionCard(`Suggested skills for ${program||'your program'} — click to add:`,found.skills,'skillsDump','append'),600);
-    setTimeout(()=>addSuggestionCard('Suggested certifications — click to add:',found.certs,'certsDump','append'),900);
+    setTimeout(()=>addAIMsg(`**Suggestions only** — the examples below are not added to your resume unless you click **+ Add**. Only enter skills and certifications you actually have.`),500);
+    setTimeout(()=>addSuggestionCard(`Example skills for ${program||'your program'} — + Add only if you have them:`,found.skills,'skillsDump','append'),700);
+    setTimeout(()=>addSuggestionCard('Example certifications — + Add only if you have them:',found.certs,'certsDump','append'),1000);
   }
 }
 
