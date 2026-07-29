@@ -27,6 +27,14 @@ function AdminFocusStyles() {
         outline: 2px solid #93c5fd;
         outline-offset: 2px;
       }
+      .program-admin-page a.tool-link:focus:not(:focus-visible) {
+        outline: none;
+        box-shadow: none;
+      }
+      .program-admin-page a.tool-link:focus-visible {
+        outline: 2px solid #93c5fd;
+        outline-offset: 2px;
+      }
     `}</style>
   );
 }
@@ -36,6 +44,19 @@ function AdminPage({ children }) {
     <div style={styles.page} className="program-admin-page">
       <AdminFocusStyles />
       {children}
+    </div>
+  );
+}
+
+function StudentToolLinks() {
+  return (
+    <div style={styles.toolLinks}>
+      <a href="/resume-builder-v3.html" className="tool-link" style={styles.toolLink} target="_blank" rel="noopener noreferrer">
+        Resume Builder
+      </a>
+      <a href="/cover-letter.html" className="tool-link" style={styles.toolLink} target="_blank" rel="noopener noreferrer">
+        Cover Letter Maker
+      </a>
     </div>
   );
 }
@@ -253,6 +274,7 @@ export default function ProgramAdminPage() {
               Sign in with the staff admin password to manage program content for
               the resume builder.
             </p>
+            <StudentToolLinks />
           </header>
 
           <section style={{ ...styles.card, maxWidth: "480px" }}>
@@ -297,6 +319,7 @@ export default function ProgramAdminPage() {
                 certifications that are recommended and pre-filled for each
                 program in the resume builder.
               </p>
+              <StudentToolLinks />
             </div>
             <button type="button" onClick={signOut} style={styles.secondaryBtn}>
               Sign Out
@@ -462,6 +485,24 @@ const styles = {
   },
   title: { margin: 0, fontSize: "28px" },
   subtitle: { margin: "8px 0 0", color: "#475569", lineHeight: 1.6 },
+  toolLinks: {
+    display: "flex",
+    gap: "10px",
+    flexWrap: "wrap",
+    marginTop: "14px",
+  },
+  toolLink: {
+    display: "inline-flex",
+    alignItems: "center",
+    padding: "8px 14px",
+    borderRadius: "8px",
+    background: "#fff",
+    border: "1px solid #cbd5e1",
+    color: "#1d4ed8",
+    fontWeight: 600,
+    fontSize: "14px",
+    textDecoration: "none",
+  },
   tabRow: {
     display: "flex",
     gap: "10px",
