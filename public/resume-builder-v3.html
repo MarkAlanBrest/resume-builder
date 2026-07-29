@@ -702,7 +702,7 @@ function startApp() {
   } else if (hasCourseOfStudy) {
     assignNote = '\n\n**Your Work Experience Assignment was found** — your Course of Study paragraph will be automatically loaded into your resume.';
   }
-  addAIMsg(`Welcome! I'm your AI resume assistant. I'll guide you through each section and answer any questions you have.${assignNote || ' Click **Start Fresh** to begin, or upload an existing resume to get started faster.'}\n\nEvery resume includes a **Course of Study** section — AI will polish your assignment paragraph or write one from your program details.`);
+  addAIMsg(`Welcome! I'm your AI resume assistant. I'll guide you through each section and answer any questions you have.${assignNote || ' Click **Start Fresh** to begin, or upload an existing resume to get started faster.'}\n\nEvery resume includes a **Course of Study** section and professional work bullets — AI will write them from your program and job details even if you didn't complete the Work Experience Assignment.`);
 }
 
 // ── Left Nav ──────────────────────────────────────
@@ -2183,7 +2183,7 @@ function renderEduForm(prefill) {
   const isInProgress = pf.gradYear === 'In Progress';
   const banner = pf.isPrefilled ? `<div class="prefill-banner">ℹ️ Pre-filled from your program. Add your graduation month/year and confirm.</div>` : '';
   const saved = resumeData.education;
-  const savedList = saved.length ? `<div class="form-card" style="margin-bottom:16px"><div class="form-card-hdr">🎓 Saved Education (${saved.length})</div><div class="form-card-body" style="padding-bottom:14px">${sortedEducation().map(({edu:e,index:i})=>`<div style="display:flex;justify-content:space-between;align-items:center;gap:10px;padding:8px 0;border-bottom:1px solid var(--slate-100)"><div><div style="font-size:14px;font-weight:600">${escHtml(e.degree)}${e.fieldOfStudy?' – '+escHtml(e.fieldOfStudy):''}</div><div style="font-size:12px;color:var(--slate-500)">${escHtml(e.school)} | ${escHtml(eduGradDate(e))}</div></div><div style="display:flex;gap:6px"><button class="btn btn-ghost" style="padding:6px 10px;font-size:12px" onclick="editEdu(${i})">Edit</button><button class="btn btn-ghost" style="padding:6px 10px;font-size:12px" onclick="deleteEdu(${i})">Delete</button></div></div>`).join('')}</div></div>` : '';
+  const savedList = saved.length ? `<div class="form-card" style="margin-bottom:16px"><div class="form-card-hdr">🎓 Saved Education (${saved.length})</div><div class="form-card-body" style="padding-bottom:14px">${sortedEducation().map(({edu:e,index:i})=>`<div style="display:flex;justify-content:space-between;align-items:center;gap:10px;padding:8px 0;border-bottom:1px solid var(--slate-100)"><div><div style="font-size:14px;font-weight:600">${escHtml(formatEduTitle(e))}</div><div style="font-size:12px;color:var(--slate-500)">${escHtml(e.school)} | ${escHtml(eduGradDate(e))}</div></div><div style="display:flex;gap:6px"><button class="btn btn-ghost" style="padding:6px 10px;font-size:12px" onclick="editEdu(${i})">Edit</button><button class="btn btn-ghost" style="padding:6px 10px;font-size:12px" onclick="deleteEdu(${i})">Delete</button></div></div>`).join('')}</div></div>` : '';
   return `<div class="section-hdr"><div class="section-hdr-icon">🎓</div><div><div class="section-hdr-title">Education</div><div class="section-hdr-sub">${saved.length?saved.length+' entr(ies) saved':'Schools, degrees, and credentials'}</div></div></div>
   ${savedList}
   <div class="form-card">
@@ -2242,7 +2242,7 @@ async function submitEdu() {
       addAIMsg('I found a few education items that need your review. Please fix the highlighted fields, then continue.');
       return;
     }
-    pendingEdu = edu;
+    pendingEdu = normalizeEducationEntry(edu);
     showCenter('eduApproval');
   } catch(e) {
     addAIMsg('I could not complete the education spelling and professionalism review. Please check your connection or API key, then try again.');
@@ -2295,7 +2295,8 @@ Rules:
 - Omit unchanged correction fields.
 - Keep the student's meaning. Do not invent schools, degrees, programs, dates, or locations.
 - Correct obvious school/program capitalization and spelling.
-- Do not change degree unless it clearly maps to the selected meaning.
+- Do not shorten official program names (e.g. keep "Combination Welding", never reduce to "Welding" alone).
+- Do not remove or blank the degree field when a valid degree or diploma is present.
 - City, state, and fieldOfStudy are optional; do not add an issue when those are blank.
 - If gradYear is "In Progress", do not require gradMonth.
 - If school, fieldOfStudy, city, state, gradMonth, or gradYear is fake, vague, inappropriate, incomplete, or cannot be fixed confidently, add an issue.
@@ -2354,6 +2355,68 @@ function eduGradDate(e) {
   return e.gradYear === 'In Progress' ? 'In Progress' : [e.gradMonth, e.gradYear].filter(Boolean).join(' ');
 }
 
+function allCampusPrograms() {
+  const programs = new Set();
+  Object.values(CAMPUSES).forEach(list => list.forEach(p => programs.add(p)));
+  return [...programs];
+}
+
+function resolveProgramName(field, campusProgram) {
+  const f = (field || '').trim();
+  if (!f) return campusProgram || '';
+  if (campusProgram && f.toLowerCase() === campusProgram.toLowerCase()) return campusProgram;
+  const catalog = allCampusPrograms();
+  const exact = catalog.find(p => p.toLowerCase() === f.toLowerCase());
+  if (exact) return exact;
+  if (campusProgram && campusProgram.toLowerCase().includes(f.toLowerCase()) && f.length < campusProgram.length) return campusProgram;
+  const partial = catalog.filter(p => p.toLowerCase().includes(f.toLowerCase()));
+  if (partial.length === 1) return partial[0];
+  if (partial.length > 1 && campusProgram && partial.includes(campusProgram)) return campusProgram;
+  if (partial.length > 1) return partial.sort((a, b) => b.length - a.length)[0];
+  return cleanProgramName(f);
+}
+
+function formatEduTitle(edu) {
+  const degree = (edu.degree || '').trim();
+  const field = (edu.fieldOfStudy || '').trim();
+  if (degree && field && degree.toLowerCase() === field.toLowerCase()) return field;
+  if (degree && field) return `${degree}, ${field}`;
+  return field || degree || 'Education';
+}
+
+function normalizeEducationEntry(edu, personal = resumeData.personal) {
+  const out = { ...edu };
+  const program = personal?.program || '';
+  out.fieldOfStudy = resolveProgramName(out.fieldOfStudy, program);
+  if (out.school) out.school = cleanSchoolName(out.school);
+  if (!out.fieldOfStudy?.trim() && program) out.fieldOfStudy = program;
+  if (!out.degree?.trim()) {
+    const degFromField = programDegree(out.fieldOfStudy || program);
+    if (degFromField) out.degree = degFromField;
+  }
+  return out;
+}
+
+function ensureEducationForResume() {
+  const personal = resumeData.personal || {};
+  resumeData.education = (resumeData.education || []).map(e => normalizeEducationEntry(e, personal));
+  const hasTradeProgram = personal.program && resumeData.education.some(e =>
+    resolveProgramName(e.fieldOfStudy, personal.program).toLowerCase() === personal.program.toLowerCase()
+  );
+  if (personal.program && !hasTradeProgram) {
+    const loc = campusLoc(personal.campus || '');
+    resumeData.education.push(normalizeEducationEntry({
+      school: personal.campus ? campusSchoolName(personal.campus) : '',
+      degree: programDegree(personal.program),
+      fieldOfStudy: personal.program,
+      city: loc.city,
+      state: loc.state,
+      gradMonth: '',
+      gradYear: 'In Progress',
+    }, personal));
+  }
+}
+
 function normalizeMonth(value) {
   const lower = String(value).trim().toLowerCase();
   return MONTHS.find(m=>m.toLowerCase()===lower || m.toLowerCase().slice(0,3)===lower.slice(0,3)) || '';
@@ -2367,7 +2430,7 @@ function renderEduApproval() {
     <div class="approval-hdr">✓ Education — Review</div>
     <div class="approval-body">
       <div class="a-row"><span class="a-label">School</span><span class="a-value">${escHtml(e.school)}${loc?' — '+escHtml(loc):''}</span></div>
-      <div class="a-row"><span class="a-label">Degree</span><span class="a-value">${escHtml(e.degree)}${e.fieldOfStudy?' – '+escHtml(e.fieldOfStudy):''}</span></div>
+      <div class="a-row"><span class="a-label">Degree</span><span class="a-value">${escHtml(formatEduTitle(e))}</span></div>
       <div class="a-row"><span class="a-label">Graduation</span><span class="a-value">${escHtml(eduGradDate(e))}</span></div>
     </div>
     <div class="approval-footer">
@@ -2378,6 +2441,7 @@ function renderEduApproval() {
 }
 
 function confirmEdu() {
+  pendingEdu = normalizeEducationEntry(pendingEdu);
   if (editingEduIndex >= 0) {
     resumeData.education[editingEduIndex] = {...pendingEdu};
     editingEduIndex = -1;
@@ -2929,6 +2993,7 @@ async function generateResume() {
       btn.textContent = 'Writing work experience bullets…';
       await ensureAllWorkBullets();
     }
+    ensureEducationForResume();
     btn.textContent = 'Writing Course of Study section…';
     const courseOfStudy = await buildCourseOfStudyForResume();
     const buildData = {...resumeData, courseOfStudy};
@@ -2963,7 +3028,7 @@ function spacer(a=200){return new docx.Paragraph({spacing:{before:0,after:a}})}
 function bodyTxt(text,opts={}){return new docx.Paragraph({children:[new docx.TextRun({text,size:opts.size||24,color:opts.color||'2a2a2a',italics:opts.italic||false,font:'Calibri'})],indent:opts.indent?{left:twip(opts.indent)}:undefined,spacing:{before:0,after:opts.after!==undefined?opts.after:200,line:288,lineRule:'auto'},alignment:opts.align||docx.AlignmentType.LEFT})}
 function bullet(text,opts={}){const after=opts.after!==undefined?opts.after:160;return new docx.Paragraph({children:bulletRuns(text,opts),indent:{left:twip(0.36),hanging:twip(0.14)},spacing:{before:0,after,line:276,lineRule:'auto'}})}
 function jobBlock(job){const items=[],loc=[job.city,job.state].filter(Boolean).join(', '),end=job.current?'Present':[job.endMonth,job.endYear].filter(Boolean).join(' '),dates=`${[job.startMonth,job.startYear].filter(Boolean).join(' ')} – ${end}`;items.push(new docx.Paragraph({spacing:{before:320,after:60},children:[new docx.TextRun({text:job.jobTitle,bold:true,size:26,color:'1a1a1a'}),new docx.TextRun({text:`, ${job.employer}${loc?', '+loc:''}`,size:24,color:'444444'})]}));items.push(new docx.Paragraph({spacing:{before:0,after:160},children:[new docx.TextRun({text:dates,italics:true,size:22,color:'777777'})]}));(job.bulletLines||[]).forEach(b=>items.push(bullet(b)));return items;}
-function eduBlock(edu){const loc=[edu.city,edu.state].filter(Boolean).join(', '),field=edu.fieldOfStudy?`, ${edu.fieldOfStudy}`:'';return new docx.Paragraph({spacing:{before:280,after:160},children:[new docx.TextRun({text:`${edu.degree}${field}`,bold:true,size:24,color:'1a1a1a'}),new docx.TextRun({text:`, ${edu.school}${loc?', '+loc:''}${eduGradDate(edu)?', '+eduGradDate(edu):''}`,size:22,color:'555555'})]})}
+function eduBlock(edu){const loc=[edu.city,edu.state].filter(Boolean).join(', '),title=formatEduTitle(edu);return new docx.Paragraph({spacing:{before:280,after:160},children:[new docx.TextRun({text:title,bold:true,size:24,color:'1a1a1a'}),new docx.TextRun({text:`, ${edu.school}${loc?', '+loc:''}${eduGradDate(edu)?', '+eduGradDate(edu):''}`,size:22,color:'555555'})]})}
 function certBlock(cert){return new docx.Paragraph({spacing:{before:200,after:140},children:[new docx.TextRun({text:cert.name,bold:true,size:24}),...(cert.org||cert.year?[new docx.TextRun({text:`  —  ${[cert.org,cert.year].filter(Boolean).join(', ')}`,size:22,color:'666666'})]:[])]})}
 function militaryBlock(mil){const items=[];const loc=[mil.city,mil.state].filter(Boolean).join(', ');const end=mil.current?'Present':[mil.endMonth,mil.endYear].filter(Boolean).join(' ');const dates=`${[mil.startMonth,mil.startYear].filter(Boolean).join(' ')} – ${end}`;items.push(new docx.Paragraph({spacing:{before:320,after:60},children:[new docx.TextRun({text:mil.rank||'',bold:true,size:26,color:'1a1a1a'}),new docx.TextRun({text:`, ${mil.branch}${mil.jobTitle?', '+mil.jobTitle:''}`,size:24,color:'444444'})]}));if(loc)items.push(new docx.Paragraph({spacing:{before:0,after:40},children:[new docx.TextRun({text:loc,italics:true,size:22,color:'777777'})]}));items.push(new docx.Paragraph({spacing:{before:0,after:160},children:[new docx.TextRun({text:dates,italics:true,size:22,color:'777777'})]}));(mil.bulletLines||[]).forEach(b=>items.push(bullet(b)));return items;}
 
@@ -3071,7 +3136,7 @@ function buildFlip(data,color){
   const sideSec=t=>new docx.Paragraph({children:sectionHeaderRuns(t,{size:22,color:st}),border:{bottom:{style:docx.BorderStyle.SINGLE,size:3,color:st==='FFFFFF'?'6699CC':'777777'}},spacing:{before:260,after:120}});
   const _sc=scItems(data);
   if(_sc.length){side.push(sideSec(scLabel(data)));_sc.forEach(s=>side.push(bullet(s,{size:20,color:sideContact,after:70})));}
-  if(data.education?.length){side.push(sideSec('Education'));data.education.forEach(e=>{const f=e.fieldOfStudy?`, ${e.fieldOfStudy}`:'';const loc=[e.city,e.state].filter(Boolean).join(', ');side.push(new docx.Paragraph({spacing:{before:0,after:60},children:[new docx.TextRun({text:`${e.degree}${f}`,bold:true,size:20,color:st})]}));side.push(new docx.Paragraph({spacing:{before:0,after:80},children:[new docx.TextRun({text:[e.school,loc,eduGradDate(e)].filter(Boolean).join(', '),size:19,color:sideContact})]}));});}
+  if(data.education?.length){side.push(sideSec('Education'));data.education.forEach(e=>{const loc=[e.city,e.state].filter(Boolean).join(', ');side.push(new docx.Paragraph({spacing:{before:0,after:60},children:[new docx.TextRun({text:formatEduTitle(e),bold:true,size:20,color:st})]}));side.push(new docx.Paragraph({spacing:{before:0,after:80},children:[new docx.TextRun({text:[e.school,loc,eduGradDate(e)].filter(Boolean).join(', '),size:19,color:sideContact})]}));});}
   const mainSec=t=>new docx.Paragraph({children:sectionHeaderRuns(t,{size:26,color:ac}),border:{bottom:{style:docx.BorderStyle.SINGLE,size:4,color:ac}},spacing:{before:260,after:140}});
   if(c.objective){main.push(mainSec('Objective'));main.push(bodyTxt(c.objective,{after:120}));}
   if(courseOfStudyText(data)){main.push(mainSec('Course of Study'));main.push(bodyTxt(courseOfStudyText(data),{after:120}));}
@@ -3093,7 +3158,7 @@ function buildTopLeft(data,color){
   const sideSec=t=>new docx.Paragraph({children:sectionHeaderRuns(t,{size:21,color:'333333'}),border:{bottom:{style:docx.BorderStyle.SINGLE,size:2,color:'CCCCCC'}},spacing:{before:220,after:110}});
   const _sc=scItems(data);
   if(_sc.length){side.push(sideSec(scLabel(data)));_sc.forEach(s=>side.push(bullet(s,{size:20,color:'444444',after:70})));}
-  if(data.education?.length){side.push(sideSec('Education'));data.education.forEach(e=>{const f=e.fieldOfStudy?`, ${e.fieldOfStudy}`:'';const loc=[e.city,e.state].filter(Boolean).join(', ');side.push(new docx.Paragraph({spacing:{before:0,after:80},children:[new docx.TextRun({text:`${e.degree}${f}`,bold:true,size:20,color:'222222'}),new docx.TextRun({text:`, ${[e.school,loc,eduGradDate(e)].filter(Boolean).join(', ')}`,size:19,color:'666666'})]})  );});}
+  if(data.education?.length){side.push(sideSec('Education'));data.education.forEach(e=>{const loc=[e.city,e.state].filter(Boolean).join(', ');side.push(new docx.Paragraph({spacing:{before:0,after:80},children:[new docx.TextRun({text:formatEduTitle(e),bold:true,size:20,color:'222222'}),new docx.TextRun({text:`, ${[e.school,loc,eduGradDate(e)].filter(Boolean).join(', ')}`,size:19,color:'666666'})]})  );});}
   const main=[];
   const mainSec=t=>new docx.Paragraph({children:sectionHeaderRuns(t,{size:26,color:ac}),border:{bottom:{style:docx.BorderStyle.SINGLE,size:4,color:ac}},spacing:{before:240,after:140}});
   if(c.objective){main.push(mainSec('Objective'));main.push(bodyTxt(c.objective,{after:120}));}
@@ -3126,7 +3191,7 @@ function buildTopRight(data,color){
   const sideSec=t=>new docx.Paragraph({children:sectionHeaderRuns(t,{size:22,color:st}),border:{bottom:{style:docx.BorderStyle.SINGLE,size:3,color:st==='FFFFFF'?'6699CC':'777777'}},spacing:{before:240,after:120}});
   const _sc=scItems(data);
   if(_sc.length){side.push(sideSec(scLabel(data)));_sc.forEach(s=>side.push(bullet(s,{size:20,color:sideContact,after:70})));}
-  if(data.education?.length){side.push(sideSec('Education'));data.education.forEach(e=>{const f=e.fieldOfStudy?`, ${e.fieldOfStudy}`:'';const loc=[e.city,e.state].filter(Boolean).join(', ');side.push(new docx.Paragraph({spacing:{before:0,after:60},children:[new docx.TextRun({text:`${e.degree}${f}`,bold:true,size:20,color:st})]}));side.push(new docx.Paragraph({spacing:{before:0,after:80},children:[new docx.TextRun({text:[e.school,loc,eduGradDate(e)].filter(Boolean).join(', '),size:19,color:sideContact})]}));});}
+  if(data.education?.length){side.push(sideSec('Education'));data.education.forEach(e=>{const loc=[e.city,e.state].filter(Boolean).join(', ');side.push(new docx.Paragraph({spacing:{before:0,after:60},children:[new docx.TextRun({text:formatEduTitle(e),bold:true,size:20,color:st})]}));side.push(new docx.Paragraph({spacing:{before:0,after:80},children:[new docx.TextRun({text:[e.school,loc,eduGradDate(e)].filter(Boolean).join(', '),size:19,color:sideContact})]}));});}
   const bodyRow=new docx.TableRow({children:[new docx.TableCell({width:{size:twip(5.2),type:docx.WidthType.DXA},margins:{top:twip(.35),bottom:twip(.35),left:twip(.4),right:twip(.3)},children:main}),new docx.TableCell({width:{size:twip(2.3),type:docx.WidthType.DXA},shading:{fill:ac,type:docx.ShadingType.CLEAR,color:'auto'},margins:{top:twip(.35),bottom:twip(.35),left:twip(.25),right:twip(.3)},children:side})]});
   return new docx.Document({sections:[{properties:{page:{margin:{top:0,bottom:0,left:0,right:0}}},children:[new docx.Table({width:{size:100,type:docx.WidthType.PERCENTAGE},borders:{top:nb,bottom:nb,left:nb,right:nb,insideH:nb,insideV:nb},rows:[hdrRow,bodyRow]})]},]});
 }
@@ -3143,7 +3208,7 @@ function buildSplit(data,color){
   const side=[],main=[];
   const _sc=scItems(data);
   if(_sc.length){side.push(sideSec(scLabel(data)));_sc.forEach(s=>side.push(bullet(s,{size:20,after:70})));}
-  if(data.education?.length){side.push(sideSec('Education'));data.education.forEach(e=>{const f=e.fieldOfStudy?`, ${e.fieldOfStudy}`:'';const loc=[e.city,e.state].filter(Boolean).join(', ');side.push(new docx.Paragraph({spacing:{before:0,after:50},children:[new docx.TextRun({text:`${e.degree}${f}`,bold:true,size:20,color:'1a1a1a',font:'Calibri'})]}));side.push(new docx.Paragraph({spacing:{before:0,after:120},children:[new docx.TextRun({text:[e.school,loc,eduGradDate(e)].filter(Boolean).join(', '),size:19,color:'555555',font:'Calibri'})]}));});}
+  if(data.education?.length){side.push(sideSec('Education'));data.education.forEach(e=>{const loc=[e.city,e.state].filter(Boolean).join(', ');side.push(new docx.Paragraph({spacing:{before:0,after:50},children:[new docx.TextRun({text:formatEduTitle(e),bold:true,size:20,color:'1a1a1a',font:'Calibri'})]}));side.push(new docx.Paragraph({spacing:{before:0,after:120},children:[new docx.TextRun({text:[e.school,loc,eduGradDate(e)].filter(Boolean).join(', '),size:19,color:'555555',font:'Calibri'})]}));});}
   if(c.objective){main.push(mainSec('Objective'));main.push(bodyTxt(c.objective,{after:120}));}
   if(courseOfStudyText(data)){main.push(mainSec('Course of Study'));main.push(bodyTxt(courseOfStudyText(data),{after:120}));}
   if(data.workExperience?.length){main.push(mainSec('Experience'));data.workExperience.forEach(j=>jobBlock(j).forEach(q=>main.push(q)));}
