@@ -379,6 +379,7 @@ const SECTIONS = [
   {key:'career',        label:'Career Profile',  icon:'🎯'},
   {key:'work',          label:'Work Experience', icon:'💼'},
   {key:'military',      label:'Military',        icon:'🎖️'},
+  {key:'courseOfStudy', label:'Course of Study', icon:'📚'},
   {key:'education',     label:'Education',       icon:'🎓'},
   {key:'volunteer',     label:'Volunteer',       icon:'🤝'},
   {key:'skills',        label:'Skills & Certs',  icon:'⚡'},
@@ -390,11 +391,12 @@ const TIPS = {
   personal:`Fill in your contact information carefully — this is how employers reach you. Make sure your email looks professional and your phone number is correct. Select your campus and program from the dropdowns.`,
   career:`Be specific about the type of job and employer you're targeting. Examples: "I want to work as an automotive technician at a dealership doing diagnostics and hands-on repairs." "I am looking for an entry-level HVAC position where I can install, maintain, and troubleshoot residential systems." "I want a welding job in manufacturing or construction where I can use MIG/TIG skills and read blueprints." Pick up to 3 qualities that describe you as a worker.`,
   work:`When describing your duties, just write naturally — don't worry about formatting. Mention specific tools, equipment, tasks, and anything you're proud of. I'll convert it into professional bullet points for you.`,
+  courseOfStudy:`Write a paragraph about the skills, tools, and training you gained in your program. This becomes the **Course of Study** section on your resume — it appears right above Education. If you completed the Work Experience Assignment, your paragraph is already loaded. I'll polish it to sound professional when you save.`,
   education:`Your trade program has been pre-filled below. Confirm the details and add your graduation year. Then add your high school diploma or any other education you have.`,
   skills:`Write out every skill and certification you have — tools, equipment, software, techniques, licenses, OSHA/EPA/CDL cards, manufacturer training, anything relevant. I'll clean it up, remove duplicates, and organize it professionally.`,
   military:`Add your military service below — active duty, reserves, or National Guard. In the Duties box, describe your role naturally: what you did every day, equipment you operated or maintained, people you supervised or trained, and anything you're proud of. I'll turn it into professional resume bullets that highlight leadership, reliability, technical skills, and teamwork — all things trade employers value.`,
   volunteer:`Add any volunteer work, community service, church activities, or unpaid experience. Even informal roles count — helping at events, working with youth groups, assisting neighbors. Describe what you did and I'll write professional bullets for it.`,
-  template:`Pick the style and color that matches the field you're entering. Classic and Executive are safe for any employer. Modern works well for technical roles. Bold makes a strong first impression. Every resume automatically includes a **Course of Study** section — AI will polish your assignment paragraph or write one from your program details.`,
+  template:`Pick the style and color that matches the field you're entering. Classic and Executive are safe for any employer. Modern works well for technical roles. Bold makes a strong first impression. Your **Course of Study** section appears on every resume, right above Education.`,
 };
 
 const WORK_TIP_EXAMPLES = [
@@ -606,7 +608,7 @@ function startApp() {
   } else if (hasCourseOfStudy) {
     assignNote = '\n\n**Your Work Experience Assignment was found** — your Course of Study paragraph will be automatically loaded into your resume.';
   }
-  addAIMsg(`Welcome! I'm your AI resume assistant. I'll guide you through each section and answer any questions you have.${assignNote || ' Click **Start Fresh** to begin, or upload an existing resume to get started faster.'}`);
+  addAIMsg(`Welcome! I'm your AI resume assistant. I'll guide you through each section and answer any questions you have.${assignNote || ' Click **Start Fresh** to begin, or upload an existing resume to get started faster.'}\n\nEvery resume includes a **Course of Study** section — AI will polish your assignment paragraph or write one from your program details.`);
 }
 
 // ── Left Nav ──────────────────────────────────────
@@ -650,6 +652,8 @@ function showCenter(view, data) {
     military:          renderMilitaryForm,
     militaryApproval:  renderMilitaryApproval,
     militaryDone:      renderMilitaryDone,
+    courseOfStudy:     renderCourseOfStudyForm,
+    courseOfStudyDone: renderCourseOfStudyDone,
     education:         renderEduForm,
     eduApproval:    renderEduApproval,
     eduDone:        renderEduDone,
@@ -683,6 +687,7 @@ function showSection(key) {
     if (unpolished?.length) { polishImportedJobs(); } else { showCenter('work'); sendTip('work'); }
   }
   else if (key === 'military') { showCenter('military'); sendTip('military'); }
+  else if (key === 'courseOfStudy') { importAssignmentIfNeeded(); showCenter('courseOfStudy'); sendTip('courseOfStudy'); }
   else if (key === 'education') { showCenter('education'); sendTip('education'); }
   else if (key === 'volunteer') { showCenter('volunteer'); sendTip('volunteer'); }
   else if (key === 'certifications') { showSection('skills'); }
@@ -751,8 +756,9 @@ function continueProgress() {
   Object.assign(resumeData, saved);
   if (saved.personal?.firstName)                            setStatus('personal','done');
   if (saved.careerContext?.objective)                       setStatus('career','done');
-  if (saved.workExperience?.length || saved.militaryService?.length || saved.education?.length) setStatus('work','done');
-  if (saved.militaryService?.length || saved.education?.length) setStatus('military','done');
+  if (saved.workExperience?.length || saved.militaryService?.length || saved.courseOfStudy || saved.education?.length) setStatus('work','done');
+  if (saved.militaryService?.length || saved.courseOfStudy || saved.education?.length) setStatus('military','done');
+  if (saved.courseOfStudy?.trim())                          setStatus('courseOfStudy','done');
   if (saved.education?.length)                             setStatus('education','done');
   if (saved.volunteer?.length)                              setStatus('volunteer','done');
   if (saved.skills?.length || saved.certifications?.length) {
@@ -768,8 +774,10 @@ function continueProgress() {
   addAIMsg(`Welcome back${name}! I've restored your progress.${importMsg} Use the menu on the left to pick up where you left off.`);
   if      (!saved.personal?.firstName)          showSection('personal');
   else if (!saved.careerContext?.objective)      showSection('career');
-  else if (!saved.workExperience?.length && !saved.militaryService?.length && !saved.education?.length) showSection('work');
-  else if (!saved.education?.length)            showSection('military');
+  else if (!saved.workExperience?.length && !saved.militaryService?.length && !saved.courseOfStudy && !saved.education?.length) showSection('work');
+  else if (!saved.militaryService?.length && !saved.courseOfStudy && !saved.education?.length) showSection('military');
+  else if (!saved.courseOfStudy?.trim())                    showSection('courseOfStudy');
+  else if (!saved.education?.length)                        showSection('education');
   else if (!saved.skills?.length && !saved.certifications?.length) showSection('skills');
   else                                           showSection('template');
 }
@@ -1485,8 +1493,8 @@ function toggleMilCurJob(cb) {
 
 function skipMilitary() {
   setStatus('military','done');
-  addAIMsg(`No military service recorded. Let's add your education — your trade program is already pre-filled.`);
-  showSection('education');
+  addAIMsg(`No military service recorded. Next, write your **Course of Study** paragraph — this required section appears on every resume above Education.`);
+  showSection('courseOfStudy');
 }
 
 function collectMilitaryData() {
@@ -1601,7 +1609,7 @@ function renderMilitaryDone() {
     <div class="done-sub">${resumeData.militaryService.length} service record(s) on your resume.</div>
     <div class="done-actions">
       <button class="btn btn-ghost" onclick="showSection('military')">Add Another</button>
-      <button class="btn btn-primary btn-lg" onclick="showSection('education')">Continue to Education →</button>
+      <button class="btn btn-primary btn-lg" onclick="showSection('courseOfStudy')">Continue to Course of Study →</button>
     </div>
   </div>`;
 }
@@ -1684,7 +1692,7 @@ function toggleCurJob(cb) {
 
 function skipToEdu() {
   setStatus('work','done');
-  addAIMsg(`Work history saved. Have you served in the military? Add your service record or skip ahead to Education.`);
+  addAIMsg(`Work history saved. Have you served in the military? Add your service record or skip ahead — you'll write your **Course of Study** paragraph next.`);
   showSection('military');
 }
 
@@ -1877,6 +1885,86 @@ function renderWorkDone() {
       <button class="btn btn-ghost" onclick="showSection('work')">Add Another Position</button>
       <button class="btn btn-ghost" onclick="skipMilitary()">Skip Military</button>
       <button class="btn btn-primary btn-lg" onclick="showSection('military')">Continue to Military →</button>
+    </div>
+  </div>`;
+}
+
+// ── Course of Study ───────────────────────────────
+function renderCourseOfStudyForm() {
+  const draft = resumeData.courseOfStudy || getCourseOfStudyText() || '';
+  const imported = resumeData._courseOfStudyFromAssignment && draft;
+  const words = draft.trim().split(/\s+/).filter(Boolean).length;
+  const importBanner = imported
+    ? `<div class="prefill-banner" style="margin-bottom:16px;text-align:left;background:#f0fdf4;border-color:#bbf7d0;color:#15803d">📚 Loaded from your Work Experience Assignment — review and edit before saving.</div>`
+    : '';
+  return `<div class="section-hdr"><div class="section-hdr-icon">📚</div><div><div class="section-hdr-title">Course of Study</div><div class="section-hdr-sub">Required — appears on your resume above Education</div></div></div>
+  ${importBanner}
+  <div class="form-card">
+    <div class="form-card-hdr">📚 Course of Study Paragraph</div>
+    <div class="form-card-body">
+      <p style="font-size:14px;color:var(--slate-600);margin-bottom:16px;line-height:1.6">Describe the skills, tools, equipment, and training you gained in your program. Write in your own words — I'll polish it into professional resume language when you save.</p>
+      <div class="f-group" id="fg-cos">
+        <label>Your paragraph *</label>
+        <textarea id="cosParagraph" rows="10" placeholder="During my program, I developed hands-on skills in…" oninput="updateCosWordCount()">${escHtml(draft)}</textarea>
+        <div class="field-hint" id="cosWordCount" style="margin-top:6px;font-size:12px;color:var(--slate-500)">${words} word${words!==1?'s':''} — aim for at least 50</div>
+        <span class="f-err" id="cosErr" style="display:none">Please write at least a few sentences about your program training.</span>
+      </div>
+    </div>
+    <div class="form-card-footer">
+      <button class="btn btn-ghost" onclick="showSection('military')">← Back</button>
+      <button class="btn btn-primary btn-lg" onclick="submitCourseOfStudy()">Save &amp; Polish →</button>
+    </div>
+  </div>`;
+}
+
+function updateCosWordCount() {
+  const el = document.getElementById('cosParagraph');
+  const hint = document.getElementById('cosWordCount');
+  if (!el || !hint) return;
+  const words = el.value.trim().split(/\s+/).filter(Boolean).length;
+  hint.textContent = `${words} word${words !== 1 ? 's' : ''} — ${words < 50 ? 'aim for at least 50' : '✓ Good length'}`;
+  hint.style.color = words >= 50 ? 'var(--green-600)' : 'var(--slate-500)';
+}
+
+async function submitCourseOfStudy() {
+  const text = document.getElementById('cosParagraph')?.value.trim() || '';
+  const err = document.getElementById('cosErr');
+  if (!text || text.split(/\s+/).filter(Boolean).length < 15) {
+    if (err) err.style.display = 'block';
+    return;
+  }
+  if (err) err.style.display = 'none';
+  resumeData.courseOfStudy = text;
+  localStorage.setItem('empAssign_skillsPara', text);
+
+  const ci = document.getElementById('centerInner');
+  ci.innerHTML = `<div style="text-align:center;padding:60px 20px;color:var(--slate-500)"><div style="font-size:32px;margin-bottom:12px">✨</div><div style="font-size:15px;font-weight:600">Polishing your Course of Study…</div></div>`;
+
+  try {
+    const polished = await buildCourseOfStudyForResume();
+    resumeData.courseOfStudy = polished;
+  } catch(e) {
+    resumeData.courseOfStudy = text;
+  }
+  saveProgress();
+  setStatus('courseOfStudy', 'done');
+  addAIMsg(`**Course of Study saved!** This section will appear on your resume right above Education. Next, confirm your education details.`);
+  showCenter('courseOfStudyDone');
+}
+
+function renderCourseOfStudyDone() {
+  const preview = (resumeData.courseOfStudy || '').trim();
+  const previewHtml = preview
+    ? `<div style="background:var(--slate-50);border:1px solid var(--slate-200);border-radius:10px;padding:16px 18px;margin:16px 0;text-align:left"><div style="font-size:11px;font-weight:700;color:var(--slate-500);text-transform:uppercase;letter-spacing:.5px;margin-bottom:8px">Preview</div><p style="font-size:14px;color:var(--slate-700);line-height:1.65;margin:0">${escHtml(preview)}</p></div>`
+    : '';
+  return `<div class="done-card">
+    <span class="done-icon">✅</span>
+    <div class="done-title">Course of Study Saved</div>
+    <div class="done-sub">This section is ready for your resume.</div>
+    ${previewHtml}
+    <div class="done-actions">
+      <button class="btn btn-ghost" onclick="showSection('courseOfStudy')">Edit</button>
+      <button class="btn btn-primary btn-lg" onclick="showSection('education')">Continue to Education →</button>
     </div>
   </div>`;
 }
@@ -2712,9 +2800,9 @@ function buildClassic(data,color){
   if(c.objective){ch.push(sec('Objective'));ch.push(bodyTxt(c.objective,{after:140}));}
   if(data.workExperience?.length){ch.push(sec('Experience'));data.workExperience.forEach(j=>jobBlock(j).forEach(q=>ch.push(q)));}
   if(data.militaryService?.length){ch.push(sec('Military Service'));data.militaryService.forEach(m=>militaryBlock(m).forEach(q=>ch.push(q)));}
+  if(courseOfStudyText(data)){ch.push(sec('Course of Study'));ch.push(bodyTxt(courseOfStudyText(data),{after:140}));}
   if(data.education?.length){ch.push(sec('Education'));data.education.forEach(e=>ch.push(eduBlock(e)));}
   if(data.volunteer?.length){ch.push(sec('Volunteer'));data.volunteer.forEach(v=>volunteerBlock(v).forEach(q=>ch.push(q)));}
-  if(courseOfStudyText(data)){ch.push(sec('Course of Study'));ch.push(bodyTxt(courseOfStudyText(data),{after:140}));}
   const _sc=scItems(data);if(_sc.length){ch.push(sec(scLabel(data)));ch.push(skillsCertsGrid(_sc));}
   ch.push(spacer(200));
   return new docx.Document({sections:[{properties:{page:{margin:{top:M,bottom:M,left:M,right:M}}},children:ch}]});
@@ -2731,9 +2819,9 @@ function buildModern(data,color){
   if(c.objective){main.push(mainSec('Objective'));main.push(bodyTxt(c.objective,{after:120}));}
   if(data.workExperience?.length){main.push(mainSec('Experience'));data.workExperience.forEach(j=>jobBlock(j).forEach(q=>main.push(q)));}
   if(data.militaryService?.length){main.push(mainSec('Military Service'));data.militaryService.forEach(m=>militaryBlock(m).forEach(q=>main.push(q)));}
+  if(courseOfStudyText(data)){main.push(mainSec('Course of Study'));main.push(bodyTxt(courseOfStudyText(data),{after:120}));}
   if(data.education?.length){main.push(mainSec('Education'));data.education.forEach(e=>main.push(eduBlock(e)));}
   if(data.volunteer?.length){main.push(mainSec('Volunteer'));data.volunteer.forEach(v=>volunteerBlock(v).forEach(q=>main.push(q)));}
-  if(courseOfStudyText(data)){main.push(mainSec('Course of Study'));main.push(bodyTxt(courseOfStudyText(data),{after:120}));}
   main.push(spacer(200));
   const nb={style:docx.BorderStyle.NONE,size:0,color:'FFFFFF'};
   return new docx.Document({sections:[{properties:{page:{margin:{top:0,bottom:0,left:0,right:0}}},children:[new docx.Table({width:{size:100,type:docx.WidthType.PERCENTAGE},borders:{top:nb,bottom:nb,left:nb,right:nb,insideH:nb,insideV:nb},rows:[new docx.TableRow({children:[new docx.TableCell({width:{size:twip(2.5),type:docx.WidthType.DXA},shading:{fill:ac,type:docx.ShadingType.CLEAR,color:'auto'},margins:{top:twip(.45),bottom:twip(.45),left:twip(.3),right:twip(.25)},children:side}),new docx.TableCell({width:{size:twip(5.0),type:docx.WidthType.DXA},margins:{top:twip(.4),bottom:twip(.4),left:twip(.35),right:twip(.35)},children:main})]})]})]},]});
@@ -2748,9 +2836,9 @@ function buildBold(data,color){
   if(c.objective){ch.push(sec('Objective'));ch.push(bodyTxt(c.objective,{after:120}));}
   if(data.workExperience?.length){ch.push(sec('Experience'));data.workExperience.forEach(j=>jobBlock(j).forEach(q=>ch.push(q)));}
   if(data.militaryService?.length){ch.push(sec('Military Service'));data.militaryService.forEach(m=>militaryBlock(m).forEach(q=>ch.push(q)));}
+  if(courseOfStudyText(data)){ch.push(sec('Course of Study'));ch.push(bodyTxt(courseOfStudyText(data),{after:120}));}
   if(data.education?.length){ch.push(sec('Education'));data.education.forEach(e=>ch.push(eduBlock(e)));}
   if(data.volunteer?.length){ch.push(sec('Volunteer'));data.volunteer.forEach(v=>volunteerBlock(v).forEach(q=>ch.push(q)));}
-  if(courseOfStudyText(data)){ch.push(sec('Course of Study'));ch.push(bodyTxt(courseOfStudyText(data),{after:120}));}
   const _sc=scItems(data);if(_sc.length){ch.push(sec(scLabel(data)));ch.push(skillsCertsGrid(_sc));}
   ch.push(spacer(200));
   return new docx.Document({sections:[{properties:{page:{margin:{top:0,bottom:bm,left:bm,right:bm}}},children:ch}]});
@@ -2766,9 +2854,9 @@ function buildExecutive(data,color){
   if(c.objective){ch.push(sec('Professional Summary'));ch.push(bodyTxt(c.objective,{after:120}));}
   if(data.workExperience?.length){ch.push(sec('Experience'));data.workExperience.forEach(job=>{const loc=[job.city,job.state].filter(Boolean).join(', '),end=job.current?'Present':[job.endMonth,job.endYear].filter(Boolean).join(' '),dates=`${[job.startMonth,job.startYear].filter(Boolean).join(' ')} – ${end}`;ch.push(new docx.Paragraph({tabStops:[{type:docx.TabStopType.RIGHT,position:twip(6.8)}],spacing:{before:280,after:60},children:[new docx.TextRun({text:`${job.jobTitle}, ${job.employer}${loc?', '+loc:''}`,bold:true,size:26,color:'1a1a1a'}),new docx.TextRun({text:'\t'+dates,italics:true,size:22,color:'888888'})]}));(job.bulletLines||[]).forEach(b=>ch.push(bullet(b)));});}
   if(data.militaryService?.length){ch.push(sec('Military Service'));data.militaryService.forEach(m=>militaryBlock(m).forEach(q=>ch.push(q)));}
+  if(courseOfStudyText(data)){ch.push(sec('Course of Study'));ch.push(bodyTxt(courseOfStudyText(data),{after:120}));}
   if(data.education?.length){ch.push(sec('Education'));data.education.forEach(e=>ch.push(eduBlock(e)));}
   if(data.volunteer?.length){ch.push(sec('Volunteer'));data.volunteer.forEach(v=>volunteerBlock(v).forEach(q=>ch.push(q)));}
-  if(courseOfStudyText(data)){ch.push(sec('Course of Study'));ch.push(bodyTxt(courseOfStudyText(data),{after:120}));}
   const _sc=scItems(data);if(_sc.length){ch.push(sec(scLabel(data)));ch.push(skillsCertsGrid(_sc));}
   ch.push(spacer(200));
   return new docx.Document({sections:[{properties:{page:{margin:{top:M,bottom:M,left:M,right:M}}},children:ch}]});
@@ -2785,13 +2873,13 @@ function buildFlip(data,color){
   const sideSec=t=>new docx.Paragraph({children:sectionHeaderRuns(t,{size:22,color:st}),border:{bottom:{style:docx.BorderStyle.SINGLE,size:3,color:st==='FFFFFF'?'6699CC':'777777'}},spacing:{before:260,after:120}});
   const _sc=scItems(data);
   if(_sc.length){side.push(sideSec(scLabel(data)));_sc.forEach(s=>side.push(bullet(s,{size:20,color:sideContact,after:70})));}
+  if(courseOfStudyText(data)){side.push(sideSec('Course of Study'));side.push(bodyTxt(courseOfStudyText(data),{after:100,size:20}));}
   if(data.education?.length){side.push(sideSec('Education'));data.education.forEach(e=>{const f=e.fieldOfStudy?`, ${e.fieldOfStudy}`:'';const loc=[e.city,e.state].filter(Boolean).join(', ');side.push(new docx.Paragraph({spacing:{before:0,after:60},children:[new docx.TextRun({text:`${e.degree}${f}`,bold:true,size:20,color:st})]}));side.push(new docx.Paragraph({spacing:{before:0,after:80},children:[new docx.TextRun({text:[e.school,loc,eduGradDate(e)].filter(Boolean).join(', '),size:19,color:sideContact})]}));});}
   const mainSec=t=>new docx.Paragraph({children:sectionHeaderRuns(t,{size:26,color:ac}),border:{bottom:{style:docx.BorderStyle.SINGLE,size:4,color:ac}},spacing:{before:260,after:140}});
   if(c.objective){main.push(mainSec('Objective'));main.push(bodyTxt(c.objective,{after:120}));}
   if(data.workExperience?.length){main.push(mainSec('Experience'));data.workExperience.forEach(j=>jobBlock(j).forEach(q=>main.push(q)));}
   if(data.militaryService?.length){main.push(mainSec('Military Service'));data.militaryService.forEach(m=>militaryBlock(m).forEach(q=>main.push(q)));}
   if(data.volunteer?.length){main.push(mainSec('Volunteer'));data.volunteer.forEach(v=>volunteerBlock(v).forEach(q=>main.push(q)));}
-  if(courseOfStudyText(data)){main.push(mainSec('Course of Study'));main.push(bodyTxt(courseOfStudyText(data),{after:120}));}
   main.push(spacer(200));
   return new docx.Document({sections:[{properties:{page:{margin:{top:0,bottom:0,left:0,right:0}}},children:[new docx.Table({width:{size:100,type:docx.WidthType.PERCENTAGE},borders:{top:nb,bottom:nb,left:nb,right:nb,insideH:nb,insideV:nb},rows:[new docx.TableRow({children:[new docx.TableCell({width:{size:twip(5.0),type:docx.WidthType.DXA},margins:{top:twip(.4),bottom:twip(.4),left:twip(.4),right:twip(.3)},children:main}),new docx.TableCell({width:{size:twip(2.5),type:docx.WidthType.DXA},shading:{fill:ac,type:docx.ShadingType.CLEAR,color:'auto'},margins:{top:twip(.45),bottom:twip(.45),left:twip(.25),right:twip(.3)},children:side})]})]})]},]});
 }
@@ -2807,6 +2895,7 @@ function buildTopLeft(data,color){
   const sideSec=t=>new docx.Paragraph({children:sectionHeaderRuns(t,{size:21,color:'333333'}),border:{bottom:{style:docx.BorderStyle.SINGLE,size:2,color:'CCCCCC'}},spacing:{before:220,after:110}});
   const _sc=scItems(data);
   if(_sc.length){side.push(sideSec(scLabel(data)));_sc.forEach(s=>side.push(bullet(s,{size:20,color:'444444',after:70})));}
+  if(courseOfStudyText(data)){side.push(sideSec('Course of Study'));side.push(bodyTxt(courseOfStudyText(data),{after:100,size:20}));}
   if(data.education?.length){side.push(sideSec('Education'));data.education.forEach(e=>{const f=e.fieldOfStudy?`, ${e.fieldOfStudy}`:'';const loc=[e.city,e.state].filter(Boolean).join(', ');side.push(new docx.Paragraph({spacing:{before:0,after:80},children:[new docx.TextRun({text:`${e.degree}${f}`,bold:true,size:20,color:'222222'}),new docx.TextRun({text:`, ${[e.school,loc,eduGradDate(e)].filter(Boolean).join(', ')}`,size:19,color:'666666'})]})  );});}
   const main=[];
   const mainSec=t=>new docx.Paragraph({children:sectionHeaderRuns(t,{size:26,color:ac}),border:{bottom:{style:docx.BorderStyle.SINGLE,size:4,color:ac}},spacing:{before:240,after:140}});
@@ -2814,7 +2903,6 @@ function buildTopLeft(data,color){
   if(data.workExperience?.length){main.push(mainSec('Experience'));data.workExperience.forEach(j=>jobBlock(j).forEach(q=>main.push(q)));}
   if(data.militaryService?.length){main.push(mainSec('Military Service'));data.militaryService.forEach(m=>militaryBlock(m).forEach(q=>main.push(q)));}
   if(data.volunteer?.length){main.push(mainSec('Volunteer'));data.volunteer.forEach(v=>volunteerBlock(v).forEach(q=>main.push(q)));}
-  if(courseOfStudyText(data)){main.push(mainSec('Course of Study'));main.push(bodyTxt(courseOfStudyText(data),{after:120}));}
   main.push(spacer(200));
   const bodyRow=new docx.TableRow({children:[new docx.TableCell({width:{size:twip(2.3),type:docx.WidthType.DXA},shading:{fill:'EEEEEE',type:docx.ShadingType.CLEAR,color:'auto'},margins:{top:twip(.35),bottom:twip(.35),left:twip(.3),right:twip(.25)},children:side}),new docx.TableCell({width:{size:twip(5.2),type:docx.WidthType.DXA},margins:{top:twip(.35),bottom:twip(.35),left:twip(.35),right:twip(.4)},children:main})]});
   return new docx.Document({sections:[{properties:{page:{margin:{top:0,bottom:0,left:0,right:0}}},children:[new docx.Table({width:{size:100,type:docx.WidthType.PERCENTAGE},borders:{top:nb,bottom:nb,left:nb,right:nb,insideH:nb,insideV:nb},rows:[hdrRow,bodyRow]})]},]});
@@ -2834,12 +2922,12 @@ function buildTopRight(data,color){
   if(data.workExperience?.length){main.push(mainSec('Experience'));data.workExperience.forEach(j=>jobBlock(j).forEach(q=>main.push(q)));}
   if(data.militaryService?.length){main.push(mainSec('Military Service'));data.militaryService.forEach(m=>militaryBlock(m).forEach(q=>main.push(q)));}
   if(data.volunteer?.length){main.push(mainSec('Volunteer'));data.volunteer.forEach(v=>volunteerBlock(v).forEach(q=>main.push(q)));}
-  if(courseOfStudyText(data)){main.push(mainSec('Course of Study'));main.push(bodyTxt(courseOfStudyText(data),{after:120}));}
   main.push(spacer(200));
   const side=[];
   const sideSec=t=>new docx.Paragraph({children:sectionHeaderRuns(t,{size:22,color:st}),border:{bottom:{style:docx.BorderStyle.SINGLE,size:3,color:st==='FFFFFF'?'6699CC':'777777'}},spacing:{before:240,after:120}});
   const _sc=scItems(data);
   if(_sc.length){side.push(sideSec(scLabel(data)));_sc.forEach(s=>side.push(bullet(s,{size:20,color:sideContact,after:70})));}
+  if(courseOfStudyText(data)){side.push(sideSec('Course of Study'));side.push(bodyTxt(courseOfStudyText(data),{after:100,size:20}));}
   if(data.education?.length){side.push(sideSec('Education'));data.education.forEach(e=>{const f=e.fieldOfStudy?`, ${e.fieldOfStudy}`:'';const loc=[e.city,e.state].filter(Boolean).join(', ');side.push(new docx.Paragraph({spacing:{before:0,after:60},children:[new docx.TextRun({text:`${e.degree}${f}`,bold:true,size:20,color:st})]}));side.push(new docx.Paragraph({spacing:{before:0,after:80},children:[new docx.TextRun({text:[e.school,loc,eduGradDate(e)].filter(Boolean).join(', '),size:19,color:sideContact})]}));});}
   const bodyRow=new docx.TableRow({children:[new docx.TableCell({width:{size:twip(5.2),type:docx.WidthType.DXA},margins:{top:twip(.35),bottom:twip(.35),left:twip(.4),right:twip(.3)},children:main}),new docx.TableCell({width:{size:twip(2.3),type:docx.WidthType.DXA},shading:{fill:ac,type:docx.ShadingType.CLEAR,color:'auto'},margins:{top:twip(.35),bottom:twip(.35),left:twip(.25),right:twip(.3)},children:side})]});
   return new docx.Document({sections:[{properties:{page:{margin:{top:0,bottom:0,left:0,right:0}}},children:[new docx.Table({width:{size:100,type:docx.WidthType.PERCENTAGE},borders:{top:nb,bottom:nb,left:nb,right:nb,insideH:nb,insideV:nb},rows:[hdrRow,bodyRow]})]},]});
@@ -2857,8 +2945,8 @@ function buildSplit(data,color){
   const side=[],main=[];
   const _sc=scItems(data);
   if(_sc.length){side.push(sideSec(scLabel(data)));_sc.forEach(s=>side.push(bullet(s,{size:20,after:70})));}
-  if(data.education?.length){side.push(sideSec('Education'));data.education.forEach(e=>{const f=e.fieldOfStudy?`, ${e.fieldOfStudy}`:'';const loc=[e.city,e.state].filter(Boolean).join(', ');side.push(new docx.Paragraph({spacing:{before:0,after:50},children:[new docx.TextRun({text:`${e.degree}${f}`,bold:true,size:20,color:'1a1a1a',font:'Calibri'})]}));side.push(new docx.Paragraph({spacing:{before:0,after:120},children:[new docx.TextRun({text:[e.school,loc,eduGradDate(e)].filter(Boolean).join(', '),size:19,color:'555555',font:'Calibri'})]}));});}
   if(courseOfStudyText(data)){side.push(sideSec('Course of Study'));side.push(bodyTxt(courseOfStudyText(data),{after:100,size:20}));}
+  if(data.education?.length){side.push(sideSec('Education'));data.education.forEach(e=>{const f=e.fieldOfStudy?`, ${e.fieldOfStudy}`:'';const loc=[e.city,e.state].filter(Boolean).join(', ');side.push(new docx.Paragraph({spacing:{before:0,after:50},children:[new docx.TextRun({text:`${e.degree}${f}`,bold:true,size:20,color:'1a1a1a',font:'Calibri'})]}));side.push(new docx.Paragraph({spacing:{before:0,after:120},children:[new docx.TextRun({text:[e.school,loc,eduGradDate(e)].filter(Boolean).join(', '),size:19,color:'555555',font:'Calibri'})]}));});}
   if(c.objective){main.push(mainSec('Objective'));main.push(bodyTxt(c.objective,{after:120}));}
   if(data.workExperience?.length){main.push(mainSec('Experience'));data.workExperience.forEach(j=>jobBlock(j).forEach(q=>main.push(q)));}
   if(data.militaryService?.length){main.push(mainSec('Military Service'));data.militaryService.forEach(m=>militaryBlock(m).forEach(q=>main.push(q)));}

@@ -1429,6 +1429,8 @@ function redoAssignment() {
   document.getElementById('gradingLoading').hidden = false;
   document.getElementById('gradingResult').hidden = true;
   document.getElementById('redoPrompt').style.display = 'none';
+  const subCard = document.getElementById('submissionSummaryCard');
+  if (subCard) subCard.hidden = true;
   rpContext = 'course';
   show('screenNoWork');
   document.getElementById('skillsParagraph').focus();
