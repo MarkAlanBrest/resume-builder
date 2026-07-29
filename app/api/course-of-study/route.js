@@ -2,7 +2,10 @@ import {
   readCourseOfStudyStore,
   updateProgramCourseOfStudy,
 } from "../../../lib/courseOfStudyStore";
+import { verifyAdminPassword } from "../../../lib/adminAuth";
 import { getAllPrograms } from "../../../lib/campuses";
+
+export const runtime = "nodejs";
 
 export async function GET(req) {
   const { searchParams } = new URL(req.url);
@@ -18,13 +21,6 @@ export async function GET(req) {
 }
 
 export async function PUT(req) {
-  const adminKey = req.headers.get("x-admin-key");
-  const expectedKey = process.env.COURSE_OF_STUDY_ADMIN_KEY;
-
-  if (!expectedKey || adminKey !== expectedKey) {
-    return Response.json({ error: "Unauthorized" }, { status: 401 });
-  }
-
   let body;
   try {
     body = await req.json();
@@ -32,7 +28,11 @@ export async function PUT(req) {
     return Response.json({ error: "Invalid JSON body" }, { status: 400 });
   }
 
-  const { program, text } = body;
+  const { program, text, password } = body;
+  if (!verifyAdminPassword(password)) {
+    return Response.json({ error: "Incorrect password" }, { status: 401 });
+  }
+
   if (!program || !getAllPrograms().includes(program)) {
     return Response.json({ error: "Invalid program" }, { status: 400 });
   }

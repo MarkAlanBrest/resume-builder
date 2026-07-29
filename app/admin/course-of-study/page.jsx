@@ -3,29 +3,34 @@
 import { useEffect, useMemo, useState } from "react";
 import { CAMPUSES } from "../../../lib/campuses";
 
-const ADMIN_KEY_STORAGE = "courseOfStudyAdminKey";
+const ADMIN_PASSWORD_STORAGE = "courseOfStudyAdminPassword";
 
 export default function CourseOfStudyAdminPage() {
-  const [adminKey, setAdminKey] = useState("");
-  const [keyInput, setKeyInput] = useState("");
+  const [password, setPassword] = useState("");
+  const [passwordInput, setPasswordInput] = useState("");
+  const [authenticated, setAuthenticated] = useState(false);
   const [store, setStore] = useState({});
   const [selectedProgram, setSelectedProgram] = useState("");
   const [draftText, setDraftText] = useState("");
   const [status, setStatus] = useState("");
-  const [loading, setLoading] = useState(true);
+  const [loading, setLoading] = useState(false);
   const [saving, setSaving] = useState(false);
+  const [loggingIn, setLoggingIn] = useState(false);
 
   const programsByCampus = useMemo(() => CAMPUSES, []);
 
   useEffect(() => {
-    const savedKey = sessionStorage.getItem(ADMIN_KEY_STORAGE) || "";
-    if (savedKey) {
-      setAdminKey(savedKey);
-      setKeyInput(savedKey);
+    const savedPassword = sessionStorage.getItem(ADMIN_PASSWORD_STORAGE) || "";
+    if (savedPassword) {
+      setPassword(savedPassword);
+      setPasswordInput(savedPassword);
+      setAuthenticated(true);
     }
   }, []);
 
   useEffect(() => {
+    if (!authenticated) return;
+
     let cancelled = false;
 
     async function loadStore() {
@@ -47,7 +52,7 @@ export default function CourseOfStudyAdminPage() {
     return () => {
       cancelled = true;
     };
-  }, []);
+  }, [authenticated]);
 
   useEffect(() => {
     if (!selectedProgram) {
@@ -57,18 +62,50 @@ export default function CourseOfStudyAdminPage() {
     setDraftText(store[selectedProgram]?.text || "");
   }, [selectedProgram, store]);
 
-  function unlockAdmin() {
-    const trimmed = keyInput.trim();
+  async function signIn() {
+    const trimmed = passwordInput.trim();
     if (!trimmed) return;
-    sessionStorage.setItem(ADMIN_KEY_STORAGE, trimmed);
-    setAdminKey(trimmed);
-    setStatus("Admin key saved for this browser session.");
+
+    setLoggingIn(true);
+    setStatus("");
+    try {
+      const res = await fetch("/api/admin/login", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ password: trimmed }),
+      });
+      const data = await res.json().catch(() => ({}));
+      if (!res.ok) {
+        throw new Error(data.error || "Incorrect password");
+      }
+
+      sessionStorage.setItem(ADMIN_PASSWORD_STORAGE, trimmed);
+      setPassword(trimmed);
+      setAuthenticated(true);
+      setStatus("Signed in.");
+    } catch (err) {
+      setAuthenticated(false);
+      setStatus(err.message || "Sign in failed");
+    } finally {
+      setLoggingIn(false);
+    }
+  }
+
+  function signOut() {
+    sessionStorage.removeItem(ADMIN_PASSWORD_STORAGE);
+    setPassword("");
+    setPasswordInput("");
+    setAuthenticated(false);
+    setSelectedProgram("");
+    setDraftText("");
+    setStore({});
+    setStatus("Signed out.");
   }
 
   async function saveProgram() {
     if (!selectedProgram) return;
-    if (!adminKey) {
-      setStatus("Enter the admin key before saving.");
+    if (!password) {
+      setStatus("Sign in before saving.");
       return;
     }
 
@@ -77,11 +114,12 @@ export default function CourseOfStudyAdminPage() {
     try {
       const res = await fetch("/api/course-of-study", {
         method: "PUT",
-        headers: {
-          "Content-Type": "application/json",
-          "x-admin-key": adminKey,
-        },
-        body: JSON.stringify({ program: selectedProgram, text: draftText }),
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          program: selectedProgram,
+          text: draftText,
+          password,
+        }),
       });
 
       const data = await res.json().catch(() => ({}));
@@ -103,38 +141,66 @@ export default function CourseOfStudyAdminPage() {
 
   const selectedMeta = selectedProgram ? store[selectedProgram] : null;
 
+  if (!authenticated) {
+    return (
+      <div style={styles.page}>
+        <div style={styles.shell}>
+          <header style={styles.header}>
+            <h1 style={styles.title}>Course of Study Admin</h1>
+            <p style={styles.subtitle}>
+              Sign in with the staff admin password to manage Course of Study
+              content for each program.
+            </p>
+          </header>
+
+          <section style={{ ...styles.card, maxWidth: "480px" }}>
+            <h2 style={styles.cardTitle}>Staff Sign In</h2>
+            <p style={styles.helpText}>
+              Use the shared admin password provided by your department.
+            </p>
+            <div style={styles.row}>
+              <input
+                type="password"
+                value={passwordInput}
+                onChange={(e) => setPasswordInput(e.target.value)}
+                onKeyDown={(e) => e.key === "Enter" && signIn()}
+                placeholder="Admin password"
+                style={styles.input}
+              />
+              <button
+                type="button"
+                onClick={signIn}
+                disabled={loggingIn}
+                style={styles.primaryBtn}
+              >
+                {loggingIn ? "Signing in…" : "Sign In"}
+              </button>
+            </div>
+            {status ? <p style={styles.status}>{status}</p> : null}
+          </section>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div style={styles.page}>
       <div style={styles.shell}>
         <header style={styles.header}>
-          <div>
-            <h1 style={styles.title}>Course of Study Admin</h1>
-            <p style={styles.subtitle}>
-              Manage the Course of Study paragraph for each program. Students no
-              longer edit this in the resume builder — it is pulled automatically
-              from here when they download their resume.
-            </p>
-          </div>
-        </header>
-
-        <section style={styles.card}>
-          <h2 style={styles.cardTitle}>Admin Access</h2>
-          <p style={styles.helpText}>
-            Saving requires the server <code>COURSE_OF_STUDY_ADMIN_KEY</code>.
-          </p>
-          <div style={styles.row}>
-            <input
-              type="password"
-              value={keyInput}
-              onChange={(e) => setKeyInput(e.target.value)}
-              placeholder="Admin key"
-              style={styles.input}
-            />
-            <button type="button" onClick={unlockAdmin} style={styles.secondaryBtn}>
-              Use Key
+          <div style={styles.headerRow}>
+            <div>
+              <h1 style={styles.title}>Course of Study Admin</h1>
+              <p style={styles.subtitle}>
+                Manage the Course of Study paragraph for each program. Students
+                no longer edit this in the resume builder — it is pulled
+                automatically when they download their resume.
+              </p>
+            </div>
+            <button type="button" onClick={signOut} style={styles.secondaryBtn}>
+              Sign Out
             </button>
           </div>
-        </section>
+        </header>
 
         <div style={styles.layout}>
           <aside style={styles.sidebar}>
@@ -225,6 +291,12 @@ const styles = {
   },
   shell: { maxWidth: "1180px", margin: "0 auto" },
   header: { marginBottom: "24px" },
+  headerRow: {
+    display: "flex",
+    justifyContent: "space-between",
+    alignItems: "flex-start",
+    gap: "16px",
+  },
   title: { margin: 0, fontSize: "28px" },
   subtitle: { margin: "8px 0 0", color: "#475569", lineHeight: 1.6 },
   card: {
@@ -293,6 +365,7 @@ const styles = {
     padding: "10px 16px",
     fontWeight: 600,
     cursor: "pointer",
+    whiteSpace: "nowrap",
   },
   campusBlock: { marginBottom: "18px" },
   campusLabel: {
