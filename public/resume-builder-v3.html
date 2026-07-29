@@ -2776,6 +2776,7 @@ function volunteerBlock(v){const items=[],loc=[v.city,v.state].filter(Boolean).j
 function courseOfStudyText(data) {
   return (data.courseOfStudy || data.educationSkills || '').trim();
 }
+function scLabel(data){const s=data.skills?.length,c=data.certifications?.length;return s&&c?'Skills & Certifications':c?'Certifications':'Skills';}
 function scItems(data){return [...(Array.isArray(data.skills)?data.skills:[]),...(data.certifications||[]).map(c=>c.name)];}
 function skillsCertsGrid(items){
   const nb={style:docx.BorderStyle.NONE,size:0,color:'FFFFFF'};
