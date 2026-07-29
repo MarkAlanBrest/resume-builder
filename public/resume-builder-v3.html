@@ -394,7 +394,7 @@ const TIPS = {
   skills:`Write out every skill and certification you have — tools, equipment, software, techniques, licenses, OSHA/EPA/CDL cards, manufacturer training, anything relevant. I'll clean it up, remove duplicates, and organize it professionally.`,
   military:`Add your military service below — active duty, reserves, or National Guard. In the Duties box, describe your role naturally: what you did every day, equipment you operated or maintained, people you supervised or trained, and anything you're proud of. I'll turn it into professional resume bullets that highlight leadership, reliability, technical skills, and teamwork — all things trade employers value.`,
   volunteer:`Add any volunteer work, community service, church activities, or unpaid experience. Even informal roles count — helping at events, working with youth groups, assisting neighbors. Describe what you did and I'll write professional bullets for it.`,
-  template:`Pick the style and color that matches the field you're entering. Classic and Executive are safe for any employer. Modern works well for technical roles. Bold makes a strong first impression. Your program's **Course of Study** section is added automatically when you download.`,
+  template:`Pick the style and color that matches the field you're entering. Classic and Executive are safe for any employer. Modern works well for technical roles. Bold makes a strong first impression.`,
 };
 
 const WORK_TIP_EXAMPLES = [
@@ -464,8 +464,9 @@ let isAIThinking = false;
 const resumeData = {
   personal:{},careerContext:{},workExperience:[],militaryService:[],education:[],volunteer:[],certifications:[],skills:[],references:'Available upon request'
 };
+const NAV_SECTIONS = SECTIONS.filter(s => s.key !== 'courseOfStudy');
 const sectionStatus = {};
-SECTIONS.forEach(s => sectionStatus[s.key] = 'pending');
+NAV_SECTIONS.forEach(s => sectionStatus[s.key] = 'pending');
 
 // Temp state for multi-step flows
 let pendingWork = {};
@@ -484,11 +485,26 @@ let selectedIconSet = 'emoji';
 let selectedResumeFile = null;
 
 // ── Progress Save / Load ──────────────────────────
+function sanitizeResumeData(data) {
+  if (!data || typeof data !== 'object') return data;
+  delete data.courseOfStudy;
+  delete data.educationSkills;
+  delete data._assignmentImported;
+  delete data._courseOfStudyFromAssignment;
+  return data;
+}
+
 function saveProgress(){
-  try{localStorage.setItem('rb_progress',JSON.stringify(resumeData));}catch(e){}
+  try{
+    const payload = sanitizeResumeData({ ...resumeData });
+    localStorage.setItem('rb_progress', JSON.stringify(payload));
+  }catch(e){}
 }
 function loadProgress(){
-  try{const s=localStorage.getItem('rb_progress');return s?JSON.parse(s):null;}catch(e){return null;}
+  try{
+    const s = localStorage.getItem('rb_progress');
+    return s ? sanitizeResumeData(JSON.parse(s)) : null;
+  }catch(e){return null;}
 }
 function clearProgress(){
   localStorage.removeItem('rb_progress');
@@ -561,14 +577,14 @@ async function showSkillsSection() {
 function startApp() {
   renderLeftNav();
   showCenter('welcome');
-  addAIMsg(`Welcome! I'm your AI resume assistant. I'll guide you through each section and answer any questions you have. Click **Start Fresh** to begin, or upload an existing resume to get started faster.\n\nYour program's **Course of Study** section is added automatically when you download your resume.`);
+  addAIMsg(`Welcome! I'm your AI resume assistant. I'll guide you through each section and answer any questions you have. Click **Start Fresh** to begin, or upload an existing resume to get started faster.`);
 }
 
 // ── Left Nav ──────────────────────────────────────
 function renderLeftNav() {
   const nav = document.getElementById('leftNav');
   nav.innerHTML = '<div class="nav-heading">Sections</div>' +
-    SECTIONS.map(s => {
+    NAV_SECTIONS.map(s => {
       const st = sectionStatus[s.key] || 'pending';
       const ac = currentSection === s.key ? 'active' : st;
       return `<div class="nav-item ${ac}" onclick="navClick('${s.key}')">
@@ -627,6 +643,7 @@ function clearChat() {
 }
 
 function showSection(key) {
+  if (key === 'courseOfStudy') key = 'education';
   currentSection = key;
   renderLeftNav();
   clearChat();
@@ -672,7 +689,10 @@ function startFresh() {
   resumeData.certifications=[];
   resumeData.skills=[];
   resumeData.references='Available upon request';
-  SECTIONS.forEach(s=>sectionStatus[s.key]='pending');
+  delete resumeData.courseOfStudy;
+  delete resumeData.educationSkills;
+  NAV_SECTIONS.forEach(s=>sectionStatus[s.key]='pending');
+  delete sectionStatus.courseOfStudy;
   renderLeftNav();
   showSection('personal');
 }
@@ -681,6 +701,7 @@ function continueProgress() {
   const saved = loadProgress();
   if (!saved) { startFresh(); return; }
   Object.assign(resumeData, saved);
+  sanitizeResumeData(resumeData);
   if (saved.personal?.firstName)                            setStatus('personal','done');
   if (saved.careerContext?.objective)                       setStatus('career','done');
   if (saved.workExperience?.length || saved.militaryService?.length || saved.education?.length) setStatus('work','done');
@@ -2445,7 +2466,7 @@ function renderSkillsApproval() {
 function confirmSkills() {
   setStatus('skills','done');
   setStatus('certifications','done');
-  addAIMsg(`Skills saved! All sections are complete. Now choose a style and color for your resume. Your program's **Course of Study** section will be added automatically when you download.`);
+  addAIMsg(`Skills saved! All sections are complete. Now choose a style and color for your resume.`);
   showSection('template');
 }
 
@@ -2566,7 +2587,7 @@ async function generateResume() {
   btn.disabled=true; btn.textContent='Building resume…';
   try {
     const color = getColorObj(selectedColorHex);
-    btn.textContent = 'Loading Course of Study…';
+    btn.textContent = 'Preparing resume…';
     const courseOfStudy = await resolveCourseOfStudyForResume();
     const buildData = {...resumeData, courseOfStudy};
 
@@ -2577,7 +2598,7 @@ async function generateResume() {
     saveAs(blob, resumeFilename(p));
     setStatus('template','done');
     btn.disabled=false; btn.textContent='Download Again ↓';
-    addAIMsg(`Your resume has been downloaded! Your program's **Course of Study** section was included automatically. Change the style or color anytime and click Download Again to try a different look.`);
+    addAIMsg(`Your resume has been downloaded! Change the style or color anytime and click Download Again to try a different look.`);
   } catch(err) { btn.disabled=false; btn.textContent='Generate & Download ↓'; addAIMsg(`Error generating file: ${err.message}`); console.error(err); }
 }
 
