@@ -200,6 +200,9 @@ html,body{height:100%;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Ro
 .info-box h4{font-size:13px;font-weight:700;margin-bottom:6px;color:var(--blue-700)}
 .info-box.green h4{color:var(--green-700)}
 .info-box.amber h4{color:var(--amber-900)}
+.info-box.red{background:var(--red-bg);border:1px solid var(--red-bd)}
+.info-box.red h4{color:var(--red-600);margin-bottom:6px}
+.info-box.red p{color:#7f1d1d}
 
 /* ── Submission ID ── */
 .sub-id-box{background:var(--slate-50);border:2px dashed var(--slate-300);border-radius:10px;padding:14px 18px;text-align:center;margin:18px 0}
@@ -555,6 +558,13 @@ html,body{height:100%;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Ro
                 <div class="bullet-suggest-hdr">What Your Bullets Could Look Like</div>
                 <p style="font-size:13px;color:var(--slate-500);margin-bottom:14px;line-height:1.5">Below are suggestions for how to polish your bullets for a resume. Use your real experience — these are examples of stronger wording, not things to copy blindly.</p>
                 <div id="bulletSuggestList"></div>
+              </div>
+              <div id="redoPrompt" class="info-box red" style="margin-top:16px;display:none">
+                <h4>Redo This Assignment for Your Resume</h4>
+                <p id="redoPromptText"></p>
+                <div class="btn-row" style="margin-top:14px;margin-bottom:0">
+                  <button class="btn btn-primary" onclick="redoAssignment()">↺ Do the Assignment Again</button>
+                </div>
               </div>
               <div class="info-box amber" style="margin-top:16px">
                 <h4 style="color:var(--amber-900)">Summary Feedback</h4>
@@ -1277,6 +1287,33 @@ function gradeWorkJS() {
   };
 }
 
+/* ── Substandard grade / redo ───────────────────── */
+const REDO_SCORE_THRESHOLD = 80;
+
+function isSubstandardGrade(g) {
+  const score = g?.overall ?? 0;
+  const letter = (g?.grade || '').toUpperCase()[0];
+  return score < REDO_SCORE_THRESHOLD || letter === 'D' || letter === 'F';
+}
+
+function redoAssignment() {
+  gradeResult = null;
+  submissionId = null;
+  stepStatus = { info: 'done', form: 'active', grade: 'pending' };
+  document.getElementById('gradingLoading').hidden = false;
+  document.getElementById('gradingResult').hidden = true;
+  document.getElementById('redoPrompt').style.display = 'none';
+
+  if (currentPath === 'nowork') {
+    show('screenNoWork');
+    document.getElementById('skillsParagraph').focus();
+    addAIMsg('Take your time revising your paragraph using the rubric feedback above. **This text will go directly on your resume**, so stronger detail and specific tools or techniques will help you stand out to employers.');
+  } else {
+    show('screenJobsReview');
+    addAIMsg('Review the bullet suggestions below and edit your jobs before submitting again. **These bullets will appear on your resume**, so it is worth taking another pass to strengthen them.');
+  }
+}
+
 /* ── Grade display ──────────────────────────────── */
 function showGradeResult() {
   document.getElementById('gradingLoading').hidden = true;
@@ -1319,12 +1356,29 @@ function showGradeResult() {
 
   renderBulletSuggestions();
 
+  const substandard = isSubstandardGrade(g);
+  const redoBox = document.getElementById('redoPrompt');
+  const redoText = document.getElementById('redoPromptText');
+  if (substandard && redoBox && redoText) {
+    redoBox.style.display = 'block';
+    const workMsg = 'Your work experience bullets will be imported into your resume. Because this score is below what employers expect, you <strong>can and should do this assignment again</strong> — use the feedback and bullet suggestions below to strengthen your entries before you build your resume.';
+    const noworkMsg = 'Your skills paragraph will be used in the <strong>Course of Study</strong> section on your resume. Because this score is below what employers expect, you <strong>can and should do this assignment again</strong> — add more specific tools, techniques, and training details before you build your resume.';
+    redoText.innerHTML = currentPath === 'nowork' ? noworkMsg : workMsg;
+  } else if (redoBox) {
+    redoBox.style.display = 'none';
+  }
+
   // Send grade summary to chat
   const ltrLabel = { A:'Excellent', B:'Good', C:'OK', D:'Below expectations', F:'Incomplete' };
   const suggestNote = (currentPath === 'work' && (g.bulletSuggestions || []).length)
     ? '\n\nScroll down to **What Your Bullets Could Look Like** — I rewrote each bullet to show you stronger resume wording.'
     : '';
-  addAIMsg(`**Your grade is in!** You scored **${g.overall}/100** — ${ltrLabel[ltr] || 'graded'}.\n\n${g.strengths}\n\n${g.summary}${suggestNote}\n\nDon't forget to **download your assignment** and submit the PDF in Canvas to receive credit.`);
+  const redoNote = substandard
+    ? (currentPath === 'nowork'
+      ? '\n\n**Important:** This paragraph goes on your resume. Your score suggests you should **redo the assignment** and strengthen it using the rubric feedback before building your resume.'
+      : '\n\n**Important:** These bullets go on your resume. Your score suggests you should **redo the assignment** and improve your bullets using the feedback before building your resume.')
+    : '';
+  addAIMsg(`**Your grade is in!** You scored **${g.overall}/100** — ${ltrLabel[ltr] || 'graded'}.\n\n${g.strengths}\n\n${g.summary}${suggestNote}${redoNote}\n\nDon't forget to **download your assignment** and submit the PDF in Canvas to receive credit.`);
 }
 
 function renderBulletSuggestions() {
