@@ -1,4 +1,4 @@
-import { verifyAdminCredentials } from "../../../../lib/adminAuth";
+import { verifyAdminPin } from "../../../../lib/adminAuth";
 import { jsonNoStore } from "../../../../lib/apiResponse";
 
 export const runtime = "nodejs";
@@ -12,11 +12,10 @@ export async function POST(req) {
     return jsonNoStore({ error: "Invalid JSON body" }, { status: 400 });
   }
 
-  const email = body?.email || "";
-  const password = body?.password || "";
-  if (!(await verifyAdminCredentials(email, password))) {
-    return jsonNoStore({ error: "Incorrect email or password" }, { status: 401 });
+  const pin = body?.pin || "";
+  if (!(await verifyAdminPin(pin))) {
+    return jsonNoStore({ error: "Incorrect PIN" }, { status: 401 });
   }
 
-  return jsonNoStore({ ok: true, email: String(email).trim().toLowerCase() });
+  return jsonNoStore({ ok: true });
 }
