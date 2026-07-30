@@ -1,3 +1,8 @@
 {
-  "password": "ncstadmin123"
+  "admins": [
+    {
+      "email": "admin@ncst.edu",
+      "password": "ncstadmin123"
+    }
+  ]
 }
