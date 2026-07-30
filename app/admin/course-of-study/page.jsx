@@ -255,12 +255,11 @@ export default function ProgramAdminPage() {
       const data = await res.json().catch(() => ({}));
       if (!res.ok) throw new Error(data.error || "Save failed");
 
-      const { courseData } = await loadProgramData(selectedProgram);
       setCourseStore((prev) => ({
         ...prev,
-        [selectedProgram]: { text: courseData.text, updatedAt: courseData.updatedAt },
+        [selectedProgram]: { text: data.text, updatedAt: data.updatedAt },
       }));
-      setDraftCourseText(courseData.text || "");
+      setDraftCourseText(data.text || "");
       setStatus(`Saved Course of Study for ${selectedProgram}.`);
     } catch (err) {
       setStatus(err.message || "Save failed");
@@ -288,17 +287,16 @@ export default function ProgramAdminPage() {
       const data = await res.json().catch(() => ({}));
       if (!res.ok) throw new Error(data.error || "Save failed");
 
-      const { defaultsData } = await loadProgramData(selectedProgram);
       setDefaultsStore((prev) => ({
         ...prev,
         [selectedProgram]: {
-          skills: defaultsData.skills,
-          certifications: defaultsData.certifications,
-          updatedAt: defaultsData.updatedAt,
+          skills: data.skills,
+          certifications: data.certifications,
+          updatedAt: data.updatedAt,
         },
       }));
-      setDraftSkillsText(linesFromList(defaultsData.skills));
-      setDraftCertsText(linesFromList(defaultsData.certifications));
+      setDraftSkillsText(linesFromList(data.skills));
+      setDraftCertsText(linesFromList(data.certifications));
       setStatus(`Saved skills and certifications for ${selectedProgram}.`);
     } catch (err) {
       setStatus(err.message || "Save failed");
