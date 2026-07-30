@@ -1,4 +1,4 @@
-import { updateAdminPassword } from "../../../../lib/adminAuth";
+import { updateAdminPin } from "../../../../lib/adminAuth";
 import { jsonNoStore } from "../../../../lib/apiResponse";
 
 export const runtime = "nodejs";
@@ -12,16 +12,15 @@ export async function POST(req) {
     return jsonNoStore({ error: "Invalid JSON body" }, { status: 400 });
   }
 
-  const email = body?.email || "";
-  const currentPassword = body?.currentPassword || "";
-  const newPassword = body?.newPassword || "";
+  const currentPin = body?.currentPin || "";
+  const newPin = body?.newPin || "";
 
   try {
-    await updateAdminPassword(email, currentPassword, newPassword);
+    await updateAdminPin(currentPin, newPin);
     return jsonNoStore({ ok: true });
   } catch (err) {
     return jsonNoStore(
-      { error: err.message || "Could not update password" },
+      { error: err.message || "Could not update PIN" },
       { status: 400 }
     );
   }

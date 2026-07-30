@@ -3,7 +3,7 @@ import {
   readCourseOfStudyStore,
   updateProgramCourseOfStudy,
 } from "../../../lib/courseOfStudyStore";
-import { verifyAdminCredentials } from "../../../lib/adminAuth";
+import { verifyAdminPin } from "../../../lib/adminAuth";
 import { getAllPrograms } from "../../../lib/campuses";
 import { jsonNoStore } from "../../../lib/apiResponse";
 
@@ -30,8 +30,8 @@ export async function PUT(req) {
     return jsonNoStore({ error: "Invalid JSON body" }, { status: 400 });
   }
 
-  const { program, text, email, password } = body;
-  if (!(await verifyAdminCredentials(email, password))) {
+  const { program, text, pin } = body;
+  if (!(await verifyAdminPin(pin))) {
     return jsonNoStore({ error: "Not authorized" }, { status: 401 });
   }
 

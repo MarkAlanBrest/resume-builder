@@ -1,4 +1,4 @@
-import { verifyAdminCredentials } from "../../../lib/adminAuth";
+import { verifyAdminPin } from "../../../lib/adminAuth";
 import { getAllPrograms } from "../../../lib/campuses";
 import {
   getProgramDefaults,
@@ -30,8 +30,8 @@ export async function PUT(req) {
     return jsonNoStore({ error: "Invalid JSON body" }, { status: 400 });
   }
 
-  const { program, skills, certifications, email, password } = body;
-  if (!(await verifyAdminCredentials(email, password))) {
+  const { program, skills, certifications, pin } = body;
+  if (!(await verifyAdminPin(pin))) {
     return jsonNoStore({ error: "Not authorized" }, { status: 401 });
   }
 

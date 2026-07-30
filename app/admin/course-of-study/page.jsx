@@ -4,8 +4,7 @@ import { useEffect, useMemo, useRef, useState } from "react";
 import { CAMPUSES } from "../../../lib/campuses";
 import "../admin.css";
 
-const ADMIN_EMAIL_STORAGE = "courseOfStudyAdminEmail";
-const ADMIN_PASSWORD_STORAGE = "courseOfStudyAdminPassword";
+const ADMIN_PIN_STORAGE = "courseOfStudyAdminPin";
 
 function linesFromList(items) {
   return Array.isArray(items) ? items.join("\n") : "";
@@ -86,16 +85,14 @@ function StudentToolLinks() {
 }
 
 export default function ProgramAdminPage() {
-  const [email, setEmail] = useState("");
-  const [emailInput, setEmailInput] = useState("");
-  const [password, setPassword] = useState("");
-  const [passwordInput, setPasswordInput] = useState("");
+  const [pin, setPin] = useState("");
+  const [pinInput, setPinInput] = useState("");
   const [authenticated, setAuthenticated] = useState(false);
   const [showSettings, setShowSettings] = useState(false);
-  const [currentPasswordInput, setCurrentPasswordInput] = useState("");
-  const [newPasswordInput, setNewPasswordInput] = useState("");
-  const [confirmPasswordInput, setConfirmPasswordInput] = useState("");
-  const [changingPassword, setChangingPassword] = useState(false);
+  const [currentPinInput, setCurrentPinInput] = useState("");
+  const [newPinInput, setNewPinInput] = useState("");
+  const [confirmPinInput, setConfirmPinInput] = useState("");
+  const [changingPin, setChangingPin] = useState(false);
   const [activeSection, setActiveSection] = useState("courseOfStudy");
   const [selectedProgram, setSelectedProgram] = useState("");
   const [courseStore, setCourseStore] = useState({});
@@ -112,13 +109,10 @@ export default function ProgramAdminPage() {
   const programsByCampus = useMemo(() => CAMPUSES, []);
 
   useEffect(() => {
-    const savedEmail = sessionStorage.getItem(ADMIN_EMAIL_STORAGE) || "";
-    const savedPassword = sessionStorage.getItem(ADMIN_PASSWORD_STORAGE) || "";
-    if (savedEmail && savedPassword) {
-      setEmail(savedEmail);
-      setEmailInput(savedEmail);
-      setPassword(savedPassword);
-      setPasswordInput(savedPassword);
+    const savedPin = sessionStorage.getItem(ADMIN_PIN_STORAGE) || "";
+    if (savedPin) {
+      setPin(savedPin);
+      setPinInput(savedPin);
       setAuthenticated(true);
     }
   }, []);
@@ -237,9 +231,8 @@ export default function ProgramAdminPage() {
   }
 
   async function signIn() {
-    const trimmedEmail = emailInput.trim();
-    const trimmedPassword = passwordInput.trim();
-    if (!trimmedEmail || !trimmedPassword) return;
+    const trimmedPin = pinInput.trim();
+    if (!trimmedPin) return;
 
     setLoggingIn(true);
     setStatus("");
@@ -247,15 +240,13 @@ export default function ProgramAdminPage() {
       const res = await fetch("/api/admin/login", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ email: trimmedEmail, password: trimmedPassword }),
+        body: JSON.stringify({ pin: trimmedPin }),
       });
       const data = await res.json().catch(() => ({}));
-      if (!res.ok) throw new Error(data.error || "Incorrect email or password");
+      if (!res.ok) throw new Error(data.error || "Incorrect PIN");
 
-      sessionStorage.setItem(ADMIN_EMAIL_STORAGE, trimmedEmail);
-      sessionStorage.setItem(ADMIN_PASSWORD_STORAGE, trimmedPassword);
-      setEmail(trimmedEmail);
-      setPassword(trimmedPassword);
+      sessionStorage.setItem(ADMIN_PIN_STORAGE, trimmedPin);
+      setPin(trimmedPin);
       setAuthenticated(true);
       setStatus("Signed in.");
     } catch (err) {
@@ -267,12 +258,9 @@ export default function ProgramAdminPage() {
   }
 
   function signOut() {
-    sessionStorage.removeItem(ADMIN_EMAIL_STORAGE);
-    sessionStorage.removeItem(ADMIN_PASSWORD_STORAGE);
-    setEmail("");
-    setEmailInput("");
-    setPassword("");
-    setPasswordInput("");
+    sessionStorage.removeItem(ADMIN_PIN_STORAGE);
+    setPin("");
+    setPinInput("");
     setAuthenticated(false);
     setSelectedProgram("");
     setCourseStore({});
@@ -281,47 +269,46 @@ export default function ProgramAdminPage() {
     setStatus("Signed out.");
   }
 
-  async function changePassword() {
-    if (newPasswordInput !== confirmPasswordInput) {
-      setStatus("New passwords do not match.");
+  async function changePin() {
+    if (newPinInput !== confirmPinInput) {
+      setStatus("New PINs do not match.");
       return;
     }
 
-    setChangingPassword(true);
+    setChangingPin(true);
     setStatus("");
     try {
       const res = await fetch("/api/admin/change-password", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          email,
-          currentPassword: currentPasswordInput,
-          newPassword: newPasswordInput,
+          currentPin: currentPinInput,
+          newPin: newPinInput,
         }),
       });
       const data = await res.json().catch(() => ({}));
-      if (!res.ok) throw new Error(data.error || "Could not change password");
+      if (!res.ok) throw new Error(data.error || "Could not change PIN");
 
-      sessionStorage.setItem(ADMIN_PASSWORD_STORAGE, newPasswordInput);
-      setPassword(newPasswordInput);
-      setPasswordInput(newPasswordInput);
-      setCurrentPasswordInput("");
-      setNewPasswordInput("");
-      setConfirmPasswordInput("");
-      setStatus("Password updated.");
+      sessionStorage.setItem(ADMIN_PIN_STORAGE, newPinInput);
+      setPin(newPinInput);
+      setPinInput(newPinInput);
+      setCurrentPinInput("");
+      setNewPinInput("");
+      setConfirmPinInput("");
+      setStatus("PIN updated.");
     } catch (err) {
-      setStatus(err.message || "Could not change password");
+      setStatus(err.message || "Could not change PIN");
     } finally {
-      setChangingPassword(false);
+      setChangingPin(false);
     }
   }
 
   function authBody(extra) {
-    return { email, password, ...extra };
+    return { pin, ...extra };
   }
 
   async function saveCourseOfStudy() {
-    if (!selectedProgram || !email || !password) return;
+    if (!selectedProgram || !pin) return;
 
     setSaving(true);
     setStatus("");
@@ -351,7 +338,7 @@ export default function ProgramAdminPage() {
   }
 
   async function saveProgramDefaults() {
-    if (!selectedProgram || !email || !password) return;
+    if (!selectedProgram || !pin) return;
 
     setSaving(true);
     setStatus("");
@@ -417,8 +404,8 @@ export default function ProgramAdminPage() {
           <header style={styles.header}>
             <h1 style={styles.title}>Program Admin</h1>
             <p style={styles.subtitle}>
-              Sign in with your staff admin email and password to manage program
-              content for the resume builder.
+              Sign in with the staff admin PIN to manage program content for the
+              resume builder.
             </p>
             <StudentToolLinks />
           </header>
@@ -426,26 +413,15 @@ export default function ProgramAdminPage() {
           <section style={{ ...styles.card, maxWidth: "480px" }}>
             <h2 style={styles.cardTitle}>Staff Sign In</h2>
             <p style={styles.helpText}>
-              Use the admin email and password provided by your department.
+              Use the shared admin PIN provided by your department.
             </p>
-            <label style={styles.fieldLabel}>Email</label>
-            <input
-              type="email"
-              value={emailInput}
-              onChange={(e) => setEmailInput(e.target.value)}
-              onKeyDown={(e) => e.key === "Enter" && signIn()}
-              placeholder="admin@ncst.edu"
-              autoComplete="username"
-              style={{ ...styles.input, width: "100%", marginBottom: "12px" }}
-            />
-            <label style={styles.fieldLabel}>Password</label>
             <div style={styles.row}>
               <input
                 type="password"
-                value={passwordInput}
-                onChange={(e) => setPasswordInput(e.target.value)}
+                value={pinInput}
+                onChange={(e) => setPinInput(e.target.value)}
                 onKeyDown={(e) => e.key === "Enter" && signIn()}
-                placeholder="Admin password"
+                placeholder="Admin PIN"
                 autoComplete="current-password"
                 style={styles.input}
               />
@@ -494,40 +470,40 @@ export default function ProgramAdminPage() {
 
         {showSettings ? (
           <section style={{ ...styles.card, marginBottom: "20px" }}>
-            <h2 style={styles.cardTitle}>Change Admin Password</h2>
+            <h2 style={styles.cardTitle}>Change Admin PIN</h2>
             <p style={styles.helpText}>
-              Update the password for {email || "your admin account"}.
+              Update the shared staff PIN used for admin sign-in.
             </p>
-            <label style={styles.fieldLabel}>Current password</label>
+            <label style={styles.fieldLabel}>Current PIN</label>
             <input
               type="password"
-              value={currentPasswordInput}
-              onChange={(e) => setCurrentPasswordInput(e.target.value)}
+              value={currentPinInput}
+              onChange={(e) => setCurrentPinInput(e.target.value)}
               autoComplete="current-password"
               style={{ ...styles.input, width: "100%", marginBottom: "12px" }}
             />
-            <label style={styles.fieldLabel}>New password</label>
+            <label style={styles.fieldLabel}>New PIN</label>
             <input
               type="password"
-              value={newPasswordInput}
-              onChange={(e) => setNewPasswordInput(e.target.value)}
+              value={newPinInput}
+              onChange={(e) => setNewPinInput(e.target.value)}
               autoComplete="new-password"
               style={{ ...styles.input, width: "100%", marginBottom: "12px" }}
             />
-            <label style={styles.fieldLabel}>Confirm new password</label>
+            <label style={styles.fieldLabel}>Confirm new PIN</label>
             <input
               type="password"
-              value={confirmPasswordInput}
-              onChange={(e) => setConfirmPasswordInput(e.target.value)}
+              value={confirmPinInput}
+              onChange={(e) => setConfirmPinInput(e.target.value)}
               autoComplete="new-password"
               style={{ ...styles.input, width: "100%", marginBottom: "16px" }}
             />
             <AdminButton
-              onClick={changePassword}
-              disabled={changingPassword}
+              onClick={changePin}
+              disabled={changingPin}
               style={styles.primaryBtn}
             >
-              {changingPassword ? "Updating…" : "Update Password"}
+              {changingPin ? "Updating…" : "Update PIN"}
             </AdminButton>
           </section>
         ) : null}
