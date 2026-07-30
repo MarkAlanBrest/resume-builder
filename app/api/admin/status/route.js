@@ -1,4 +1,4 @@
-import { getStorageMode } from "../../../lib/jsonStore";
+import { getStorageMode } from "../../../../lib/jsonStore";
 
 export const runtime = "nodejs";
 
