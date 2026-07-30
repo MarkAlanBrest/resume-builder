@@ -1,7 +1,7 @@
-import { getStorageMode } from "../../../../lib/jsonStore";
+import { getStorageDiagnostics } from "../../../../lib/jsonStore";
 
 export const runtime = "nodejs";
 
 export async function GET() {
-  return Response.json({ storage: getStorageMode() });
+  return Response.json(getStorageDiagnostics());
 }
