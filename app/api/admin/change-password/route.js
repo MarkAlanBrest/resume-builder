@@ -1,5 +1,4 @@
 import { updateAdminPassword } from "../../../../lib/adminAuth";
-import { verifyAdminAccessForPasswordChange } from "../../../../lib/adminAccess";
 import { jsonNoStore } from "../../../../lib/apiResponse";
 
 export const runtime = "nodejs";
@@ -13,33 +12,17 @@ export async function POST(req) {
     return jsonNoStore({ error: "Invalid JSON body" }, { status: 400 });
   }
 
+  const email = body?.email || "";
   const currentPassword = body?.currentPassword || "";
-  const newPassword = String(body?.newPassword || "").trim();
-
-  if (!newPassword) {
-    return jsonNoStore({ error: "New password cannot be empty" }, { status: 400 });
-  }
-
-  if (newPassword.length < 8) {
-    return jsonNoStore(
-      { error: "New password must be at least 8 characters" },
-      { status: 400 }
-    );
-  }
-
-  const access = await verifyAdminAccessForPasswordChange({ currentPassword });
-
-  if (!access.ok) {
-    return jsonNoStore({ error: access.error || "Not authorized" }, { status: 401 });
-  }
+  const newPassword = body?.newPassword || "";
 
   try {
-    await updateAdminPassword(newPassword);
+    await updateAdminPassword(email, currentPassword, newPassword);
     return jsonNoStore({ ok: true });
   } catch (err) {
     return jsonNoStore(
       { error: err.message || "Could not update password" },
-      { status: 500 }
+      { status: 400 }
     );
   }
 }
