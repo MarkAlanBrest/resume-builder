@@ -149,13 +149,16 @@ export default function ProgramAdminPage() {
   }, [authenticated]);
 
   async function loadProgramData(program) {
+    const cacheBust = Date.now();
     const [courseRes, defaultsRes] = await Promise.all([
-      fetch(`/api/course-of-study?program=${encodeURIComponent(program)}`, {
-        cache: "no-store",
-      }),
-      fetch(`/api/program-defaults?program=${encodeURIComponent(program)}`, {
-        cache: "no-store",
-      }),
+      fetch(
+        `/api/course-of-study?program=${encodeURIComponent(program)}&_=${cacheBust}`,
+        { cache: "no-store" }
+      ),
+      fetch(
+        `/api/program-defaults?program=${encodeURIComponent(program)}&_=${cacheBust}`,
+        { cache: "no-store" }
+      ),
     ]);
     if (!courseRes.ok || !defaultsRes.ok) {
       throw new Error("Could not load program data");
@@ -168,6 +171,7 @@ export default function ProgramAdminPage() {
   }
 
   async function selectProgram(program) {
+    if (saving) return;
     setSelectedProgram(program);
     setLoadingProgram(true);
     setStatus("");
@@ -392,6 +396,7 @@ export default function ProgramAdminPage() {
         <div style={styles.tabRow}>
           <AdminButton
             onClick={() => setActiveSection("courseOfStudy")}
+            disabled={saving}
             style={{
               ...styles.tabBtn,
               ...(activeSection === "courseOfStudy" ? styles.tabBtnActive : {}),
@@ -401,6 +406,7 @@ export default function ProgramAdminPage() {
           </AdminButton>
           <AdminButton
             onClick={() => setActiveSection("skillsCerts")}
+            disabled={saving}
             style={{
               ...styles.tabBtn,
               ...(activeSection === "skillsCerts" ? styles.tabBtnActive : {}),
@@ -425,6 +431,7 @@ export default function ProgramAdminPage() {
                       <AdminButton
                         key={program}
                         onClick={() => selectProgram(program)}
+                        disabled={saving || loadingProgram}
                         style={{
                           ...styles.programBtn,
                           ...(active ? styles.programBtnActive : {}),
