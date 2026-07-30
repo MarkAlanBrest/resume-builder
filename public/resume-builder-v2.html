@@ -978,6 +978,103 @@
       .api-key-area input[type="password"] { width: 130px; font-size: 12px; }
       .header-badge { display: none; }
     }
+
+    /* ── Resume Review Card ──────────────────── */
+    .review-card {
+      background: var(--white);
+      border-radius: 12px;
+      box-shadow: 0 2px 12px rgba(0,0,0,0.1);
+      overflow: hidden;
+      width: 100%;
+    }
+
+    .review-header {
+      background: var(--blue-900);
+      color: var(--white);
+      padding: 13px 18px;
+      font-size: 14px;
+      font-weight: 700;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .review-body { padding: 18px 18px 8px; }
+
+    .rv-section-label {
+      font-size: 11px;
+      font-weight: 700;
+      color: var(--slate-400);
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      margin-bottom: 8px;
+    }
+
+    .rv-meter-wrap {
+      display: flex;
+      align-items: center;
+      gap: 14px;
+      margin-bottom: 20px;
+      padding: 12px 14px;
+      background: var(--slate-50);
+      border-radius: 8px;
+      border: 1px solid var(--slate-100);
+    }
+
+    .rv-meter-track {
+      flex: 1;
+      height: 10px;
+      background: var(--slate-200);
+      border-radius: 5px;
+      overflow: hidden;
+    }
+
+    .rv-meter-fill {
+      height: 100%;
+      border-radius: 5px;
+      transition: width 0.9s cubic-bezier(0.4,0,0.2,1);
+      width: 0%;
+    }
+
+    .rv-meter-label {
+      font-size: 14px;
+      font-weight: 700;
+      white-space: nowrap;
+      min-width: 110px;
+    }
+
+    .rv-section { margin-bottom: 12px; }
+
+    .rv-items { list-style: none; padding: 0; margin: 0; }
+
+    .rv-item {
+      display: flex;
+      gap: 10px;
+      align-items: flex-start;
+      padding: 8px 0;
+      border-bottom: 1px solid var(--slate-100);
+      font-size: 13.5px;
+      line-height: 1.5;
+      color: var(--slate-700);
+    }
+
+    .rv-item:last-child { border-bottom: none; }
+    .rv-item-icon { flex-shrink: 0; font-size: 14px; margin-top: 1px; }
+
+    .rv-divider {
+      height: 1px;
+      background: var(--slate-100);
+      margin: 14px 0;
+    }
+
+    .review-footer {
+      padding: 12px 18px 14px;
+      display: flex;
+      justify-content: flex-end;
+      gap: 8px;
+      background: var(--slate-50);
+      border-top: 1px solid var(--slate-100);
+    }
     </style>
   <!-- mammoth.js for .docx text extraction -->
   <script src="https://cdnjs.cloudflare.com/ajax/libs/mammoth/1.6.0/mammoth.browser.min.js"></script>
@@ -3045,11 +3142,155 @@ async function rewriteSkills() {
 
 function confirmSkills() {
   removeLastAICard();
+  resumeData.references = 'Available upon request';
   setSectionStatus('skills',     'done');
   setSectionStatus('references', 'done');
-  setSectionStatus('template',   'active');
+  currentStep = 'review';
+  addAIMessage(
+    `<p>Almost there! Let me take a quick look at your resume content before we build it.</p>`,
+    () => setTimeout(showResumeReview, 400)
+  );
+}
+
+// ────────────────────────────────────────────────
+//  Resume Review (pre-build quality check)
+// ────────────────────────────────────────────────
+
+async function showResumeReview() {
+  addTypingIndicator();
+
+  const jobs    = resumeData.workExperience || [];
+  const program = (resumeData.personal || {}).program || 'trade school program';
+
+  const workSummary = jobs.length === 0
+    ? 'No work experience entered.'
+    : jobs.map((j, i) => {
+        const bullets = (j.bullets || '')
+          .split('\n').filter(l => l.trim())
+          .map(l => '  • ' + l.trim().replace(/^[•\-\*]\s*/, ''))
+          .join('\n');
+        return `Job ${i + 1}: ${j.jobTitle} at ${j.employer}\n${bullets || '  (no bullets)'}`;
+      }).join('\n\n');
+
+  const system = `You are a friendly career advisor reviewing a trade school student's resume.
+The resume was built with AI assistance so it should already be solid — identify 2-3 specific optional improvements.
+Be encouraging. Return ONLY valid JSON.`;
+
+  const userMsg = `Review this trade school student's resume work experience.
+Student program: ${program}
+
+Work Experience:
+${workSummary}
+
+Return ONLY this JSON — no other text:
+{
+  "readinessScore": <number 75-95>,
+  "readinessLabel": "<one of: Ready to Build | Looking Good | Strong>",
+  "working": ["specific strength 1", "specific strength 2", "specific strength 3"],
+  "suggestions": ["optional improvement 1", "optional improvement 2"]
+}
+
+Rules:
+- readinessScore: 85-95 if work is strong, 75-84 if decent. AI helped write it so it should be 75+.
+- working: 2-3 concrete observations on what is already working well. Reference specific employers/jobs if possible.
+- suggestions: 2-3 optional tips to make it even stronger. Start each with "Consider..." or "You might...". 1 sentence max.`;
+
+  try {
+    const raw   = await callClaude(system, [{ role: 'user', content: userMsg }]);
+    removeTypingIndicator();
+    const match = raw.match(/\{[\s\S]*\}/);
+    if (!match) throw new Error('no json');
+    renderReviewCard(JSON.parse(match[0]));
+  } catch (e) {
+    removeTypingIndicator();
+    // On error skip review and go straight to template
+    setSectionStatus('template', 'active');
+    currentStep = 'template';
+    addAIMessage(
+      `<p>All sections complete. Choose a resume template below — click one to select it, then hit Generate.</p>`,
+      () => setTimeout(showTemplateSelector, 400)
+    );
+  }
+}
+
+function renderReviewCard(review) {
+  const score  = Math.min(95, Math.max(60, review.readinessScore || 82));
+  const label  = escHtml(review.readinessLabel || 'Looking Good');
+
+  const barGrad  = score >= 84
+    ? 'linear-gradient(90deg,#15803d,#22c55e)'
+    : score >= 75
+    ? 'linear-gradient(90deg,#1d4ed8,#60a5fa)'
+    : 'linear-gradient(90deg,#d97706,#fbbf24)';
+  const labelClr = score >= 84 ? '#15803d' : score >= 75 ? '#1d4ed8' : '#d97706';
+
+  const workingHtml = (review.working || [])
+    .slice(0, 3)
+    .map(w => `<li class="rv-item"><span class="rv-item-icon">✅</span><span>${escHtml(w)}</span></li>`)
+    .join('');
+
+  const suggHtml = (review.suggestions || [])
+    .slice(0, 3)
+    .map(s => `<li class="rv-item"><span class="rv-item-icon">💡</span><span>${escHtml(s)}</span></li>`)
+    .join('');
+
+  const cardHtml = `
+    <div class="review-card">
+      <div class="review-header"><span>✨</span> Resume Review</div>
+      <div class="review-body">
+
+        <div class="rv-section-label">Resume Strength</div>
+        <div class="rv-meter-wrap">
+          <div class="rv-meter-track">
+            <div class="rv-meter-fill" id="rvFill" style="background:${barGrad}"></div>
+          </div>
+          <div class="rv-meter-label" style="color:${labelClr}">${label}</div>
+        </div>
+
+        ${workingHtml ? `
+        <div class="rv-section">
+          <div class="rv-section-label">What's Working</div>
+          <ul class="rv-items">${workingHtml}</ul>
+        </div>` : ''}
+
+        ${suggHtml ? `
+        <div class="rv-divider"></div>
+        <div class="rv-section">
+          <div class="rv-section-label">Opportunities to Strengthen</div>
+          <ul class="rv-items">${suggHtml}</ul>
+        </div>` : ''}
+
+      </div>
+      <div class="review-footer">
+        <button class="btn btn-ghost" onclick="reviewGoBack(this)">Review Work Experience</button>
+        <button class="btn btn-confirm" onclick="proceedToTemplate(this)">Build My Resume →</button>
+      </div>
+    </div>`;
+
+  addAIMessage(
+    `<p>Your resume is looking great! Here's a quick review. You can go back to tweak anything — or if it looks good to you, let's build it.</p>`,
+    () => {
+      setTimeout(() => {
+        addAICard(cardHtml, true);
+        // Animate the strength bar in after the card renders
+        setTimeout(() => {
+          const fill = document.getElementById('rvFill');
+          if (fill) fill.style.width = score + '%';
+        }, 180);
+      }, 400);
+    }
+  );
+}
+
+function reviewGoBack(btn) {
+  btn.closest('.message').remove();
+  jumpToSection('workExperience');
+}
+
+function proceedToTemplate(btn) {
+  btn.closest('.message').remove();
+  setSectionStatus('template', 'active');
   currentStep = 'template';
-  resumeData.references = 'Available upon request';
   addAIMessage(
     `<p>All sections complete. Choose a resume template below — click one to select it, then hit Generate.</p>`,
     () => setTimeout(showTemplateSelector, 400)
@@ -3316,7 +3557,7 @@ function bodyText(text, opts = {}) {
 
 function bulletLine(text) {
   return new docx.Paragraph({
-    children: [new docx.TextRun({ text: `•  ${text}`, size: 19, color: '2a2a2a' })],
+    children: [new docx.TextRun({ text: `• ${text}`, size: 19, color: '2a2a2a' })],
     indent: { left: twip(0.15) },
     spacing: { before: 0, after: 28 },
   });
@@ -3332,7 +3573,7 @@ function jobBlock(job, accentColor) {
     spacing: { before: 100, after: 0 },
     children: [
       new docx.TextRun({ text: job.jobTitle, bold: true, size: 21, color: '1a1a1a' }),
-      new docx.TextRun({ text: `  •  ${job.employer}${loc ? '  •  ' + loc : ''}`, size: 20, color: '444444' }),
+      new docx.TextRun({ text: `, ${job.employer}${loc ? ', ' + loc : ''}`, size: 20, color: '444444' }),
     ],
   }));
   items.push(new docx.Paragraph({
@@ -3345,12 +3586,12 @@ function jobBlock(job, accentColor) {
 
 function eduBlock(edu) {
   const loc   = [edu.city, edu.state].filter(Boolean).join(', ');
-  const field = edu.fieldOfStudy ? ` – ${edu.fieldOfStudy}` : '';
+  const field = edu.fieldOfStudy ? `, ${edu.fieldOfStudy}` : '';
   return new docx.Paragraph({
     spacing: { before: 80, after: 30 },
     children: [
       new docx.TextRun({ text: `${edu.degree}${field}`, bold: true, size: 20, color: '1a1a1a' }),
-      new docx.TextRun({ text: `  •  ${edu.school}${loc ? ', ' + loc : ''}  •  ${edu.gradYear}`, size: 20, color: '555555' }),
+      new docx.TextRun({ text: `, ${edu.school}${loc ? ', ' + loc : ''}${edu.gradYear ? ', ' + edu.gradYear : ''}`, size: 20, color: '555555' }),
     ],
   });
 }
@@ -3461,7 +3702,7 @@ function buildModern(data, color) {
     const skillList = Array.isArray(data.skills) ? data.skills : [data.skills];
     skillList.forEach(s => side.push(new docx.Paragraph({
       spacing: { before: 0, after: 22 },
-      children: [new docx.TextRun({ text: `•  ${s}`, size: 17, color: st === 'FFFFFF' ? 'CCE4FF' : 'CCCCCC' })],
+      children: [new docx.TextRun({ text: `• ${s}`, size: 17, color: st === 'FFFFFF' ? 'CCE4FF' : 'CCCCCC' })],
     })));
   }
 
@@ -3654,7 +3895,7 @@ function buildExecutive(data, color) {
         tabStops: [{ type: docx.TabStopType.RIGHT, position: twip(7) }],
         spacing: { before: 100, after: 20 },
         children: [
-          new docx.TextRun({ text: `${job.jobTitle}  •  ${job.employer}${loc ? ', ' + loc : ''}`, bold: true, size: 21, color: '1a1a1a' }),
+          new docx.TextRun({ text: `${job.jobTitle}, ${job.employer}${loc ? ', ' + loc : ''}`, bold: true, size: 21, color: '1a1a1a' }),
           new docx.TextRun({ text: '\t' + dates, italics: true, size: 18, color: '888888' }),
         ],
       }));
