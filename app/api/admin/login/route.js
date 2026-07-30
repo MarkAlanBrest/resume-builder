@@ -11,7 +11,7 @@ export async function POST(req) {
   }
 
   const password = body?.password || "";
-  if (!verifyAdminPassword(password)) {
+  if (!(await verifyAdminPassword(password))) {
     return Response.json({ error: "Incorrect password" }, { status: 401 });
   }
 
