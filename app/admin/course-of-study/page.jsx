@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useMemo, useRef, useState } from "react";
-import { CAMPUSES } from "../../../lib/campuses";
+import { CAMPUSES, makeProgramKey } from "../../../lib/campuses";
 import "../admin.css";
 
 const ADMIN_PIN_STORAGE = "courseOfStudyAdminPin";
@@ -541,11 +541,12 @@ export default function ProgramAdminPage() {
                 <div key={campus} style={styles.campusBlock}>
                   <div style={styles.campusLabel}>{campus}</div>
                   {programs.map((program) => {
-                    const active = selectedProgram === program;
+                    const programKey = makeProgramKey(campus, program);
+                    const active = selectedProgram === programKey;
                     return (
                       <AdminButton
-                        key={program}
-                        onClick={() => selectProgram(program)}
+                        key={programKey}
+                        onClick={() => selectProgram(programKey)}
                         disabled={saving || loadingProgram}
                         style={{
                           ...styles.programBtn,
@@ -553,8 +554,8 @@ export default function ProgramAdminPage() {
                         }}
                       >
                         <span>{program}</span>
-                        <span style={programStatusStyle(program)}>
-                          {programStatus(program)}
+                        <span style={programStatusStyle(programKey)}>
+                          {programStatus(programKey)}
                         </span>
                       </AdminButton>
                     );

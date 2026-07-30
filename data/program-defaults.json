@@ -1,5 +1,5 @@
 {
-  "Automotive Technology": {
+  "Automotive Technology — Main Campus (New Castle, PA)": {
     "skills": [
       "Auto Engine Performance",
       "Heating and Air Conditioning Systems",
@@ -23,7 +23,7 @@
     "certifications": [],
     "updatedAt": "2026-07-29T19:21:13.177Z"
   },
-  "Building Construction Technology": {
+  "Building Construction Technology — Certificate in Building Construction Technology": {
     "skills": [
       "Construction Safety",
       "Framing",
@@ -42,7 +42,7 @@
     "certifications": [],
     "updatedAt": "2026-07-29T19:29:09.473Z"
   },
-  "Building Technology": {
+  "Building Technology — Main Campus (New Castle, PA)": {
     "skills": [
       "Residential Construction",
       "Home Remodeling",
@@ -63,7 +63,7 @@
     "certifications": [],
     "updatedAt": "2026-07-29T19:21:13.177Z"
   },
-  "Combination Welding": {
+  "Combination Welding — Main Campus (New Castle, PA)": {
     "skills": [
       "Welding Fabrication",
       "Welding Mathematics",
@@ -90,7 +90,61 @@
     "certifications": [],
     "updatedAt": "2026-07-29T19:21:13.177Z"
   },
-  "Commercial Truck Driving CDL": {
+  "Combination Welding — East Liverpool Campus (East Liverpool, OH)": {
+    "skills": [
+      "Welding Fabrication",
+      "Welding Mathematics",
+      "Oxy Fuel Cutting",
+      "Shielded Metal Arc Welding",
+      "Gas Metal Arc Welding",
+      "Gas Tungsten Arc Welding",
+      "Flux-Cored Arc Welding",
+      "Non-Ferrous Welding",
+      "Plasma Cutting",
+      "Arc Cutting",
+      "Pipe Welding",
+      "Welding Blueprint Reading",
+      "MIG Welding",
+      "TIG Welding",
+      "Stick Welding",
+      "Plate Welding",
+      "Pipe-to-Plate Welding",
+      "Grinding",
+      "Beveling",
+      "Hydraulic Shear Operation",
+      "Horizontal Band Saw Operation"
+    ],
+    "certifications": [],
+    "updatedAt": "2026-07-29T19:21:13.177Z"
+  },
+  "Combination Welding — Certificate in Combination Welding": {
+    "skills": [
+      "Welding Fabrication",
+      "Welding Mathematics",
+      "Oxy Fuel Cutting",
+      "Shielded Metal Arc Welding",
+      "Gas Metal Arc Welding",
+      "Gas Tungsten Arc Welding",
+      "Flux-Cored Arc Welding",
+      "Non-Ferrous Welding",
+      "Plasma Cutting",
+      "Arc Cutting",
+      "Pipe Welding",
+      "Welding Blueprint Reading",
+      "MIG Welding",
+      "TIG Welding",
+      "Stick Welding",
+      "Plate Welding",
+      "Pipe-to-Plate Welding",
+      "Grinding",
+      "Beveling",
+      "Hydraulic Shear Operation",
+      "Horizontal Band Saw Operation"
+    ],
+    "certifications": [],
+    "updatedAt": "2026-07-29T19:21:13.177Z"
+  },
+  "Commercial Truck Driving CDL — Satellite Campus (Pulaski, PA)": {
     "skills": [
       "Pre-Trip Inspections",
       "Post-Trip Inspections",
@@ -114,7 +168,7 @@
     ],
     "updatedAt": "2026-07-29T19:29:09.473Z"
   },
-  "Commercial Truck Driving with CDL License": {
+  "Commercial Truck Driving with CDL License — Certificate in Commercial Truck Driving + CDL License": {
     "skills": [
       "Vehicle Safety Inspections",
       "Pre-Trip Inspections",
@@ -136,7 +190,7 @@
     ],
     "updatedAt": "2026-07-29T19:29:09.473Z"
   },
-  "Diesel Technology": {
+  "Diesel Technology — Certificate in Diesel Technology": {
     "skills": [
       "Diesel Engine Diagnostics",
       "Diesel Engine Maintenance",
@@ -158,7 +212,7 @@
     ],
     "updatedAt": "2026-07-29T19:29:09.473Z"
   },
-  "Diesel and Heavy Equipment Repair Technology": {
+  "Diesel and Heavy Equipment Repair Technology — Satellite Campus (Pulaski, PA)": {
     "skills": [
       "Diesel Engine Diagnosis",
       "Diesel Engine Troubleshooting",
@@ -200,7 +254,7 @@
     ],
     "updatedAt": "2026-07-29T19:21:13.177Z"
   },
-  "Electrical Technology": {
+  "Electrical Technology — Main Campus (New Castle, PA)": {
     "skills": [
       "Electricity",
       "Blueprint Reading",
@@ -231,7 +285,38 @@
     "certifications": [],
     "updatedAt": "2026-07-29T19:21:13.177Z"
   },
-  "Electrical and Industrial Maintenance": {
+  "Electrical Technology — Certificate in Electrical Technology": {
+    "skills": [
+      "Electricity",
+      "Blueprint Reading",
+      "Construction Wiring",
+      "Machine Control",
+      "Motor Control",
+      "Electrical Motors",
+      "Residential Circuitry",
+      "Commercial Circuitry",
+      "Electrical Services",
+      "Conduit Installation",
+      "Conduit Bending",
+      "NEC Residential",
+      "AC/DC Power",
+      "Programmable Controllers",
+      "Telecommunications",
+      "Solid-State Electronics",
+      "Electronic Control",
+      "Meter Use",
+      "Oscilloscope Use",
+      "Three-Phase Motors",
+      "Single-Phase Motors",
+      "Residential Electrical Components",
+      "Commercial Electrical Components",
+      "Industrial Electrical Components",
+      "Programmable Logic Controllers"
+    ],
+    "certifications": [],
+    "updatedAt": "2026-07-29T19:21:13.177Z"
+  },
+  "Electrical and Industrial Maintenance — East Liverpool Campus (East Liverpool, OH)": {
     "skills": [
       "Commercial Electricity",
       "Industrial Electricity",
@@ -275,7 +360,7 @@
     "certifications": [],
     "updatedAt": "2026-07-29T19:21:13.177Z"
   },
-  "HVAC Technology": {
+  "HVAC Technology — Certificate in HVAC Technology": {
     "skills": [
       "HVAC Installation",
       "HVAC Service",
@@ -298,7 +383,7 @@
     ],
     "updatedAt": "2026-07-29T19:29:09.473Z"
   },
-  "Heavy Equipment Operations with CDL": {
+  "Heavy Equipment Operations with CDL — Satellite Campus (Pulaski, PA)": {
     "skills": [
       "Heavy Equipment Operation",
       "Bulldozer Operation",
@@ -319,7 +404,7 @@
     ],
     "updatedAt": "2026-07-29T19:29:09.473Z"
   },
-  "Industrial Electro-Mechanical Technology": {
+  "Industrial Electro-Mechanical Technology — Main Campus (New Castle, PA)": {
     "skills": [
       "Electrical Troubleshooting",
       "Mechanical Repair",
@@ -338,7 +423,7 @@
     "certifications": [],
     "updatedAt": "2026-07-29T19:29:09.473Z"
   },
-  "Machinist and CNC Manufacturing": {
+  "Machinist and CNC Manufacturing — Satellite Campus (Pulaski, PA)": {
     "skills": [
       "CNC Mill Setup",
       "CNC Mill Programming",
@@ -369,7 +454,7 @@
     "certifications": [],
     "updatedAt": "2026-07-29T19:21:13.177Z"
   },
-  "Motorcycle and Power Equipment Technology": {
+  "Motorcycle and Power Equipment Technology — Satellite Campus (Pulaski, PA)": {
     "skills": [
       "Hydraulics",
       "Small Engine Operation",
@@ -416,7 +501,7 @@
     ],
     "updatedAt": "2026-07-29T19:21:13.177Z"
   },
-  "Refrigeration and AC Technology": {
+  "Refrigeration and AC Technology — Main Campus (New Castle, PA)": {
     "skills": [
       "Refrigeration Fundamentals",
       "Refrigeration Processes",
@@ -451,7 +536,7 @@
     "certifications": [],
     "updatedAt": "2026-07-29T19:21:13.177Z"
   },
-  "Refrigeration and Climate Control": {
+  "Refrigeration and Climate Control — East Liverpool Campus (East Liverpool, OH)": {
     "skills": [
       "Refrigeration Fundamentals",
       "Refrigeration Processes",

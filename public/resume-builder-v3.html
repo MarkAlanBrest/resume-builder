@@ -327,6 +327,28 @@ const CAMPUSES = {
   "North American Trade Schools — Baltimore, MD":["Building Construction Technology","Combination Welding","Electrical Technology","HVAC Technology","Diesel Technology","Commercial Truck Driving with CDL License"]
 };
 
+const BALTIMORE_CAMPUS = "North American Trade Schools — Baltimore, MD";
+const BALTIMORE_PROGRAM_SUFFIX = {
+  "Building Construction Technology": "Certificate in Building Construction Technology",
+  "Combination Welding": "Certificate in Combination Welding",
+  "Electrical Technology": "Certificate in Electrical Technology",
+  "HVAC Technology": "Certificate in HVAC Technology",
+  "Diesel Technology": "Certificate in Diesel Technology",
+  "Commercial Truck Driving with CDL License": "Certificate in Commercial Truck Driving + CDL License"
+};
+
+function campusToSuffix(campus) {
+  return campus.replace(" — ", " (") + ")";
+}
+
+function makeProgramKey(campus, program) {
+  if (campus === BALTIMORE_CAMPUS) {
+    const suffix = BALTIMORE_PROGRAM_SUFFIX[program];
+    if (suffix) return program + " — " + suffix;
+  }
+  return program + " — " + campusToSuffix(campus);
+}
+
 const RESUME_PROGRAM_INITIALS = {
   "Main Campus — New Castle, PA": {
     "Automotive Technology": "AT",
@@ -531,10 +553,12 @@ async function loadCourseOfStudyCatalog() {
 
 async function resolveCourseOfStudyForResume() {
   const program = resumeData.personal.program || '';
-  const school = resumeData.personal.campus || 'Trade School';
+  const campus = resumeData.personal.campus || '';
+  const school = campus || 'Trade School';
+  const programKey = campus && program ? makeProgramKey(campus, program) : program;
   try {
     const catalog = await loadCourseOfStudyCatalog();
-    const text = catalog?.[program]?.text?.trim();
+    const text = catalog?.[programKey]?.text?.trim();
     if (text) return text;
   } catch(e) {
     console.warn('Course of Study lookup failed', e);
@@ -550,10 +574,11 @@ async function loadProgramDefaultsCatalog() {
   return programDefaultsCatalog;
 }
 
-async function resolveProgramDefaults(program) {
+async function resolveProgramDefaults(program, campus) {
+  const programKey = campus && program ? makeProgramKey(campus, program) : program;
   try {
     const catalog = await loadProgramDefaultsCatalog();
-    const entry = catalog?.[program];
+    const entry = catalog?.[programKey];
     if (entry?.skills?.length || entry?.certifications?.length) {
       return {
         skills: Array.isArray(entry.skills) ? entry.skills : [],
@@ -568,7 +593,8 @@ async function resolveProgramDefaults(program) {
 
 async function showSkillsSection() {
   const program = resumeData.personal.program || '';
-  currentProgramDefaults = await resolveProgramDefaults(program);
+  const campus = resumeData.personal.campus || '';
+  currentProgramDefaults = await resolveProgramDefaults(program, campus);
   showCenter('skills');
   sendTip('skills');
 }
