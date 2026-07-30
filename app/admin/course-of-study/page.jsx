@@ -122,8 +122,8 @@ export default function ProgramAdminPage() {
       setStatus("");
       try {
         const [courseRes, defaultsRes] = await Promise.all([
-          fetch("/api/course-of-study", { cache: "no-store" }),
-          fetch("/api/program-defaults", { cache: "no-store" }),
+          fetch(`/api/course-of-study?_=${Date.now()}`, { cache: "no-store" }),
+          fetch(`/api/program-defaults?_=${Date.now()}`, { cache: "no-store" }),
         ]);
         if (!courseRes.ok) throw new Error("Could not load Course of Study data");
         if (!defaultsRes.ok) throw new Error("Could not load skills and certification defaults");
@@ -172,6 +172,32 @@ export default function ProgramAdminPage() {
 
   async function selectProgram(program) {
     if (saving) return;
+
+    if (
+      selectedProgram &&
+      selectedProgram !== program &&
+      activeSection === "courseOfStudy" &&
+      draftCourseText !== (courseStore[selectedProgram]?.text || "")
+    ) {
+      const leave = window.confirm(
+        "You have unsaved Course of Study changes. Leave without saving?"
+      );
+      if (!leave) return;
+    }
+
+    if (
+      selectedProgram &&
+      selectedProgram !== program &&
+      activeSection === "skillsCerts" &&
+      (draftSkillsText !== linesFromList(defaultsStore[selectedProgram]?.skills) ||
+        draftCertsText !== linesFromList(defaultsStore[selectedProgram]?.certifications))
+    ) {
+      const leave = window.confirm(
+        "You have unsaved skills or certification changes. Leave without saving?"
+      );
+      if (!leave) return;
+    }
+
     setSelectedProgram(program);
     setLoadingProgram(true);
     setStatus("");
