@@ -121,8 +121,8 @@ export default function ProgramAdminPage() {
       setStatus("");
       try {
         const [courseRes, defaultsRes] = await Promise.all([
-          fetch("/api/course-of-study"),
-          fetch("/api/program-defaults"),
+          fetch("/api/course-of-study", { cache: "no-store" }),
+          fetch("/api/program-defaults", { cache: "no-store" }),
         ]);
         if (!courseRes.ok) throw new Error("Could not load Course of Study data");
         if (!defaultsRes.ok) throw new Error("Could not load skills and certification defaults");
@@ -220,6 +220,7 @@ export default function ProgramAdminPage() {
         ...prev,
         [selectedProgram]: { text: data.text, updatedAt: data.updatedAt },
       }));
+      setDraftCourseText(data.text || "");
       setStatus(`Saved Course of Study for ${selectedProgram}.`);
     } catch (err) {
       setStatus(err.message || "Save failed");
