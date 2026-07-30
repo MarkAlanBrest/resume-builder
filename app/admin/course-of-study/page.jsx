@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useMemo, useRef, useState } from "react";
-import { CAMPUSES, makeProgramKey } from "../../../lib/campuses";
+import { CAMPUSES, makeProgramKey, parseProgramKey } from "../../../lib/campuses";
 import "../admin.css";
 
 const ADMIN_PIN_STORAGE = "courseOfStudyAdminPin";
@@ -390,6 +390,7 @@ export default function ProgramAdminPage() {
     return label === "Set" ? styles.badgeDone : styles.badgeEmpty;
   }
 
+  const selectedProgramMeta = selectedProgram ? parseProgramKey(selectedProgram) : null;
   const selectedCourseMeta = selectedProgram ? courseStore[selectedProgram] : null;
   const selectedDefaultsMeta = selectedProgram ? defaultsStore[selectedProgram] : null;
   const updatedAt =
@@ -574,7 +575,11 @@ export default function ProgramAdminPage() {
               <>
                 <div style={styles.editorHeader}>
                   <div>
-                    <h2 style={styles.cardTitle}>{selectedProgram}</h2>
+                    <h2 style={styles.cardTitle}>
+                      {selectedProgramMeta
+                        ? `${selectedProgramMeta.program} — ${selectedProgramMeta.campus}`
+                        : selectedProgram}
+                    </h2>
                     <p style={styles.helpText}>
                       {updatedAt
                         ? `Last updated ${new Date(updatedAt).toLocaleString()}`
@@ -601,7 +606,11 @@ export default function ProgramAdminPage() {
               <>
                 <div style={styles.editorHeader}>
                   <div>
-                    <h2 style={styles.cardTitle}>{selectedProgram}</h2>
+                    <h2 style={styles.cardTitle}>
+                      {selectedProgramMeta
+                        ? `${selectedProgramMeta.program} — ${selectedProgramMeta.campus}`
+                        : selectedProgram}
+                    </h2>
                     <p style={styles.helpText}>
                       {updatedAt
                         ? `Last updated ${new Date(updatedAt).toLocaleString()}`
