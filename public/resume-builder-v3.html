@@ -523,7 +523,7 @@ const FALLBACK_PROGRAM_DEFAULTS = {
 
 async function loadCourseOfStudyCatalog() {
   if (courseOfStudyCatalog) return courseOfStudyCatalog;
-  const res = await fetch('/api/course-of-study');
+  const res = await fetch('/api/course-of-study', { cache: 'no-store' });
   if (!res.ok) throw new Error('Could not load Course of Study data');
   courseOfStudyCatalog = await res.json();
   return courseOfStudyCatalog;
@@ -544,7 +544,7 @@ async function resolveCourseOfStudyForResume() {
 
 async function loadProgramDefaultsCatalog() {
   if (programDefaultsCatalog) return programDefaultsCatalog;
-  const res = await fetch('/api/program-defaults');
+  const res = await fetch('/api/program-defaults', { cache: 'no-store' });
   if (!res.ok) throw new Error('Could not load program defaults');
   programDefaultsCatalog = await res.json();
   return programDefaultsCatalog;
