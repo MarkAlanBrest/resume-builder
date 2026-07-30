@@ -97,6 +97,7 @@ export default function ProgramAdminPage() {
   const [draftCertsText, setDraftCertsText] = useState("");
   const [status, setStatus] = useState("");
   const [loading, setLoading] = useState(false);
+  const [loadingProgram, setLoadingProgram] = useState(false);
   const [saving, setSaving] = useState(false);
   const [loggingIn, setLoggingIn] = useState(false);
 
@@ -147,18 +148,52 @@ export default function ProgramAdminPage() {
     };
   }, [authenticated]);
 
-  useEffect(() => {
-    if (!selectedProgram) {
-      setDraftCourseText("");
-      setDraftSkillsText("");
-      setDraftCertsText("");
-      return;
+  async function loadProgramData(program) {
+    const [courseRes, defaultsRes] = await Promise.all([
+      fetch(`/api/course-of-study?program=${encodeURIComponent(program)}`, {
+        cache: "no-store",
+      }),
+      fetch(`/api/program-defaults?program=${encodeURIComponent(program)}`, {
+        cache: "no-store",
+      }),
+    ]);
+    if (!courseRes.ok || !defaultsRes.ok) {
+      throw new Error("Could not load program data");
     }
+    const [courseData, defaultsData] = await Promise.all([
+      courseRes.json(),
+      defaultsRes.json(),
+    ]);
+    return { courseData, defaultsData };
+  }
 
-    setDraftCourseText(courseStore[selectedProgram]?.text || "");
-    setDraftSkillsText(linesFromList(defaultsStore[selectedProgram]?.skills));
-    setDraftCertsText(linesFromList(defaultsStore[selectedProgram]?.certifications));
-  }, [selectedProgram, courseStore, defaultsStore]);
+  async function selectProgram(program) {
+    setSelectedProgram(program);
+    setLoadingProgram(true);
+    setStatus("");
+    try {
+      const { courseData, defaultsData } = await loadProgramData(program);
+      setCourseStore((prev) => ({
+        ...prev,
+        [program]: { text: courseData.text, updatedAt: courseData.updatedAt },
+      }));
+      setDefaultsStore((prev) => ({
+        ...prev,
+        [program]: {
+          skills: defaultsData.skills,
+          certifications: defaultsData.certifications,
+          updatedAt: defaultsData.updatedAt,
+        },
+      }));
+      setDraftCourseText(courseData.text || "");
+      setDraftSkillsText(linesFromList(defaultsData.skills));
+      setDraftCertsText(linesFromList(defaultsData.certifications));
+    } catch (err) {
+      setStatus(err.message || "Failed to load program");
+    } finally {
+      setLoadingProgram(false);
+    }
+  }
 
   async function signIn() {
     const trimmed = passwordInput.trim();
@@ -216,11 +251,12 @@ export default function ProgramAdminPage() {
       const data = await res.json().catch(() => ({}));
       if (!res.ok) throw new Error(data.error || "Save failed");
 
+      const { courseData } = await loadProgramData(selectedProgram);
       setCourseStore((prev) => ({
         ...prev,
-        [selectedProgram]: { text: data.text, updatedAt: data.updatedAt },
+        [selectedProgram]: { text: courseData.text, updatedAt: courseData.updatedAt },
       }));
-      setDraftCourseText(data.text || "");
+      setDraftCourseText(courseData.text || "");
       setStatus(`Saved Course of Study for ${selectedProgram}.`);
     } catch (err) {
       setStatus(err.message || "Save failed");
@@ -248,14 +284,17 @@ export default function ProgramAdminPage() {
       const data = await res.json().catch(() => ({}));
       if (!res.ok) throw new Error(data.error || "Save failed");
 
+      const { defaultsData } = await loadProgramData(selectedProgram);
       setDefaultsStore((prev) => ({
         ...prev,
         [selectedProgram]: {
-          skills: data.skills,
-          certifications: data.certifications,
-          updatedAt: data.updatedAt,
+          skills: defaultsData.skills,
+          certifications: defaultsData.certifications,
+          updatedAt: defaultsData.updatedAt,
         },
       }));
+      setDraftSkillsText(linesFromList(defaultsData.skills));
+      setDraftCertsText(linesFromList(defaultsData.certifications));
       setStatus(`Saved skills and certifications for ${selectedProgram}.`);
     } catch (err) {
       setStatus(err.message || "Save failed");
@@ -385,7 +424,7 @@ export default function ProgramAdminPage() {
                     return (
                       <AdminButton
                         key={program}
-                        onClick={() => setSelectedProgram(program)}
+                        onClick={() => selectProgram(program)}
                         style={{
                           ...styles.programBtn,
                           ...(active ? styles.programBtnActive : {}),
@@ -406,6 +445,8 @@ export default function ProgramAdminPage() {
           <main style={styles.editorCard}>
             {!selectedProgram ? (
               <p style={styles.helpText}>Select a program to edit its settings.</p>
+            ) : loadingProgram ? (
+              <p style={styles.helpText}>Loading program…</p>
             ) : activeSection === "courseOfStudy" ? (
               <>
                 <div style={styles.editorHeader}>
