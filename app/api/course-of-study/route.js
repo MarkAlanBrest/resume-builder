@@ -4,8 +4,10 @@ import {
 } from "../../../lib/courseOfStudyStore";
 import { verifyAdminPassword } from "../../../lib/adminAuth";
 import { getAllPrograms } from "../../../lib/campuses";
+import { jsonNoStore } from "../../../lib/apiResponse";
 
 export const runtime = "nodejs";
+export const dynamic = "force-dynamic";
 
 export async function GET(req) {
   const { searchParams } = new URL(req.url);
@@ -14,10 +16,10 @@ export async function GET(req) {
 
   if (program) {
     const entry = store[program] || { text: "", updatedAt: null };
-    return Response.json({ program, ...entry });
+    return jsonNoStore({ program, ...entry });
   }
 
-  return Response.json(store);
+  return jsonNoStore(store);
 }
 
 export async function PUT(req) {
@@ -25,18 +27,25 @@ export async function PUT(req) {
   try {
     body = await req.json();
   } catch {
-    return Response.json({ error: "Invalid JSON body" }, { status: 400 });
+    return jsonNoStore({ error: "Invalid JSON body" }, { status: 400 });
   }
 
   const { program, text, password } = body;
   if (!(await verifyAdminPassword(password))) {
-    return Response.json({ error: "Incorrect password" }, { status: 401 });
+    return jsonNoStore({ error: "Incorrect password" }, { status: 401 });
   }
 
   if (!program || !getAllPrograms().includes(program)) {
-    return Response.json({ error: "Invalid program" }, { status: 400 });
+    return jsonNoStore({ error: "Invalid program" }, { status: 400 });
   }
 
-  const entry = await updateProgramCourseOfStudy(program, text);
-  return Response.json({ program, ...entry });
+  try {
+    const entry = await updateProgramCourseOfStudy(program, text);
+    return jsonNoStore({ program, ...entry });
+  } catch (err) {
+    return jsonNoStore(
+      { error: err.message || "Save failed" },
+      { status: 500 }
+    );
+  }
 }
