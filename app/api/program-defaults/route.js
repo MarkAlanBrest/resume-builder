@@ -13,11 +13,11 @@ export async function GET(req) {
   const program = searchParams.get("program");
 
   if (program) {
-    const entry = getProgramDefaults(program);
+    const entry = await getProgramDefaults(program);
     return Response.json({ program, ...entry });
   }
 
-  return Response.json(readProgramDefaultsStore());
+  return Response.json(await readProgramDefaultsStore());
 }
 
 export async function PUT(req) {
@@ -29,7 +29,7 @@ export async function PUT(req) {
   }
 
   const { program, skills, certifications, password } = body;
-  if (!verifyAdminPassword(password)) {
+  if (!(await verifyAdminPassword(password))) {
     return Response.json({ error: "Incorrect password" }, { status: 401 });
   }
 
@@ -37,6 +37,6 @@ export async function PUT(req) {
     return Response.json({ error: "Invalid program" }, { status: 400 });
   }
 
-  const entry = updateProgramDefaults(program, { skills, certifications });
+  const entry = await updateProgramDefaults(program, { skills, certifications });
   return Response.json({ program, ...entry });
 }
