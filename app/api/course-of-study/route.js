@@ -3,7 +3,7 @@ import {
   readCourseOfStudyStore,
   updateProgramCourseOfStudy,
 } from "../../../lib/courseOfStudyStore";
-import { verifyAdminPassword } from "../../../lib/adminAuth";
+import { verifyAdminAccess } from "../../../lib/adminAccess";
 import { getAllPrograms } from "../../../lib/campuses";
 import { jsonNoStore } from "../../../lib/apiResponse";
 
@@ -31,8 +31,9 @@ export async function PUT(req) {
   }
 
   const { program, text, password } = body;
-  if (!(await verifyAdminPassword(password))) {
-    return jsonNoStore({ error: "Incorrect password" }, { status: 401 });
+  const access = await verifyAdminAccess(password);
+  if (!access.ok) {
+    return jsonNoStore({ error: "Not authorized" }, { status: 401 });
   }
 
   if (!program || !getAllPrograms().includes(program)) {

@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useMemo, useRef, useState } from "react";
+import { signIn, signOut as nextAuthSignOut, useSession } from "next-auth/react";
 import { CAMPUSES } from "../../../lib/campuses";
 import "../admin.css";
 
@@ -85,9 +86,17 @@ function StudentToolLinks() {
 }
 
 export default function ProgramAdminPage() {
+  const { data: session, status: sessionStatus } = useSession();
   const [password, setPassword] = useState("");
   const [passwordInput, setPasswordInput] = useState("");
   const [authenticated, setAuthenticated] = useState(false);
+  const [authMethod, setAuthMethod] = useState("password");
+  const [microsoftEnabled, setMicrosoftEnabled] = useState(false);
+  const [showSettings, setShowSettings] = useState(false);
+  const [currentPasswordInput, setCurrentPasswordInput] = useState("");
+  const [newPasswordInput, setNewPasswordInput] = useState("");
+  const [confirmPasswordInput, setConfirmPasswordInput] = useState("");
+  const [changingPassword, setChangingPassword] = useState(false);
   const [activeSection, setActiveSection] = useState("courseOfStudy");
   const [selectedProgram, setSelectedProgram] = useState("");
   const [courseStore, setCourseStore] = useState({});
@@ -104,13 +113,30 @@ export default function ProgramAdminPage() {
   const programsByCampus = useMemo(() => CAMPUSES, []);
 
   useEffect(() => {
+    fetch("/api/admin/session", { cache: "no-store" })
+      .then((res) => res.json())
+      .then((data) => setMicrosoftEnabled(!!data.microsoftEnabled))
+      .catch(() => setMicrosoftEnabled(false));
+  }, []);
+
+  useEffect(() => {
+    if (sessionStatus === "loading") return;
+
+    if (session?.user?.email) {
+      setAuthenticated(true);
+      setAuthMethod("microsoft");
+      setStatus(`Signed in as ${session.user.email}`);
+      return;
+    }
+
     const savedPassword = sessionStorage.getItem(ADMIN_PASSWORD_STORAGE) || "";
     if (savedPassword) {
       setPassword(savedPassword);
       setPasswordInput(savedPassword);
       setAuthenticated(true);
+      setAuthMethod("password");
     }
-  }, []);
+  }, [session, sessionStatus]);
 
   useEffect(() => {
     if (!authenticated) return;
@@ -225,7 +251,12 @@ export default function ProgramAdminPage() {
     }
   }
 
-  async function signIn() {
+  async function signInWithMicrosoft() {
+    setStatus("");
+    await signIn("azure-ad", { callbackUrl: "/admin" });
+  }
+
+  async function signInWithPassword() {
     const trimmed = passwordInput.trim();
     if (!trimmed) return;
 
@@ -243,6 +274,7 @@ export default function ProgramAdminPage() {
       sessionStorage.setItem(ADMIN_PASSWORD_STORAGE, trimmed);
       setPassword(trimmed);
       setAuthenticated(true);
+      setAuthMethod("password");
       setStatus("Signed in.");
     } catch (err) {
       setAuthenticated(false);
@@ -252,32 +284,86 @@ export default function ProgramAdminPage() {
     }
   }
 
-  function signOut() {
+  async function signOutAll() {
     sessionStorage.removeItem(ADMIN_PASSWORD_STORAGE);
     setPassword("");
     setPasswordInput("");
     setAuthenticated(false);
+    setAuthMethod("password");
     setSelectedProgram("");
     setCourseStore({});
     setDefaultsStore({});
+    setShowSettings(false);
     setStatus("Signed out.");
+    if (session) {
+      await nextAuthSignOut({ callbackUrl: "/admin" });
+    }
+  }
+
+  async function changePassword() {
+    if (newPasswordInput !== confirmPasswordInput) {
+      setStatus("New passwords do not match.");
+      return;
+    }
+
+    setChangingPassword(true);
+    setStatus("");
+    try {
+      const res = await fetch("/api/admin/change-password", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        credentials: "include",
+        body: JSON.stringify({
+          currentPassword: currentPasswordInput,
+          newPassword: newPasswordInput,
+        }),
+      });
+      const data = await res.json().catch(() => ({}));
+      if (!res.ok) throw new Error(data.error || "Could not change password");
+
+      if (authMethod === "password") {
+        sessionStorage.setItem(ADMIN_PASSWORD_STORAGE, newPasswordInput);
+        setPassword(newPasswordInput);
+        setPasswordInput(newPasswordInput);
+      }
+
+      setCurrentPasswordInput("");
+      setNewPasswordInput("");
+      setConfirmPasswordInput("");
+      setStatus("Password updated.");
+    } catch (err) {
+      setStatus(err.message || "Could not change password");
+    } finally {
+      setChangingPassword(false);
+    }
+  }
+
+  function authFetchOptions(body) {
+    const payload =
+      authMethod === "password" ? { ...body, password } : { ...body };
+    return {
+      method: "PUT",
+      headers: { "Content-Type": "application/json" },
+      credentials: "include",
+      body: JSON.stringify(payload),
+    };
+  }
+
+  function signOut() {
+    signOutAll();
   }
 
   async function saveCourseOfStudy() {
-    if (!selectedProgram || !password) return;
+    if (!selectedProgram || !authenticated) return;
+    if (authMethod === "password" && !password) return;
 
     setSaving(true);
     setStatus("");
     try {
-      const res = await fetch("/api/course-of-study", {
-        method: "PUT",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          program: selectedProgram,
-          text: draftCourseText,
-          password,
-        }),
-      });
+      const res = await fetch("/api/course-of-study", authFetchOptions({
+        program: selectedProgram,
+        text: draftCourseText,
+      }));
       const data = await res.json().catch(() => ({}));
       if (!res.ok) throw new Error(data.error || "Save failed");
 
@@ -295,21 +381,17 @@ export default function ProgramAdminPage() {
   }
 
   async function saveProgramDefaults() {
-    if (!selectedProgram || !password) return;
+    if (!selectedProgram || !authenticated) return;
+    if (authMethod === "password" && !password) return;
 
     setSaving(true);
     setStatus("");
     try {
-      const res = await fetch("/api/program-defaults", {
-        method: "PUT",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          program: selectedProgram,
-          skills: listFromLines(draftSkillsText),
-          certifications: listFromLines(draftCertsText),
-          password,
-        }),
-      });
+      const res = await fetch("/api/program-defaults", authFetchOptions({
+        program: selectedProgram,
+        skills: listFromLines(draftSkillsText),
+        certifications: listFromLines(draftCertsText),
+      }));
       const data = await res.json().catch(() => ({}));
       if (!res.ok) throw new Error(data.error || "Save failed");
 
@@ -362,28 +444,41 @@ export default function ProgramAdminPage() {
           <header style={styles.header}>
             <h1 style={styles.title}>Program Admin</h1>
             <p style={styles.subtitle}>
-              Sign in with the staff admin password to manage program content for
-              the resume builder.
+              Sign in with your Microsoft account or the shared admin password.
             </p>
             <StudentToolLinks />
           </header>
 
           <section style={{ ...styles.card, maxWidth: "480px" }}>
             <h2 style={styles.cardTitle}>Staff Sign In</h2>
-            <p style={styles.helpText}>
-              Use the shared admin password provided by your department.
-            </p>
+            {microsoftEnabled ? (
+              <>
+                <AdminButton
+                  onClick={signInWithMicrosoft}
+                  style={styles.microsoftBtn}
+                >
+                  Sign in with Microsoft
+                </AdminButton>
+                <p style={{ ...styles.helpText, textAlign: "center", margin: "16px 0 8px" }}>
+                  or use the shared admin password
+                </p>
+              </>
+            ) : (
+              <p style={styles.helpText}>
+                Use the shared admin password provided by your department.
+              </p>
+            )}
             <div style={styles.row}>
               <input
                 type="password"
                 value={passwordInput}
                 onChange={(e) => setPasswordInput(e.target.value)}
-                onKeyDown={(e) => e.key === "Enter" && signIn()}
+                onKeyDown={(e) => e.key === "Enter" && signInWithPassword()}
                 placeholder="Admin password"
                 style={styles.input}
               />
               <AdminButton
-                onClick={signIn}
+                onClick={signInWithPassword}
                 disabled={loggingIn}
                 style={styles.primaryBtn}
               >
@@ -411,11 +506,62 @@ export default function ProgramAdminPage() {
               </p>
               <StudentToolLinks />
             </div>
-            <AdminButton onClick={signOut} style={styles.secondaryBtn}>
-              Sign Out
-            </AdminButton>
+            <div style={styles.headerActions}>
+              <AdminButton
+                onClick={() => setShowSettings((open) => !open)}
+                style={styles.secondaryBtn}
+              >
+                {showSettings ? "Hide Settings" : "Settings"}
+              </AdminButton>
+              <AdminButton onClick={signOut} style={styles.secondaryBtn}>
+                Sign Out
+              </AdminButton>
+            </div>
           </div>
         </header>
+
+        {showSettings ? (
+          <section style={{ ...styles.card, marginBottom: "20px" }}>
+            <h2 style={styles.cardTitle}>Change Admin Password</h2>
+            <p style={styles.helpText}>
+              {authMethod === "microsoft"
+                ? "You are signed in with Microsoft. Set a new shared password for staff who sign in with a password."
+                : "Update the shared staff password used for admin sign-in."}
+            </p>
+            {authMethod === "password" ? (
+              <>
+                <label style={styles.fieldLabel}>Current password</label>
+                <input
+                  type="password"
+                  value={currentPasswordInput}
+                  onChange={(e) => setCurrentPasswordInput(e.target.value)}
+                  style={{ ...styles.input, width: "100%", marginBottom: "12px" }}
+                />
+              </>
+            ) : null}
+            <label style={styles.fieldLabel}>New password</label>
+            <input
+              type="password"
+              value={newPasswordInput}
+              onChange={(e) => setNewPasswordInput(e.target.value)}
+              style={{ ...styles.input, width: "100%", marginBottom: "12px" }}
+            />
+            <label style={styles.fieldLabel}>Confirm new password</label>
+            <input
+              type="password"
+              value={confirmPasswordInput}
+              onChange={(e) => setConfirmPasswordInput(e.target.value)}
+              style={{ ...styles.input, width: "100%", marginBottom: "16px" }}
+            />
+            <AdminButton
+              onClick={changePassword}
+              disabled={changingPassword}
+              style={styles.primaryBtn}
+            >
+              {changingPassword ? "Updating…" : "Update Password"}
+            </AdminButton>
+          </section>
+        ) : null}
 
         <div style={styles.tabRow}>
           <AdminButton
@@ -572,6 +718,22 @@ const styles = {
     justifyContent: "space-between",
     alignItems: "flex-start",
     gap: "16px",
+  },
+  headerActions: {
+    display: "flex",
+    gap: "10px",
+    flexWrap: "wrap",
+  },
+  microsoftBtn: {
+    width: "100%",
+    padding: "12px 16px",
+    borderRadius: "8px",
+    border: "1px solid #8c8c8c",
+    background: "#2f2f2f",
+    color: "#fff",
+    fontWeight: 600,
+    fontSize: "15px",
+    cursor: "pointer",
   },
   title: { margin: 0, fontSize: "28px" },
   subtitle: { margin: "8px 0 0", color: "#475569", lineHeight: 1.6 },

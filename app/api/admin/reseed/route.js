@@ -1,4 +1,4 @@
-import { verifyAdminPassword } from "../../../../lib/adminAuth";
+import { verifyAdminAccess } from "../../../../lib/adminAccess";
 import { reseedFromBundled } from "../../../../lib/programStorage";
 import { jsonNoStore } from "../../../../lib/apiResponse";
 
@@ -14,8 +14,9 @@ export async function POST(req) {
   }
 
   const password = body?.password || "";
-  if (!(await verifyAdminPassword(password))) {
-    return jsonNoStore({ error: "Incorrect password" }, { status: 401 });
+  const access = await verifyAdminAccess(password);
+  if (!access.ok) {
+    return jsonNoStore({ error: "Not authorized" }, { status: 401 });
   }
 
   try {
