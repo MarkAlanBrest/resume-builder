@@ -1,4 +1,5 @@
 import {
+  getCourseOfStudy,
   readCourseOfStudyStore,
   updateProgramCourseOfStudy,
 } from "../../../lib/courseOfStudyStore";
@@ -12,14 +13,13 @@ export const dynamic = "force-dynamic";
 export async function GET(req) {
   const { searchParams } = new URL(req.url);
   const program = searchParams.get("program");
-  const store = await readCourseOfStudyStore();
 
   if (program) {
-    const entry = store[program] || { text: "", updatedAt: null };
+    const entry = await getCourseOfStudy(program);
     return jsonNoStore({ program, ...entry });
   }
 
-  return jsonNoStore(store);
+  return jsonNoStore(await readCourseOfStudyStore());
 }
 
 export async function PUT(req) {
