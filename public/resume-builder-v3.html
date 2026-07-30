@@ -353,8 +353,13 @@ const RESUME_PROGRAM_INITIALS = {
 const MONTHS = ['January','February','March','April','May','June','July','August','September','October','November','December'];
 
 // ── Color Schemes ────────────────────────────────
-const BULLET_OPTIONS = ['•','▸','◆','–','✓'];
-const SECTION_ICONS = {Objective:'🎯 ',Experience:'💼 ','Military Service':'🎖️ ',Education:'🎓 ',Certifications:'📜 ',Skills:'⚡ '};
+const BULLET_OPTIONS = [
+  {label:'Round',   char:'\u2022', font:'Calibri'},
+  {label:'Arrow',   char:'\u25B8', font:'Segoe UI Symbol'},
+  {label:'Diamond', char:'\u25C6', font:'Segoe UI Symbol'},
+  {label:'Dash',    char:'\u2013', font:'Calibri'},
+  {label:'Check',   char:'\u2713', font:'Segoe UI Symbol'},
+];
 
 const PRESET_COLORS = [
   '#1e3a8a','#14532d','#7f1d1d','#334155','#1c1c1c',
@@ -362,10 +367,10 @@ const PRESET_COLORS = [
 ];
 
 const ICON_SETS = {
-  none:   {label:'None',    preview:'EXPERIENCE',    icons:{}},
-  emoji:  {label:'Emoji',   preview:'💼 EXPERIENCE', icons:{Objective:'🎯 ',Experience:'💼 ','Military Service':'🎖️ ',Education:'🎓 ',Certifications:'📜 ',Skills:'⚡ ','Skills & Certifications':'⚡ '}},
-  shapes: {label:'Shapes',  preview:'◆ EXPERIENCE',  icons:{Objective:'◆ ',Experience:'◆ ','Military Service':'◆ ',Education:'◆ ',Certifications:'◆ ',Skills:'◆ ','Skills & Certifications':'◆ '}},
-  arrows: {label:'Arrows',  preview:'▸ EXPERIENCE',  icons:{Objective:'▸ ',Experience:'▸ ','Military Service':'▸ ',Education:'▸ ',Certifications:'▸ ',Skills:'▸ ','Skills & Certifications':'▸ '}},
+  none:   {label:'None',    preview:'EXPERIENCE',    font:'Calibri',         icons:{}},
+  emoji:  {label:'Emoji',   preview:'💼 EXPERIENCE', font:'Segoe UI Emoji',  icons:{Objective:'🎯 ',Experience:'💼 ','Military Service':'🎖️ ',Education:'🎓 ',Volunteer:'🤝 ',Certifications:'📜 ',Skills:'⚡ ','Skills & Certifications':'⚡ ','Course of Study':'📚 '}},
+  shapes: {label:'Shapes',  preview:'◆ EXPERIENCE',  font:'Segoe UI Symbol', icons:{Objective:'◆ ',Experience:'◆ ','Military Service':'◆ ',Education:'◆ ',Volunteer:'◆ ',Certifications:'◆ ',Skills:'◆ ','Skills & Certifications':'◆ ','Course of Study':'◆ '}},
+  arrows: {label:'Arrows',  preview:'▸ EXPERIENCE',  font:'Segoe UI Symbol', icons:{Objective:'▸ ',Experience:'▸ ','Military Service':'▸ ',Education:'▸ ',Volunteer:'▸ ',Certifications:'▸ ',Skills:'▸ ','Skills & Certifications':'▸ ','Course of Study':'▸ '}},
 };
 
 // ── Sections ─────────────────────────────────────
@@ -430,16 +435,6 @@ const MILITARY_DUTY_EXAMPLES = [
   ]},
 ];
 
-const SKILL_CERT_TIP_EXAMPLES = [
-  {match:/automotive|motorcycle|power equipment/i,skills:['Diagnostics','Brake service','Oil changes','Tire rotation','Electrical testing','Shop safety'],certs:['ASE Student Certification','EPA Section 609','OSHA 10','Manufacturer training']},
-  {match:/hvac|refrigeration|climate|ac technology/i,skills:['Refrigerant handling','System troubleshooting','Electrical testing','Brazing','Preventive maintenance','Customer service'],certs:['EPA Section 608','OSHA 10','NATE Ready-to-Work','R-410A Safety']},
-  {match:/welding/i,skills:['MIG welding','TIG welding','Stick welding','Blueprint reading','Metal fabrication','Weld inspection'],certs:['AWS Certification','OSHA 10','Forklift Certification','First Aid/CPR']},
-  {match:/electrical|electro-mechanical|industrial maintenance/i,skills:['Electrical troubleshooting','Motor controls','PLC basics','Preventive maintenance','Blueprint/schematic reading','Lockout/tagout'],certs:['OSHA 10','NFPA 70E Awareness','First Aid/CPR','Forklift Certification']},
-  {match:/building|construction/i,skills:['Blueprint reading','Power tools','Framing','Drywall','Measuring and layout','Job-site safety'],certs:['OSHA 10','Forklift Certification','First Aid/CPR','Scissor Lift/Aerial Lift']},
-  {match:/truck|cdl|diesel|heavy equipment/i,skills:['Pre-trip inspections','Diesel maintenance','Hydraulics','Preventive maintenance','DOT safety','Equipment operation'],certs:['CDL Permit or License','OSHA 10','Forklift Certification','DOT Medical Card']},
-  {match:/machinist|cnc|manufacturing/i,skills:['CNC operation','Blueprint reading','Precision measurement','Calipers and micrometers','Machine setup','Quality control'],certs:['NIMS Certification','OSHA 10','Forklift Certification','Lean Manufacturing']},
-];
-
 // ── Career & Duty Suggestions ────────────────────
 const CAREER_SUGGESTIONS = [
   {match:/automotive|motorcycle|power equipment/i,workSearch:['I want to work as an automotive technician at a dealership performing diagnostics, repairs, and maintenance.','I am looking for an entry-level position at an auto shop doing oil changes, brake service, and vehicle inspections.','I want a job at a dealership or independent shop where I can grow my diagnostic and repair skills.']},
@@ -467,11 +462,11 @@ let chatHistory = [];
 let isAIThinking = false;
 
 const resumeData = {
-  personal:{},careerContext:{},workExperience:[],militaryService:[],education:[],volunteer:[],certifications:[],skills:[],references:'Available upon request',
-  _assignmentImported: false
+  personal:{},careerContext:{},workExperience:[],militaryService:[],education:[],volunteer:[],certifications:[],skills:[],references:'Available upon request'
 };
+const NAV_SECTIONS = SECTIONS.filter(s => s.key !== 'courseOfStudy');
 const sectionStatus = {};
-SECTIONS.forEach(s => sectionStatus[s.key] = 'pending');
+NAV_SECTIONS.forEach(s => sectionStatus[s.key] = 'pending');
 
 // Temp state for multi-step flows
 let pendingWork = {};
@@ -485,97 +480,111 @@ let editingVolunteerIndex = -1;
 let pendingCert = {};
 let selectedStyle = 'classic';
 let selectedColorHex = '#1e3a8a';
-let selectedBullet = '•';
+let selectedBulletIndex = 0;
 let selectedIconSet = 'emoji';
 let selectedResumeFile = null;
 
 // ── Progress Save / Load ──────────────────────────
+function sanitizeResumeData(data) {
+  if (!data || typeof data !== 'object') return data;
+  delete data.courseOfStudy;
+  delete data.educationSkills;
+  delete data._assignmentImported;
+  delete data._courseOfStudyFromAssignment;
+  return data;
+}
+
 function saveProgress(){
-  try{localStorage.setItem('rb_progress',JSON.stringify(resumeData));}catch(e){}
+  try{
+    const payload = sanitizeResumeData({ ...resumeData });
+    localStorage.setItem('rb_progress', JSON.stringify(payload));
+  }catch(e){}
 }
 function loadProgress(){
-  try{const s=localStorage.getItem('rb_progress');return s?JSON.parse(s):null;}catch(e){return null;}
+  try{
+    const s = localStorage.getItem('rb_progress');
+    return s ? sanitizeResumeData(JSON.parse(s)) : null;
+  }catch(e){return null;}
 }
 function clearProgress(){
   localStorage.removeItem('rb_progress');
 }
 
 
-// ── Assignment Import ─────────────────────────────
-function loadAssignmentJobs() {
+// ── Admin-managed program content ───────────────
+let courseOfStudyCatalog = null;
+let programDefaultsCatalog = null;
+let currentProgramDefaults = null;
+
+const FALLBACK_PROGRAM_DEFAULTS = {
+  skills: ['Safety procedures','Hand and power tools','Customer service','Teamwork','Problem solving','Time management'],
+  certifications: ['OSHA 10','First Aid/CPR','Forklift Certification']
+};
+
+async function loadCourseOfStudyCatalog() {
+  if (courseOfStudyCatalog) return courseOfStudyCatalog;
+  const res = await fetch('/api/course-of-study');
+  if (!res.ok) throw new Error('Could not load Course of Study data');
+  courseOfStudyCatalog = await res.json();
+  return courseOfStudyCatalog;
+}
+
+async function resolveCourseOfStudyForResume() {
+  const program = resumeData.personal.program || '';
+  const school = resumeData.personal.campus || 'Trade School';
   try {
-    const raw = localStorage.getItem('employerAssignment');
-    if (!raw) return [];
-    const saved = JSON.parse(raw);
-    if (!Array.isArray(saved) || !saved.length) return [];
-    return saved.map(j => {
-      const [sy, sm] = (j.start || '').split('-');
-      const [ey, em] = (j.end   || '').split('-');
-      const startMonth = sm ? MONTHS[parseInt(sm,10)-1] || '' : '';
-      const startYear  = sy || '';
-      const endMonth   = em ? MONTHS[parseInt(em,10)-1] || '' : '';
-      const endYear    = j.isCurrent ? 'Present' : (ey || '');
-      const bulletLines = (j.tasks || '').split('\n').map(b => b.trim()).filter(Boolean);
-      return {
-        employer: j.employer || '', jobTitle: j.title || '',
-        city: j.city || '', state: j.state || '',
-        startMonth, startYear, endMonth, endYear,
-        current: !!j.isCurrent,
-        duties: bulletLines.join('\n'),
-        bulletLines,
-        _fromAssignment: true
-      };
-    });
-  } catch(e) { return []; }
-}
-
-function importAssignmentIfNeeded() {
-  if (resumeData._assignmentImported) return 0;
-  const jobs = loadAssignmentJobs();
-  if (!jobs.length) return 0;
-  resumeData._assignmentImported = true;
-  resumeData.workExperience = [...resumeData.workExperience, ...jobs];
-  setStatus('work', 'done');
-  saveProgress();
-  return jobs.length;
-}
-
-async function polishImportedJobs() {
-  const ci = document.getElementById('centerInner');
-  const toProcess = resumeData.workExperience.filter(j => j._fromAssignment && !j._bulletPolished);
-  const prog = resumeData.personal.program || '';
-  for (let idx = 0; idx < toProcess.length; idx++) {
-    const job = toProcess[idx];
-    ci.innerHTML = `<div style="text-align:center;padding:60px 20px;color:var(--slate-500)"><div style="font-size:32px;margin-bottom:12px">⚙️</div><div style="font-size:15px;font-weight:600;margin-bottom:6px">Writing professional bullets…</div><div style="font-size:13px">${escHtml(job.jobTitle||'Job')} at ${escHtml(job.employer)} (${idx+1} of ${toProcess.length})</div></div>`;
-    const tense = job.current ? 'present tense' : 'past tense';
-    const duties = (job.bulletLines||[]).filter(Boolean).join('\n') || job.duties || '';
-    const sys = `Write resume bullet points for a trade school student${prog?' studying '+prog:''}. Job: ${job.jobTitle} at ${job.employer}. The student described their duties as: "${duties}". Write 3–5 polished, professional resume bullets in ${tense}. Each starts with a strong action verb. No bullet characters, no "I". Plain text, one bullet per line.`;
-    try {
-      const result = await callClaude(sys,[{role:'user',content:'Write the bullet points.'}]);
-      job.bulletLines = result.trim().split('\n').map(l=>l.trim().replace(/^[•\-\*]\s*/,'')).filter(l=>l.length>0).map(l=>cleanCareerText(l));
-      job._bulletPolished = true;
-    } catch(e) {
-      job._bulletPolished = true;
-    }
+    const catalog = await loadCourseOfStudyCatalog();
+    const text = catalog?.[program]?.text?.trim();
+    if (text) return text;
+  } catch(e) {
+    console.warn('Course of Study lookup failed', e);
   }
-  setStatus('work','done');
-  showCenter('work');
-  sendTip('work');
+  return `Completed hands-on training in ${program || 'trade program'} at ${school}, building practical skills, safety awareness, and job-ready competencies for entry-level work in the field.`;
+}
+
+async function loadProgramDefaultsCatalog() {
+  if (programDefaultsCatalog) return programDefaultsCatalog;
+  const res = await fetch('/api/program-defaults');
+  if (!res.ok) throw new Error('Could not load program defaults');
+  programDefaultsCatalog = await res.json();
+  return programDefaultsCatalog;
+}
+
+async function resolveProgramDefaults(program) {
+  try {
+    const catalog = await loadProgramDefaultsCatalog();
+    const entry = catalog?.[program];
+    if (entry?.skills?.length || entry?.certifications?.length) {
+      return {
+        skills: Array.isArray(entry.skills) ? entry.skills : [],
+        certifications: Array.isArray(entry.certifications) ? entry.certifications : [],
+      };
+    }
+  } catch(e) {
+    console.warn('Program defaults lookup failed', e);
+  }
+  return { ...FALLBACK_PROGRAM_DEFAULTS, skills: [...FALLBACK_PROGRAM_DEFAULTS.skills], certifications: [...FALLBACK_PROGRAM_DEFAULTS.certifications] };
+}
+
+async function showSkillsSection() {
+  const program = resumeData.personal.program || '';
+  currentProgramDefaults = await resolveProgramDefaults(program);
+  showCenter('skills');
+  sendTip('skills');
 }
 
 // ── App Start ─────────────────────────────────────
 function startApp() {
   renderLeftNav();
   showCenter('welcome');
-  const hasAssignment = !!localStorage.getItem('employerAssignment');
-  addAIMsg(`Welcome! I'm your AI resume assistant. I'll guide you through each section and answer any questions you have.${hasAssignment ? '\n\n**Your Work Experience Assignment was found** — your jobs will be automatically loaded into the Work Experience section.' : ' Click **Start Fresh** to begin, or upload an existing resume to get started faster.'}`);
+  addAIMsg(`Welcome! I'm your AI resume assistant. I'll guide you through each section and answer any questions you have. Click **Start Fresh** to begin, or upload an existing resume to get started faster.`);
 }
 
 // ── Left Nav ──────────────────────────────────────
 function renderLeftNav() {
   const nav = document.getElementById('leftNav');
   nav.innerHTML = '<div class="nav-heading">Sections</div>' +
-    SECTIONS.map(s => {
+    NAV_SECTIONS.map(s => {
       const st = sectionStatus[s.key] || 'pending';
       const ac = currentSection === s.key ? 'active' : st;
       return `<div class="nav-item ${ac}" onclick="navClick('${s.key}')">
@@ -634,21 +643,18 @@ function clearChat() {
 }
 
 function showSection(key) {
+  if (key === 'courseOfStudy') key = 'education';
   currentSection = key;
   renderLeftNav();
   clearChat();
   if (key === 'personal') { showCenter('personal'); sendTip('personal'); }
   else if (key === 'career') { showCenter('career'); sendTip('career'); }
-  else if (key === 'work') {
-    importAssignmentIfNeeded();
-    const unpolished = resumeData.workExperience?.filter(j => j._fromAssignment && !j._bulletPolished);
-    if (unpolished?.length) { polishImportedJobs(); } else { showCenter('work'); sendTip('work'); }
-  }
+  else if (key === 'work') { showCenter('work'); sendTip('work'); }
   else if (key === 'military') { showCenter('military'); sendTip('military'); }
   else if (key === 'education') { showCenter('education'); sendTip('education'); }
   else if (key === 'volunteer') { showCenter('volunteer'); sendTip('volunteer'); }
   else if (key === 'certifications') { showSection('skills'); }
-  else if (key === 'skills') { showCenter('skills'); sendTip('skills'); }
+  else if (key === 'skills') { showSkillsSection(); }
   else if (key === 'template') { showCenter('template'); sendTip('template'); }
 }
 
@@ -657,18 +663,11 @@ function renderWelcome() {
   const saved          = loadProgress();
   const hasSaved       = !!(saved && (saved.personal?.firstName || saved.workExperience?.length));
   const savedName      = saved?.personal?.firstName ? ` for ${escHtml(saved.personal.firstName)}` : '';
-  const assignJobs     = loadAssignmentJobs();
-  const assignBanner   = assignJobs.length
-    ? `<div class="prefill-banner" style="margin:0 0 16px;text-align:left;background:#f0fdf4;border-color:#bbf7d0;color:#15803d">
-        💼 <strong>${assignJobs.length} job${assignJobs.length>1?'s':''} from your Work Experience Assignment</strong> will be automatically added to your resume.
-      </div>`
-    : '';
   return `<div class="welcome-card">
     <span class="welcome-icon">🎓</span>
     <div class="welcome-title">Build Your Professional Resume</div>
     <div class="welcome-sub">I'll guide you through each section. Fill out the forms in this panel, ask me questions in the chat, and I'll generate a polished resume when you're done.</div>
     ${hasSaved ? `<div class="prefill-banner" style="margin:0 0 16px;text-align:left">📋 Saved progress found${savedName}. Continue where you left off or start over.</div>` : ''}
-    ${assignBanner}
     <div class="welcome-actions">
       ${hasSaved ? `<button class="btn btn-primary btn-lg" onclick="continueProgress()">Continue Where I Left Off</button>` : ''}
       <button class="btn ${hasSaved ? 'btn-ghost' : 'btn-primary'} btn-lg" onclick="startFresh()">${hasSaved ? 'Start Over' : 'Start Fresh'}</button>
@@ -690,10 +689,10 @@ function startFresh() {
   resumeData.certifications=[];
   resumeData.skills=[];
   resumeData.references='Available upon request';
-  resumeData._assignmentImported=false;
-  SECTIONS.forEach(s=>sectionStatus[s.key]='pending');
-  const imported = importAssignmentIfNeeded();
-  if (imported) addAIMsg(`✅ **${imported} job${imported>1?'s':''} imported** from your Work Experience Assignment and added to the Work Experience section. You can review and edit them there.`);
+  delete resumeData.courseOfStudy;
+  delete resumeData.educationSkills;
+  NAV_SECTIONS.forEach(s=>sectionStatus[s.key]='pending');
+  delete sectionStatus.courseOfStudy;
   renderLeftNav();
   showSection('personal');
 }
@@ -702,6 +701,7 @@ function continueProgress() {
   const saved = loadProgress();
   if (!saved) { startFresh(); return; }
   Object.assign(resumeData, saved);
+  sanitizeResumeData(resumeData);
   if (saved.personal?.firstName)                            setStatus('personal','done');
   if (saved.careerContext?.objective)                       setStatus('career','done');
   if (saved.workExperience?.length || saved.militaryService?.length || saved.education?.length) setStatus('work','done');
@@ -712,13 +712,13 @@ function continueProgress() {
     setStatus('skills','done');
     setStatus('certifications','done');
   }
-  const imported = importAssignmentIfNeeded();
   const name = saved.personal?.firstName ? `, ${saved.personal.firstName}` : '';
-  addAIMsg(`Welcome back${name}! I've restored your progress.${imported ? ` Also loaded **${imported} job${imported>1?'s':''}** from your Work Experience Assignment.` : ''} Use the menu on the left to pick up where you left off.`);
+  addAIMsg(`Welcome back${name}! I've restored your progress. Use the menu on the left to pick up where you left off.`);
   if      (!saved.personal?.firstName)          showSection('personal');
   else if (!saved.careerContext?.objective)      showSection('career');
   else if (!saved.workExperience?.length && !saved.militaryService?.length && !saved.education?.length) showSection('work');
-  else if (!saved.education?.length)            showSection('military');
+  else if (!saved.militaryService?.length && !saved.education?.length) showSection('military');
+  else if (!saved.education?.length)                        showSection('education');
   else if (!saved.skills?.length && !saved.certifications?.length) showSection('skills');
   else                                           showSection('template');
 }
@@ -1434,7 +1434,7 @@ function toggleMilCurJob(cb) {
 
 function skipMilitary() {
   setStatus('military','done');
-  addAIMsg(`No military service recorded. Let's add your education — your trade program is already pre-filled.`);
+  addAIMsg(`No military service recorded. Next, confirm your **education** details.`);
   showSection('education');
 }
 
@@ -1585,7 +1585,7 @@ function renderWorkForm(pf={}) {
           <div>
             <div style="font-size:15px;font-weight:700;color:var(--slate-800)">${escHtml(j.jobTitle||'Position')}</div>
             <div style="font-size:13px;color:var(--slate-600);margin-top:2px">${escHtml(j.employer)}${loc?` &bull; ${escHtml(loc)}`:''}</div>
-            <div style="font-size:12px;color:var(--slate-400);margin-top:2px">${escHtml(dateStr)}${j._fromAssignment?' &nbsp;<span style="background:#f0fdf4;color:#15803d;font-size:11px;font-weight:600;padding:1px 7px;border-radius:20px">From Assignment</span>':''}</div>
+            <div style="font-size:12px;color:var(--slate-400);margin-top:2px">${escHtml(dateStr)}</div>
           </div>
           <div style="display:flex;gap:6px;flex-shrink:0">
             <button class="btn btn-ghost" style="padding:5px 10px;font-size:12px" onclick="editWork(${i})">Edit</button>
@@ -1633,7 +1633,7 @@ function toggleCurJob(cb) {
 
 function skipToEdu() {
   setStatus('work','done');
-  addAIMsg(`Work history saved. Have you served in the military? Add your service record or skip ahead to Education.`);
+  addAIMsg(`Work history saved. Have you served in the military? Add your service record or skip ahead to **education**.`);
   showSection('military');
 }
 
@@ -2363,8 +2363,18 @@ function renderVolunteerDone() {
 
 // ── Skills & References ───────────────────────────
 function renderSkillsForm() {
-  const existing = Array.isArray(resumeData.skills) && resumeData.skills.length ? resumeData.skills.join(', ') : '';
-  const existingCerts = resumeData.certifications.length ? resumeData.certifications.map(c=>[c.name,c.org,c.year].filter(Boolean).join(', ')).join('\n') : '';
+  const hasSavedSkills = Array.isArray(resumeData.skills) && resumeData.skills.length;
+  const hasSavedCerts = resumeData.certifications.length;
+  const defaultSkills = (!hasSavedSkills && currentProgramDefaults?.skills?.length)
+    ? currentProgramDefaults.skills.join(', ')
+    : '';
+  const defaultCerts = (!hasSavedCerts && currentProgramDefaults?.certifications?.length)
+    ? currentProgramDefaults.certifications.join('\n')
+    : '';
+  const existing = hasSavedSkills ? resumeData.skills.join(', ') : defaultSkills;
+  const existingCerts = hasSavedCerts
+    ? resumeData.certifications.map(c=>[c.name,c.org,c.year].filter(Boolean).join(', ')).join('\n')
+    : defaultCerts;
   return `<div class="section-hdr"><div class="section-hdr-icon">⚡</div><div><div class="section-hdr-title">Skills &amp; Certifications</div><div class="section-hdr-sub">List both sides — I'll organize them</div></div></div>
   <div class="two-panel-grid">
     <div class="form-card">
@@ -2461,12 +2471,12 @@ function confirmSkills() {
 }
 
 // ── Template Configurator ─────────────────────────
-const STYLES = [{id:'classic',label:'Classic'},{id:'modern',label:'Modern'},{id:'bold',label:'Bold'},{id:'executive',label:'Executive'},{id:'flip',label:'Flip'},{id:'top-left',label:'Top Left'},{id:'top-right',label:'Top Right'},{id:'split',label:'Split'}];
+const STYLES = [{id:'classic',label:'Classic'},{id:'modern',label:'Modern'},{id:'bold',label:'Bold'},{id:'executive',label:'Executive'},{id:'flip',label:'Flip'},{id:'top-left',label:'Top Left'},{id:'top-right',label:'Top Right'},{id:'split',label:'Two Column'}];
 
 function renderTemplateConfig() {
   const styleBtns = STYLES.map(s=>`<button class="style-btn ${s.id===selectedStyle?'sel':''}" id="sb-${s.id}" onclick="pickStyle('${s.id}')"><div class="style-preview" id="sp-${s.id}">${buildPreviewHTML(s.id,selectedColorHex)}</div><div class="style-name">${s.label}</div></button>`).join('');
   const presetSwatches = PRESET_COLORS.map(hex=>`<div class="color-preset ${hex===selectedColorHex?'sel':''}" data-hex="${hex}" style="background:${hex}" title="${hex}" onclick="pickColor('${hex}')"></div>`).join('');
-  const bulletBtns = BULLET_OPTIONS.map((b,i)=>`<button class="bullet-opt ${b===selectedBullet?'sel':''}" id="bo-${i}" onclick="pickBullet('${b}')">${b}&nbsp;&nbsp;${['Round','Arrow','Diamond','Dash','Check'][i]}</button>`).join('');
+  const bulletBtns = BULLET_OPTIONS.map((b,i)=>`<button class="bullet-opt ${i===selectedBulletIndex?'sel':''}" id="bo-${i}" onclick="pickBulletIndex(${i})">${b.char}&nbsp;&nbsp;${b.label}</button>`).join('');
   const iconSetBtns = Object.entries(ICON_SETS).map(([k,s])=>`<button class="icon-set-btn ${k===selectedIconSet?'sel':''}" id="is-${k}" onclick="pickIconSet('${k}')">${s.preview}</button>`).join('');
   return `<div class="section-hdr"><div class="section-hdr-icon">📄</div><div><div class="section-hdr-title">Build Your Resume</div><div class="section-hdr-sub">Choose a style and options, then generate</div></div></div>
   <div class="form-card">
@@ -2521,9 +2531,9 @@ function pickColor(hex) {
   STYLES.forEach(s=>{ const el=document.getElementById(`sp-${s.id}`); if(el) el.innerHTML=buildPreviewHTML(s.id,hex); });
 }
 
-function pickBullet(char){
-  selectedBullet=char;
-  document.querySelectorAll('.bullet-opt').forEach((el,i)=>{el.classList.toggle('sel',BULLET_OPTIONS[i]===char);});
+function pickBulletIndex(i){
+  selectedBulletIndex=i;
+  document.querySelectorAll('.bullet-opt').forEach((el,idx)=>el.classList.toggle('sel',idx===i));
 }
 
 function pickIconSet(key){
@@ -2568,7 +2578,7 @@ function buildPreviewHTML(style,hex) {
   if (style==='flip') return `<div style="display:flex;height:100%"><div style="flex:1;background:white;padding:6% 5%;box-sizing:border-box">${sec()}${ml(95)}${ml(80)}${sec()}${job()}${ml(90)}${ml(82)}${sec()}${ml(75)}${ml(60)}</div><div style="width:33%;background:${ac};padding:6% 4%;box-sizing:border-box"><div style="height:4px;background:white;width:80%;margin-bottom:3px;border-radius:1px;opacity:.9"></div>${[90,70,85,75,80].map(w=>`<div style="height:1.5px;background:rgba(255,255,255,.5);width:${w}%;margin-bottom:2px;border-radius:1px"></div>`).join('')}<div style="height:2px;background:rgba(255,255,255,.8);width:55%;margin:6px 0 3px;border-radius:1px"></div>${[80,65].map(w=>`<div style="height:1.5px;background:rgba(255,255,255,.45);width:${w}%;margin-bottom:2px;border-radius:1px"></div>`).join('')}</div></div>`;
   if (style==='top-left') return `<div style="height:100%;background:white;display:flex;flex-direction:column"><div style="background:${ac};padding:8% 7% 6%;text-align:center;flex-shrink:0"><div style="height:5px;background:white;width:60%;margin:0 auto 3px;border-radius:1px;opacity:.95"></div><div style="height:1.5px;background:rgba(255,255,255,.55);width:72%;margin:0 auto;border-radius:1px"></div></div><div style="display:flex;flex:1"><div style="width:34%;background:#eeeeee;padding:5% 4%;box-sizing:border-box"><div style="height:1.5px;background:#bbb;width:55%;margin-bottom:3px;border-radius:1px"></div>${[88,72,80,66,78,70].map(w=>`<div style="height:1.5px;background:#ccc;width:${w}%;margin-bottom:2px;border-radius:1px"></div>`).join('')}</div><div style="flex:1;padding:5%;box-sizing:border-box">${sec()}${ml(90)}${ml(80)}${sec()}${job()}${ml(85)}</div></div></div>`;
   if (style==='top-right') return `<div style="height:100%;background:white;display:flex;flex-direction:column"><div style="background:${ac};padding:8% 7% 6%;text-align:center;flex-shrink:0"><div style="height:5px;background:white;width:60%;margin:0 auto 3px;border-radius:1px;opacity:.95"></div><div style="height:1.5px;background:rgba(255,255,255,.55);width:72%;margin:0 auto;border-radius:1px"></div></div><div style="display:flex;flex:1"><div style="flex:1;padding:5%;box-sizing:border-box">${sec()}${ml(90)}${ml(80)}${sec()}${job()}${ml(85)}</div><div style="width:34%;background:${ac};padding:5% 4%;box-sizing:border-box"><div style="height:2px;background:rgba(255,255,255,.8);width:55%;margin-bottom:3px;border-radius:1px"></div>${[88,72,80,66,78,70].map(w=>`<div style="height:1.5px;background:rgba(255,255,255,.45);width:${w}%;margin-bottom:2px;border-radius:1px"></div>`).join('')}</div></div></div>`;
-  if (style==='split') return `<div style="padding:7%;background:white;height:100%;box-sizing:border-box"><div style="height:4px;background:#1a1a1a;width:50%;margin:0 auto 2px;border-radius:1px"></div><div style="height:2px;background:#888;width:64%;margin:0 auto 3px;border-radius:1px"></div><div style="height:1px;background:${ac};margin:2px 0 5px"></div><div style="display:grid;grid-template-columns:1fr 1fr;gap:8px"><div>${sec()}${ml(88)}${ml(76)}${ml(82)}${sec()}${job()}${ml(85)}${ml(74)}</div><div>${sec()}${ml(92)}${ml(80)}${sec()}${ml(78)}${ml(68)}${sec()}${ml(85)}${ml(72)}</div></div></div>`;
+  if (style==='split') return `<div style="height:100%;background:white;display:flex;flex-direction:column"><div style="padding:8% 7% 5%;box-sizing:border-box;background:#eeeeee"><div style="height:5px;background:#1a1a1a;width:46%;margin-bottom:3px;border-radius:1px"></div><div style="height:2px;background:#888;width:58%;margin-bottom:3px;border-radius:1px"></div><div style="height:1.5px;background:${ac};width:100%;border-radius:1px"></div></div><div style="display:flex;flex:1"><div style="width:32%;background:#eeeeee;padding:5% 4%;box-sizing:border-box;border-right:1.5px solid ${ac}55">${sec()}${ml(82)}${ml(70)}${ml(76)}${sec()}${ml(78)}${ml(65)}</div><div style="flex:1;padding:5% 6% 5% 5%;box-sizing:border-box;background:white">${sec()}${ml(92)}${ml(80)}${sec()}${job()}${ml(88)}${ml(76)}</div></div></div>`;
   return '';
 }
 
@@ -2577,28 +2587,9 @@ async function generateResume() {
   btn.disabled=true; btn.textContent='Building resume…';
   try {
     const color = getColorObj(selectedColorHex);
-    let buildData = resumeData;
-
-    // Add Skills Learned section only when student has no work history at all
-    const weakEmployment = (resumeData.workExperience||[]).length === 0;
-    const tradeEdu = (resumeData.education||[]).find(e=>e.school||e.degree)||resumeData.education?.[0];
-    if (weakEmployment && tradeEdu) {
-      btn.textContent = 'Building education skills section…';
-      const program = resumeData.personal.program || tradeEdu.fieldOfStudy || tradeEdu.degree || 'Trade Program';
-      const school  = tradeEdu.school || 'Trade School';
-      const inProgress = tradeEdu.gradYear === 'In Progress' || !tradeEdu.gradYear;
-      const tense = inProgress ? 'present tense — student is currently enrolled' : 'past tense — student has completed the program';
-      const savedPara = localStorage.getItem('empAssign_skillsPara');
-      // If student wrote a skills paragraph in their assignment, polish it; otherwise generate from scratch
-      const sys = (savedPara && savedPara.trim().length > 40)
-        ? `You are polishing a trade school student's resume. The student wrote this Education Skills paragraph themselves: "${savedPara.trim()}". Rewrite it as a single polished, professional paragraph (4–6 sentences) for a resume. Correct grammar, strengthen the language, and make it sound like it was written by a professional resume writer. Keep the same skills and content — do not add certifications or tools not mentioned. Program: ${program}. School: ${school}. Use ${tense}. No "I" or student's name. Return only the paragraph.`
-        : `Write a single professional paragraph (4–6 sentences) for an "Education Skills" section on a trade school student's resume. Program: ${program}. School: ${school}. Use ${tense}. Describe the hands-on technical skills, equipment, safety practices, and competencies the student gained through the program. Write in implied first person — no "I" or the student's name. Professional resume language only. Return only the paragraph, no labels or headings.`;
-      try {
-        const r = await callClaude(sys,[{role:'user',content:'Write the education skills paragraph.'}]);
-        const para = r.trim().replace(/^["']|["']$/g,'');
-        if (para.length > 40) buildData = {...resumeData, educationSkills: para};
-      } catch(e) { /* AI failed — proceed without education skills section */ }
-    }
+    btn.textContent = 'Preparing resume…';
+    const courseOfStudy = await resolveCourseOfStudyForResume();
+    const buildData = {...resumeData, courseOfStudy};
 
     btn.textContent = 'Building resume…';
     const doc = await buildDocument(buildData, selectedStyle, color);
@@ -2607,30 +2598,53 @@ async function generateResume() {
     saveAs(blob, resumeFilename(p));
     setStatus('template','done');
     btn.disabled=false; btn.textContent='Download Again ↓';
-    addAIMsg(`Your resume has been downloaded!${buildData.educationSkills?' A Skills Learned section was automatically added based on your program.':''} Change the style or color anytime and click Download Again to try a different look.`);
+    addAIMsg(`Your resume has been downloaded! Change the style or color anytime and click Download Again to try a different look.`);
   } catch(err) { btn.disabled=false; btn.textContent='Generate & Download ↓'; addAIMsg(`Error generating file: ${err.message}`); console.error(err); }
 }
 
 // ── docx Builders (shared helpers) ───────────────
 const twip = n => docx.convertInchesToTwip(n);
+function currentBullet(){return BULLET_OPTIONS[selectedBulletIndex]||BULLET_OPTIONS[0];}
+function bulletRuns(text,opts={}){const meta=opts.bulletMeta||currentBullet(),size=opts.size||22,color=opts.color||'2a2a2a';return [new docx.TextRun({text:meta.char+' ',size,color,font:meta.font}),new docx.TextRun({text,size,color,font:'Calibri'})];}
+function sectionHeaderRuns(title,opts={}){const size=opts.size||28,color=opts.color||'1a1a1a',bold=opts.bold!==false,set=ICON_SETS[selectedIconSet]||ICON_SETS.none,icon=(set.icons||{})[title]||'',runs=[];if(icon)runs.push(new docx.TextRun({text:icon,size,color,font:set.font||'Calibri'}));runs.push(new docx.TextRun({text:title.toUpperCase(),bold,size,color,font:'Calibri'}));return runs;}
 function spacer(a=200){return new docx.Paragraph({spacing:{before:0,after:a}})}
-function bodyTxt(text,opts={}){return new docx.Paragraph({children:[new docx.TextRun({text,size:opts.size||24,color:opts.color||'2a2a2a',italics:opts.italic||false})],indent:opts.indent?{left:twip(opts.indent)}:undefined,spacing:{before:0,after:opts.after!==undefined?opts.after:200,line:288,lineRule:'auto'},alignment:opts.align||docx.AlignmentType.LEFT})}
-function bullet(text){return new docx.Paragraph({children:[new docx.TextRun({text:`${selectedBullet} ${text}`,size:22,color:'2a2a2a'})],indent:{left:twip(0.22)},spacing:{before:0,after:160,line:276,lineRule:'auto'}})}
+function bodyTxt(text,opts={}){
+  const normalized=String(text||'').replace(/\r\n/g,'\n').trim();
+  const finalAfter=opts.after!==undefined?opts.after:200;
+  const blocks=normalized?normalized.split(/\n{2,}/).map(s=>s.trim()).filter(Boolean):[''];
+  return blocks.map((block,blockIndex)=>{
+    const isLast=blockIndex===blocks.length-1;
+    const lines=block.split('\n');
+    const children=[];
+    lines.forEach((line,lineIndex)=>{
+      if(lineIndex>0)children.push(new docx.TextRun({break:1}));
+      children.push(new docx.TextRun({text:line,size:opts.size||24,color:opts.color||'2a2a2a',italics:opts.italic||false,font:'Calibri'}));
+    });
+    return new docx.Paragraph({children,indent:opts.indent?{left:twip(opts.indent)}:undefined,spacing:{before:0,after:isLast?finalAfter:100,line:288,lineRule:'auto'},alignment:opts.align||docx.AlignmentType.LEFT});
+  });
+}
+function addBodyTxt(target,text,opts){bodyTxt(text,opts).forEach(p=>target.push(p));}
+function bullet(text,opts={}){const after=opts.after!==undefined?opts.after:160;return new docx.Paragraph({children:bulletRuns(text,opts),indent:{left:twip(0.36),hanging:twip(0.14)},spacing:{before:0,after,line:276,lineRule:'auto'}})}
 function jobBlock(job){const items=[],loc=[job.city,job.state].filter(Boolean).join(', '),end=job.current?'Present':[job.endMonth,job.endYear].filter(Boolean).join(' '),dates=`${[job.startMonth,job.startYear].filter(Boolean).join(' ')} – ${end}`;items.push(new docx.Paragraph({spacing:{before:320,after:60},children:[new docx.TextRun({text:job.jobTitle,bold:true,size:26,color:'1a1a1a'}),new docx.TextRun({text:`, ${job.employer}${loc?', '+loc:''}`,size:24,color:'444444'})]}));items.push(new docx.Paragraph({spacing:{before:0,after:160},children:[new docx.TextRun({text:dates,italics:true,size:22,color:'777777'})]}));(job.bulletLines||[]).forEach(b=>items.push(bullet(b)));return items;}
-function eduBlock(edu){const loc=[edu.city,edu.state].filter(Boolean).join(', '),field=edu.fieldOfStudy?`, ${edu.fieldOfStudy}`:'';return new docx.Paragraph({spacing:{before:280,after:160},children:[new docx.TextRun({text:`${edu.degree}${field}`,bold:true,size:24,color:'1a1a1a'}),new docx.TextRun({text:`, ${edu.school}${loc?', '+loc:''}${eduGradDate(edu)?', '+eduGradDate(edu):''}`,size:22,color:'555555'})]})}
+function eduDegreeLine(edu){const field=edu.fieldOfStudy?`, ${edu.fieldOfStudy}`:'';return `${edu.degree||''}${field}`.trim();}
+function eduDetailsLine(edu){const loc=[edu.city,edu.state].filter(Boolean).join(', ');return [edu.school,loc,eduGradDate(edu)].filter(Boolean).join(', ');}
+function eduBlock(edu,opts={}){const degreeSize=opts.degreeSize||24,detailSize=opts.detailSize||22,degreeColor=opts.degreeColor||'1a1a1a',detailColor=opts.detailColor||'555555',font=opts.font||'Calibri',before=opts.before!==undefined?opts.before:280,gapAfter=opts.gapAfter!==undefined?opts.gapAfter:200;return [new docx.Paragraph({spacing:{before,after:40},children:[new docx.TextRun({text:eduDegreeLine(edu),bold:true,size:degreeSize,color:degreeColor,font})]}),new docx.Paragraph({spacing:{before:0,after:gapAfter},children:[new docx.TextRun({text:eduDetailsLine(edu),size:detailSize,color:detailColor,font})]})];}
+function addEducationBlocks(target,education,opts={}){(education||[]).forEach((edu,index)=>{const list=education||[],isFirst=index===0,isLast=index===list.length-1;eduBlock(edu,{...opts,before:isFirst?(opts.before!==undefined?opts.before:280):0,gapAfter:isLast?(opts.gapAfterLast!==undefined?opts.gapAfterLast:(opts.gapAfter!==undefined?opts.gapAfter:160)):(opts.gapAfter!==undefined?opts.gapAfter:200)}).forEach(p=>target.push(p));});}
 function certBlock(cert){return new docx.Paragraph({spacing:{before:200,after:140},children:[new docx.TextRun({text:cert.name,bold:true,size:24}),...(cert.org||cert.year?[new docx.TextRun({text:`  —  ${[cert.org,cert.year].filter(Boolean).join(', ')}`,size:22,color:'666666'})]:[])]})}
 function militaryBlock(mil){const items=[];const loc=[mil.city,mil.state].filter(Boolean).join(', ');const end=mil.current?'Present':[mil.endMonth,mil.endYear].filter(Boolean).join(' ');const dates=`${[mil.startMonth,mil.startYear].filter(Boolean).join(' ')} – ${end}`;items.push(new docx.Paragraph({spacing:{before:320,after:60},children:[new docx.TextRun({text:mil.rank||'',bold:true,size:26,color:'1a1a1a'}),new docx.TextRun({text:`, ${mil.branch}${mil.jobTitle?', '+mil.jobTitle:''}`,size:24,color:'444444'})]}));if(loc)items.push(new docx.Paragraph({spacing:{before:0,after:40},children:[new docx.TextRun({text:loc,italics:true,size:22,color:'777777'})]}));items.push(new docx.Paragraph({spacing:{before:0,after:160},children:[new docx.TextRun({text:dates,italics:true,size:22,color:'777777'})]}));(mil.bulletLines||[]).forEach(b=>items.push(bullet(b)));return items;}
 
 function volunteerBlock(v){const items=[],loc=[v.city,v.state].filter(Boolean).join(', '),end=v.current?'Present':[v.endMonth,v.endYear].filter(Boolean).join(' '),dates=[[v.startMonth,v.startYear].filter(Boolean).join(' '),end].filter(Boolean).join(' – ');items.push(new docx.Paragraph({spacing:{before:320,after:60},children:[new docx.TextRun({text:v.role||'Volunteer',bold:true,size:26,color:'1a1a1a'}),new docx.TextRun({text:`, ${v.organization}${loc?', '+loc:''}`,size:24,color:'444444'})]}));if(dates)items.push(new docx.Paragraph({spacing:{before:0,after:160},children:[new docx.TextRun({text:dates,italics:true,size:22,color:'777777'})]}));(v.bulletLines||[]).forEach(b=>items.push(bullet(b)));return items;}
 
-function sectionLabel(t){const icons=ICON_SETS[selectedIconSet]?.icons||{};return (icons[t]||'')+t.toUpperCase();}
 
+function courseOfStudyText(data) {
+  return (data.courseOfStudy || data.educationSkills || '').trim();
+}
 function scLabel(data){const s=data.skills?.length,c=data.certifications?.length;return s&&c?'Skills & Certifications':c?'Certifications':'Skills';}
 function scItems(data){return [...(Array.isArray(data.skills)?data.skills:[]),...(data.certifications||[]).map(c=>c.name)];}
 function skillsCertsGrid(items){
   const nb={style:docx.BorderStyle.NONE,size:0,color:'FFFFFF'};
   const mid=Math.ceil(items.length/2),col1=items.slice(0,mid),col2=items.slice(mid);
-  const mkCell=text=>new docx.TableCell({borders:{top:nb,bottom:nb,left:nb,right:nb},margins:{top:40,bottom:40,left:twip(.05),right:twip(.05)},children:[new docx.Paragraph({spacing:{before:0,after:100},children:[new docx.TextRun({text:text?`${selectedBullet} ${text}`:'',size:22,color:'2a2a2a'})]})]});
+  const mkCell=text=>new docx.TableCell({borders:{top:nb,bottom:nb,left:nb,right:nb},margins:{top:40,bottom:40,left:twip(.05),right:twip(.05)},children:[new docx.Paragraph({spacing:{before:0,after:100},indent:{left:twip(0.28),hanging:twip(0.12)},children:text?bulletRuns(text):[new docx.TextRun({text:''})]})]});
   return new docx.Table({width:{size:100,type:docx.WidthType.PERCENTAGE},borders:{top:nb,bottom:nb,left:nb,right:nb,insideH:nb,insideV:nb},rows:col1.map((item,i)=>new docx.TableRow({children:[mkCell(item),mkCell(col2[i]||'')]}))});
 }
 
@@ -2646,13 +2660,13 @@ function buildClassic(data,color){
   const cityStateZip=[[p.city,p.state].filter(Boolean).join(', '),p.zip].filter(Boolean).join(' ');const addrLine=[p.address,cityStateZip].filter(Boolean).join(', ');const contact=[p.email,p.phone,addrLine].filter(Boolean).join('   |   ');
   if(contact)ch.push(new docx.Paragraph({alignment:docx.AlignmentType.CENTER,spacing:{before:0,after:180},children:[new docx.TextRun({text:contact,size:22,color:'555555'})]}));
   ch.push(new docx.Paragraph({border:{bottom:{style:docx.BorderStyle.SINGLE,size:8,color:ac}},spacing:{before:0,after:160}}));
-  const sec=t=>new docx.Paragraph({children:[new docx.TextRun({text:sectionLabel(t),bold:true,size:28,color:ac})],border:{bottom:{style:docx.BorderStyle.SINGLE,size:4,color:ac}},spacing:{before:320,after:180}});
-  if(c.objective){ch.push(sec('Objective'));ch.push(bodyTxt(c.objective,{after:140}));}
+  const sec=t=>new docx.Paragraph({children:sectionHeaderRuns(t,{size:28,color:ac}),border:{bottom:{style:docx.BorderStyle.SINGLE,size:4,color:ac}},spacing:{before:320,after:180}});
+  if(c.objective){ch.push(sec('Objective'));addBodyTxt(ch,c.objective,{after:140});}
+  if(courseOfStudyText(data)){ch.push(sec('Course of Study'));addBodyTxt(ch,courseOfStudyText(data),{after:140});}
   if(data.workExperience?.length){ch.push(sec('Experience'));data.workExperience.forEach(j=>jobBlock(j).forEach(q=>ch.push(q)));}
   if(data.militaryService?.length){ch.push(sec('Military Service'));data.militaryService.forEach(m=>militaryBlock(m).forEach(q=>ch.push(q)));}
-  if(data.education?.length){ch.push(sec('Education'));data.education.forEach(e=>ch.push(eduBlock(e)));}
+  if(data.education?.length){ch.push(sec('Education'));addEducationBlocks(ch,data.education,{gapAfterLast:160});}
   if(data.volunteer?.length){ch.push(sec('Volunteer'));data.volunteer.forEach(v=>volunteerBlock(v).forEach(q=>ch.push(q)));}
-  if(data.educationSkills){ch.push(sec('Skills Learned'));ch.push(bodyTxt(data.educationSkills,{after:140}));}
   const _sc=scItems(data);if(_sc.length){ch.push(sec(scLabel(data)));ch.push(skillsCertsGrid(_sc));}
   ch.push(spacer(200));
   return new docx.Document({sections:[{properties:{page:{margin:{top:M,bottom:M,left:M,right:M}}},children:ch}]});
@@ -2663,15 +2677,15 @@ function buildModern(data,color){
   const sideContact=st==='FFFFFF'?'CCE4FF':'CCCCCC';
   side.push(new docx.Paragraph({spacing:{before:0,after:100},children:[new docx.TextRun({text:`${p.firstName} ${p.lastName}`.trim(),bold:true,size:36,color:st})]}));
   const cityStateZip=[[p.city,p.state].filter(Boolean).join(', '),p.zip].filter(Boolean).join(' ');[p.email,p.phone,p.address,cityStateZip].filter(Boolean).forEach(line=>side.push(new docx.Paragraph({spacing:{before:0,after:60},children:[new docx.TextRun({text:line,size:21,color:sideContact})]})));
-  const sideSec=t=>new docx.Paragraph({children:[new docx.TextRun({text:sectionLabel(t),bold:true,size:24,color:st})],border:{bottom:{style:docx.BorderStyle.SINGLE,size:3,color:st==='FFFFFF'?'6699CC':'777777'}},spacing:{before:280,after:120}});
-  const _sc=scItems(data);if(_sc.length){side.push(sideSec(scLabel(data)));_sc.forEach(s=>side.push(new docx.Paragraph({spacing:{before:0,after:70},children:[new docx.TextRun({text:`• ${s}`,size:21,color:sideContact})]})));}
-  const mainSec=t=>new docx.Paragraph({children:[new docx.TextRun({text:sectionLabel(t),bold:true,size:28,color:ac})],border:{bottom:{style:docx.BorderStyle.SINGLE,size:4,color:ac}},spacing:{before:280,after:160}});
-  if(c.objective){main.push(mainSec('Objective'));main.push(bodyTxt(c.objective,{after:120}));}
+  const sideSec=t=>new docx.Paragraph({children:sectionHeaderRuns(t,{size:24,color:st}),border:{bottom:{style:docx.BorderStyle.SINGLE,size:3,color:st==='FFFFFF'?'6699CC':'777777'}},spacing:{before:280,after:120}});
+  const _sc=scItems(data);  if(_sc.length){side.push(sideSec(scLabel(data)));_sc.forEach(s=>side.push(bullet(s,{size:21,color:sideContact,after:70})));}
+  const mainSec=t=>new docx.Paragraph({children:sectionHeaderRuns(t,{size:28,color:ac}),border:{bottom:{style:docx.BorderStyle.SINGLE,size:4,color:ac}},spacing:{before:280,after:160}});
+  if(c.objective){main.push(mainSec('Objective'));addBodyTxt(main,c.objective,{after:120});}
+  if(courseOfStudyText(data)){main.push(mainSec('Course of Study'));addBodyTxt(main,courseOfStudyText(data),{after:120});}
   if(data.workExperience?.length){main.push(mainSec('Experience'));data.workExperience.forEach(j=>jobBlock(j).forEach(q=>main.push(q)));}
   if(data.militaryService?.length){main.push(mainSec('Military Service'));data.militaryService.forEach(m=>militaryBlock(m).forEach(q=>main.push(q)));}
-  if(data.education?.length){main.push(mainSec('Education'));data.education.forEach(e=>main.push(eduBlock(e)));}
+  if(data.education?.length){main.push(mainSec('Education'));addEducationBlocks(main,data.education,{gapAfterLast:160});}
   if(data.volunteer?.length){main.push(mainSec('Volunteer'));data.volunteer.forEach(v=>volunteerBlock(v).forEach(q=>main.push(q)));}
-  if(data.educationSkills){main.push(mainSec('Skills Learned'));main.push(bodyTxt(data.educationSkills,{after:120}));}
   main.push(spacer(200));
   const nb={style:docx.BorderStyle.NONE,size:0,color:'FFFFFF'};
   return new docx.Document({sections:[{properties:{page:{margin:{top:0,bottom:0,left:0,right:0}}},children:[new docx.Table({width:{size:100,type:docx.WidthType.PERCENTAGE},borders:{top:nb,bottom:nb,left:nb,right:nb,insideH:nb,insideV:nb},rows:[new docx.TableRow({children:[new docx.TableCell({width:{size:twip(2.5),type:docx.WidthType.DXA},shading:{fill:ac,type:docx.ShadingType.CLEAR,color:'auto'},margins:{top:twip(.45),bottom:twip(.45),left:twip(.3),right:twip(.25)},children:side}),new docx.TableCell({width:{size:twip(5.0),type:docx.WidthType.DXA},margins:{top:twip(.4),bottom:twip(.4),left:twip(.35),right:twip(.35)},children:main})]})]})]},]});
@@ -2682,13 +2696,13 @@ function buildBold(data,color){
   const cityStateZip=[[p.city,p.state].filter(Boolean).join(', '),p.zip].filter(Boolean).join(' ');const addrLine=[p.address,cityStateZip].filter(Boolean).join(', ');const contact=[p.email,p.phone,addrLine].filter(Boolean).join('   |   ');
   const hdr=new docx.Table({width:{size:100,type:docx.WidthType.PERCENTAGE},borders:{top:nb,bottom:nb,left:nb,right:nb,insideH:nb,insideV:nb},rows:[new docx.TableRow({children:[new docx.TableCell({shading:{fill:ac,type:docx.ShadingType.CLEAR,color:'auto'},margins:{top:twip(.35),bottom:twip(.3),left:twip(.75),right:twip(.75)},children:[new docx.Paragraph({spacing:{before:0,after:60},children:[new docx.TextRun({text:`${p.firstName} ${p.lastName}`.trim(),bold:true,size:52,color:st})]}),new docx.Paragraph({spacing:{before:0,after:0},children:[new docx.TextRun({text:contact,size:22,color:st==='FFFFFF'?'CCE4FF':'BBBBBB'})]})]})]})]});
   const ch=[hdr];
-  const sec=t=>new docx.Paragraph({spacing:{before:300,after:160},children:[new docx.TextRun({text:sectionLabel(t),bold:true,size:28,color:ac})]});
-  if(c.objective){ch.push(sec('Objective'));ch.push(bodyTxt(c.objective,{after:120}));}
+  const sec=t=>new docx.Paragraph({spacing:{before:300,after:160},children:sectionHeaderRuns(t,{size:28,color:ac})});
+  if(c.objective){ch.push(sec('Objective'));addBodyTxt(ch,c.objective,{after:120});}
+  if(courseOfStudyText(data)){ch.push(sec('Course of Study'));addBodyTxt(ch,courseOfStudyText(data),{after:120});}
   if(data.workExperience?.length){ch.push(sec('Experience'));data.workExperience.forEach(j=>jobBlock(j).forEach(q=>ch.push(q)));}
   if(data.militaryService?.length){ch.push(sec('Military Service'));data.militaryService.forEach(m=>militaryBlock(m).forEach(q=>ch.push(q)));}
-  if(data.education?.length){ch.push(sec('Education'));data.education.forEach(e=>ch.push(eduBlock(e)));}
+  if(data.education?.length){ch.push(sec('Education'));addEducationBlocks(ch,data.education,{gapAfterLast:160});}
   if(data.volunteer?.length){ch.push(sec('Volunteer'));data.volunteer.forEach(v=>volunteerBlock(v).forEach(q=>ch.push(q)));}
-  if(data.educationSkills){ch.push(sec('Skills Learned'));ch.push(bodyTxt(data.educationSkills,{after:120}));}
   const _sc=scItems(data);if(_sc.length){ch.push(sec(scLabel(data)));ch.push(skillsCertsGrid(_sc));}
   ch.push(spacer(200));
   return new docx.Document({sections:[{properties:{page:{margin:{top:0,bottom:bm,left:bm,right:bm}}},children:ch}]});
@@ -2700,12 +2714,13 @@ function buildExecutive(data,color){
   ch.push(new docx.Paragraph({spacing:{before:0,after:40},children:[new docx.TextRun({text:`${p.firstName} ${p.lastName}`.trim(),bold:true,size:48,color:'111111'})]}));
   ch.push(new docx.Paragraph({spacing:{before:0,after:100},children:[new docx.TextRun({text:cl,size:22,color:'666666'})]}));
   ch.push(new docx.Paragraph({border:{bottom:{style:docx.BorderStyle.THICK,size:14,color:ac}},spacing:{before:0,after:160}}));
-  const sec=t=>new docx.Paragraph({tabStops:[{type:docx.TabStopType.RIGHT,position:twip(6.8)}],spacing:{before:300,after:160},children:[new docx.TextRun({text:sectionLabel(t),bold:true,size:26,color:'111111'})],border:{bottom:{style:docx.BorderStyle.SINGLE,size:2,color:'cccccc'}}});
-  if(c.objective){ch.push(sec('Professional Summary'));ch.push(bodyTxt(c.objective,{after:120}));}
+  const sec=t=>new docx.Paragraph({tabStops:[{type:docx.TabStopType.RIGHT,position:twip(6.8)}],spacing:{before:300,after:160},children:sectionHeaderRuns(t,{size:26,color:'111111'}),border:{bottom:{style:docx.BorderStyle.SINGLE,size:2,color:'cccccc'}}});
+  if(c.objective){ch.push(sec('Professional Summary'));addBodyTxt(ch,c.objective,{after:120});}
+  if(courseOfStudyText(data)){ch.push(sec('Course of Study'));addBodyTxt(ch,courseOfStudyText(data),{after:120});}
   if(data.workExperience?.length){ch.push(sec('Experience'));data.workExperience.forEach(job=>{const loc=[job.city,job.state].filter(Boolean).join(', '),end=job.current?'Present':[job.endMonth,job.endYear].filter(Boolean).join(' '),dates=`${[job.startMonth,job.startYear].filter(Boolean).join(' ')} – ${end}`;ch.push(new docx.Paragraph({tabStops:[{type:docx.TabStopType.RIGHT,position:twip(6.8)}],spacing:{before:280,after:60},children:[new docx.TextRun({text:`${job.jobTitle}, ${job.employer}${loc?', '+loc:''}`,bold:true,size:26,color:'1a1a1a'}),new docx.TextRun({text:'\t'+dates,italics:true,size:22,color:'888888'})]}));(job.bulletLines||[]).forEach(b=>ch.push(bullet(b)));});}
-  if(data.education?.length){ch.push(sec('Education'));data.education.forEach(e=>ch.push(eduBlock(e)));}
+  if(data.militaryService?.length){ch.push(sec('Military Service'));data.militaryService.forEach(m=>militaryBlock(m).forEach(q=>ch.push(q)));}
+  if(data.education?.length){ch.push(sec('Education'));addEducationBlocks(ch,data.education,{gapAfterLast:160});}
   if(data.volunteer?.length){ch.push(sec('Volunteer'));data.volunteer.forEach(v=>volunteerBlock(v).forEach(q=>ch.push(q)));}
-  if(data.educationSkills){ch.push(sec('Skills Learned'));ch.push(bodyTxt(data.educationSkills,{after:120}));}
   const _sc=scItems(data);if(_sc.length){ch.push(sec(scLabel(data)));ch.push(skillsCertsGrid(_sc));}
   ch.push(spacer(200));
   return new docx.Document({sections:[{properties:{page:{margin:{top:M,bottom:M,left:M,right:M}}},children:ch}]});
@@ -2719,16 +2734,16 @@ function buildFlip(data,color){
   const csz=[[p.city,p.state].filter(Boolean).join(', '),p.zip].filter(Boolean).join(' ');
   side.push(new docx.Paragraph({spacing:{before:0,after:100},children:[new docx.TextRun({text:`${p.firstName} ${p.lastName}`.trim(),bold:true,size:34,color:st})]}));
   [p.email,p.phone,p.address,csz].filter(Boolean).forEach(line=>side.push(new docx.Paragraph({spacing:{before:0,after:60},children:[new docx.TextRun({text:line,size:20,color:sideContact})]})));
-  const sideSec=t=>new docx.Paragraph({children:[new docx.TextRun({text:sectionLabel(t),bold:true,size:22,color:st})],border:{bottom:{style:docx.BorderStyle.SINGLE,size:3,color:st==='FFFFFF'?'6699CC':'777777'}},spacing:{before:260,after:120}});
+  const sideSec=t=>new docx.Paragraph({children:sectionHeaderRuns(t,{size:22,color:st}),border:{bottom:{style:docx.BorderStyle.SINGLE,size:3,color:st==='FFFFFF'?'6699CC':'777777'}},spacing:{before:260,after:120}});
   const _sc=scItems(data);
-  if(_sc.length){side.push(sideSec(scLabel(data)));_sc.forEach(s=>side.push(new docx.Paragraph({spacing:{before:0,after:70},children:[new docx.TextRun({text:`• ${s}`,size:20,color:sideContact})]})));}
-  if(data.education?.length){side.push(sideSec('Education'));data.education.forEach(e=>{const f=e.fieldOfStudy?`, ${e.fieldOfStudy}`:'';const loc=[e.city,e.state].filter(Boolean).join(', ');side.push(new docx.Paragraph({spacing:{before:0,after:60},children:[new docx.TextRun({text:`${e.degree}${f}`,bold:true,size:20,color:st})]}));side.push(new docx.Paragraph({spacing:{before:0,after:80},children:[new docx.TextRun({text:[e.school,loc,eduGradDate(e)].filter(Boolean).join(', '),size:19,color:sideContact})]}));});}
-  const mainSec=t=>new docx.Paragraph({children:[new docx.TextRun({text:sectionLabel(t),bold:true,size:26,color:ac})],border:{bottom:{style:docx.BorderStyle.SINGLE,size:4,color:ac}},spacing:{before:260,after:140}});
-  if(c.objective){main.push(mainSec('Objective'));main.push(bodyTxt(c.objective,{after:120}));}
+  if(_sc.length){side.push(sideSec(scLabel(data)));_sc.forEach(s=>side.push(bullet(s,{size:20,color:sideContact,after:70})));}
+  if(data.education?.length){side.push(sideSec('Education'));addEducationBlocks(side,data.education,{before:0,gapAfter:140,gapAfterLast:80,degreeSize:20,detailSize:19,degreeColor:st,detailColor:sideContact});}
+  const mainSec=t=>new docx.Paragraph({children:sectionHeaderRuns(t,{size:26,color:ac}),border:{bottom:{style:docx.BorderStyle.SINGLE,size:4,color:ac}},spacing:{before:260,after:140}});
+  if(c.objective){main.push(mainSec('Objective'));addBodyTxt(main,c.objective,{after:120});}
+  if(courseOfStudyText(data)){main.push(mainSec('Course of Study'));addBodyTxt(main,courseOfStudyText(data),{after:120});}
   if(data.workExperience?.length){main.push(mainSec('Experience'));data.workExperience.forEach(j=>jobBlock(j).forEach(q=>main.push(q)));}
   if(data.militaryService?.length){main.push(mainSec('Military Service'));data.militaryService.forEach(m=>militaryBlock(m).forEach(q=>main.push(q)));}
   if(data.volunteer?.length){main.push(mainSec('Volunteer'));data.volunteer.forEach(v=>volunteerBlock(v).forEach(q=>main.push(q)));}
-  if(data.educationSkills){main.push(mainSec('Skills Learned'));main.push(bodyTxt(data.educationSkills,{after:120}));}
   main.push(spacer(200));
   return new docx.Document({sections:[{properties:{page:{margin:{top:0,bottom:0,left:0,right:0}}},children:[new docx.Table({width:{size:100,type:docx.WidthType.PERCENTAGE},borders:{top:nb,bottom:nb,left:nb,right:nb,insideH:nb,insideV:nb},rows:[new docx.TableRow({children:[new docx.TableCell({width:{size:twip(5.0),type:docx.WidthType.DXA},margins:{top:twip(.4),bottom:twip(.4),left:twip(.4),right:twip(.3)},children:main}),new docx.TableCell({width:{size:twip(2.5),type:docx.WidthType.DXA},shading:{fill:ac,type:docx.ShadingType.CLEAR,color:'auto'},margins:{top:twip(.45),bottom:twip(.45),left:twip(.25),right:twip(.3)},children:side})]})]})]},]});
 }
@@ -2741,17 +2756,17 @@ function buildTopLeft(data,color){
   const ct=[p.email,p.phone,addr].filter(Boolean).join('   |   ');
   const hdrRow=new docx.TableRow({children:[new docx.TableCell({columnSpan:2,shading:{fill:ac,type:docx.ShadingType.CLEAR,color:'auto'},margins:{top:twip(.45),bottom:twip(.4),left:twip(.8),right:twip(.8)},children:[new docx.Paragraph({alignment:docx.AlignmentType.CENTER,spacing:{before:0,after:60},children:[new docx.TextRun({text:`${p.firstName} ${p.lastName}`.trim(),bold:true,size:58,color:st})]}),new docx.Paragraph({alignment:docx.AlignmentType.CENTER,spacing:{before:0,after:0},children:[new docx.TextRun({text:ct,size:20,color:st==='FFFFFF'?'CCE4FF':'888888'})]})]})]});
   const side=[];
-  const sideSec=t=>new docx.Paragraph({children:[new docx.TextRun({text:sectionLabel(t),bold:true,size:21,color:'333333'})],border:{bottom:{style:docx.BorderStyle.SINGLE,size:2,color:'CCCCCC'}},spacing:{before:220,after:110}});
+  const sideSec=t=>new docx.Paragraph({children:sectionHeaderRuns(t,{size:21,color:'333333'}),border:{bottom:{style:docx.BorderStyle.SINGLE,size:2,color:'CCCCCC'}},spacing:{before:220,after:110}});
   const _sc=scItems(data);
-  if(_sc.length){side.push(sideSec(scLabel(data)));_sc.forEach(s=>side.push(new docx.Paragraph({spacing:{before:0,after:70},children:[new docx.TextRun({text:`• ${s}`,size:20,color:'444444'})]})));}
-  if(data.education?.length){side.push(sideSec('Education'));data.education.forEach(e=>{const f=e.fieldOfStudy?`, ${e.fieldOfStudy}`:'';const loc=[e.city,e.state].filter(Boolean).join(', ');side.push(new docx.Paragraph({spacing:{before:0,after:80},children:[new docx.TextRun({text:`${e.degree}${f}`,bold:true,size:20,color:'222222'}),new docx.TextRun({text:`, ${[e.school,loc,eduGradDate(e)].filter(Boolean).join(', ')}`,size:19,color:'666666'})]})  );});}
+  if(_sc.length){side.push(sideSec(scLabel(data)));_sc.forEach(s=>side.push(bullet(s,{size:20,color:'444444',after:70})));}
+  if(data.education?.length){side.push(sideSec('Education'));addEducationBlocks(side,data.education,{before:0,gapAfter:140,gapAfterLast:80,degreeSize:20,detailSize:19,degreeColor:'222222',detailColor:'666666'});}
   const main=[];
-  const mainSec=t=>new docx.Paragraph({children:[new docx.TextRun({text:sectionLabel(t),bold:true,size:26,color:ac})],border:{bottom:{style:docx.BorderStyle.SINGLE,size:4,color:ac}},spacing:{before:240,after:140}});
-  if(c.objective){main.push(mainSec('Objective'));main.push(bodyTxt(c.objective,{after:120}));}
+  const mainSec=t=>new docx.Paragraph({children:sectionHeaderRuns(t,{size:26,color:ac}),border:{bottom:{style:docx.BorderStyle.SINGLE,size:4,color:ac}},spacing:{before:240,after:140}});
+  if(c.objective){main.push(mainSec('Objective'));addBodyTxt(main,c.objective,{after:120});}
+  if(courseOfStudyText(data)){main.push(mainSec('Course of Study'));addBodyTxt(main,courseOfStudyText(data),{after:120});}
   if(data.workExperience?.length){main.push(mainSec('Experience'));data.workExperience.forEach(j=>jobBlock(j).forEach(q=>main.push(q)));}
   if(data.militaryService?.length){main.push(mainSec('Military Service'));data.militaryService.forEach(m=>militaryBlock(m).forEach(q=>main.push(q)));}
   if(data.volunteer?.length){main.push(mainSec('Volunteer'));data.volunteer.forEach(v=>volunteerBlock(v).forEach(q=>main.push(q)));}
-  if(data.educationSkills){main.push(mainSec('Skills Learned'));main.push(bodyTxt(data.educationSkills,{after:120}));}
   main.push(spacer(200));
   const bodyRow=new docx.TableRow({children:[new docx.TableCell({width:{size:twip(2.3),type:docx.WidthType.DXA},shading:{fill:'EEEEEE',type:docx.ShadingType.CLEAR,color:'auto'},margins:{top:twip(.35),bottom:twip(.35),left:twip(.3),right:twip(.25)},children:side}),new docx.TableCell({width:{size:twip(5.2),type:docx.WidthType.DXA},margins:{top:twip(.35),bottom:twip(.35),left:twip(.35),right:twip(.4)},children:main})]});
   return new docx.Document({sections:[{properties:{page:{margin:{top:0,bottom:0,left:0,right:0}}},children:[new docx.Table({width:{size:100,type:docx.WidthType.PERCENTAGE},borders:{top:nb,bottom:nb,left:nb,right:nb,insideH:nb,insideV:nb},rows:[hdrRow,bodyRow]})]},]});
@@ -2766,44 +2781,44 @@ function buildTopRight(data,color){
   const sideContact=st==='FFFFFF'?'CCE4FF':'CCCCCC';
   const hdrRow=new docx.TableRow({children:[new docx.TableCell({columnSpan:2,shading:{fill:ac,type:docx.ShadingType.CLEAR,color:'auto'},margins:{top:twip(.45),bottom:twip(.4),left:twip(.8),right:twip(.8)},children:[new docx.Paragraph({alignment:docx.AlignmentType.CENTER,spacing:{before:0,after:60},children:[new docx.TextRun({text:`${p.firstName} ${p.lastName}`.trim(),bold:true,size:58,color:st})]}),new docx.Paragraph({alignment:docx.AlignmentType.CENTER,spacing:{before:0,after:0},children:[new docx.TextRun({text:ct,size:20,color:st==='FFFFFF'?'CCE4FF':'888888'})]})]})]});
   const main=[];
-  const mainSec=t=>new docx.Paragraph({children:[new docx.TextRun({text:sectionLabel(t),bold:true,size:26,color:ac})],border:{bottom:{style:docx.BorderStyle.SINGLE,size:4,color:ac}},spacing:{before:240,after:140}});
-  if(c.objective){main.push(mainSec('Objective'));main.push(bodyTxt(c.objective,{after:120}));}
+  const mainSec=t=>new docx.Paragraph({children:sectionHeaderRuns(t,{size:26,color:ac}),border:{bottom:{style:docx.BorderStyle.SINGLE,size:4,color:ac}},spacing:{before:240,after:140}});
+  if(c.objective){main.push(mainSec('Objective'));addBodyTxt(main,c.objective,{after:120});}
+  if(courseOfStudyText(data)){main.push(mainSec('Course of Study'));addBodyTxt(main,courseOfStudyText(data),{after:120});}
   if(data.workExperience?.length){main.push(mainSec('Experience'));data.workExperience.forEach(j=>jobBlock(j).forEach(q=>main.push(q)));}
   if(data.militaryService?.length){main.push(mainSec('Military Service'));data.militaryService.forEach(m=>militaryBlock(m).forEach(q=>main.push(q)));}
   if(data.volunteer?.length){main.push(mainSec('Volunteer'));data.volunteer.forEach(v=>volunteerBlock(v).forEach(q=>main.push(q)));}
-  if(data.educationSkills){main.push(mainSec('Skills Learned'));main.push(bodyTxt(data.educationSkills,{after:120}));}
   main.push(spacer(200));
   const side=[];
-  const sideSec=t=>new docx.Paragraph({children:[new docx.TextRun({text:sectionLabel(t),bold:true,size:22,color:st})],border:{bottom:{style:docx.BorderStyle.SINGLE,size:3,color:st==='FFFFFF'?'6699CC':'777777'}},spacing:{before:240,after:120}});
+  const sideSec=t=>new docx.Paragraph({children:sectionHeaderRuns(t,{size:22,color:st}),border:{bottom:{style:docx.BorderStyle.SINGLE,size:3,color:st==='FFFFFF'?'6699CC':'777777'}},spacing:{before:240,after:120}});
   const _sc=scItems(data);
-  if(_sc.length){side.push(sideSec(scLabel(data)));_sc.forEach(s=>side.push(new docx.Paragraph({spacing:{before:0,after:70},children:[new docx.TextRun({text:`• ${s}`,size:20,color:sideContact})]})));}
-  if(data.education?.length){side.push(sideSec('Education'));data.education.forEach(e=>{const f=e.fieldOfStudy?`, ${e.fieldOfStudy}`:'';const loc=[e.city,e.state].filter(Boolean).join(', ');side.push(new docx.Paragraph({spacing:{before:0,after:60},children:[new docx.TextRun({text:`${e.degree}${f}`,bold:true,size:20,color:st})]}));side.push(new docx.Paragraph({spacing:{before:0,after:80},children:[new docx.TextRun({text:[e.school,loc,eduGradDate(e)].filter(Boolean).join(', '),size:19,color:sideContact})]}));});}
+  if(_sc.length){side.push(sideSec(scLabel(data)));_sc.forEach(s=>side.push(bullet(s,{size:20,color:sideContact,after:70})));}
+  if(data.education?.length){side.push(sideSec('Education'));addEducationBlocks(side,data.education,{before:0,gapAfter:140,gapAfterLast:80,degreeSize:20,detailSize:19,degreeColor:st,detailColor:sideContact});}
   const bodyRow=new docx.TableRow({children:[new docx.TableCell({width:{size:twip(5.2),type:docx.WidthType.DXA},margins:{top:twip(.35),bottom:twip(.35),left:twip(.4),right:twip(.3)},children:main}),new docx.TableCell({width:{size:twip(2.3),type:docx.WidthType.DXA},shading:{fill:ac,type:docx.ShadingType.CLEAR,color:'auto'},margins:{top:twip(.35),bottom:twip(.35),left:twip(.25),right:twip(.3)},children:side})]});
   return new docx.Document({sections:[{properties:{page:{margin:{top:0,bottom:0,left:0,right:0}}},children:[new docx.Table({width:{size:100,type:docx.WidthType.PERCENTAGE},borders:{top:nb,bottom:nb,left:nb,right:nb,insideH:nb,insideV:nb},rows:[hdrRow,bodyRow]})]},]});
 }
 
-// Split: two equal columns — left has objective+experience, right has military+education+skills
+// Two Column: gray header + left sidebar, wide right column for experience
 function buildSplit(data,color){
-  const p=data.personal,c=data.careerContext,ac=color.accent,M=twip(.85),nb={style:docx.BorderStyle.NONE,size:0,color:'FFFFFF'},ch=[];
+  const p=data.personal,c=data.careerContext,ac=color.accent,nb={style:docx.BorderStyle.NONE,size:0,color:'FFFFFF'},gray='EEEEEE',grayShade={fill:gray,type:docx.ShadingType.CLEAR,color:'auto'};
   const csz=[[p.city,p.state].filter(Boolean).join(', '),p.zip].filter(Boolean).join(' ');
   const addr=[p.address,csz].filter(Boolean).join(', ');
   const ct=[p.email,p.phone,addr].filter(Boolean).join('   |   ');
-  ch.push(new docx.Paragraph({alignment:docx.AlignmentType.CENTER,spacing:{before:0,after:80},children:[new docx.TextRun({text:`${p.firstName} ${p.lastName}`.trim(),bold:true,size:48,color:'111111'})]}));
-  if(ct)ch.push(new docx.Paragraph({alignment:docx.AlignmentType.CENTER,spacing:{before:0,after:120},children:[new docx.TextRun({text:ct,size:22,color:'555555'})]}));
-  ch.push(new docx.Paragraph({border:{bottom:{style:docx.BorderStyle.SINGLE,size:8,color:ac}},spacing:{before:0,after:0}}));
-  const mkSec=t=>new docx.Paragraph({children:[new docx.TextRun({text:sectionLabel(t),bold:true,size:24,color:ac})],border:{bottom:{style:docx.BorderStyle.SINGLE,size:3,color:ac}},spacing:{before:240,after:140}});
-  const leftCol=[],rightCol=[];
-  if(c.objective){leftCol.push(mkSec('Objective'));leftCol.push(bodyTxt(c.objective,{after:100}));}
-  if(data.workExperience?.length){leftCol.push(mkSec('Experience'));data.workExperience.forEach(j=>jobBlock(j).forEach(q=>leftCol.push(q)));}
-  if(data.militaryService?.length){rightCol.push(mkSec('Military Service'));data.militaryService.forEach(m=>militaryBlock(m).forEach(q=>rightCol.push(q)));}
-  if(data.education?.length){rightCol.push(mkSec('Education'));data.education.forEach(e=>rightCol.push(eduBlock(e)));}
-  if(data.volunteer?.length){rightCol.push(mkSec('Volunteer'));data.volunteer.forEach(v=>volunteerBlock(v).forEach(q=>rightCol.push(q)));}
-  if(data.educationSkills){rightCol.push(mkSec('Skills Learned'));rightCol.push(bodyTxt(data.educationSkills,{after:100}));}
-  const _sc=scItems(data);if(_sc.length){rightCol.push(mkSec(scLabel(data)));_sc.forEach(s=>rightCol.push(new docx.Paragraph({spacing:{before:0,after:80},children:[new docx.TextRun({text:`${selectedBullet} ${s}`,size:22,color:'2a2a2a'})]})));}
-  const mkCell=items=>new docx.TableCell({borders:{top:nb,bottom:nb,left:nb,right:nb},margins:{top:twip(.25),bottom:twip(.2),left:twip(.15),right:twip(.15)},children:items.length?items:[new docx.Paragraph({})]});
-  ch.push(new docx.Table({width:{size:100,type:docx.WidthType.PERCENTAGE},borders:{top:nb,bottom:nb,left:nb,right:nb,insideH:nb,insideV:nb},rows:[new docx.TableRow({children:[mkCell(leftCol),mkCell(rightCol)]})]}));
-  ch.push(spacer(200));
-  return new docx.Document({sections:[{properties:{page:{margin:{top:M,bottom:M,left:M,right:M}}},children:ch}]});
+  const hdrRow=new docx.TableRow({children:[new docx.TableCell({columnSpan:2,shading:grayShade,margins:{top:twip(.5),bottom:twip(.35),left:twip(.7),right:twip(.7)},children:[new docx.Paragraph({spacing:{before:0,after:50},children:[new docx.TextRun({text:`${p.firstName} ${p.lastName}`.trim(),bold:true,size:50,color:'111111',font:'Calibri'})]}),...(ct?[new docx.Paragraph({spacing:{before:0,after:100},children:[new docx.TextRun({text:ct,size:20,color:'555555',font:'Calibri'})]})]:[]),new docx.Paragraph({border:{bottom:{style:docx.BorderStyle.SINGLE,size:10,color:ac}},spacing:{before:0,after:0}})]})]});
+  const sideSec=t=>new docx.Paragraph({children:sectionHeaderRuns(t,{size:22,color:ac}),border:{bottom:{style:docx.BorderStyle.SINGLE,size:2,color:ac}},spacing:{before:180,after:110}});
+  const mainSec=t=>new docx.Paragraph({children:sectionHeaderRuns(t,{size:26,color:ac}),border:{bottom:{style:docx.BorderStyle.SINGLE,size:4,color:ac}},spacing:{before:260,after:140}});
+  const side=[],main=[];
+  const _sc=scItems(data);
+  if(_sc.length){side.push(sideSec(scLabel(data)));_sc.forEach(s=>side.push(bullet(s,{size:20,after:70})));}
+  if(data.education?.length){side.push(sideSec('Education'));addEducationBlocks(side,data.education,{before:0,gapAfter:140,gapAfterLast:120,degreeSize:20,detailSize:19,degreeColor:'1a1a1a',detailColor:'555555'});}
+  if(c.objective){main.push(mainSec('Objective'));addBodyTxt(main,c.objective,{after:120});}
+  if(courseOfStudyText(data)){main.push(mainSec('Course of Study'));addBodyTxt(main,courseOfStudyText(data),{after:120});}
+  if(data.workExperience?.length){main.push(mainSec('Experience'));data.workExperience.forEach(j=>jobBlock(j).forEach(q=>main.push(q)));}
+  if(data.militaryService?.length){main.push(mainSec('Military Service'));data.militaryService.forEach(m=>militaryBlock(m).forEach(q=>main.push(q)));}
+  if(data.volunteer?.length){main.push(mainSec('Volunteer'));data.volunteer.forEach(v=>volunteerBlock(v).forEach(q=>main.push(q)));}
+  main.push(spacer(200));
+  const divider={style:docx.BorderStyle.SINGLE,size:4,color:ac};
+  const bodyRow=new docx.TableRow({children:[new docx.TableCell({width:{size:twip(2.25),type:docx.WidthType.DXA},shading:grayShade,margins:{top:twip(.25),bottom:twip(.25),left:twip(.28),right:twip(.18)},children:side.length?side:[new docx.Paragraph({})]}),new docx.TableCell({width:{size:twip(4.75),type:docx.WidthType.DXA},margins:{top:twip(.25),bottom:twip(.25),left:twip(.32),right:twip(.28)},children:main.length?main:[new docx.Paragraph({})]})]});
+  return new docx.Document({sections:[{properties:{page:{margin:{top:0,bottom:0,left:0,right:0}}},children:[new docx.Table({width:{size:100,type:docx.WidthType.PERCENTAGE},borders:{top:nb,bottom:nb,left:nb,right:nb,insideH:nb,insideV:divider},rows:[hdrRow,bodyRow]})]},]});
 }
 
 // ── Cover Letter ──────────────────────────────────
@@ -2854,13 +2869,8 @@ function sendTip(key){
   }
 
   if(key==='work'){
-    const imported = resumeData.workExperience?.filter(j=>j._fromAssignment);
-    if(imported?.length){
-      setTimeout(()=>addAIMsg(`✅ **${imported.length} job${imported.length>1?'s':''} imported from your Work Experience Assignment** — already loaded below. Review the bullet points, make any edits, then add more jobs if needed.`),300);
-    } else {
-      setTimeout(()=>addAIMsg(`Write naturally — describe what you did, the tools you used, and anything you're proud of. I'll turn it into professional bullet points. Enter your job title first and I'll generate suggestions specific to that role.`),300);
-      setTimeout(()=>addDutySuggCard(),700);
-    }
+    setTimeout(()=>addAIMsg(`Write naturally — describe what you did, the tools you used, and anything you're proud of. I'll turn it into professional bullet points. Enter your job title first and I'll generate suggestions specific to that role.`),300);
+    setTimeout(()=>addDutySuggCard(),700);
   }
 
   if(key==='military'){
@@ -2875,12 +2885,9 @@ function sendTip(key){
 
   if(key==='skills'){
     const program=resumeData.personal.program||'';
-    const found=SKILL_CERT_TIP_EXAMPLES.find(item=>item.match.test(program))||{
-      skills:['Safety procedures','Hand and power tools','Customer service','Teamwork','Problem solving','Time management'],
-      certs:['OSHA 10','First Aid/CPR','Forklift Certification']
-    };
+    const found=currentProgramDefaults || FALLBACK_PROGRAM_DEFAULTS;
     setTimeout(()=>addSuggestionCard(`Suggested skills for ${program||'your program'} — click to add:`,found.skills,'skillsDump','append'),600);
-    setTimeout(()=>addSuggestionCard('Suggested certifications — click to add:',found.certs,'certsDump','append'),900);
+    setTimeout(()=>addSuggestionCard('Suggested certifications — click to add:',found.certifications,'certsDump','append'),900);
   }
 }
 
@@ -2893,11 +2900,8 @@ function buildWorkTip() {
 
 function buildSkillsCertsTip() {
   const program = resumeData.personal.program || '';
-  const found = SKILL_CERT_TIP_EXAMPLES.find(item=>item.match.test(program)) || {
-    skills:['Safety procedures','Hand and power tools','Customer service','Teamwork','Problem solving','Time management'],
-    certs:['OSHA 10','First Aid/CPR','Forklift Certification']
-  };
-  return `${TIPS.skills} Recommended examples for ${program || 'your program'}:\n\nSkills:\n${found.skills.map(s=>`• ${s}`).join('\n')}\n\nCertifications:\n${found.certs.map(c=>`• ${c}`).join('\n')}`;
+  const found = currentProgramDefaults || FALLBACK_PROGRAM_DEFAULTS;
+  return `${TIPS.skills} Recommended examples for ${program || 'your program'}:\n\nSkills:\n${found.skills.map(s=>`• ${s}`).join('\n')}\n\nCertifications:\n${found.certifications.map(c=>`• ${c}`).join('\n')}`;
 }
 
 const _suggPool=[];
