@@ -412,7 +412,7 @@ const TIPS = {
   personal:`Fill in your contact information carefully — this is how employers reach you. Make sure your email looks professional and your phone number is correct. Select your campus and program from the dropdowns.`,
   career:`Be specific about the type of job and employer you're targeting. Examples: "I want to work as an automotive technician at a dealership doing diagnostics and hands-on repairs." "I am looking for an entry-level HVAC position where I can install, maintain, and troubleshoot residential systems." "I want a welding job in manufacturing or construction where I can use MIG/TIG skills and read blueprints." Pick up to 3 qualities that describe you as a worker.`,
   work:`When describing your duties, just write naturally — don't worry about formatting. Mention specific tools, equipment, tasks, and anything you're proud of. I'll convert it into professional bullet points for you.`,
-  education:`Your trade program has been pre-filled below. Confirm the details and add your graduation year. Then add your high school diploma or any other education you have.`,
+  education:`Your trade program has been pre-filled below and must be saved before you continue. Confirm the details, add your graduation month/year, and click **Build →**. Then add your high school diploma or any other education you have.`,
   skills:`Write out every skill and certification you have — tools, equipment, software, techniques, licenses, OSHA/EPA/CDL cards, manufacturer training, anything relevant. I'll clean it up, remove duplicates, and organize it professionally.`,
   military:`Add your military service below — active duty, reserves, or National Guard. In the Duties box, describe your role naturally: what you did every day, equipment you operated or maintained, people you supervised or trained, and anything you're proud of. I'll turn it into professional resume bullets that highlight leadership, reliability, technical skills, and teamwork — all things trade employers value.`,
   volunteer:`Add any volunteer work, community service, church activities, or unpaid experience. Even informal roles count — helping at events, working with youth groups, assisting neighbors. Describe what you did and I'll write professional bullets for it.`,
@@ -670,6 +670,11 @@ function clearChat() {
 
 function showSection(key) {
   if (key === 'courseOfStudy') key = 'education';
+  const sectionsAfterEducation = new Set(['volunteer', 'skills', 'certifications', 'template']);
+  if (sectionsAfterEducation.has(key) && !isEducationRequirementMet()) {
+    addAIMsg('Your trade program education is required before continuing. Confirm the pre-filled details, add your graduation month/year, and click **Build →**.');
+    key = 'education';
+  }
   currentSection = key;
   renderLeftNav();
   clearChat();
@@ -738,7 +743,10 @@ function continueProgress() {
   if (saved.careerContext?.objective)                       setStatus('career','done');
   if (saved.workExperience?.length || saved.militaryService?.length || saved.education?.length) setStatus('work','done');
   if (saved.militaryService?.length || saved.education?.length) setStatus('military','done');
-  if (saved.education?.length)                             setStatus('education','done');
+  if (saved.education?.length) {
+    pruneEmptyEducationEntries();
+    if (isEducationRequirementMet()) setStatus('education','done');
+  }
   if (saved.volunteer?.length)                              setStatus('volunteer','done');
   if (saved.skills?.length || saved.certifications?.length) {
     setStatus('skills','done');
@@ -748,9 +756,9 @@ function continueProgress() {
   addAIMsg(`Welcome back${name}! I've restored your progress. Use the menu on the left to pick up where you left off.`);
   if      (!saved.personal?.firstName)          showSection('personal');
   else if (!saved.careerContext?.objective)      showSection('career');
-  else if (!saved.workExperience?.length && !saved.militaryService?.length && !saved.education?.length) showSection('work');
-  else if (!saved.militaryService?.length && !saved.education?.length) showSection('military');
-  else if (!saved.education?.length)                        showSection('education');
+  else if (!saved.workExperience?.length && !saved.militaryService?.length && !isEducationRequirementMet()) showSection('work');
+  else if (!saved.militaryService?.length && !isEducationRequirementMet()) showSection('military');
+  else if (!isEducationRequirementMet())        showSection('education');
   else if (!saved.skills?.length && !saved.certifications?.length) showSection('skills');
   else                                           showSection('template');
 }
@@ -818,7 +826,7 @@ async function extractResume() {
     }
     if (parsed.education?.length) {
       resumeData.education = parsed.education.filter(edu => !isEmptyEducationEntry(edu));
-      if (resumeData.education.length) {
+      if (isEducationRequirementMet()) {
         setStatus('education','done');
         found.push(`${resumeData.education.length} education entr${resumeData.education.length===1?'y':'ies'}`);
       }
@@ -1397,7 +1405,14 @@ function cancelEditWork() {
 }
 
 function deleteEdu(index) {
+  const edu = resumeData.education[index];
+  if (requiresProgramEducationEntry() && isProgramEducationEntry(edu)) {
+    addAIMsg('Your current trade program education is required and cannot be removed. Edit it instead if something needs to change.');
+    showSection('education');
+    return;
+  }
   resumeData.education.splice(index,1);
+  if (!isEducationRequirementMet()) setStatus('education', 'pending');
   saveProgress();
   showSection('education');
 }
@@ -1943,16 +1958,27 @@ function buildProgramEducationEntry() {
 }
 
 function hasProgramEducationEntry() {
+  return (resumeData.education || []).some(edu => isProgramEducationEntry(edu));
+}
+
+function isProgramEducationEntry(edu) {
   const built = buildProgramEducationEntry();
-  if (!built) return false;
+  if (!built || isEmptyEducationEntry(edu)) return false;
   const program = built.fieldOfStudy.toLowerCase();
   const school = built.school.toLowerCase();
-  return (resumeData.education || []).some(edu => {
-    if (isEmptyEducationEntry(edu)) return false;
-    const field = String(edu.fieldOfStudy || '').trim().toLowerCase();
-    const eduSchool = String(edu.school || '').trim().toLowerCase();
-    return field === program || (field === program && eduSchool === school);
-  });
+  const field = String(edu.fieldOfStudy || '').trim().toLowerCase();
+  const eduSchool = String(edu.school || '').trim().toLowerCase();
+  return field === program && (!school || !eduSchool || eduSchool === school);
+}
+
+function requiresProgramEducationEntry() {
+  return Boolean((resumeData.personal || {}).program);
+}
+
+function isEducationRequirementMet() {
+  pruneEmptyEducationEntries();
+  if (requiresProgramEducationEntry()) return hasProgramEducationEntry();
+  return (resumeData.education || []).length > 0;
 }
 
 function resolveEducationFormPrefill(prefill) {
@@ -1965,17 +1991,21 @@ function resolveEducationFormPrefill(prefill) {
 
 function renderEduForm(prefill) {
   const pf = resolveEducationFormPrefill(prefill);
+  const programRequired = requiresProgramEducationEntry() && !hasProgramEducationEntry();
+  const canContinue = isEducationRequirementMet();
   const monthOpts = MONTHS.map(m=>`<option value="${m}" ${pf.gradMonth===m?'selected':''}>${m}</option>`).join('');
   const degOpts = ['','Diploma','Associate in Specialized Technology','High School Diploma','GED / High School Equivalency',"Associate's Degree","Bachelor's Degree","Master's Degree",'Vocational Certificate','Other'].map(d=>`<option value="${d}" ${pf.degree===d?'selected':''}>${d||'— Select —'}</option>`).join('');
   const isInProgress = pf.gradYear === 'In Progress';
   const banner = pf.isPrefilled ? `<div class="prefill-banner">ℹ️ Pre-filled from your program. Add your graduation month/year and confirm.</div>` : '';
+  const requiredBanner = programRequired ? `<div class="prefill-banner" style="border-color:#fca5a5;background:#fef2f2;color:#991b1b">⚠️ Saving your current trade program education is required before you can continue.</div>` : '';
   const saved = resumeData.education;
-  const savedList = saved.length ? `<div class="form-card" style="margin-bottom:16px"><div class="form-card-hdr">🎓 Saved Education (${saved.length})</div><div class="form-card-body" style="padding-bottom:14px">${sortedEducation().map(({edu:e,index:i})=>`<div style="display:flex;justify-content:space-between;align-items:center;gap:10px;padding:8px 0;border-bottom:1px solid var(--slate-100)"><div><div style="font-size:14px;font-weight:600">${escHtml(e.degree)}${e.fieldOfStudy?' – '+escHtml(e.fieldOfStudy):''}</div><div style="font-size:12px;color:var(--slate-500)">${escHtml(e.school)} | ${escHtml(eduGradDate(e))}</div></div><div style="display:flex;gap:6px"><button class="btn btn-ghost" style="padding:6px 10px;font-size:12px" onclick="editEdu(${i})">Edit</button><button class="btn btn-ghost" style="padding:6px 10px;font-size:12px" onclick="deleteEdu(${i})">Delete</button></div></div>`).join('')}</div></div>` : '';
+  const savedList = saved.length ? `<div class="form-card" style="margin-bottom:16px"><div class="form-card-hdr">🎓 Saved Education (${saved.length})</div><div class="form-card-body" style="padding-bottom:14px">${sortedEducation().map(({edu:e,index:i})=>`<div style="display:flex;justify-content:space-between;align-items:center;gap:10px;padding:8px 0;border-bottom:1px solid var(--slate-100)"><div><div style="font-size:14px;font-weight:600">${escHtml(e.degree)}${e.fieldOfStudy?' – '+escHtml(e.fieldOfStudy):''}</div><div style="font-size:12px;color:var(--slate-500)">${escHtml(e.school)} | ${escHtml(eduGradDate(e))}</div></div><div style="display:flex;gap:6px"><button class="btn btn-ghost" style="padding:6px 10px;font-size:12px" onclick="editEdu(${i})">Edit</button>${requiresProgramEducationEntry() && isProgramEducationEntry(e) ? '' : `<button class="btn btn-ghost" style="padding:6px 10px;font-size:12px" onclick="deleteEdu(${i})">Delete</button>`}</div></div>`).join('')}</div></div>` : '';
   return `<div class="section-hdr"><div class="section-hdr-icon">🎓</div><div><div class="section-hdr-title">Education</div><div class="section-hdr-sub">${saved.length?saved.length+' entr(ies) saved':'Schools, degrees, and credentials'}</div></div></div>
   ${savedList}
   <div class="form-card">
     <div class="form-card-hdr">🎓 ${editingEduIndex >= 0 ? 'Edit Education Entry' : 'Education Entry'}</div>
     <div class="form-card-body">
+      ${requiredBanner}
       ${banner}
       <div class="f-row single"><div class="f-group" id="fg-sch"><label>School Name *</label><input id="schoolName" value="${escHtml(pf.school||'')}" placeholder="School or institution name"><span class="f-err">Required</span></div></div>
       <div class="f-row"><div class="f-group" id="fg-deg"><label>Degree / Diploma *</label><select id="degType">${degOpts}</select><span class="f-err">Required</span></div><div class="f-group" id="fg-field"><label>Field of Study</label><input id="fieldStudy" value="${escHtml(pf.fieldOfStudy||'')}" placeholder="e.g. General Studies"><span class="f-err">Please use a professional field of study.</span></div></div>
@@ -1991,9 +2021,9 @@ function renderEduForm(prefill) {
     <div class="form-card-footer">
       ${editingEduIndex >= 0
         ? `<button class="btn btn-ghost" onclick="cancelEditEdu()">Cancel</button>`
-        : saved.length
+        : canContinue
           ? `<button class="btn btn-ghost" onclick="moveToCerts()">No More Education</button>`
-          : `<button class="btn btn-ghost" onclick="moveToCerts()">Skip Education</button>`
+          : ''
       }
       <button class="btn btn-primary" onclick="submitEdu()">${editingEduIndex >= 0 ? 'Update Entry →' : 'Build →'}</button>
     </div>
@@ -2173,23 +2203,29 @@ function confirmEdu() {
   }
   resumeData.education.sort((a,b)=>eduSortValue(b)-eduSortValue(a));
   pendingEdu = {};
-  setStatus('education','done');
+  setStatus('education', isEducationRequirementMet() ? 'done' : 'pending');
   showCenter('eduDone');
 }
 
 function renderEduDone() {
+  const requirementMet = isEducationRequirementMet();
   return `<div class="done-card">
     <span class="done-icon">✅</span>
     <div class="done-title">Education Entry Saved</div>
-    <div class="done-sub">${resumeData.education.length} education entr${resumeData.education.length===1?'y':'ies'} on your resume.</div>
+    <div class="done-sub">${resumeData.education.length} education entr${resumeData.education.length===1?'y':'ies'} on your resume.${requirementMet ? '' : ' Your trade program education is still required before you can continue.'}</div>
     <div class="done-actions">
-      <button class="btn btn-ghost" onclick="showSection('education')">Add Another</button>
-      <button class="btn btn-primary btn-lg" onclick="moveToCerts()">Continue to Certifications →</button>
+      <button class="btn btn-ghost" onclick="showSection('education')">${requirementMet ? 'Add Another' : 'Save Trade Program →'}</button>
+      ${requirementMet ? `<button class="btn btn-primary btn-lg" onclick="moveToCerts()">Continue to Certifications →</button>` : ''}
     </div>
   </div>`;
 }
 
 function moveToCerts() {
+  if (!isEducationRequirementMet()) {
+    addAIMsg('Save your trade program education before continuing. Confirm the pre-filled details, add your graduation month/year, and click **Build →**.');
+    showSection('education');
+    return;
+  }
   setStatus('education','done');
   addAIMsg(`Education saved. Now let's collect your skills and certifications together.`);
   showSection('skills');
