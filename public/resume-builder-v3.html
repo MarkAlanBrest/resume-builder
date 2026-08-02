@@ -1075,13 +1075,14 @@ function cleanAddress(value) {
 }
 
 function isPlausibleStreetAddress(value) {
-  const parts = value.trim().replace(/\s+/g,' ').split(' ');
-  if (parts.length < 3) return false;
+  const trimmed = value.trim();
+  if (!trimmed) return false;
+  const parts = trimmed.replace(/\s+/g,' ').split(' ');
+  if (parts.length < 2) return false;
   if (!/^\d+[A-Za-z]?$/.test(parts[0])) return false;
   const words = parts.slice(1).filter(part=>/[A-Za-z]/.test(part));
-  if (words.length < 2) return false;
-  if (!words.some(part=>STREET_WORDS[part.toLowerCase().replace(/[.,]$/,'')])) return false;
-  return /^[A-Za-z0-9' .#/-]+$/.test(value);
+  if (words.length < 1) return false;
+  return /^[A-Za-z0-9' .#/-]+$/.test(trimmed);
 }
 
 function smartCapWord(word) {
