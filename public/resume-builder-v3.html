@@ -673,11 +673,17 @@ function showSection(key) {
   currentSection = key;
   renderLeftNav();
   clearChat();
-  if (key === 'personal') { showCenter('personal'); sendTip('personal'); }
+  if (key === 'personal') { showCenter('personal'); setTimeout(updatePrograms, 0); sendTip('personal'); }
   else if (key === 'career') { showCenter('career'); sendTip('career'); }
   else if (key === 'work') { showCenter('work'); sendTip('work'); }
   else if (key === 'military') { showCenter('military'); sendTip('military'); }
-  else if (key === 'education') { showCenter('education'); sendTip('education'); }
+  else if (key === 'education') {
+    editingEduIndex = -1;
+    syncPersonalFromForm();
+    pruneEmptyEducationEntries();
+    showCenter('education');
+    sendTip('education');
+  }
   else if (key === 'volunteer') { showCenter('volunteer'); sendTip('volunteer'); }
   else if (key === 'certifications') { showSection('skills'); }
   else if (key === 'skills') { showSkillsSection(); }
@@ -811,9 +817,11 @@ async function extractResume() {
       found.push('military service');
     }
     if (parsed.education?.length) {
-      resumeData.education = parsed.education;
-      setStatus('education','done');
-      found.push(`${parsed.education.length} education entr${parsed.education.length===1?'y':'ies'}`);
+      resumeData.education = parsed.education.filter(edu => !isEmptyEducationEntry(edu));
+      if (resumeData.education.length) {
+        setStatus('education','done');
+        found.push(`${resumeData.education.length} education entr${resumeData.education.length===1?'y':'ies'}`);
+      }
     }
     if (parsed.certifications?.length) {
       resumeData.certifications = parsed.certifications;
@@ -1899,16 +1907,64 @@ function campusSchoolName(campus) {
   return 'New Castle School of Trades';
 }
 
+function syncPersonalFromForm() {
+  const campusEl = document.getElementById('campusSel');
+  const progEl = document.getElementById('progSel');
+  if (!campusEl && !progEl) return;
+  if (campusEl?.value) resumeData.personal.campus = campusEl.value;
+  if (progEl?.value) resumeData.personal.program = progEl.value;
+}
+
+function isEmptyEducationEntry(edu) {
+  if (!edu || typeof edu !== 'object') return true;
+  return !['school','degree','fieldOfStudy','city','state','gradMonth','gradYear'].some(field => String(edu[field] || '').trim());
+}
+
+function pruneEmptyEducationEntries() {
+  resumeData.education = (resumeData.education || []).filter(edu => !isEmptyEducationEntry(edu));
+}
+
+function buildProgramEducationEntry() {
+  const p = resumeData.personal || {};
+  const campus = p.campus || '';
+  const program = p.program || '';
+  if (!program) return null;
+  const loc = campusLoc(campus);
+  return {
+    school: campus ? campusSchoolName(campus) : '',
+    degree: programDegree(program),
+    fieldOfStudy: program,
+    city: loc.city,
+    state: loc.state,
+    gradMonth: '',
+    gradYear: '',
+    isPrefilled: true,
+  };
+}
+
+function hasProgramEducationEntry() {
+  const built = buildProgramEducationEntry();
+  if (!built) return false;
+  const program = built.fieldOfStudy.toLowerCase();
+  const school = built.school.toLowerCase();
+  return (resumeData.education || []).some(edu => {
+    if (isEmptyEducationEntry(edu)) return false;
+    const field = String(edu.fieldOfStudy || '').trim().toLowerCase();
+    const eduSchool = String(edu.school || '').trim().toLowerCase();
+    return field === program || (field === program && eduSchool === school);
+  });
+}
+
+function resolveEducationFormPrefill(prefill) {
+  if (editingEduIndex >= 0 && prefill) return prefill;
+  if (prefill && !isEmptyEducationEntry(prefill)) return prefill;
+  const built = buildProgramEducationEntry();
+  if (built && !hasProgramEducationEntry()) return built;
+  return prefill || {};
+}
+
 function renderEduForm(prefill) {
-  const p = resumeData.personal;
-  const pf = prefill || (resumeData.education.length===0 && p.program ? {
-    school:p.campus?campusSchoolName(p.campus):'',
-    degree:programDegree(p.program),
-    fieldOfStudy:p.program||'',
-    city:campusLoc(p.campus||'').city,
-    state:campusLoc(p.campus||'').state,
-    gradMonth:'',gradYear:'',isPrefilled:true
-  } : null) || {};
+  const pf = resolveEducationFormPrefill(prefill);
   const monthOpts = MONTHS.map(m=>`<option value="${m}" ${pf.gradMonth===m?'selected':''}>${m}</option>`).join('');
   const degOpts = ['','Diploma','Associate in Specialized Technology','High School Diploma','GED / High School Equivalency',"Associate's Degree","Bachelor's Degree","Master's Degree",'Vocational Certificate','Other'].map(d=>`<option value="${d}" ${pf.degree===d?'selected':''}>${d||'— Select —'}</option>`).join('');
   const isInProgress = pf.gradYear === 'In Progress';
@@ -2879,7 +2935,12 @@ async function callClaude(system,messages,opts){
 
 // ── Right Panel Chat ──────────────────────────────
 function sendTip(key){
-  const tip=key==='skills'?TIPS.skills:key!=='work'?TIPS[key]:null;
+  let tip = key === 'skills' ? TIPS.skills : key !== 'work' ? TIPS[key] : null;
+  if (key === 'education') {
+    tip = buildProgramEducationEntry() && !hasProgramEducationEntry()
+      ? TIPS.education
+      : `Add your schools, degrees, and graduation details. Include your trade program${resumeData.personal.program ? ` (${resumeData.personal.program})` : ''}, high school diploma, or any other education.`;
+  }
   if(tip)setTimeout(()=>addAIMsg(tip),300);
   if(key==='template')setTimeout(()=>runResumeReview(),700);
 
