@@ -65,8 +65,8 @@
 
   <div class="instructions">
     Review the suggested certifications and skills below.<br>
-    You may edit or delete any item. Add as many new items as you want.<br>
-    Only fields with text will appear on your resume.
+    You may edit or delete any item. Add more up to 10 in each column.<br>
+    Anything with text will be included on your resume.
   </div>
 
   <div id="programDisplay" class="program-box"></div>
@@ -76,15 +76,13 @@
   <div>
     <!-- CERTIFICATIONS -->
     <div class="system">Certifications</div>
-    <div id="programCerts"></div>
-    <div id="customCerts"></div>
+    <div id="certItems"></div>
   </div>
 
   <div>
     <!-- SKILLS -->
     <div class="system">Skills</div>
-    <div id="programSkills"></div>
-    <div id="customSkills"></div>
+    <div id="skillItems"></div>
   </div>
 
 </div>
@@ -366,6 +364,40 @@ function setData(data) {
 }
 
 /* ===========================
+   LIMITS
+=========================== */
+const MAX_ITEMS = 10;
+const MIN_SUGGESTED = 3;
+
+function suggestMinimumCounts(skillCount, certCount) {
+  const parts = [];
+  if (skillCount < MIN_SUGGESTED) parts.push(`skills (you have ${skillCount})`);
+  if (certCount < MIN_SUGGESTED) parts.push(`certifications (you have ${certCount})`);
+  if (!parts.length) return;
+  alert(`Suggestion: Resumes usually look stronger with at least ${MIN_SUGGESTED} ${parts.join(' and ')}. Add more if you can, or continue with what you have.`);
+}
+
+function buildItemRows(container, values, placeholder) {
+  container.innerHTML = "";
+  values.forEach(value => {
+    const row = document.createElement("div");
+    row.className = "row";
+    const input = document.createElement("input");
+    input.type = "text";
+    input.value = value;
+    input.placeholder = placeholder;
+    row.appendChild(input);
+    container.appendChild(row);
+  });
+}
+
+function buildSkillCertRows(programItems, placeholder) {
+  const rows = [...programItems].slice(0, MAX_ITEMS);
+  while (rows.length < MAX_ITEMS) rows.push("");
+  return rows;
+}
+
+/* ===========================
    PAGE LOAD
 =========================== */
 window.onload = function () {
@@ -375,69 +407,17 @@ window.onload = function () {
   document.getElementById("programDisplay").textContent =
     `Program Selected: ${program}`;
 
-  /* PROGRAM CERTIFICATIONS */
-  const certBox = document.getElementById("programCerts");
-  certBox.innerHTML = "";
+  buildItemRows(
+    document.getElementById("certItems"),
+    buildSkillCertRows(PROGRAM_CERTS[program] || [], "Certification"),
+    "Certification"
+  );
 
-  (PROGRAM_CERTS[program] || []).forEach(cert => {
-    const row = document.createElement("div");
-    row.className = "row";
-
-    const input = document.createElement("input");
-    input.type = "text";
-    input.value = cert;
-
-    row.appendChild(input);
-    certBox.appendChild(row);
-  });
-
-  /* CUSTOM CERTIFICATIONS */
-  const customCertBox = document.getElementById("customCerts");
-  customCertBox.innerHTML = "";
-
-  for (let i = 0; i < 5; i++) {
-    const row = document.createElement("div");
-    row.className = "row";
-
-    const input = document.createElement("input");
-    input.type = "text";
-    input.placeholder = "Add another certification";
-
-    row.appendChild(input);
-    customCertBox.appendChild(row);
-  }
-
-  /* PROGRAM SKILLS */
-  const skillBox = document.getElementById("programSkills");
-  skillBox.innerHTML = "";
-
-  (PROGRAM_SKILLS[program] || []).forEach(skill => {
-    const row = document.createElement("div");
-    row.className = "row";
-
-    const input = document.createElement("input");
-    input.type = "text";
-    input.value = skill;
-
-    row.appendChild(input);
-    skillBox.appendChild(row);
-  });
-
-  /* CUSTOM SKILLS */
-  const customSkillBox = document.getElementById("customSkills");
-  customSkillBox.innerHTML = "";
-
-  for (let i = 0; i < 5; i++) {
-    const row = document.createElement("div");
-    row.className = "row";
-
-    const input = document.createElement("input");
-    input.type = "text";
-    input.placeholder = "Add another skill";
-
-    row.appendChild(input);
-    customSkillBox.appendChild(row);
-  }
+  buildItemRows(
+    document.getElementById("skillItems"),
+    buildSkillCertRows(PROGRAM_SKILLS[program] || [], "Skill"),
+    "Skill"
+  );
 };
 
 /* ===========================
@@ -450,25 +430,20 @@ function goBack() {
 function goNext() {
   const data = getData();
 
-  /* CERTIFICATIONS → STRING */
-  const certInputs = Array.from(
-    document.querySelectorAll("#programCerts input, #customCerts input")
-  );
-
-  data.allCerts = certInputs
+  const certs = Array.from(document.querySelectorAll("#certItems input"))
     .map(i => i.value.trim())
     .filter(Boolean)
-    .join("\n");
+    .slice(0, MAX_ITEMS);
 
-  /* SKILLS → STRING */
-  const skillInputs = Array.from(
-    document.querySelectorAll("#programSkills input, #customSkills input")
-  );
-
-  data.allSkills = skillInputs
+  const skills = Array.from(document.querySelectorAll("#skillItems input"))
     .map(i => i.value.trim())
     .filter(Boolean)
-    .join("\n");
+    .slice(0, MAX_ITEMS);
+
+  suggestMinimumCounts(skills.length, certs.length);
+
+  data.allCerts = certs.join("\n");
+  data.allSkills = skills.join("\n");
 
   setData(data);
   window.location.href = "education-military-v2.html";

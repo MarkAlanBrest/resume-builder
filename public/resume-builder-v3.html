@@ -104,6 +104,10 @@ html,body{height:100%;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Ro
 .check-opt-inline input{accent-color:var(--blue-700)}
 .two-panel-grid{display:grid;grid-template-columns:1fr 1fr;gap:16px}
 @media(max-width:700px){.two-panel-grid{grid-template-columns:1fr}}
+.sc-item-row{margin-bottom:8px}
+.sc-item-row input{width:100%}
+.sc-list-actions{display:flex;align-items:center;justify-content:space-between;gap:10px;margin-top:8px;font-size:12px;color:var(--slate-500)}
+.sc-list-actions .btn{padding:6px 12px;font-size:12px}
 
 /* ── Buttons ── */
 .btn{padding:9px 20px;border-radius:7px;font-size:14px;font-weight:600;border:none;cursor:pointer;transition:all .15s;font-family:inherit;line-height:1}
@@ -413,7 +417,7 @@ const TIPS = {
   career:`Be specific about the type of job and employer you're targeting. Examples: "I want to work as an automotive technician at a dealership doing diagnostics and hands-on repairs." "I am looking for an entry-level HVAC position where I can install, maintain, and troubleshoot residential systems." "I want a welding job in manufacturing or construction where I can use MIG/TIG skills and read blueprints." Pick up to 3 qualities that describe you as a worker.`,
   work:`When describing your duties, just write naturally — don't worry about formatting. Mention specific tools, equipment, tasks, and anything you're proud of. I'll convert it into professional bullet points for you.`,
   education:`Your trade program has been pre-filled below and must be saved before you continue. Confirm the details, add your graduation month/year, and click **Build →**. Then add your high school diploma or any other education you have.`,
-  skills:`Write out every skill and certification you have — tools, equipment, software, techniques, licenses, OSHA/EPA/CDL cards, manufacturer training, anything relevant. I'll clean it up, remove duplicates, and organize it professionally.`,
+  skills:`Review the suggested skills and certifications for your program. Edit or remove any item, and add your own. Anything listed here will be included on your resume — up to 10 skills and 10 certifications.`,
   military:`Add your military service below — active duty, reserves, or National Guard. In the Duties box, describe your role naturally: what you did every day, equipment you operated or maintained, people you supervised or trained, and anything you're proud of. I'll turn it into professional resume bullets that highlight leadership, reliability, technical skills, and teamwork — all things trade employers value.`,
   volunteer:`Add any volunteer work, community service, church activities, or unpaid experience. Even informal roles count — helping at events, working with youth groups, assisting neighbors. Describe what you did and I'll write professional bullets for it.`,
   template:`Pick the style and color that matches the field you're entering. Classic and Executive are safe for any employer. Modern works well for technical roles. Bold makes a strong first impression.`,
@@ -2570,47 +2574,136 @@ function normalizeCertificationsList(input) {
   });
 }
 
-function formatCertsForTextarea(certs) {
-  return certs.map(c => [c.name, c.org, c.year].filter(Boolean).join(', ')).join('\n');
-}
+const MAX_SKILL_CERT_ITEMS = 10;
+const MIN_SKILL_CERT_SUGGESTION = 3;
 
-function getSkillsFormValue() {
+function getInitialSkillRows() {
   const savedSkills = normalizeSkillsList(resumeData.skills);
-  if (sectionStatus.skills === 'done' && savedSkills.length) return savedSkills.join(', ');
-  if (resumeData._skillsFromUpload && savedSkills.length) return savedSkills.join(', ');
-  if (savedSkills.length) return savedSkills.join(', ');
-  if (currentProgramDefaults?.skills?.length) return currentProgramDefaults.skills.join(', ');
-  return '';
+  let items = [];
+  if (sectionStatus.skills === 'done' && savedSkills.length) items = savedSkills;
+  else if (resumeData._skillsFromUpload && savedSkills.length) items = savedSkills;
+  else if (savedSkills.length) items = savedSkills;
+  else items = [...(currentProgramDefaults?.skills || [])];
+  items = items.slice(0, MAX_SKILL_CERT_ITEMS);
+  while (items.length < MIN_SKILL_CERT_SUGGESTION) items.push('');
+  return items;
 }
 
-function getCertsFormValue() {
+function getInitialCertRows() {
   const savedCerts = normalizeCertificationsList(resumeData.certifications);
-  if (sectionStatus.skills === 'done' && savedCerts.length) return formatCertsForTextarea(savedCerts);
-  if (resumeData._certsFromUpload && savedCerts.length) return formatCertsForTextarea(savedCerts);
-  if (savedCerts.length) return formatCertsForTextarea(savedCerts);
-  if (currentProgramDefaults?.certifications?.length) return currentProgramDefaults.certifications.join('\n');
-  return '';
+  const savedNames = savedCerts.map(c => c.name);
+  let items = [];
+  if (sectionStatus.skills === 'done' && savedNames.length) items = savedNames;
+  else if (resumeData._certsFromUpload && savedNames.length) items = savedNames;
+  else if (savedNames.length) items = savedNames;
+  else items = [...(currentProgramDefaults?.certifications || [])];
+  items = items.slice(0, MAX_SKILL_CERT_ITEMS);
+  while (items.length < MIN_SKILL_CERT_SUGGESTION) items.push('');
+  return items;
+}
+
+function renderSkillCertItemRows(type, items) {
+  const inputClass = type === 'skill' ? 'skill-row-input' : 'cert-row-input';
+  const placeholder = type === 'skill'
+    ? 'e.g. MIG welding, blueprint reading, customer service'
+    : 'e.g. OSHA 10, EPA 608, CDL Class A';
+  const maxLen = type === 'skill' ? 80 : 120;
+  return items.map(item => `<div class="sc-item-row"><input type="text" class="${inputClass}" value="${escHtml(item)}" placeholder="${placeholder}" maxlength="${maxLen}"></div>`).join('');
+}
+
+function getSkillCertRowCount(type) {
+  const selector = type === 'skill' ? '.skill-row-input' : '.cert-row-input';
+  return document.querySelectorAll(selector).length;
+}
+
+function updateSkillCertAddButtons() {
+  const skillBtn = document.getElementById('addSkillRowBtn');
+  const certBtn = document.getElementById('addCertRowBtn');
+  const skillCount = getSkillCertRowCount('skill');
+  const certCount = getSkillCertRowCount('cert');
+  if (skillBtn) {
+    skillBtn.disabled = skillCount >= MAX_SKILL_CERT_ITEMS;
+    skillBtn.style.opacity = skillCount >= MAX_SKILL_CERT_ITEMS ? '0.45' : '1';
+  }
+  if (certBtn) {
+    certBtn.disabled = certCount >= MAX_SKILL_CERT_ITEMS;
+    certBtn.style.opacity = certCount >= MAX_SKILL_CERT_ITEMS ? '0.45' : '1';
+  }
+  const skillCountEl = document.getElementById('skillRowCount');
+  const certCountEl = document.getElementById('certRowCount');
+  if (skillCountEl) skillCountEl.textContent = `${skillCount} / ${MAX_SKILL_CERT_ITEMS}`;
+  if (certCountEl) certCountEl.textContent = `${certCount} / ${MAX_SKILL_CERT_ITEMS}`;
+}
+
+function addSkillCertRow(type) {
+  const listId = type === 'skill' ? 'skillsList' : 'certsList';
+  const list = document.getElementById(listId);
+  if (!list || getSkillCertRowCount(type) >= MAX_SKILL_CERT_ITEMS) return;
+  const inputClass = type === 'skill' ? 'skill-row-input' : 'cert-row-input';
+  const placeholder = type === 'skill' ? 'Add another skill' : 'Add another certification';
+  const maxLen = type === 'skill' ? 80 : 120;
+  const row = document.createElement('div');
+  row.className = 'sc-item-row';
+  row.innerHTML = `<input type="text" class="${inputClass}" placeholder="${placeholder}" maxlength="${maxLen}">`;
+  list.appendChild(row);
+  row.querySelector('input').focus();
+  updateSkillCertAddButtons();
+}
+
+function collectSkillInputs() {
+  return normalizeSkillsList(
+    [...document.querySelectorAll('.skill-row-input')]
+      .map(el => el.value.trim())
+      .filter(Boolean)
+      .slice(0, MAX_SKILL_CERT_ITEMS)
+  );
+}
+
+function collectCertInputs() {
+  return normalizeCertificationsList(
+    [...document.querySelectorAll('.cert-row-input')]
+      .map(el => el.value.trim())
+      .filter(Boolean)
+      .slice(0, MAX_SKILL_CERT_ITEMS)
+  );
+}
+
+function suggestMinSkillCertCounts(skillCount, certCount) {
+  const parts = [];
+  if (skillCount < MIN_SKILL_CERT_SUGGESTION) parts.push(`skills (you have ${skillCount})`);
+  if (certCount < MIN_SKILL_CERT_SUGGESTION) parts.push(`certifications (you have ${certCount})`);
+  if (!parts.length) return;
+  alert(`Suggestion: Resumes usually look stronger with at least ${MIN_SKILL_CERT_SUGGESTION} ${parts.join(' and ')}. Add more if you can, or continue with what you have.`);
 }
 
 function renderSkillsForm() {
-  const existing = getSkillsFormValue();
-  const existingCerts = getCertsFormValue();
-  return `<div class="section-hdr"><div class="section-hdr-icon">⚡</div><div><div class="section-hdr-title">Skills &amp; Certifications</div><div class="section-hdr-sub">List both sides — I'll organize them</div></div></div>
+  const skillRows = getInitialSkillRows();
+  const certRows = getInitialCertRows();
+  setTimeout(updateSkillCertAddButtons, 0);
+  return `<div class="section-hdr"><div class="section-hdr-icon">⚡</div><div><div class="section-hdr-title">Skills &amp; Certifications</div><div class="section-hdr-sub">Edit the list below — anything with text will be included (up to 10 each)</div></div></div>
   <div class="two-panel-grid">
     <div class="form-card">
       <div class="form-card-hdr">⚡ Skills</div>
       <div class="form-card-body">
         <div class="f-row single"><div class="f-group" id="fg-sk"><label>Skills *</label>
-          <textarea id="skillsDump" rows="9" placeholder="Examples: MIG welding, blueprint reading, forklift operation, customer service, Microsoft Office">${escHtml(existing)}</textarea>
-          <span class="f-err">Please list at least a few skills.</span></div></div>
+          <div id="skillsList">${renderSkillCertItemRows('skill', skillRows)}</div>
+          <div class="sc-list-actions">
+            <span id="skillRowCount">${skillRows.length} / ${MAX_SKILL_CERT_ITEMS}</span>
+            <button type="button" class="btn btn-ghost" id="addSkillRowBtn" onclick="addSkillCertRow('skill')">+ Add Skill</button>
+          </div>
+          <span class="f-err">Please list at least one skill.</span></div></div>
       </div>
     </div>
     <div class="form-card">
       <div class="form-card-hdr">📜 Certifications</div>
       <div class="form-card-body">
         <div class="f-row single"><div class="f-group" id="fg-certlist"><label>Certifications / Licenses</label>
-          <textarea id="certsDump" rows="9" placeholder="Examples: OSHA 10&#10;EPA 608&#10;CDL Class A&#10;AWS Welding Certification">${escHtml(existingCerts)}</textarea>
-          <span class="f-err">Please list real certifications or leave this blank.</span></div></div>
+          <div id="certsList">${renderSkillCertItemRows('cert', certRows)}</div>
+          <div class="sc-list-actions">
+            <span id="certRowCount">${certRows.length} / ${MAX_SKILL_CERT_ITEMS}</span>
+            <button type="button" class="btn btn-ghost" id="addCertRowBtn" onclick="addSkillCertRow('cert')">+ Add Certification</button>
+          </div>
+          <span class="f-err">Please list real certifications or leave rows blank.</span></div></div>
       </div>
     </div>
   </div>
@@ -2622,14 +2715,17 @@ function renderSkillsForm() {
 }
 
 async function submitSkills() {
-  const el=document.getElementById('skillsDump'),fg=document.getElementById('fg-sk');
-  if (el.value.trim().length<5) { fg.classList.add('has-error'); return; }
+  const fg=document.getElementById('fg-sk');
+  const skills = collectSkillInputs();
+  const certs = collectCertInputs();
+  if (!skills.length) { fg.classList.add('has-error'); return; }
   fg.classList.remove('has-error');
-  const certEl=document.getElementById('certsDump'),fgCert=document.getElementById('fg-certlist');
-  if (certEl.value.trim() && /\b(fake|none|idk|whatever)\b/i.test(certEl.value)) { fgCert.classList.add('has-error'); return; }
+  const fgCert=document.getElementById('fg-certlist');
+  if (certs.length && certs.some(c => /\b(fake|none|idk|whatever)\b/i.test(c.name))) { fgCert.classList.add('has-error'); return; }
   fgCert.classList.remove('has-error');
-  const rawSkills = el.value.trim();
-  const rawCerts = certEl.value.trim();
+  suggestMinSkillCertCounts(skills.length, certs.length);
+  const rawSkills = skills.join(', ');
+  const rawCerts = certs.map(c => c.name).join('\n');
   const ci = document.getElementById('centerInner');
   ci.innerHTML = `<div style="text-align:center;padding:60px 20px;color:var(--slate-500)"><div style="font-size:32px;margin-bottom:12px">⚡</div>Organizing your skills and certifications…</div>`;
   const prog = resumeData.personal.program||'';
@@ -3114,9 +3210,7 @@ function sendTip(key){
 
   if(key==='skills'){
     const program=resumeData.personal.program||'';
-    const found=currentProgramDefaults || FALLBACK_PROGRAM_DEFAULTS;
-    setTimeout(()=>addSuggestionCard(`Suggested skills for ${program||'your program'} — click to add:`,found.skills,'skillsDump','append'),600);
-    setTimeout(()=>addSuggestionCard('Suggested certifications — click to add:',found.certifications,'certsDump','append'),900);
+    setTimeout(()=>addAIMsg(`Your program's suggested skills and certifications are already listed on the form. Edit them, clear any you don't have, or add more — up to ${MAX_SKILL_CERT_ITEMS} each.`),600);
   }
 }
 
