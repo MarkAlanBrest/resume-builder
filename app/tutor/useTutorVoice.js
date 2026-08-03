@@ -2,109 +2,118 @@
 
 import { useCallback, useEffect, useRef, useState } from "react";
 
+function speakWithBrowser(text, onStart, onEnd) {
+  const utterance = new SpeechSynthesisUtterance(text);
+  utterance.rate = 0.92;
+  utterance.onstart = onStart;
+  utterance.onend = onEnd;
+  utterance.onerror = onEnd;
+  window.speechSynthesis.cancel();
+  window.speechSynthesis.speak(utterance);
+}
+
 export function useTutorVoice() {
   const [voiceOn, setVoiceOn] = useState(true);
   const [speaking, setSpeaking] = useState(false);
   const [listening, setListening] = useState(false);
   const [speechSupported, setSpeechSupported] = useState(false);
-  const [voiceEngine, setVoiceEngine] = useState("openai");
+  const [voiceEngine, setVoiceEngine] = useState("");
   const [voiceError, setVoiceError] = useState("");
   const recognitionRef = useRef(null);
   const audioRef = useRef(null);
-  const pendingTextRef = useRef(null);
 
   useEffect(() => {
     const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
-    setSpeechSupported(!!SpeechRecognition);
+    setSpeechSupported(!!SpeechRecognition || "speechSynthesis" in window);
   }, []);
 
   const stopSpeaking = useCallback(() => {
+    if (typeof window !== "undefined" && window.speechSynthesis) {
+      window.speechSynthesis.cancel();
+    }
     if (audioRef.current) {
       audioRef.current.pause();
-      if (audioRef.current.src) URL.revokeObjectURL(audioRef.current.src);
+      if (audioRef.current.src?.startsWith("blob:")) {
+        URL.revokeObjectURL(audioRef.current.src);
+      }
       audioRef.current = null;
     }
     setSpeaking(false);
   }, []);
 
-  const playOpenAIVoice = useCallback(
-    async (text, onStart, onEnd) => {
-      const res = await fetch("/api/tts", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ text, voice: "onyx" }),
-      });
+  const playOpenAIVoice = useCallback(async (text, onStart, onEnd) => {
+    const res = await fetch("/api/tts", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ text, voice: "onyx" }),
+    });
 
-      if (!res.ok) {
-        const data = await res.json().catch(() => ({}));
-        throw new Error(data.error || `Voice error (${res.status})`);
-      }
+    if (!res.ok) {
+      const data = await res.json().catch(() => ({}));
+      throw new Error(data.error || `Voice error (${res.status})`);
+    }
 
-      const blob = await res.blob();
-      const url = URL.createObjectURL(blob);
-      const audio = new Audio(url);
-      audioRef.current = audio;
+    const blob = await res.blob();
+    if (!blob.size) throw new Error("Empty audio response.");
 
-      return new Promise((resolve, reject) => {
-        audio.onplay = () => {
-          setVoiceEngine("openai");
-          setVoiceError("");
-          onStart();
-        };
-        audio.onended = () => {
-          URL.revokeObjectURL(url);
-          onEnd();
-          resolve();
-        };
-        audio.onerror = () => {
-          URL.revokeObjectURL(url);
-          onEnd();
-          reject(new Error("Audio playback failed."));
-        };
+    const url = URL.createObjectURL(blob);
+    const audio = new Audio(url);
+    audioRef.current = audio;
 
-        audio.play().catch(reject);
-      });
-    },
-    []
-  );
+    await new Promise((resolve, reject) => {
+      audio.onplay = onStart;
+      audio.onended = () => {
+        URL.revokeObjectURL(url);
+        onEnd();
+        resolve();
+      };
+      audio.onerror = () => {
+        URL.revokeObjectURL(url);
+        onEnd();
+        reject(new Error("Audio playback failed."));
+      };
+      audio.play().catch(reject);
+    });
+  }, []);
 
-  const speak = useCallback(
-    async (text, { userInitiated = false } = {}) => {
-      if (!voiceOn || !text || typeof window === "undefined") return;
+  const speakNow = useCallback(
+    async (text) => {
+      if (!voiceOn || !text || typeof window === "undefined") return false;
 
       stopSpeaking();
       const onStart = () => setSpeaking(true);
       const onEnd = () => setSpeaking(false);
 
-      if (!userInitiated) {
-        pendingTextRef.current = text;
-        return;
-      }
-
-      pendingTextRef.current = null;
-
       try {
         await playOpenAIVoice(text, onStart, onEnd);
+        setVoiceEngine("openai");
+        setVoiceError("");
+        return true;
       } catch (err) {
+        if (window.speechSynthesis) {
+          try {
+            speakWithBrowser(
+              text,
+              () => {
+                setVoiceEngine("browser");
+                setVoiceError("Using browser voice — OpenAI unavailable.");
+                onStart();
+              },
+              onEnd
+            );
+            return true;
+          } catch {
+            // fall through
+          }
+        }
         setVoiceEngine("error");
-        setVoiceError(err?.message || "OpenAI voice unavailable.");
+        setVoiceError(err?.message || "Voice unavailable.");
         onEnd();
+        return false;
       }
     },
     [voiceOn, stopSpeaking, playOpenAIVoice]
   );
-
-  const speakNow = useCallback(
-    (text) => speak(text, { userInitiated: true }),
-    [speak]
-  );
-
-  const flushPendingSpeech = useCallback(() => {
-    if (pendingTextRef.current) {
-      const text = pendingTextRef.current;
-      speak(text, { userInitiated: true });
-    }
-  }, [speak]);
 
   const stopListening = useCallback(() => {
     recognitionRef.current?.stop();
@@ -153,9 +162,7 @@ export function useTutorVoice() {
     speechSupported,
     voiceEngine,
     voiceError,
-    speak,
     speakNow,
-    flushPendingSpeech,
     stopSpeaking,
     startListening,
     stopListening,
