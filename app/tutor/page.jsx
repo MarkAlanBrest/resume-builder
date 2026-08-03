@@ -4,6 +4,15 @@ import { useEffect, useRef, useState } from "react";
 import BlueprintDrawing, { HIDDEN_LINES } from "./BlueprintDrawing";
 import "./tutor.css";
 
+const LESSONS = [
+  {
+    id: "hidden-lines",
+    title: "Hidden Lines",
+    drawing: "BR-2847-A",
+    description: "Mounting Bracket",
+  },
+];
+
 const SYSTEM_PROMPT = `You are a patient blueprint reading instructor teaching a beginner.
 The student is studying a mechanical drawing of a mounting bracket with FRONT VIEW and TOP VIEW.
 
@@ -22,6 +31,7 @@ const FALLBACK_INTRO =
   "Welcome! This is a mounting bracket drawing. Hidden lines are the thin dashed lines — they show edges you can't see from the outside. I've highlighted one in orange on the FRONT VIEW. Click that dashed line to begin.";
 
 export default function TutorPage() {
+  const [activeLesson] = useState("hidden-lines");
   const [messages, setMessages] = useState([]);
   const [input, setInput] = useState("");
   const [found, setFound] = useState([]);
@@ -162,27 +172,63 @@ export default function TutorPage() {
     );
   }
 
+  const lesson = LESSONS.find((l) => l.id === activeLesson);
+
   return (
     <div className="tutor-page">
-      <header className="tutor-header">
-        <div>
+      <nav className="nav-panel">
+        <div className="nav-brand">
           <h1>Blueprint Tutor</h1>
-          <p>Mounting Bracket — DWG BR-2847-A</p>
+          <p>AI Training</p>
         </div>
-        <div className="tutor-progress">
-          Found: {found.length} / {HIDDEN_LINES.length}
+
+        <div className="nav-section">
+          <h2>Lessons</h2>
+          <ul className="nav-lessons">
+            {LESSONS.map((item) => (
+              <li key={item.id}>
+                <button
+                  type="button"
+                  className={`nav-lesson-btn ${item.id === activeLesson ? "active" : ""}`}
+                >
+                  <span className="nav-lesson-title">{item.title}</span>
+                  <span className="nav-lesson-meta">{item.drawing}</span>
+                </button>
+              </li>
+            ))}
+          </ul>
+        </div>
+
+        <div className="nav-section nav-progress-section">
+          <h2>Progress</h2>
+          <p className="nav-progress">
+            Found {found.length} of {HIDDEN_LINES.length}
+          </p>
           <button type="button" onClick={handleReset} className="reset-btn">
-            Restart
+            Restart Lesson
           </button>
         </div>
-      </header>
+      </nav>
 
-      <section className="picture-panel">
-        <BlueprintDrawing found={found} highlightId={highlightId} onLineClick={handleLineClick} />
-        <p className="picture-hint">Click the thin dashed hidden lines on the drawing</p>
-      </section>
+      <main className="content-panel">
+        <div className="content-header">
+          <h2>{lesson?.title}</h2>
+          <p>
+            {lesson?.description} — DWG {lesson?.drawing}
+          </p>
+        </div>
+        <div className="content-body">
+          <BlueprintDrawing found={found} highlightId={highlightId} onLineClick={handleLineClick} />
+          <p className="picture-hint">Click the thin dashed hidden lines on the drawing</p>
+        </div>
+      </main>
 
-      <section className="chat-panel">
+      <aside className="chat-panel">
+        <div className="chat-header">
+          <h2>Instructor</h2>
+          <p>Ask questions or follow along</p>
+        </div>
+
         <div className="chat-messages">
           {messages.map((msg, i) => (
             <div key={i} className={`chat-bubble chat-bubble--${msg.role}`}>
@@ -205,7 +251,7 @@ export default function TutorPage() {
             Send
           </button>
         </form>
-      </section>
+      </aside>
     </div>
   );
 }
