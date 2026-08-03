@@ -513,6 +513,16 @@ function sanitizeResumeData(data) {
   delete data.educationSkills;
   delete data._assignmentImported;
   delete data._courseOfStudyFromAssignment;
+  if (data.skills !== undefined) {
+    const skills = normalizeSkillsList(data.skills);
+    data.skills = skills;
+    if (!skills.length) delete data._skillsFromUpload;
+  }
+  if (data.certifications !== undefined) {
+    const certifications = normalizeCertificationsList(data.certifications);
+    data.certifications = certifications;
+    if (!certifications.length) delete data._certsFromUpload;
+  }
   return data;
 }
 
@@ -726,6 +736,8 @@ function startFresh() {
   resumeData.certifications=[];
   resumeData.skills=[];
   resumeData.references='Available upon request';
+  delete resumeData._skillsFromUpload;
+  delete resumeData._certsFromUpload;
   delete resumeData.courseOfStudy;
   delete resumeData.educationSkills;
   NAV_SECTIONS.forEach(s=>sectionStatus[s.key]='pending');
@@ -831,14 +843,24 @@ async function extractResume() {
         found.push(`${resumeData.education.length} education entr${resumeData.education.length===1?'y':'ies'}`);
       }
     }
-    if (parsed.certifications?.length) {
-      resumeData.certifications = parsed.certifications;
+    const extractedCerts = normalizeCertificationsList(parsed.certifications);
+    if (extractedCerts.length) {
+      resumeData.certifications = extractedCerts;
+      resumeData._certsFromUpload = true;
       setStatus('certifications','done');
       found.push('certifications');
+    } else {
+      resumeData.certifications = [];
+      delete resumeData._certsFromUpload;
     }
-    if (parsed.skills?.length) {
-      resumeData.skills = parsed.skills;
+    const extractedSkills = normalizeSkillsList(parsed.skills);
+    if (extractedSkills.length && !looksLikeBrokenSkillList(parsed.skills)) {
+      resumeData.skills = extractedSkills;
+      resumeData._skillsFromUpload = true;
       found.push('skills');
+    } else {
+      resumeData.skills = [];
+      delete resumeData._skillsFromUpload;
     }
     saveProgress();
     const p = resumeData.personal;
@@ -2481,19 +2503,98 @@ function renderVolunteerDone() {
 }
 
 // ── Skills & References ───────────────────────────
+const JUNK_SKILL_PATTERN = /\b(fake|none|n\/a|na|idk|unknown|whatever|stuff|test)\b/i;
+const JUNK_SKILL_PREFIX = /^(please|for best|note:|provide|share|raw |to org)/i;
+
+function isValidSkillEntry(value) {
+  const text = String(value || '').trim();
+  if (text.length < 2 || text.length > 80) return false;
+  if (!/[A-Za-z]{2,}/.test(text)) return false;
+  if (JUNK_SKILL_PATTERN.test(text) || JUNK_SKILL_PREFIX.test(text) || /\*\*/.test(text)) return false;
+  return true;
+}
+
+function looksLikeBrokenSkillList(input) {
+  const items = (Array.isArray(input) ? input : normalizeSkillsList(input)).map(s => String(s).trim()).filter(Boolean);
+  if (!items.length) return false;
+  const singleCharCount = items.filter(s => s.length === 1).length;
+  return singleCharCount / items.length > 0.5;
+}
+
+function normalizeSkillsList(input) {
+  if (!input) return [];
+  let items = [];
+  if (typeof input === 'string') {
+    items = input.split(/[,;\n]+/).map(s => s.trim()).filter(Boolean);
+  } else if (Array.isArray(input)) {
+    items = input.flatMap(item => {
+      const text = String(item ?? '').trim();
+      if (!text) return [];
+      if (text.includes(',') || text.includes(';')) {
+        return text.split(/[,;]+/).map(s => s.trim()).filter(Boolean);
+      }
+      return [text];
+    });
+  }
+  return [...new Set(items.map(s => cleanProgramName(s)).filter(isValidSkillEntry))];
+}
+
+function isValidCertName(value) {
+  const text = String(value || '').trim();
+  if (text.length < 2 || text.length > 120) return false;
+  if (!/[A-Za-z]{2,}/.test(text)) return false;
+  return !/\b(fake|none|idk|whatever)\b/i.test(text);
+}
+
+function normalizeCertificationsList(input) {
+  if (!input) return [];
+  const out = [];
+  const addCert = (name, org = '', year = '') => {
+    const cleaned = cleanCertObject({ name: cleanProgramName(name), org, year });
+    if (isValidCertName(cleaned.name)) out.push(cleaned);
+  };
+  if (typeof input === 'string') {
+    input.split(/\n|;/).map(s => s.trim()).filter(Boolean).forEach(line => addCert(line));
+  } else if (Array.isArray(input)) {
+    input.forEach(item => {
+      if (typeof item === 'string') addCert(item);
+      else if (item && typeof item === 'object') addCert(item.name || item.title || '', item.org || item.issuer || '', item.year || '');
+    });
+  }
+  const seen = new Set();
+  return out.filter(cert => {
+    const key = cert.name.toLowerCase();
+    if (seen.has(key)) return false;
+    seen.add(key);
+    return true;
+  });
+}
+
+function formatCertsForTextarea(certs) {
+  return certs.map(c => [c.name, c.org, c.year].filter(Boolean).join(', ')).join('\n');
+}
+
+function getSkillsFormValue() {
+  const savedSkills = normalizeSkillsList(resumeData.skills);
+  if (sectionStatus.skills === 'done' && savedSkills.length) return savedSkills.join(', ');
+  if (resumeData._skillsFromUpload && savedSkills.length) return savedSkills.join(', ');
+  if (savedSkills.length) return savedSkills.join(', ');
+  if (currentProgramDefaults?.skills?.length) return currentProgramDefaults.skills.join(', ');
+  return '';
+}
+
+function getCertsFormValue() {
+  const savedCerts = normalizeCertificationsList(resumeData.certifications);
+  if (sectionStatus.skills === 'done' && savedCerts.length) return formatCertsForTextarea(savedCerts);
+  if (resumeData._certsFromUpload && savedCerts.length) return formatCertsForTextarea(savedCerts);
+  if (savedCerts.length) return formatCertsForTextarea(savedCerts);
+  if (currentProgramDefaults?.certifications?.length) return currentProgramDefaults.certifications.join('\n');
+  return '';
+}
+
 function renderSkillsForm() {
-  const hasSavedSkills = Array.isArray(resumeData.skills) && resumeData.skills.length;
-  const hasSavedCerts = resumeData.certifications.length;
-  const defaultSkills = (!hasSavedSkills && currentProgramDefaults?.skills?.length)
-    ? currentProgramDefaults.skills.join(', ')
-    : '';
-  const defaultCerts = (!hasSavedCerts && currentProgramDefaults?.certifications?.length)
-    ? currentProgramDefaults.certifications.join('\n')
-    : '';
-  const existing = hasSavedSkills ? resumeData.skills.join(', ') : defaultSkills;
-  const existingCerts = hasSavedCerts
-    ? resumeData.certifications.map(c=>[c.name,c.org,c.year].filter(Boolean).join(', ')).join('\n')
-    : defaultCerts;
+  const existing = getSkillsFormValue();
+  const existingCerts = getCertsFormValue();
   return `<div class="section-hdr"><div class="section-hdr-icon">⚡</div><div><div class="section-hdr-title">Skills &amp; Certifications</div><div class="section-hdr-sub">List both sides — I'll organize them</div></div></div>
   <div class="two-panel-grid">
     <div class="form-card">
@@ -2539,10 +2640,14 @@ async function submitSkills() {
     let data;
     try { data=JSON.parse(result.trim().replace(/^```(?:json)?\s*/i,'').replace(/\s*```$/,'')); }
     catch { data={skills:result.split('\n').map(l=>l.replace(/^[•\-\*"\[,\]]+\s*/,'').replace(/[",\]]+$/,'').trim()).filter(l=>l.length>1&&l.length<=80),certifications:parseCertLines(rawCerts)}; }
-    resumeData.skills = Array.isArray(data.skills) ? data.skills.map(s=>cleanProgramName(String(s).trim())).filter(Boolean) : [];
-    resumeData.certifications = Array.isArray(data.certifications) ? data.certifications.map(cleanCertObject).filter(c=>c.name) : parseCertLines(rawCerts);
+    resumeData.skills = normalizeSkillsList(Array.isArray(data.skills) ? data.skills : rawSkills);
+    resumeData.certifications = Array.isArray(data.certifications)
+      ? normalizeCertificationsList(data.certifications)
+      : normalizeCertificationsList(parseCertLines(rawCerts));
+    delete resumeData._skillsFromUpload;
+    delete resumeData._certsFromUpload;
     resumeData.references = 'Available upon request';
-    if (!resumeData.skills.length || resumeData.skills.some(s => s.length > 80 || /\*\*/.test(s) || /^(please|for best|note:|provide|share|raw |to org)/i.test(s))) {
+    if (!resumeData.skills.length || looksLikeBrokenSkillList(resumeData.skills) || resumeData.skills.some(s => !isValidSkillEntry(s))) {
       addAIMsg('There was a problem organizing your skills — please try again.');
       showSection('skills');
       return;
@@ -2552,7 +2657,7 @@ async function submitSkills() {
 }
 
 function parseCertLines(raw) {
-  return raw.split(/\n|;/).map(line=>line.trim()).filter(Boolean).map(line=>({name:line,org:'',year:''}));
+  return normalizeCertificationsList(raw);
 }
 
 function cleanCertObject(cert) {
@@ -2759,7 +2864,7 @@ function courseOfStudyText(data) {
   return (data.courseOfStudy || data.educationSkills || '').trim();
 }
 function scLabel(data){const s=data.skills?.length,c=data.certifications?.length;return s&&c?'Skills & Certifications':c?'Certifications':'Skills';}
-function scItems(data){return [...(Array.isArray(data.skills)?data.skills:[]),...(data.certifications||[]).map(c=>c.name)];}
+function scItems(data){return [...normalizeSkillsList(data.skills),...normalizeCertificationsList(data.certifications).map(c=>c.name)];}
 function skillsCertsGrid(items){
   const nb={style:docx.BorderStyle.NONE,size:0,color:'FFFFFF'};
   const mid=Math.ceil(items.length/2),col1=items.slice(0,mid),col2=items.slice(mid);
