@@ -104,8 +104,9 @@ html,body{height:100%;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Ro
 .check-opt-inline input{accent-color:var(--blue-700)}
 .two-panel-grid{display:grid;grid-template-columns:1fr 1fr;gap:16px}
 @media(max-width:700px){.two-panel-grid{grid-template-columns:1fr}}
-.sc-item-row{margin-bottom:8px}
-.sc-item-row input{width:100%}
+.sc-item-row{display:flex;align-items:center;gap:8px;margin-bottom:8px}
+.sc-item-row input{flex:1;width:auto}
+.sc-row-del{flex-shrink:0;padding:4px 8px}
 .sc-list-actions{display:flex;align-items:center;justify-content:space-between;gap:10px;margin-top:8px;font-size:12px;color:var(--slate-500)}
 .sc-list-actions .btn{padding:6px 12px;font-size:12px}
 
@@ -1833,13 +1834,11 @@ function renderWorkApproval() {
 function _bulletArr(src){
   if(src==='work')return pendingWork.bulletLines||(pendingWork.bulletLines=[]);
   if(src==='mil')return pendingMilitary.bulletLines||(pendingMilitary.bulletLines=[]);
-  if(src==='skill')return resumeData.skills||(resumeData.skills=[]);
   return [];
 }
 function _bulletRerender(src){
   if(src==='work')showCenter('workApproval');
   else if(src==='mil')showCenter('militaryApproval');
-  else if(src==='skill')showCenter('skillsApproval');
 }
 function renderEditableBullets(src,lines){
   if(!lines||!lines.length)return '<div style="font-size:13px;color:var(--slate-400);padding:6px 0">No bullets yet.</div>';
@@ -1857,7 +1856,6 @@ function saveBullet(src,idx){
   const v=inp.value.trim();if(v)_bulletArr(src)[idx]=v;
   _bulletRerender(src);
 }
-function deleteCert(idx){resumeData.certifications.splice(idx,1);showCenter('skillsApproval');}
 function editObjectiveInline(){
   const el=document.getElementById('obj-view');if(!el)return;
   const obj=resumeData.careerContext.objective||'';
@@ -2608,7 +2606,7 @@ function renderSkillCertItemRows(type, items) {
     ? 'e.g. MIG welding, blueprint reading, customer service'
     : 'e.g. OSHA 10, EPA 608, CDL Class A';
   const maxLen = type === 'skill' ? 80 : 120;
-  return items.map(item => `<div class="sc-item-row"><input type="text" class="${inputClass}" value="${escHtml(item)}" placeholder="${placeholder}" maxlength="${maxLen}"></div>`).join('');
+  return items.map(item => `<div class="sc-item-row"><input type="text" class="${inputClass}" value="${escHtml(item)}" placeholder="${placeholder}" maxlength="${maxLen}"><button type="button" class="ebl-btn del sc-row-del" onclick="removeSkillCertRow(this)" title="Remove">✕</button></div>`).join('');
 }
 
 function getSkillCertRowCount(type) {
@@ -2644,9 +2642,19 @@ function addSkillCertRow(type) {
   const maxLen = type === 'skill' ? 80 : 120;
   const row = document.createElement('div');
   row.className = 'sc-item-row';
-  row.innerHTML = `<input type="text" class="${inputClass}" placeholder="${placeholder}" maxlength="${maxLen}">`;
+  row.innerHTML = `<input type="text" class="${inputClass}" placeholder="${placeholder}" maxlength="${maxLen}"><button type="button" class="ebl-btn del sc-row-del" onclick="removeSkillCertRow(this)" title="Remove">✕</button>`;
   list.appendChild(row);
   row.querySelector('input').focus();
+  updateSkillCertAddButtons();
+}
+
+function removeSkillCertRow(btn) {
+  const list = btn.closest('#skillsList, #certsList');
+  const row = btn.closest('.sc-item-row');
+  if (row) row.remove();
+  if (list && !list.querySelectorAll('input').length) {
+    addSkillCertRow(list.id === 'skillsList' ? 'skill' : 'cert');
+  }
   updateSkillCertAddButtons();
 }
 
@@ -2680,7 +2688,7 @@ function renderSkillsForm() {
   const skillRows = getInitialSkillRows();
   const certRows = getInitialCertRows();
   setTimeout(updateSkillCertAddButtons, 0);
-  return `<div class="section-hdr"><div class="section-hdr-icon">⚡</div><div><div class="section-hdr-title">Skills &amp; Certifications</div><div class="section-hdr-sub">Edit the list below — anything with text will be included (up to 10 each)</div></div></div>
+  return `<div class="section-hdr"><div class="section-hdr-icon">⚡</div><div><div class="section-hdr-title">Skills &amp; Certifications</div><div class="section-hdr-sub">Add, edit, or remove items here — up to 10 each</div></div></div>
   <div class="two-panel-grid">
     <div class="form-card">
       <div class="form-card-hdr">⚡ Skills</div>
@@ -2709,7 +2717,7 @@ function renderSkillsForm() {
   </div>
   <div class="form-card">
     <div class="form-card-footer">
-      <button class="btn btn-primary" onclick="submitSkills()">Build →</button>
+      <button class="btn btn-primary" onclick="submitSkills()">Review →</button>
     </div>
   </div>`;
 }
@@ -2736,10 +2744,10 @@ async function submitSkills() {
     let data;
     try { data=JSON.parse(result.trim().replace(/^```(?:json)?\s*/i,'').replace(/\s*```$/,'')); }
     catch { data={skills:result.split('\n').map(l=>l.replace(/^[•\-\*"\[,\]]+\s*/,'').replace(/[",\]]+$/,'').trim()).filter(l=>l.length>1&&l.length<=80),certifications:parseCertLines(rawCerts)}; }
-    resumeData.skills = normalizeSkillsList(Array.isArray(data.skills) ? data.skills : rawSkills);
-    resumeData.certifications = Array.isArray(data.certifications)
+    resumeData.skills = normalizeSkillsList(Array.isArray(data.skills) ? data.skills : rawSkills).slice(0, MAX_SKILL_CERT_ITEMS);
+    resumeData.certifications = (Array.isArray(data.certifications)
       ? normalizeCertificationsList(data.certifications)
-      : normalizeCertificationsList(parseCertLines(rawCerts));
+      : normalizeCertificationsList(parseCertLines(rawCerts))).slice(0, MAX_SKILL_CERT_ITEMS);
     delete resumeData._skillsFromUpload;
     delete resumeData._certsFromUpload;
     resumeData.references = 'Available upon request';
@@ -2764,12 +2772,17 @@ function cleanCertObject(cert) {
   };
 }
 
+function renderReadOnlyList(items, emptyText) {
+  if (!items || !items.length) return `<span class="a-value" style="font-size:13px;color:var(--slate-400)">${emptyText}</span>`;
+  return items.map(item => `<div class="ebl-item"><span class="ebl-dot">•</span><span class="ebl-text">${escHtml(item)}</span></div>`).join('');
+}
+
 function renderSkillsApproval() {
-  const skillItems = renderEditableBullets('skill', resumeData.skills);
+  const skillItems = renderReadOnlyList(resumeData.skills, 'No skills listed.');
   const certItems = resumeData.certifications.length
-    ? resumeData.certifications.map((c,i)=>`<div class="ebl-item"><span class="ebl-dot">•</span><span class="ebl-text">${escHtml([c.name,c.org,c.year].filter(Boolean).join(', '))}</span><span class="ebl-actions"><button class="ebl-btn del" onclick="deleteCert(${i})">✕</button></span></div>`).join('')
+    ? resumeData.certifications.map(c => `<div class="ebl-item"><span class="ebl-dot">•</span><span class="ebl-text">${escHtml([c.name,c.org,c.year].filter(Boolean).join(', '))}</span></div>`).join('')
     : '<span class="a-value" style="font-size:13px;color:var(--slate-400)">No certifications listed.</span>';
-  return `<div class="section-hdr"><div class="section-hdr-icon">⚡</div><div><div class="section-hdr-title">Skills &amp; Certifications</div><div class="section-hdr-sub">Click ✏ to edit a skill, ✕ to remove any item</div></div></div>
+  return `<div class="section-hdr"><div class="section-hdr-icon">⚡</div><div><div class="section-hdr-title">Skills &amp; Certifications</div><div class="section-hdr-sub">Review everything below, then approve or go back to edit</div></div></div>
   <div class="two-panel-grid">
     <div class="approval-card">
       <div class="approval-hdr">✓ Skills — Review</div>
