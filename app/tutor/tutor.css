@@ -196,6 +196,10 @@
   padding: 16px;
   border-bottom: 1px solid #334155;
   flex-shrink: 0;
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 12px;
 }
 
 .chat-header h2 {
@@ -243,6 +247,47 @@
 
 .chat-typing {
   color: #94a3b8;
+}
+
+.voice-toggle {
+  background: #334155;
+  border: none;
+  border-radius: 8px;
+  padding: 6px 10px;
+  font-size: 1rem;
+  cursor: pointer;
+  flex-shrink: 0;
+}
+
+.voice-toggle.on {
+  background: #1d4ed8;
+}
+
+.mic-btn {
+  padding: 10px 12px;
+  border-radius: 8px;
+  border: 1px solid #475569;
+  background: #0f172a;
+  color: #e2e8f0;
+  font-size: 1rem;
+  cursor: pointer;
+  flex-shrink: 0;
+}
+
+.mic-btn.listening {
+  background: #dc2626;
+  border-color: #ef4444;
+  animation: mic-pulse 1.2s ease-in-out infinite;
+}
+
+@keyframes mic-pulse {
+  0%,
+  100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.6;
+  }
 }
 
 .chat-input-row {
