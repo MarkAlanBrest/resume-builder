@@ -1,7 +1,25 @@
 import OpenAI from "openai";
 
 const INSTRUCTOR_INSTRUCTIONS =
-  "Speak like an experienced shop instructor teaching blueprint reading. Calm, clear, patient, and confident. Not salesy or overly cheerful.";
+  "Speak like an experienced shop instructor teaching blueprint reading. Calm, clear, patient, and confident.";
+
+async function createSpeech(openai, text, voice) {
+  try {
+    return await openai.audio.speech.create({
+      model: "gpt-4o-mini-tts",
+      voice,
+      input: text,
+      instructions: INSTRUCTOR_INSTRUCTIONS,
+    });
+  } catch {
+    return await openai.audio.speech.create({
+      model: "tts-1-hd",
+      voice,
+      input: text,
+      speed: 0.95,
+    });
+  }
+}
 
 export async function POST(req) {
   try {
@@ -17,15 +35,7 @@ export async function POST(req) {
     }
 
     const openai = new OpenAI({ apiKey: process.env.OPENAI_API_KEY });
-
-    const speech = await openai.audio.speech.create({
-      model: "gpt-4o-mini-tts",
-      voice: body.voice || "onyx",
-      input: text,
-      instructions: body.instructions || INSTRUCTOR_INSTRUCTIONS,
-      speed: 0.95,
-    });
-
+    const speech = await createSpeech(openai, text, body.voice || "onyx");
     const buffer = Buffer.from(await speech.arrayBuffer());
 
     return new Response(buffer, {
