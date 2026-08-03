@@ -2,7 +2,7 @@
 
 import { useCallback, useEffect, useRef, useState } from "react";
 
-function pickVoice() {
+function pickBrowserVoice() {
   const voices = window.speechSynthesis?.getVoices() || [];
   return (
     voices.find((v) => v.lang.startsWith("en") && /google|samantha|alex/i.test(v.name)) ||
@@ -12,12 +12,25 @@ function pickVoice() {
   );
 }
 
+function speakWithBrowser(text, onStart, onEnd) {
+  const utterance = new SpeechSynthesisUtterance(text);
+  const voice = pickBrowserVoice();
+  if (voice) utterance.voice = voice;
+  utterance.rate = 0.92;
+  utterance.pitch = 1;
+  utterance.onstart = onStart;
+  utterance.onend = onEnd;
+  utterance.onerror = onEnd;
+  window.speechSynthesis.speak(utterance);
+}
+
 export function useTutorVoice() {
   const [voiceOn, setVoiceOn] = useState(true);
   const [speaking, setSpeaking] = useState(false);
   const [listening, setListening] = useState(false);
   const [speechSupported, setSpeechSupported] = useState(false);
   const recognitionRef = useRef(null);
+  const audioRef = useRef(null);
 
   useEffect(() => {
     const hasTts = typeof window !== "undefined" && "speechSynthesis" in window;
@@ -26,7 +39,7 @@ export function useTutorVoice() {
     setSpeechSupported(hasTts || hasStt);
 
     if (hasTts) {
-      const loadVoices = () => pickVoice();
+      const loadVoices = () => pickBrowserVoice();
       window.speechSynthesis.addEventListener("voiceschanged", loadVoices);
       loadVoices();
       return () => window.speechSynthesis.removeEventListener("voiceschanged", loadVoices);
@@ -37,25 +50,52 @@ export function useTutorVoice() {
     if (typeof window !== "undefined" && window.speechSynthesis) {
       window.speechSynthesis.cancel();
     }
+    if (audioRef.current) {
+      audioRef.current.pause();
+      audioRef.current = null;
+    }
     setSpeaking(false);
   }, []);
 
   const speak = useCallback(
-    (text) => {
-      if (!voiceOn || !text || typeof window === "undefined" || !window.speechSynthesis) return;
+    async (text) => {
+      if (!voiceOn || !text || typeof window === "undefined") return;
 
       stopSpeaking();
-      const utterance = new SpeechSynthesisUtterance(text);
-      const voice = pickVoice();
-      if (voice) utterance.voice = voice;
-      utterance.rate = 0.95;
-      utterance.pitch = 1;
+      const onStart = () => setSpeaking(true);
+      const onEnd = () => setSpeaking(false);
 
-      utterance.onstart = () => setSpeaking(true);
-      utterance.onend = () => setSpeaking(false);
-      utterance.onerror = () => setSpeaking(false);
+      try {
+        const res = await fetch("/api/tts", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ text }),
+        });
 
-      window.speechSynthesis.speak(utterance);
+        if (res.ok) {
+          const blob = await res.blob();
+          const url = URL.createObjectURL(blob);
+          const audio = new Audio(url);
+          audioRef.current = audio;
+          audio.onplay = onStart;
+          audio.onended = () => {
+            URL.revokeObjectURL(url);
+            onEnd();
+          };
+          audio.onerror = () => {
+            URL.revokeObjectURL(url);
+            onEnd();
+          };
+          await audio.play();
+          return;
+        }
+      } catch {
+        // fall through to browser voice
+      }
+
+      if (window.speechSynthesis) {
+        speakWithBrowser(text, onStart, onEnd);
+      }
     },
     [voiceOn, stopSpeaking]
   );
