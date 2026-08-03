@@ -2,6 +2,7 @@
 
 import { useEffect, useRef, useState } from "react";
 import BlueprintDrawing, { HIDDEN_LINES } from "./BlueprintDrawing";
+import { useTutorVoice } from "./useTutorVoice";
 import "./tutor.css";
 
 const LESSONS = [
@@ -39,10 +40,33 @@ export default function TutorPage() {
   const [loading, setLoading] = useState(false);
   const chatEndRef = useRef(null);
   const initializedRef = useRef(false);
+  const lastSpokenRef = useRef(-1);
+  const {
+    voiceOn,
+    setVoiceOn,
+    speaking,
+    listening,
+    speechSupported,
+    speak,
+    stopSpeaking,
+    startListening,
+    stopListening,
+  } = useTutorVoice();
 
   useEffect(() => {
     chatEndRef.current?.scrollIntoView({ behavior: "smooth" });
   }, [messages, loading]);
+
+  useEffect(() => {
+    const lastIndex = messages.length - 1;
+    const last = messages[lastIndex];
+    if (!last || last.role !== "assistant") return;
+    if (last.content === FALLBACK_INTRO) return;
+    if (lastIndex <= lastSpokenRef.current) return;
+
+    lastSpokenRef.current = lastIndex;
+    speak(last.content);
+  }, [messages, speak]);
 
   useEffect(() => {
     if (initializedRef.current) return;
@@ -94,6 +118,7 @@ export default function TutorPage() {
 
       if (replaceIntro) {
         setMessages([{ role: "assistant", content: reply }]);
+        lastSpokenRef.current = -1;
       } else {
         setMessages((prev) => [...prev, { role: "assistant", content: reply }]);
       }
@@ -142,11 +167,15 @@ export default function TutorPage() {
   }
 
   async function handleSend(e) {
-    e.preventDefault();
+    e?.preventDefault();
     if (!input.trim() || loading) return;
 
     const text = input.trim();
     setInput("");
+    await sendUserMessage(text);
+  }
+
+  async function sendUserMessage(text) {
     const updatedMessages = [
       ...messages.map((m) => ({ role: m.role, content: m.content })),
       { role: "user", content: text },
@@ -155,7 +184,21 @@ export default function TutorPage() {
     await askAI(updatedMessages, found);
   }
 
+  function handleMicClick() {
+    if (listening) {
+      stopListening();
+      return;
+    }
+
+    startListening((text) => {
+      setInput(text);
+      sendUserMessage(text);
+    });
+  }
+
   function handleReset() {
+    stopSpeaking();
+    lastSpokenRef.current = -1;
     setMessages([{ role: "assistant", content: FALLBACK_INTRO }]);
     setFound([]);
     setHighlightId("pocket-floor");
@@ -225,8 +268,25 @@ export default function TutorPage() {
 
       <aside className="chat-panel">
         <div className="chat-header">
-          <h2>Instructor</h2>
-          <p>Ask questions or follow along</p>
+          <div>
+            <h2>Instructor</h2>
+            <p>
+              {speaking ? "Speaking..." : listening ? "Listening..." : "Ask questions or follow along"}
+            </p>
+          </div>
+          {speechSupported && (
+            <button
+              type="button"
+              className={`voice-toggle ${voiceOn ? "on" : ""}`}
+              onClick={() => {
+                if (voiceOn) stopSpeaking();
+                setVoiceOn(!voiceOn);
+              }}
+              title={voiceOn ? "Mute instructor voice" : "Unmute instructor voice"}
+            >
+              {voiceOn ? "🔊" : "🔇"}
+            </button>
+          )}
         </div>
 
         <div className="chat-messages">
@@ -240,11 +300,22 @@ export default function TutorPage() {
         </div>
 
         <form className="chat-input-row" onSubmit={handleSend}>
+          {speechSupported && (
+            <button
+              type="button"
+              className={`mic-btn ${listening ? "listening" : ""}`}
+              onClick={handleMicClick}
+              disabled={loading}
+              title={listening ? "Stop listening" : "Talk to instructor"}
+            >
+              🎤
+            </button>
+          )}
           <input
             type="text"
             value={input}
             onChange={(e) => setInput(e.target.value)}
-            placeholder="Ask a question..."
+            placeholder={listening ? "Listening..." : "Type or use the mic..."}
             disabled={loading}
           />
           <button type="submit" disabled={loading || !input.trim()}>
