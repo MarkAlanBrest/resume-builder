@@ -48,6 +48,7 @@ export default function TutorPage() {
   const [found, setFound] = useState([]);
   const [highlightId, setHighlightId] = useState("pocket-floor");
   const [loading, setLoading] = useState(false);
+  const [lessonStarted, setLessonStarted] = useState(false);
   const chatEndRef = useRef(null);
   const initializedRef = useRef(false);
   const lastSpokenRef = useRef(-1);
@@ -57,7 +58,9 @@ export default function TutorPage() {
     speaking,
     listening,
     speechSupported,
-    speak,
+    voiceEngine,
+    voiceError,
+    speakNow,
     stopSpeaking,
     startListening,
     stopListening,
@@ -71,6 +74,7 @@ export default function TutorPage() {
   }, [messages, loading, instructorLine]);
 
   useEffect(() => {
+    if (!lessonStarted) return;
     const lastIndex = messages.length - 1;
     const last = messages[lastIndex];
     if (!last || last.role !== "assistant") return;
@@ -78,12 +82,13 @@ export default function TutorPage() {
     if (lastIndex <= lastSpokenRef.current) return;
 
     lastSpokenRef.current = lastIndex;
-    speak(last.content);
-  }, [messages, speak]);
+    speakNow(last.content);
+  }, [messages, lessonStarted, speakNow]);
 
-  useEffect(() => {
+  function beginLesson() {
     if (initializedRef.current) return;
     initializedRef.current = true;
+    setLessonStarted(true);
     setMessages([{ role: "assistant", content: FALLBACK_INTRO }]);
     askAI(
       [
@@ -96,7 +101,7 @@ export default function TutorPage() {
       [],
       true
     );
-  }, []);
+  }
 
   async function askAI(newMessages, currentFound, replaceIntro = false) {
     setLoading(true);
@@ -214,6 +219,7 @@ export default function TutorPage() {
   function handleReset() {
     stopSpeaking();
     lastSpokenRef.current = -1;
+    setLessonStarted(true);
     setMessages([{ role: "assistant", content: FALLBACK_INTRO }]);
     setFound([]);
     setHighlightId("pocket-floor");
@@ -262,9 +268,15 @@ export default function TutorPage() {
           <p className="nav-progress">
             Found {found.length} of {HIDDEN_LINES.length}
           </p>
-          <button type="button" onClick={handleReset} className="reset-btn">
-            Restart Lesson
-          </button>
+          {!lessonStarted ? (
+            <button type="button" onClick={beginLesson} className="begin-btn">
+              Begin Lesson
+            </button>
+          ) : (
+            <button type="button" onClick={handleReset} className="reset-btn">
+              Restart Lesson
+            </button>
+          )}
         </div>
       </nav>
 
@@ -286,10 +298,23 @@ export default function TutorPage() {
           <div>
             <h2>Instructor</h2>
             <p className="chat-status">
-              {speaking ? "Speaking" : listening ? "Listening" : loading ? "Thinking" : "Ready"}
+              {!lessonStarted
+                ? "Click Begin Lesson"
+                : speaking
+                  ? "Speaking"
+                  : listening
+                    ? "Listening"
+                    : loading
+                      ? "Thinking"
+                      : voiceEngine === "openai"
+                        ? "OpenAI voice"
+                        : voiceError
+                          ? "Voice error"
+                          : "Ready"}
             </p>
+            {voiceError && <p className="chat-voice-error">{voiceError}</p>}
           </div>
-          {speechSupported && (
+          {lessonStarted && (
             <button
               type="button"
               className={`voice-toggle ${voiceOn ? "on" : ""}`}
@@ -305,7 +330,11 @@ export default function TutorPage() {
 
         <div className="chat-messages">
           <div className="instructor-transcript">
-            {instructorLine ? (
+            {!lessonStarted ? (
+              <p className="chat-placeholder">
+                Click Begin Lesson to hear your instructor explain the drawing.
+              </p>
+            ) : instructorLine ? (
               <p>{instructorLine.content}</p>
             ) : (
               <p className="chat-placeholder">The instructor will speak and explain the drawing here.</p>
@@ -327,7 +356,7 @@ export default function TutorPage() {
         </div>
 
         <form className="chat-input-row" onSubmit={handleSend}>
-          {speechSupported && (
+          {speechSupported && lessonStarted && (
             <button
               type="button"
               className={`mic-btn ${listening ? "listening" : ""}`}
@@ -342,9 +371,9 @@ export default function TutorPage() {
             value={input}
             onChange={(e) => setInput(e.target.value)}
             placeholder={listening ? "Listening..." : "Type a question..."}
-            disabled={loading}
+            disabled={loading || !lessonStarted}
           />
-          <button type="submit" disabled={loading || !input.trim()}>
+          <button type="submit" disabled={loading || !input.trim() || !lessonStarted}>
             Send
           </button>
         </form>

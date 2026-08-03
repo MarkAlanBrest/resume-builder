@@ -112,6 +112,22 @@
   background: #475569;
 }
 
+.begin-btn {
+  width: 100%;
+  background: #2563eb;
+  color: #fff;
+  border: none;
+  padding: 10px 12px;
+  border-radius: 6px;
+  cursor: pointer;
+  font-size: 0.85rem;
+  font-weight: 600;
+}
+
+.begin-btn:hover {
+  background: #1d4ed8;
+}
+
 /* ── Middle: Content ── */
 .content-panel {
   flex: 1;
@@ -223,6 +239,14 @@
   color: #94a3b8;
   text-transform: uppercase;
   letter-spacing: 0.05em;
+}
+
+.chat-voice-error {
+  margin: 6px 0 0;
+  font-size: 0.72rem;
+  color: #f87171;
+  text-transform: none;
+  letter-spacing: normal;
 }
 
 .chat-messages {
