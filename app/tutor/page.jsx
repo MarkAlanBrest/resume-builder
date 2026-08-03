@@ -2,6 +2,7 @@
 
 import { useEffect, useRef, useState } from "react";
 import BlueprintDrawing, { HIDDEN_LINES } from "./BlueprintDrawing";
+import { parseInstructorReply } from "./parseInstructorReply";
 import { useTutorVoice } from "./useTutorVoice";
 import "./tutor.css";
 
@@ -14,22 +15,31 @@ const LESSONS = [
   },
 ];
 
-const SYSTEM_PROMPT = `You are a patient blueprint reading instructor teaching a beginner.
-The student is studying a mechanical drawing of a mounting bracket with FRONT VIEW and TOP VIEW.
+const SYSTEM_PROMPT = `You are a blueprint reading instructor. The student is looking at a real drawing on screen — do NOT describe the layout like a picture in chat. Speak to them as if you are standing next to the print.
 
-Hidden lines are thin dashed lines. They show edges you cannot see from that viewing angle.
+Rules:
+- No emojis. No markdown. Plain spoken English only.
+- Keep answers to 1-3 short sentences.
+- Refer to FRONT VIEW and TOP VIEW by name.
+- Hidden lines are thin dashed lines showing edges you cannot see.
+- When pointing to a feature, end your reply with exactly one tag on its own line:
+  [HIGHLIGHT:pocket-floor] OR [HIGHLIGHT:hole-back] OR [HIGHLIGHT:slot-bottom]
 
-There are 3 hidden lines to find:
-1. FRONT VIEW — dashed line showing the floor of the internal pocket at the top of the part
-2. FRONT VIEW — dashed line on the back wall of the through hole (left side of the hole)
-3. TOP VIEW — dashed line at the bottom of the milled slot
+The three hidden lines to teach:
+1. pocket-floor — FRONT VIEW, floor of the internal pocket at the top
+2. hole-back — FRONT VIEW, back wall of the through hole
+3. slot-bottom — TOP VIEW, bottom of the milled slot
 
-Keep answers short (1-3 sentences). Be encouraging and practical.
-When the student finds a hidden line, praise them and tell them how many are left.
-If they ask what a hidden line is, explain simply with an example from this drawing.`;
+Be encouraging. When they find a line, praise them and guide them to the next.`;
 
 const FALLBACK_INTRO =
-  "Welcome! This is a mounting bracket drawing. Hidden lines are the thin dashed lines — they show edges you can't see from the outside. I've highlighted one in orange on the FRONT VIEW. Click that dashed line to begin.";
+  "Welcome. Look at the FRONT VIEW on the drawing. The thin dashed line at the top pocket is a hidden line — it shows the floor you cannot see. Click that dashed line to begin.";
+
+function applyInstructorReply(raw, setHighlightId) {
+  const { content, highlightId } = parseInstructorReply(raw);
+  if (highlightId) setHighlightId(highlightId);
+  return content;
+}
 
 export default function TutorPage() {
   const [activeLesson] = useState("hidden-lines");
@@ -53,9 +63,12 @@ export default function TutorPage() {
     stopListening,
   } = useTutorVoice();
 
+  const instructorLine = [...messages].reverse().find((m) => m.role === "assistant");
+  const studentLines = messages.filter((m) => m.role === "user");
+
   useEffect(() => {
     chatEndRef.current?.scrollIntoView({ behavior: "smooth" });
-  }, [messages, loading]);
+  }, [messages, loading, instructorLine]);
 
   useEffect(() => {
     const lastIndex = messages.length - 1;
@@ -77,7 +90,7 @@ export default function TutorPage() {
         {
           role: "user",
           content:
-            "Start the lesson. Greet the student, explain hidden lines briefly, point out the pocket floor hidden line on the FRONT VIEW (highlighted orange), and ask them to click it.",
+            "Start the lesson. Greet the student, explain hidden lines briefly, point to the pocket floor line on the FRONT VIEW, and ask them to click it. Use [HIGHLIGHT:pocket-floor].",
         },
       ],
       [],
@@ -113,8 +126,10 @@ export default function TutorPage() {
         return;
       }
 
-      const reply = data.content?.[0]?.text;
-      if (!reply) return;
+      const raw = data.content?.[0]?.text;
+      if (!raw) return;
+
+      const reply = applyInstructorReply(raw, setHighlightId);
 
       if (replaceIntro) {
         setMessages([{ role: "assistant", content: reply }]);
@@ -141,7 +156,7 @@ export default function TutorPage() {
     setFound(newFound);
     setHighlightId(null);
 
-    const userNote = `I clicked on the ${line.label}.`;
+    const userNote = `I found the ${line.label}.`;
     const updatedMessages = [
       ...messages.map((m) => ({ role: m.role, content: m.content })),
       { role: "user", content: userNote },
@@ -207,7 +222,7 @@ export default function TutorPage() {
         {
           role: "user",
           content:
-            "Restart the lesson. Greet the student, explain hidden lines, point out the pocket floor line on the FRONT VIEW (orange highlight), and ask them to click it.",
+            "Restart the lesson. Greet the student, explain hidden lines, point to the pocket floor line on the FRONT VIEW, and ask them to click it. Use [HIGHLIGHT:pocket-floor].",
         },
       ],
       [],
@@ -262,7 +277,7 @@ export default function TutorPage() {
         </div>
         <div className="content-body">
           <BlueprintDrawing found={found} highlightId={highlightId} onLineClick={handleLineClick} />
-          <p className="picture-hint">Click the thin dashed hidden lines on the drawing</p>
+          <p className="picture-hint">Click the dashed hidden lines on the drawing</p>
         </div>
       </main>
 
@@ -270,8 +285,8 @@ export default function TutorPage() {
         <div className="chat-header">
           <div>
             <h2>Instructor</h2>
-            <p>
-              {speaking ? "Speaking..." : listening ? "Listening..." : "Ask questions or follow along"}
+            <p className="chat-status">
+              {speaking ? "Speaking" : listening ? "Listening" : loading ? "Thinking" : "Ready"}
             </p>
           </div>
           {speechSupported && (
@@ -282,20 +297,32 @@ export default function TutorPage() {
                 if (voiceOn) stopSpeaking();
                 setVoiceOn(!voiceOn);
               }}
-              title={voiceOn ? "Mute instructor voice" : "Unmute instructor voice"}
             >
-              {voiceOn ? "🔊" : "🔇"}
+              {voiceOn ? "Voice on" : "Voice off"}
             </button>
           )}
         </div>
 
         <div className="chat-messages">
-          {messages.map((msg, i) => (
-            <div key={i} className={`chat-bubble chat-bubble--${msg.role}`}>
-              {msg.content}
+          <div className="instructor-transcript">
+            {instructorLine ? (
+              <p>{instructorLine.content}</p>
+            ) : (
+              <p className="chat-placeholder">The instructor will speak and explain the drawing here.</p>
+            )}
+            {loading && <p className="chat-placeholder">Thinking...</p>}
+          </div>
+
+          {studentLines.length > 0 && (
+            <div className="student-transcript">
+              <h3>You said</h3>
+              <ul>
+                {studentLines.slice(-3).map((msg, i) => (
+                  <li key={i}>{msg.content}</li>
+                ))}
+              </ul>
             </div>
-          ))}
-          {loading && <div className="chat-bubble chat-bubble--assistant chat-typing">Thinking...</div>}
+          )}
           <div ref={chatEndRef} />
         </div>
 
@@ -306,16 +333,15 @@ export default function TutorPage() {
               className={`mic-btn ${listening ? "listening" : ""}`}
               onClick={handleMicClick}
               disabled={loading}
-              title={listening ? "Stop listening" : "Talk to instructor"}
             >
-              🎤
+              {listening ? "Stop" : "Talk"}
             </button>
           )}
           <input
             type="text"
             value={input}
             onChange={(e) => setInput(e.target.value)}
-            placeholder={listening ? "Listening..." : "Type or use the mic..."}
+            placeholder={listening ? "Listening..." : "Type a question..."}
             disabled={loading}
           />
           <button type="submit" disabled={loading || !input.trim()}>
