@@ -20,6 +20,11 @@ function normalizeEmployer(text) {
     .replace(/\bScholl\b/i, "School")
     .replace(/\bOf\b/g, "of");
 }
+
+function normalizeSchool(text) {
+  if (!text) return "";
+  return clean(text).replace(/\bOf\b/g, "of");
+}
 function clean(v) {
   if (v === undefined || v === null) return "";
 
@@ -386,7 +391,7 @@ const t5 = tasksArr[4] || "";
     }),
 
     education: education.map(e => ({
-      school: clean(e.school),
+      school: normalizeSchool(e.school),
       program: clean(e.program),
       eduCity: clean(e.city),
       eduState: clean(e.state),
@@ -733,7 +738,7 @@ task5: safeTask(ai.task5, base.task5, base.title),
     const base = baseData.education[i] || {};
 
     return {
-      school: clean(e.school ?? base.school),
+      school: normalizeSchool(e.school ?? base.school),
       program: clean(e.program ?? base.program),
       eduCity: clean(e.eduCity ?? base.eduCity),
       eduState: clean(e.eduState ?? base.eduState),

@@ -2165,7 +2165,18 @@ Rules:
 }
 
 function cleanSchoolName(value) {
-  return value.trim().replace(/\s+/g,' ').split(/([ '&.,/-])/).map(part=>/^[A-Za-z]/.test(part)?smartCapWord(part):part).join('').replace(/\bCtc\b/g,'CTC').replace(/\bCdl\b/g,'CDL').replace(/\bHvac\b/g,'HVAC').replace(/\bCnc\b/g,'CNC').replace(/\bGed\b/g,'GED').replace(/\bNats\b/g,'NATS');
+  const INSTITUTION_LOWER_WORDS = new Set(['a','an','and','at','for','in','of','or','the','to','with']);
+  const INSTITUTION_UPPER_WORDS = { ctc:'CTC', cdl:'CDL', hvac:'HVAC', cnc:'CNC', ged:'GED', nats:'NATS' };
+  let wordIndex = 0;
+  return value.trim().replace(/\s+/g,' ').split(/([ '&.,/-])/).map(part => {
+    if (!/^[A-Za-z]/.test(part)) return part;
+    const lower = part.toLowerCase();
+    const upper = INSTITUTION_UPPER_WORDS[lower];
+    if (upper) { wordIndex++; return upper; }
+    if (wordIndex > 0 && INSTITUTION_LOWER_WORDS.has(lower)) { wordIndex++; return lower; }
+    wordIndex++;
+    return smartCapWord(part);
+  }).join('');
 }
 
 function cleanProgramName(value) {
@@ -3004,7 +3015,7 @@ function addBodyTxt(target,text,opts){bodyTxt(text,opts).forEach(p=>target.push(
 function bullet(text,opts={}){const after=opts.after!==undefined?sp(opts.after):sp(160);return new docx.Paragraph({children:bulletRuns(text,opts),indent:{left:twip(0.36),hanging:twip(0.14)},spacing:{before:0,after,line:activeSpacing.bulletLine,lineRule:'auto'}})}
 function jobBlock(job){const items=[],loc=[job.city,job.state].filter(Boolean).join(', '),end=job.current?'Present':[job.endMonth,job.endYear].filter(Boolean).join(' '),dates=`${[job.startMonth,job.startYear].filter(Boolean).join(' ')} – ${end}`;items.push(new docx.Paragraph({spacing:{before:sp(320),after:sp(60)},children:[new docx.TextRun({text:job.jobTitle,bold:true,size:26,color:'1a1a1a'}),new docx.TextRun({text:`, ${job.employer}${loc?', '+loc:''}`,size:24,color:'444444'})]}));items.push(new docx.Paragraph({spacing:{before:0,after:sp(160)},children:[new docx.TextRun({text:dates,italics:true,size:22,color:'777777'})]}));(job.bulletLines||[]).forEach(b=>items.push(bullet(b)));return items;}
 function eduDegreeLine(edu){const field=edu.fieldOfStudy?`, ${edu.fieldOfStudy}`:'';return `${edu.degree||''}${field}`.trim();}
-function eduDetailsLine(edu){const loc=[edu.city,edu.state].filter(Boolean).join(', ');return [edu.school,loc,eduGradDate(edu)].filter(Boolean).join(', ');}
+function eduDetailsLine(edu){const loc=[edu.city,edu.state].filter(Boolean).join(', ');return [cleanSchoolName(edu.school||''),loc,eduGradDate(edu)].filter(Boolean).join(', ');}
 function eduBlock(edu,opts={}){const degreeSize=opts.degreeSize||24,detailSize=opts.detailSize||22,degreeColor=opts.degreeColor||'1a1a1a',detailColor=opts.detailColor||'555555',font=opts.font||'Calibri',before=opts.before!==undefined?sp(opts.before):sp(280),gapAfter=opts.gapAfter!==undefined?sp(opts.gapAfter):sp(200);return [new docx.Paragraph({spacing:{before,after:sp(40)},children:[new docx.TextRun({text:eduDegreeLine(edu),bold:true,size:degreeSize,color:degreeColor,font})]}),new docx.Paragraph({spacing:{before:0,after:gapAfter},children:[new docx.TextRun({text:eduDetailsLine(edu),size:detailSize,color:detailColor,font})]})];}
 function addEducationBlocks(target,education,opts={}){(education||[]).forEach((edu,index)=>{const list=education||[],isFirst=index===0,isLast=index===list.length-1;eduBlock(edu,{...opts,before:isFirst?(opts.before!==undefined?sp(opts.before):sp(280)):0,gapAfter:isLast?(opts.gapAfterLast!==undefined?sp(opts.gapAfterLast):(opts.gapAfter!==undefined?sp(opts.gapAfter):sp(160))):(opts.gapAfter!==undefined?sp(opts.gapAfter):sp(200))}).forEach(p=>target.push(p));});}
 function certBlock(cert){return new docx.Paragraph({spacing:{before:sp(200),after:sp(140)},children:[new docx.TextRun({text:cert.name,bold:true,size:24}),...(cert.org||cert.year?[new docx.TextRun({text:`  —  ${[cert.org,cert.year].filter(Boolean).join(', ')}`,size:22,color:'666666'})]:[])]})}
