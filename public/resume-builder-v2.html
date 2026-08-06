@@ -1079,7 +1079,7 @@
   <!-- mammoth.js for .docx text extraction -->
   <script src="https://cdnjs.cloudflare.com/ajax/libs/mammoth/1.6.0/mammoth.browser.min.js"></script>
   <!-- docx generation -->
-  <script src="https://unpkg.com/docx@8.5.0/build/index.iife.js"></script>
+  <script src="https://unpkg.com/docx@9.7.1/dist/index.iife.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/FileSaver.js/2.0.5/FileSaver.min.js"></script>
 </head>
 <body>
@@ -3543,26 +3543,31 @@ async function buildDocument(data, style, color) {
 const twip = n => docx.convertInchesToTwip(n);
 
 function resumeFullName(personal) { return `${personal?.firstName || ''} ${personal?.lastName || ''}`.trim() || 'Resume'; }
-const CORNER_FRAME = {
-  type: 'alignment',
-  alignment: { x: docx.HorizontalPositionAlign.RIGHT, y: docx.VerticalPositionAlign.TOP },
-  width: 2200,
-  height: 700,
-  anchor: { horizontal: docx.FrameAnchorType.PAGE, vertical: docx.FrameAnchorType.PAGE },
-  wrap: docx.FrameWrap.NONE,
-  anchorLock: true,
-  space: { horizontal: 360, vertical: 180 },
+const CORNER_TEXTBOX_STYLE = {
+  width: '2.75in',
+  height: '0.55in',
+  position: 'absolute',
+  positionHorizontalRelative: 'page',
+  positionHorizontal: 'right',
+  marginRight: '0.2in',
+  positionVerticalRelative: 'page',
+  top: '0.12in',
+  wrapStyle: 'none',
 };
 function makeCornerMarker(name) {
   return new docx.Header({
     children: [
-      new docx.Paragraph({
-        frame: CORNER_FRAME,
-        alignment: docx.AlignmentType.RIGHT,
-        spacing: { before: 0, after: 0 },
+      new docx.Textbox({
+        style: CORNER_TEXTBOX_STYLE,
         children: [
-          new docx.TextRun({ text: name, size: 14, color: '666666', font: 'Calibri' }),
-          new docx.TextRun({ children: [docx.PageNumber.CURRENT], size: 14, color: '999999', font: 'Calibri', break: 1 }),
+          new docx.Paragraph({
+            alignment: docx.AlignmentType.RIGHT,
+            spacing: { before: 0, after: 0 },
+            children: [
+              new docx.TextRun({ text: name, size: 14, color: '666666', font: 'Calibri' }),
+              new docx.TextRun({ children: [docx.PageNumber.CURRENT], size: 14, color: '999999', font: 'Calibri', break: 1 }),
+            ],
+          }),
         ],
       }),
     ],
