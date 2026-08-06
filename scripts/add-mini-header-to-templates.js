@@ -1,6 +1,7 @@
 /**
- * Adds a discreet top-right corner marker (name + page number) to Template*.docx files.
- * Shown from page 2 onward; page 1 is left blank. Skips full-bleed templates.
+ * Adds a page-anchored top-right corner marker (name + page number) to Template*.docx files.
+ * Position is locked to the page edge so it does not shift when resume content is edited.
+ * Shown from page 2 onward; page 1 is left blank.
  * Run: node scripts/add-mini-header-to-templates.js
  */
 const fs = require("fs");
@@ -13,16 +14,12 @@ const HEADER_XML = `<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
 <w:hdr xmlns:w="http://schemas.openxmlformats.org/wordprocessingml/2006/main" xmlns:r="http://schemas.openxmlformats.org/officeDocument/2006/relationships" xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" mc:Ignorable="w14 w15 w16se w16cid w16 w16cex w16sdtdh w16sdtfl w16du wp14">
   <w:p>
     <w:pPr>
+      <w:framePr w:anchorLock="1" w:w="2200" w:h="700" w:hAnchor="page" w:vAnchor="page" w:hSpace="360" w:vSpace="180" w:xAlign="right" w:yAlign="top" w:wrap="none"/>
       <w:jc w:val="right"/>
       <w:spacing w:before="0" w:after="0"/>
     </w:pPr>
     <w:r><w:rPr><w:sz w:val="14"/><w:color w:val="666666"/></w:rPr><w:t>{name}</w:t></w:r>
-  </w:p>
-  <w:p>
-    <w:pPr>
-      <w:jc w:val="right"/>
-      <w:spacing w:before="40" w:after="0"/>
-    </w:pPr>
+    <w:r><w:br/></w:r>
     <w:r><w:fldChar w:fldCharType="begin"/></w:r>
     <w:r><w:instrText xml:space="preserve"> PAGE </w:instrText></w:r>
     <w:r><w:fldChar w:fldCharType="separate"/></w:r>
