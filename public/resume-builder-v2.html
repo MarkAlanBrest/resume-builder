@@ -3573,8 +3573,12 @@ function resumeDoc(children, margin, personal) {
   const name = resumeFullName(personal);
   return new docx.Document({
     sections: [{
-      properties: { page: { margin, pageNumbers: { start: 1 } } },
-      children: [makeCornerOverlay(name), ...children],
+      properties: { titlePage: true, page: { margin, pageNumbers: { start: 1 } } },
+      footers: {
+        default: new docx.Footer({ children: [makeCornerOverlay(name)] }),
+        first: new docx.Footer({ children: [] }),
+      },
+      children,
     }],
   });
 }
