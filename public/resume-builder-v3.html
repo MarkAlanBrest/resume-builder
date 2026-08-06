@@ -3005,10 +3005,10 @@ function accentLuminance(accentHex){
 function cornerOverlayColors(color,style){
   if(['flip','top-right'].includes(style)){
     return accentLuminance(color.accent)<0.55
-      ?{name:'FFFFFF',page:'E0E0E0'}
-      :{name:'111111',page:'333333'};
+      ?{nameColor:'FFFFFF',pageColor:'E0E0E0'}
+      :{nameColor:'111111',pageColor:'333333'};
   }
-  return{name:'111111',page:'333333'};
+  return{nameColor:'111111',pageColor:'333333'};
 }
 function xmlEscapeOverlay(s){
   return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
@@ -3017,7 +3017,7 @@ function buildResumeHeaderXml(name,nameColor,pageColor){
   const n=xmlEscapeOverlay(name);
   return `<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
 <w:hdr xmlns:w="http://schemas.openxmlformats.org/wordprocessingml/2006/main">
-  <w:p><w:pPr><w:spacing w:before="0" w:after="0"/><w:jc w:val="right"/></w:pPr>
+  <w:p><w:pPr><w:spacing w:before="0" w:after="0"/><w:ind w:right="720"/><w:jc w:val="right"/></w:pPr>
     <w:r><w:rPr><w:b/><w:sz w:val="16"/><w:color w:val="${nameColor}"/></w:rPr><w:t>${n}</w:t></w:r>
     <w:r><w:rPr><w:sz w:val="16"/><w:color w:val="${pageColor}"/></w:rPr><w:t xml:space="preserve">  |  Page </w:t></w:r>
     <w:r><w:fldChar w:fldCharType="begin"/></w:r><w:r><w:instrText xml:space="preserve"> PAGE </w:instrText></w:r><w:r><w:fldChar w:fldCharType="separate"/></w:r>

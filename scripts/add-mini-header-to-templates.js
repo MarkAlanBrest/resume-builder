@@ -11,7 +11,7 @@ const TEMPLATES_DIR = path.join(__dirname, "..", "public", "templates");
 const HEADER_XML = `<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
 <w:hdr xmlns:w="http://schemas.openxmlformats.org/wordprocessingml/2006/main">
   <w:p>
-    <w:pPr><w:spacing w:before="0" w:after="0"/><w:jc w:val="right"/></w:pPr>
+    <w:pPr><w:spacing w:before="0" w:after="0"/><w:ind w:right="720"/><w:jc w:val="right"/></w:pPr>
     <w:r><w:rPr><w:b/><w:sz w:val="16"/><w:color w:val="333333"/></w:rPr><w:t>{name}</w:t></w:r>
     <w:r><w:rPr><w:sz w:val="16"/><w:color w:val="666666"/></w:rPr><w:t xml:space="preserve">  |  Page </w:t></w:r>
     <w:r><w:fldChar w:fldCharType="begin"/></w:r>
