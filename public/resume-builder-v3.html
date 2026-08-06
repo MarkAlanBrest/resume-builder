@@ -3001,12 +3001,23 @@ const CORNER_TEXTBOX_STYLE={
   position:'absolute',
   positionHorizontalRelative:'page',
   positionHorizontal:'right',
-  marginRight:'0.35in',
+  marginRight:'0.55in',
   positionVerticalRelative:'page',
   top:'0.12in',
   wrapStyle:'none',
 };
-function makeCornerOverlay(name){
+function cornerOverlayColors(color,style){
+  const accentTopRight=['flip','top-right'].includes(style);
+  if(accentTopRight){
+    return{
+      name:color.sideText,
+      page:color.sideText==='FFFFFF'?'CCE4FF':'444444',
+    };
+  }
+  return{name:'333333',page:'555555'};
+}
+function makeCornerOverlay(name,colors){
+  const nameColor=colors?.name||'333333',pageColor=colors?.page||'555555';
   return new docx.Textbox({
     style:CORNER_TEXTBOX_STYLE,
     children:[
@@ -3014,9 +3025,9 @@ function makeCornerOverlay(name){
         alignment:docx.AlignmentType.RIGHT,
         spacing:{before:0,after:0},
         children:[
-          new docx.TextRun({text:name,size:14,color:'666666',font:'Calibri'}),
-          new docx.TextRun({text:'Page ',size:14,color:'999999',font:'Calibri',break:1}),
-          new docx.TextRun({children:[docx.PageNumber.CURRENT],size:14,color:'999999',font:'Calibri'}),
+          new docx.TextRun({text:name,size:14,color:nameColor,font:'Calibri'}),
+          new docx.TextRun({text:'Page ',size:14,color:pageColor,font:'Calibri',break:1}),
+          new docx.TextRun({children:[docx.PageNumber.CURRENT],size:14,color:pageColor,font:'Calibri'}),
         ],
       }),
     ],
@@ -3047,11 +3058,12 @@ async function patchCornerOverlayBlob(blob){
   return zip.generateAsync({type:'blob',mimeType:'application/vnd.openxmlformats-officedocument.wordprocessingml.document'});
 }
 function resumePageMargin(margin){return{...margin,header:0,footer:0};}
-function resumeDoc(children,margin,personal){
+function resumeDoc(children,margin,personal,color,style){
   const name=resumeFullName(personal);
+  const overlayColors=cornerOverlayColors(color,style);
   return new docx.Document({sections:[{
     properties:{titlePage:true,page:{margin:resumePageMargin(margin),pageNumbers:{start:1}}},
-    footers:{default:new docx.Footer({children:[makeCornerOverlay(name)]}),first:new docx.Footer({children:[]})},
+    footers:{default:new docx.Footer({children:[makeCornerOverlay(name,overlayColors)]}),first:new docx.Footer({children:[]})},
     children,
   }]});
 }
@@ -3121,7 +3133,7 @@ function buildClassic(data,color){
   if(data.volunteer?.length){ch.push(sec('Volunteer'));data.volunteer.forEach(v=>volunteerBlock(v).forEach(q=>ch.push(q)));}
   const _sc=scItems(data);if(_sc.length){ch.push(sec(scLabel(data)));ch.push(skillsCertsGrid(_sc));}
   ch.push(spacer(200));
-  return resumeDoc(ch,{top:M,bottom:M,left:M,right:M},p);
+  return resumeDoc(ch,{top:M,bottom:M,left:M,right:M},p,color,'classic');
 }
 
 function buildModern(data,color){
@@ -3140,7 +3152,7 @@ function buildModern(data,color){
   if(data.volunteer?.length){main.push(mainSec('Volunteer'));data.volunteer.forEach(v=>volunteerBlock(v).forEach(q=>main.push(q)));}
   main.push(spacer(200));
   const nb={style:docx.BorderStyle.NONE,size:0,color:'FFFFFF'};
-  return resumeDoc([new docx.Table({width:{size:100,type:docx.WidthType.PERCENTAGE},borders:{top:nb,bottom:nb,left:nb,right:nb,insideH:nb,insideV:nb},rows:[new docx.TableRow({children:[new docx.TableCell({width:{size:twip(2.5),type:docx.WidthType.DXA},shading:{fill:ac,type:docx.ShadingType.CLEAR,color:'auto'},margins:{top:twip(.45),bottom:twip(.45),left:twip(.3),right:twip(.25)},children:side}),new docx.TableCell({width:{size:twip(5.0),type:docx.WidthType.DXA},margins:{top:twip(.4),bottom:twip(.4),left:twip(.35),right:twip(.35)},children:main})]})]})],{top:0,bottom:0,left:0,right:0},p);
+  return resumeDoc([new docx.Table({width:{size:100,type:docx.WidthType.PERCENTAGE},borders:{top:nb,bottom:nb,left:nb,right:nb,insideH:nb,insideV:nb},rows:[new docx.TableRow({children:[new docx.TableCell({width:{size:twip(2.5),type:docx.WidthType.DXA},shading:{fill:ac,type:docx.ShadingType.CLEAR,color:'auto'},margins:{top:twip(.45),bottom:twip(.45),left:twip(.3),right:twip(.25)},children:side}),new docx.TableCell({width:{size:twip(5.0),type:docx.WidthType.DXA},margins:{top:twip(.4),bottom:twip(.4),left:twip(.35),right:twip(.35)},children:main})]})]})],{top:0,bottom:0,left:0,right:0},p,color,'modern');
 }
 
 function buildBold(data,color){
@@ -3157,7 +3169,7 @@ function buildBold(data,color){
   if(data.volunteer?.length){ch.push(sec('Volunteer'));data.volunteer.forEach(v=>volunteerBlock(v).forEach(q=>ch.push(q)));}
   const _sc=scItems(data);if(_sc.length){ch.push(sec(scLabel(data)));ch.push(skillsCertsGrid(_sc));}
   ch.push(spacer(200));
-  return resumeDoc(ch,{top:0,bottom:bm,left:bm,right:bm},p);
+  return resumeDoc(ch,{top:0,bottom:bm,left:bm,right:bm},p,color,'bold');
 }
 
 function buildExecutive(data,color){
@@ -3175,7 +3187,7 @@ function buildExecutive(data,color){
   if(data.volunteer?.length){ch.push(sec('Volunteer'));data.volunteer.forEach(v=>volunteerBlock(v).forEach(q=>ch.push(q)));}
   const _sc=scItems(data);if(_sc.length){ch.push(sec(scLabel(data)));ch.push(skillsCertsGrid(_sc));}
   ch.push(spacer(200));
-  return resumeDoc(ch,{top:M,bottom:M,left:M,right:M},p);
+  return resumeDoc(ch,{top:M,bottom:M,left:M,right:M},p,color,'executive');
 }
 
 // Flip: sidebar on the RIGHT (reverse of Modern)
@@ -3197,7 +3209,7 @@ function buildFlip(data,color){
   if(data.militaryService?.length){main.push(mainSec('Military Service'));data.militaryService.forEach(m=>militaryBlock(m).forEach(q=>main.push(q)));}
   if(data.volunteer?.length){main.push(mainSec('Volunteer'));data.volunteer.forEach(v=>volunteerBlock(v).forEach(q=>main.push(q)));}
   main.push(spacer(200));
-  return resumeDoc([new docx.Table({width:{size:100,type:docx.WidthType.PERCENTAGE},borders:{top:nb,bottom:nb,left:nb,right:nb,insideH:nb,insideV:nb},rows:[new docx.TableRow({children:[new docx.TableCell({width:{size:twip(5.0),type:docx.WidthType.DXA},margins:{top:twip(.4),bottom:twip(.4),left:twip(.4),right:twip(.3)},children:main}),new docx.TableCell({width:{size:twip(2.5),type:docx.WidthType.DXA},shading:{fill:ac,type:docx.ShadingType.CLEAR,color:'auto'},margins:{top:twip(.45),bottom:twip(.45),left:twip(.25),right:twip(.3)},children:side})]})]})],{top:0,bottom:0,left:0,right:0},p);
+  return resumeDoc([new docx.Table({width:{size:100,type:docx.WidthType.PERCENTAGE},borders:{top:nb,bottom:nb,left:nb,right:nb,insideH:nb,insideV:nb},rows:[new docx.TableRow({children:[new docx.TableCell({width:{size:twip(5.0),type:docx.WidthType.DXA},margins:{top:twip(.4),bottom:twip(.4),left:twip(.4),right:twip(.3)},children:main}),new docx.TableCell({width:{size:twip(2.5),type:docx.WidthType.DXA},shading:{fill:ac,type:docx.ShadingType.CLEAR,color:'auto'},margins:{top:twip(.45),bottom:twip(.45),left:twip(.25),right:twip(.3)},children:side})]})]})],{top:0,bottom:0,left:0,right:0},p,color,'flip');
 }
 
 // Top Left: full-width colored header + left GRAY sidebar below
@@ -3220,11 +3232,7 @@ function buildTopLeft(data,color){
   if(data.militaryService?.length){main.push(mainSec('Military Service'));data.militaryService.forEach(m=>militaryBlock(m).forEach(q=>main.push(q)));}
   if(data.volunteer?.length){main.push(mainSec('Volunteer'));data.volunteer.forEach(v=>volunteerBlock(v).forEach(q=>main.push(q)));}
   main.push(spacer(200));
-  const bodyRow=new docx.TableRow({children:[new docx.TableCell({width:{size:twip(2.3),type:docx.WidthType.DXA},shading:{fill:'EEEEEE',type:docx.ShadingType.CLEAR,color:'auto'},margins:{top:twip(.35),bottom:twip(.35),left:twip(.3),right:twip(.25)},children:side}),new docx.TableCell({width:{size:twip(5.2),type:docx.WidthType.DXA},margins:{top:twip(.35),bottom:twip(.35),left:twip(.35),right:twip(.4)},children:main})]});
-  return resumeDoc([new docx.Table({width:{size:100,type:docx.WidthType.PERCENTAGE},borders:{top:nb,bottom:nb,left:nb,right:nb,insideH:nb,insideV:nb},rows:[hdrRow,bodyRow]})],{top:0,bottom:0,left:0,right:0},p);
-}
-
-// Top Right: full-width colored header + right ACCENT sidebar below (mirror of Top Left)
+  return resumeDoc([new docx.Table({width:{size:100,type:docx.WidthType.PERCENTAGE},borders:{top:nb,bottom:nb,left:nb,right:nb,insideH:nb,insideV:nb},rows:[hdrRow,bodyRow]})],{top:0,bottom:0,left:0,right:0},p,color,'top-left');
 function buildTopRight(data,color){
   const p=data.personal,c=data.careerContext,ac=color.accent,st=color.sideText,nb={style:docx.BorderStyle.NONE,size:0,color:'FFFFFF'};
   const csz=[[p.city,p.state].filter(Boolean).join(', '),p.zip].filter(Boolean).join(' ');
@@ -3245,11 +3253,7 @@ function buildTopRight(data,color){
   const _sc=scItems(data);
   if(_sc.length){side.push(sideSec(scLabel(data)));_sc.forEach(s=>side.push(bullet(s,{size:20,color:sideContact,after:70})));}
   if(data.education?.length){side.push(sideSec('Education'));addEducationBlocks(side,data.education,{before:0,gapAfter:140,gapAfterLast:80,degreeSize:20,detailSize:19,degreeColor:st,detailColor:sideContact});}
-  const bodyRow=new docx.TableRow({children:[new docx.TableCell({width:{size:twip(5.2),type:docx.WidthType.DXA},margins:{top:twip(.35),bottom:twip(.35),left:twip(.4),right:twip(.3)},children:main}),new docx.TableCell({width:{size:twip(2.3),type:docx.WidthType.DXA},shading:{fill:ac,type:docx.ShadingType.CLEAR,color:'auto'},margins:{top:twip(.35),bottom:twip(.35),left:twip(.25),right:twip(.3)},children:side})]});
-  return resumeDoc([new docx.Table({width:{size:100,type:docx.WidthType.PERCENTAGE},borders:{top:nb,bottom:nb,left:nb,right:nb,insideH:nb,insideV:nb},rows:[hdrRow,bodyRow]})],{top:0,bottom:0,left:0,right:0},p);
-}
-
-// Two Column: gray header + left sidebar, wide right column for experience
+  return resumeDoc([new docx.Table({width:{size:100,type:docx.WidthType.PERCENTAGE},borders:{top:nb,bottom:nb,left:nb,right:nb,insideH:nb,insideV:nb},rows:[hdrRow,bodyRow]})],{top:0,bottom:0,left:0,right:0},p,color,'top-right');
 function buildSplit(data,color){
   const p=data.personal,c=data.careerContext,ac=color.accent,nb={style:docx.BorderStyle.NONE,size:0,color:'FFFFFF'},gray='EEEEEE',grayShade={fill:gray,type:docx.ShadingType.CLEAR,color:'auto'};
   const csz=[[p.city,p.state].filter(Boolean).join(', '),p.zip].filter(Boolean).join(' ');
@@ -3270,8 +3274,7 @@ function buildSplit(data,color){
   main.push(spacer(200));
   const divider={style:docx.BorderStyle.SINGLE,size:4,color:ac};
   const bodyRow=new docx.TableRow({children:[new docx.TableCell({width:{size:twip(2.25),type:docx.WidthType.DXA},shading:grayShade,margins:{top:twip(.25),bottom:twip(.25),left:twip(.28),right:twip(.18)},children:side.length?side:[new docx.Paragraph({})]}),new docx.TableCell({width:{size:twip(4.75),type:docx.WidthType.DXA},margins:{top:twip(.25),bottom:twip(.25),left:twip(.32),right:twip(.28)},children:main.length?main:[new docx.Paragraph({})]})]});
-  return resumeDoc([new docx.Table({width:{size:100,type:docx.WidthType.PERCENTAGE},borders:{top:nb,bottom:nb,left:nb,right:nb,insideH:nb,insideV:divider},rows:[hdrRow,bodyRow]})],{top:0,bottom:0,left:0,right:0},p);
-}
+  return resumeDoc([new docx.Table({width:{size:100,type:docx.WidthType.PERCENTAGE},borders:{top:nb,bottom:nb,left:nb,right:nb,insideH:nb,insideV:divider},rows:[hdrRow,bodyRow]})],{top:0,bottom:0,left:0,right:0},p,color,'split');
 
 // ── Cover Letter ──────────────────────────────────
 async function generateCoverLetter(){const p=resumeData.personal,c=resumeData.careerContext;const sys=`Write a professional 3-paragraph cover letter for ${p.firstName} ${p.lastName}, studying ${p.program||''}. Looking for: ${c.workSearch||''}. Qualities: ${(c.qualities||[]).join(', ')}. Objective: ${c.objective||''}. Professional and direct, under 300 words. Plain text only.`;const letter=await callClaude(sys,[{role:'user',content:'Write my cover letter.'}]);const name=`${p.firstName||''} ${p.lastName||''}`.trim(),contact=[p.email,p.phone].filter(Boolean).join('   |   '),M=twip(1);const doc=new docx.Document({sections:[{properties:{page:{margin:{top:M,bottom:M,left:M,right:M}}},children:[new docx.Paragraph({children:[new docx.TextRun({text:name,bold:true,size:28})],spacing:{after:40}}),new docx.Paragraph({children:[new docx.TextRun({text:contact,size:19,color:'555555'})],spacing:{after:200}}),...letter.trim().split('\n\n').filter(Boolean).map(para=>new docx.Paragraph({children:[new docx.TextRun({text:para.trim(),size:22})],spacing:{before:0,after:180}})),new docx.Paragraph({children:[new docx.TextRun({text:'Sincerely,',size:22})],spacing:{before:200,after:280}}),new docx.Paragraph({children:[new docx.TextRun({text:name,size:22})]})]}]});const blob=await docx.Packer.toBlob(doc);saveAs(blob,'cover-letter.docx');}
