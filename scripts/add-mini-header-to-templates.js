@@ -26,7 +26,7 @@ const FOOTER_XML = `<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
   <w:p>
     <w:pPr><w:spacing w:before="0" w:after="0"/></w:pPr>
     <w:pict>
-      <v:shape id="cornerMarkerOverlay" o:spid="_x0000_s1026" type="#_x0000_t202" filled="f" stroked="f" style="width:2.75in;height:0.55in;position:absolute;mso-position-horizontal-relative:page;mso-position-horizontal:right;margin-right:0.35in;mso-position-vertical-relative:page;top:0.18in;mso-wrap-style:none">
+      <v:shape id="cornerMarkerOverlay" o:spid="_x0000_s1026" type="#_x0000_t202" filled="t" fillcolor="#FFFFFF" stroked="f" style="width:2.75in;height:0.55in;position:absolute;mso-position-horizontal-relative:page;mso-position-horizontal:right;margin-right:0.35in;mso-position-vertical-relative:page;top:0.18in;mso-wrap-style:none">
         <v:textbox style="mso-fit-shape-to-text:t;" insetmode="auto">
           <w:txbxContent>
             <w:p>
@@ -34,13 +34,13 @@ const FOOTER_XML = `<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
                 <w:spacing w:before="0" w:after="0"/>
                 <w:jc w:val="right"/>
               </w:pPr>
-              <w:r><w:rPr><w:sz w:val="14"/><w:color w:val="666666"/></w:rPr><w:t>{name}</w:t></w:r>
+              <w:r><w:rPr><w:b/><w:sz w:val="14"/><w:color w:val="222222"/></w:rPr><w:t>{name}</w:t></w:r>
               <w:r><w:br/></w:r>
-              <w:r><w:rPr><w:sz w:val="14"/><w:color w:val="999999"/></w:rPr><w:t>Page </w:t></w:r>
+              <w:r><w:rPr><w:b/><w:sz w:val="14"/><w:color w:val="444444"/></w:rPr><w:t>Page </w:t></w:r>
               <w:r><w:fldChar w:fldCharType="begin"/></w:r>
               <w:r><w:instrText xml:space="preserve"> PAGE </w:instrText></w:r>
               <w:r><w:fldChar w:fldCharType="separate"/></w:r>
-              <w:r><w:rPr><w:sz w:val="14"/><w:color w:val="999999"/></w:rPr><w:t>1</w:t></w:r>
+              <w:r><w:rPr><w:b/><w:sz w:val="14"/><w:color w:val="444444"/></w:rPr><w:t>1</w:t></w:r>
               <w:r><w:fldChar w:fldCharType="end"/></w:r>
             </w:p>
           </w:txbxContent>
