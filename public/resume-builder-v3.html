@@ -3032,12 +3032,24 @@ async function patchCornerOverlayBlob(blob){
     xml=xml.replace(/<v:shape (?![^>]*\bstroked=)/g,'<v:shape filled="f" stroked="f" ');
     zip.file(path,xml);
   }));
+  if(zip.file('word/document.xml')){
+    let docXml=await zip.file('word/document.xml').async('string');
+    docXml=docXml.replace(/<w:pgMar\b[^>]*\/>/g,(m)=>{
+      let out=m.replace(/\bw:header="[^"]*"/,'w:header="0"');
+      if(!/\bw:header=/.test(out)) out=out.replace('<w:pgMar','<w:pgMar w:header="0"');
+      out=out.replace(/\bw:footer="[^"]*"/,'w:footer="0"');
+      if(!/\bw:footer=/.test(out)) out=out.replace('<w:pgMar','<w:pgMar w:footer="0"');
+      return out;
+    });
+    zip.file('word/document.xml',docXml);
+  }
   return zip.generateAsync({type:'blob',mimeType:'application/vnd.openxmlformats-officedocument.wordprocessingml.document'});
 }
+function resumePageMargin(margin){return{...margin,header:0,footer:0};}
 function resumeDoc(children,margin,personal){
   const name=resumeFullName(personal);
   return new docx.Document({sections:[{
-    properties:{titlePage:true,page:{margin,pageNumbers:{start:1}}},
+    properties:{titlePage:true,page:{margin:resumePageMargin(margin),pageNumbers:{start:1}}},
     headers:{default:new docx.Header({children:[makeCornerOverlay(name)]}),first:new docx.Header({children:[]})},
     children,
   }]});
