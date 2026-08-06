@@ -5,6 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>AI Resume Builder v3</title>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/mammoth/1.6.0/mammoth.browser.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
 <script src="https://unpkg.com/docx@9.7.1/dist/index.iife.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/FileSaver.js/2.0.5/FileSaver.min.js"></script>
 <style>
@@ -2939,7 +2940,7 @@ async function generateResume() {
     btn.textContent = 'Building resume…';
     const spacingProfile = selectSpacingProfile(buildData, selectedStyle);
     const doc = await buildDocument(buildData, selectedStyle, color, spacingProfile);
-    const blob = await docx.Packer.toBlob(doc);
+    const blob = await patchCornerOverlayBlob(await docx.Packer.toBlob(doc));
     const p=resumeData.personal;
     saveAs(blob, resumeFilename(p));
     setStatus('template','done');
@@ -3014,17 +3015,30 @@ function makeCornerOverlay(name){
         spacing:{before:0,after:0},
         children:[
           new docx.TextRun({text:name,size:14,color:'666666',font:'Calibri'}),
-          new docx.TextRun({children:[docx.PageNumber.CURRENT],size:14,color:'999999',font:'Calibri',break:1}),
+          new docx.TextRun({text:'Page ',size:14,color:'999999',font:'Calibri',break:1}),
+          new docx.TextRun({children:[docx.PageNumber.CURRENT],size:14,color:'999999',font:'Calibri'}),
         ],
       }),
     ],
   });
 }
+async function patchCornerOverlayBlob(blob){
+  if(typeof JSZip==='undefined') return blob;
+  const zip=await JSZip.loadAsync(blob);
+  const paths=Object.keys(zip.files).filter(p=>/^word\/header\d+\.xml$/.test(p));
+  await Promise.all(paths.map(async(path)=>{
+    let xml=await zip.file(path).async('string');
+    if(!xml.includes('#_x0000_t202')) return;
+    xml=xml.replace(/<v:shape (?![^>]*\bstroked=)/g,'<v:shape filled="f" stroked="f" ');
+    zip.file(path,xml);
+  }));
+  return zip.generateAsync({type:'blob',mimeType:'application/vnd.openxmlformats-officedocument.wordprocessingml.document'});
+}
 function resumeDoc(children,margin,personal){
   const name=resumeFullName(personal);
   return new docx.Document({sections:[{
     properties:{titlePage:true,page:{margin,pageNumbers:{start:1}}},
-    footers:{default:new docx.Footer({children:[makeCornerOverlay(name)]}),first:new docx.Footer({children:[]})},
+    headers:{default:new docx.Header({children:[makeCornerOverlay(name)]}),first:new docx.Header({children:[]})},
     children,
   }]});
 }
