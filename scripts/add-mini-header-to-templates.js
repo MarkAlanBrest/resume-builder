@@ -1,6 +1,6 @@
 /**
  * Page 2+ corner overlay via floating textbox in default footer (not header).
- * Default header adds one-line top spacer on page 2+; empty first-page header/footer keep page 1 clean.
+ * Empty first-page footer keeps page 1 clean. No visible footer bar at bottom.
  * Run: node scripts/add-mini-header-to-templates.js
  */
 const fs = require("fs");
@@ -8,25 +8,13 @@ const path = require("path");
 const PizZip = require("pizzip");
 
 const TEMPLATES_DIR = path.join(__dirname, "..", "public", "templates");
-const PAGE2_TOP_SPACER = 240;
-
-const HEADER_XML = `<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
-<w:hdr xmlns:w="http://schemas.openxmlformats.org/wordprocessingml/2006/main">
-  <w:p>
-    <w:pPr><w:spacing w:before="0" w:after="${PAGE2_TOP_SPACER}"/></w:pPr>
-    <w:r><w:rPr><w:sz w:val="2"/></w:rPr><w:t></w:t></w:r>
-  </w:p>
-</w:hdr>`;
-
-const FIRST_HEADER_XML = `<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
-<w:hdr xmlns:w="http://schemas.openxmlformats.org/wordprocessingml/2006/main"/>`;
 
 const FOOTER_XML = `<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
 <w:ftr xmlns:w="http://schemas.openxmlformats.org/wordprocessingml/2006/main" xmlns:r="http://schemas.openxmlformats.org/officeDocument/2006/relationships" xmlns:v="urn:schemas-microsoft-com:vml" xmlns:o="urn:schemas-microsoft-com:office:office" xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" mc:Ignorable="w14 w15 w16se w16cid w16 w16cex w16sdtdh w16sdtfl w16du wp14">
   <w:p>
     <w:pPr><w:spacing w:before="0" w:after="0"/></w:pPr>
     <w:pict>
-      <v:shape id="cornerMarkerOverlay" o:spid="_x0000_s1026" type="#_x0000_t202" filled="t" fillcolor="#FFFFFF" stroked="f" style="width:2.75in;height:0.55in;position:absolute;mso-position-horizontal-relative:page;mso-position-horizontal:right;margin-right:0.35in;mso-position-vertical-relative:page;top:0.18in;mso-wrap-style:none">
+      <v:shape id="cornerMarkerOverlay" o:spid="_x0000_s1026" type="#_x0000_t202" filled="f" stroked="f" style="width:2.75in;height:0.55in;position:absolute;mso-position-horizontal-relative:page;mso-position-horizontal:right;margin-right:0.35in;mso-position-vertical-relative:page;top:0.12in;mso-wrap-style:none">
         <v:textbox style="mso-fit-shape-to-text:t;" insetmode="auto">
           <w:txbxContent>
             <w:p>
@@ -34,13 +22,13 @@ const FOOTER_XML = `<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
                 <w:spacing w:before="0" w:after="0"/>
                 <w:jc w:val="right"/>
               </w:pPr>
-              <w:r><w:rPr><w:b/><w:sz w:val="14"/><w:color w:val="222222"/></w:rPr><w:t>{name}</w:t></w:r>
+              <w:r><w:rPr><w:sz w:val="14"/><w:color w:val="666666"/></w:rPr><w:t>{name}</w:t></w:r>
               <w:r><w:br/></w:r>
-              <w:r><w:rPr><w:b/><w:sz w:val="14"/><w:color w:val="444444"/></w:rPr><w:t>Page </w:t></w:r>
+              <w:r><w:rPr><w:sz w:val="14"/><w:color w:val="999999"/></w:rPr><w:t>Page </w:t></w:r>
               <w:r><w:fldChar w:fldCharType="begin"/></w:r>
               <w:r><w:instrText xml:space="preserve"> PAGE </w:instrText></w:r>
               <w:r><w:fldChar w:fldCharType="separate"/></w:r>
-              <w:r><w:rPr><w:b/><w:sz w:val="14"/><w:color w:val="444444"/></w:rPr><w:t>1</w:t></w:r>
+              <w:r><w:rPr><w:sz w:val="14"/><w:color w:val="999999"/></w:rPr><w:t>1</w:t></w:r>
               <w:r><w:fldChar w:fldCharType="end"/></w:r>
             </w:p>
           </w:txbxContent>
@@ -53,11 +41,31 @@ const FOOTER_XML = `<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
 const FIRST_FOOTER_XML = `<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
 <w:ftr xmlns:w="http://schemas.openxmlformats.org/wordprocessingml/2006/main"/>`;
 
-function ensurePartContentType(contentTypesXml, partName, contentType) {
+function stripHeaders(zip) {
+  Object.keys(zip.files)
+    .filter((f) => /^word\/header\d+\.xml$/.test(f))
+    .forEach((f) => zip.remove(f));
+
+  const relsPath = "word/_rels/document.xml.rels";
+  if (zip.file(relsPath)) {
+    let rels = zip.file(relsPath).asText();
+    rels = rels.replace(/<Relationship[^>]*Type="[^"]*header"[^>]*\/>/g, "");
+    zip.file(relsPath, rels);
+  }
+
+  const ctPath = "[Content_Types].xml";
+  if (zip.file(ctPath)) {
+    let ct = zip.file(ctPath).asText();
+    ct = ct.replace(/<Override[^>]*PartName="\/word\/header\d+\.xml"[^>]*\/>/g, "");
+    zip.file(ctPath, ct);
+  }
+}
+
+function ensureFooterContentType(contentTypesXml, partName) {
   if (contentTypesXml.includes(partName)) return contentTypesXml;
   return contentTypesXml.replace(
     "</Types>",
-    `<Override PartName="${partName}" ContentType="${contentType}"/>
+    `<Override PartName="${partName}" ContentType="application/vnd.openxmlformats-officedocument.wordprocessingml.footer+xml"/>
 </Types>`
   );
 }
@@ -67,13 +75,13 @@ function nextRelId(relsXml) {
   return `rId${Math.max(...ids, 0) + 1}`;
 }
 
-function ensureRelationship(relsXml, target, relId, type) {
+function ensureFooterRelationship(relsXml, target, relId) {
   if (relsXml.includes(`Target="${target}"`)) return relsXml;
-  const rel = `<Relationship Id="${relId}" Type="${type}" Target="${target}"/>`;
+  const rel = `<Relationship Id="${relId}" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/footer" Target="${target}"/>`;
   return relsXml.replace("</Relationships>", `${rel}</Relationships>`);
 }
 
-function getRelId(relsXml, target) {
+function getFooterRelId(relsXml, target) {
   const m = relsXml.match(
     new RegExp(`<Relationship Id="(rId\\d+)"[^>]*Target="${target.replace(".", "\\.")}"`)
   );
@@ -87,26 +95,20 @@ function zeroMarginFlags(sectPr) {
       if (!/\bw:header=/.test(out)) out = out.replace("<w:pgMar", '<w:pgMar w:header="0"');
       out = out.replace(/\bw:footer="[^"]*"/, 'w:footer="0"');
       if (!/\bw:footer=/.test(out)) out = out.replace("<w:pgMar", '<w:pgMar w:footer="0"');
-      if (/\bw:top="(\d+)"/.test(out)) {
-        out = out.replace(/\bw:top="(\d+)"/, (_, v) => `w:top="${parseInt(v, 10) + PAGE2_TOP_SPACER}"`);
-      } else {
-        out = out.replace("<w:pgMar", `<w:pgMar w:top="${PAGE2_TOP_SPACER}"`);
-      }
       return out;
     });
   }
-  const mar = `<w:pgMar w:top="${1440 + PAGE2_TOP_SPACER}" w:right="1440" w:bottom="1440" w:left="1440" w:header="0" w:footer="0" w:gutter="0"/>`;
+  const mar = `<w:pgMar w:top="1440" w:right="1440" w:bottom="1440" w:left="1440" w:header="0" w:footer="0" w:gutter="0"/>`;
   if (sectPr.includes("<w:pgSz")) return sectPr.replace("<w:pgSz", `${mar}<w:pgSz`);
   return sectPr.replace("</w:sectPr>", `${mar}</w:sectPr>`);
 }
 
-function ensureSectPrHeadersFooters(documentXml, headerDefaultRelId, headerFirstRelId, footerDefaultRelId, footerFirstRelId) {
+function ensureSectPrFooters(documentXml, defaultRelId, firstRelId) {
   const sectMatch = documentXml.match(/<w:sectPr[\s\S]*?<\/w:sectPr>/);
   if (!sectMatch) return documentXml;
 
   let sectPr = sectMatch[0];
   sectPr = sectPr.replace(/<w:headerReference[^>]*\/>/g, "");
-  sectPr = sectPr.replace(/<w:footerReference[^>]*\/>/g, "");
 
   if (!sectPr.includes("<w:titlePg")) {
     if (sectPr.includes("<w:pgSz")) {
@@ -116,11 +118,12 @@ function ensureSectPrHeadersFooters(documentXml, headerDefaultRelId, headerFirst
     }
   }
 
-  const refs = `<w:headerReference w:type="first" r:id="${headerFirstRelId}"/><w:headerReference w:type="default" r:id="${headerDefaultRelId}"/><w:footerReference w:type="first" r:id="${footerFirstRelId}"/><w:footerReference w:type="default" r:id="${footerDefaultRelId}"/>`;
+  sectPr = sectPr.replace(/<w:footerReference[^>]*\/>/g, "");
+  const footerRefs = `<w:footerReference w:type="first" r:id="${firstRelId}"/><w:footerReference w:type="default" r:id="${defaultRelId}"/>`;
   if (sectPr.includes("<w:pgSz")) {
-    sectPr = sectPr.replace("<w:pgSz", `${refs}<w:pgSz`);
+    sectPr = sectPr.replace("<w:pgSz", `${footerRefs}<w:pgSz`);
   } else {
-    sectPr = sectPr.replace("</w:sectPr>", `${refs}</w:sectPr>`);
+    sectPr = sectPr.replace("</w:sectPr>", `${footerRefs}</w:sectPr>`);
   }
 
   if (!sectPr.includes("<w:pgNumType")) {
@@ -133,71 +136,39 @@ function ensureSectPrHeadersFooters(documentXml, headerDefaultRelId, headerFirst
 
 function patchTemplate(filePath) {
   const zip = new PizZip(fs.readFileSync(filePath));
+  stripHeaders(zip);
 
-  Object.keys(zip.files)
-    .filter((f) => /^word\/header\d+\.xml$/.test(f))
-    .forEach((f) => zip.remove(f));
-
-  zip.file("word/header1.xml", HEADER_XML);
-  zip.file("word/header2.xml", FIRST_HEADER_XML);
   zip.file("word/footer1.xml", FOOTER_XML);
   zip.file("word/footer2.xml", FIRST_FOOTER_XML);
 
   const ctPath = "[Content_Types].xml";
   let ct = zip.file(ctPath).asText();
-  ct = ensurePartContentType(ct, "/word/header1.xml", "application/vnd.openxmlformats-officedocument.wordprocessingml.header+xml");
-  ct = ensurePartContentType(ct, "/word/header2.xml", "application/vnd.openxmlformats-officedocument.wordprocessingml.header+xml");
-  ct = ensurePartContentType(ct, "/word/footer1.xml", "application/vnd.openxmlformats-officedocument.wordprocessingml.footer+xml");
-  ct = ensurePartContentType(ct, "/word/footer2.xml", "application/vnd.openxmlformats-officedocument.wordprocessingml.footer+xml");
+  ct = ensureFooterContentType(ct, "/word/footer1.xml");
+  ct = ensureFooterContentType(ct, "/word/footer2.xml");
   zip.file(ctPath, ct);
 
   const relsPath = "word/_rels/document.xml.rels";
   let rels = zip.file(relsPath).asText();
-  rels = rels.replace(/<Relationship[^>]*Type="[^"]*\/header"[^>]*\/>/g, "");
-  rels = rels.replace(/<Relationship[^>]*Type="[^"]*\/footer"[^>]*\/>/g, "");
 
-  const headerDefaultRelId = nextRelId(rels);
-  rels = ensureRelationship(
-    rels,
-    "header1.xml",
-    headerDefaultRelId,
-    "http://schemas.openxmlformats.org/officeDocument/2006/relationships/header"
-  );
-  const headerFirstRelId = nextRelId(rels);
-  rels = ensureRelationship(
-    rels,
-    "header2.xml",
-    headerFirstRelId,
-    "http://schemas.openxmlformats.org/officeDocument/2006/relationships/header"
-  );
-  const footerDefaultRelId = nextRelId(rels);
-  rels = ensureRelationship(
-    rels,
-    "footer1.xml",
-    footerDefaultRelId,
-    "http://schemas.openxmlformats.org/officeDocument/2006/relationships/footer"
-  );
-  const footerFirstRelId = nextRelId(rels);
-  rels = ensureRelationship(
-    rels,
-    "footer2.xml",
-    footerFirstRelId,
-    "http://schemas.openxmlformats.org/officeDocument/2006/relationships/footer"
-  );
+  let defaultRelId = getFooterRelId(rels, "footer1.xml");
+  if (!defaultRelId) {
+    defaultRelId = nextRelId(rels);
+    rels = ensureFooterRelationship(rels, "footer1.xml", defaultRelId);
+  }
+
+  let firstRelId = getFooterRelId(rels, "footer2.xml");
+  if (!firstRelId) {
+    firstRelId = nextRelId(rels);
+    rels = ensureFooterRelationship(rels, "footer2.xml", firstRelId);
+  }
   zip.file(relsPath, rels);
+
+  defaultRelId = getFooterRelId(rels, "footer1.xml") || defaultRelId;
+  firstRelId = getFooterRelId(rels, "footer2.xml") || firstRelId;
 
   const docPath = "word/document.xml";
   const docXml = zip.file(docPath).asText();
-  zip.file(
-    docPath,
-    ensureSectPrHeadersFooters(
-      docXml,
-      getRelId(rels, "header1.xml") || headerDefaultRelId,
-      getRelId(rels, "header2.xml") || headerFirstRelId,
-      getRelId(rels, "footer1.xml") || footerDefaultRelId,
-      getRelId(rels, "footer2.xml") || footerFirstRelId
-    )
-  );
+  zip.file(docPath, ensureSectPrFooters(docXml, defaultRelId, firstRelId));
 
   fs.writeFileSync(
     filePath,

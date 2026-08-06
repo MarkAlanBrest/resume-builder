@@ -3544,7 +3544,6 @@ async function buildDocument(data, style, color) {
 const twip = n => docx.convertInchesToTwip(n);
 
 function resumeFullName(personal) { return `${personal?.firstName || ''} ${personal?.lastName || ''}`.trim() || 'Resume'; }
-const PAGE2_TOP_SPACER = 240;
 const CORNER_TEXTBOX_STYLE = {
   width: '2.75in',
   height: '0.55in',
@@ -3553,25 +3552,10 @@ const CORNER_TEXTBOX_STYLE = {
   positionHorizontal: 'right',
   marginRight: '0.35in',
   positionVerticalRelative: 'page',
-  top: '0.18in',
+  top: '0.12in',
   wrapStyle: 'none',
 };
-function makePage2SpacerHeader() {
-  return new docx.Header({
-    children: [
-      new docx.Paragraph({
-        spacing: { before: 0, after: PAGE2_TOP_SPACER },
-        children: [new docx.TextRun({ text: '', size: 2 })],
-      }),
-    ],
-  });
-}
-function cornerOverlayColors() {
-  return { name: '222222', page: '444444' };
-}
-function makeCornerOverlay(name, colors) {
-  const nameColor = colors?.name || '222222';
-  const pageColor = colors?.page || '444444';
+function makeCornerOverlay(name) {
   return new docx.Textbox({
     style: CORNER_TEXTBOX_STYLE,
     children: [
@@ -3579,9 +3563,9 @@ function makeCornerOverlay(name, colors) {
         alignment: docx.AlignmentType.RIGHT,
         spacing: { before: 0, after: 0 },
         children: [
-          new docx.TextRun({ text: name, bold: true, size: 14, color: nameColor, font: 'Calibri' }),
-          new docx.TextRun({ text: 'Page ', bold: true, size: 14, color: pageColor, font: 'Calibri', break: 1 }),
-          new docx.TextRun({ children: [docx.PageNumber.CURRENT], bold: true, size: 14, color: pageColor, font: 'Calibri' }),
+          new docx.TextRun({ text: name, size: 14, color: '666666', font: 'Calibri' }),
+          new docx.TextRun({ text: 'Page ', size: 14, color: '999999', font: 'Calibri', break: 1 }),
+          new docx.TextRun({ children: [docx.PageNumber.CURRENT], size: 14, color: '999999', font: 'Calibri' }),
         ],
       }),
     ],
@@ -3594,24 +3578,17 @@ async function patchCornerOverlayBlob(blob) {
   await Promise.all(paths.map(async (path) => {
     let xml = await zip.file(path).async('string');
     if (!xml.includes('#_x0000_t202')) return;
-    xml = xml.replace(/<v:shape\b([^>]*)>/g, (m, attrs) => {
-      let a = attrs.replace(/\bfilled="[^"]*"/g, '').replace(/\bfillcolor="[^"]*"/g, '').replace(/\bstroked="[^"]*"/g, '');
-      return `<v:shape${a} filled="t" fillcolor="#FFFFFF" stroked="f">`;
-    });
+    xml = xml.replace(/<v:shape (?![^>]*\bstroked=)/g, '<v:shape filled="f" stroked="f" ');
     zip.file(path, xml);
   }));
   if (zip.file('word/document.xml')) {
     let docXml = await zip.file('word/document.xml').async('string');
+    docXml = docXml.replace(/<w:headerReference[^>]*\/>/g, '');
     docXml = docXml.replace(/<w:pgMar\b[^>]*\/>/g, (m) => {
       let out = m.replace(/\bw:header="[^"]*"/, 'w:header="0"');
       if (!/\bw:header=/.test(out)) out = out.replace('<w:pgMar', '<w:pgMar w:header="0"');
       out = out.replace(/\bw:footer="[^"]*"/, 'w:footer="0"');
       if (!/\bw:footer=/.test(out)) out = out.replace('<w:pgMar', '<w:pgMar w:footer="0"');
-      if (/\bw:top="(\d+)"/.test(out)) {
-        out = out.replace(/\bw:top="(\d+)"/, (_, v) => `w:top="${parseInt(v, 10) + PAGE2_TOP_SPACER}"`);
-      } else {
-        out = out.replace('<w:pgMar', `<w:pgMar w:top="${PAGE2_TOP_SPACER}"`);
-      }
       return out;
     });
     zip.file('word/document.xml', docXml);
@@ -3621,16 +3598,11 @@ async function patchCornerOverlayBlob(blob) {
 function resumePageMargin(margin) { return { ...margin, header: 0, footer: 0 }; }
 function resumeDoc(children, margin, personal) {
   const name = resumeFullName(personal);
-  const overlayColors = cornerOverlayColors();
   return new docx.Document({
     sections: [{
       properties: { titlePage: true, page: { margin: resumePageMargin(margin), pageNumbers: { start: 1 } } },
-      headers: {
-        default: makePage2SpacerHeader(),
-        first: new docx.Header({ children: [] }),
-      },
       footers: {
-        default: new docx.Footer({ children: [makeCornerOverlay(name, overlayColors)] }),
+        default: new docx.Footer({ children: [makeCornerOverlay(name)] }),
         first: new docx.Footer({ children: [] }),
       },
       children,
