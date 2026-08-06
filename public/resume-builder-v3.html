@@ -5,7 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>AI Resume Builder v3</title>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/mammoth/1.6.0/mammoth.browser.min.js"></script>
-<script src="https://unpkg.com/docx@7.8.2/build/index.js"></script>
+<script src="https://unpkg.com/docx@8.5.0/build/index.iife.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/FileSaver.js/2.0.5/FileSaver.min.js"></script>
 <style>
 *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
@@ -2994,20 +2994,36 @@ function selectSpacingProfile(data, style) {
 }
 const twip = n => docx.convertInchesToTwip(n);
 function resumeFullName(personal){return `${personal?.firstName||''} ${personal?.lastName||''}`.trim()||'Resume';}
-function makeMiniHeader(name){
-  return new docx.Header({children:[new docx.Paragraph({
-    tabStops:[{type:docx.TabStopType.RIGHT,position:twip(7.5)}],
-    spacing:{before:0,after:sp(40)},
-    border:{bottom:{style:docx.BorderStyle.SINGLE,size:4,color:'CCCCCC'}},
-    children:[
-      new docx.TextRun({text:name,bold:true,size:16,color:'333333',font:'Calibri'}),
-      new docx.TextRun({children:['\t',docx.PageNumber.CURRENT],size:16,color:'666666',font:'Calibri'}),
-    ],
-  })]});
+const CORNER_FRAME={
+  type:'alignment',
+  alignment:{x:docx.HorizontalPositionAlign.RIGHT,y:docx.VerticalPositionAlign.TOP},
+  width:2200,
+  height:700,
+  anchor:{horizontal:docx.FrameAnchorType.PAGE,vertical:docx.FrameAnchorType.PAGE},
+  wrap:docx.FrameWrap.NONE,
+  anchorLock:true,
+  space:{horizontal:360,vertical:180},
+};
+function makeCornerMarker(name){
+  return new docx.Header({children:[
+    new docx.Paragraph({
+      frame:CORNER_FRAME,
+      alignment:docx.AlignmentType.RIGHT,
+      spacing:{before:0,after:0},
+      children:[
+        new docx.TextRun({text:name,size:14,color:'666666',font:'Calibri'}),
+        new docx.TextRun({children:[docx.PageNumber.CURRENT],size:14,color:'999999',font:'Calibri',break:1}),
+      ],
+    }),
+  ]});
 }
 function resumeDoc(children,margin,personal){
   const name=resumeFullName(personal);
-  return new docx.Document({sections:[{properties:{titlePage:true,page:{margin,pageNumbers:{start:1}}},headers:{default:makeMiniHeader(name),first:new docx.Header({children:[]})},children}]});
+  return new docx.Document({sections:[{
+    properties:{titlePage:true,page:{margin,pageNumbers:{start:1}}},
+    headers:{default:makeCornerMarker(name),first:new docx.Header({children:[]})},
+    children,
+  }]});
 }
 function currentBullet(){return BULLET_OPTIONS[selectedBulletIndex]||BULLET_OPTIONS[0];}
 function bulletRuns(text,opts={}){const meta=opts.bulletMeta||currentBullet(),size=opts.size||22,color=opts.color||'2a2a2a';return [new docx.TextRun({text:meta.char+' ',size,color,font:meta.font}),new docx.TextRun({text,size,color,font:'Calibri'})];}
