@@ -3005,29 +3005,26 @@ const CORNER_TEXTBOX_STYLE={
   top:'0.12in',
   wrapStyle:'none',
 };
-function makeCornerMarker(name){
-  return new docx.Header({children:[
-    new docx.Textbox({
-      style:CORNER_TEXTBOX_STYLE,
-      children:[
-        new docx.Paragraph({
-          alignment:docx.AlignmentType.RIGHT,
-          spacing:{before:0,after:0},
-          children:[
-            new docx.TextRun({text:name,size:14,color:'666666',font:'Calibri'}),
-            new docx.TextRun({children:[docx.PageNumber.CURRENT],size:14,color:'999999',font:'Calibri',break:1}),
-          ],
-        }),
-      ],
-    }),
-  ]});
+function makeCornerOverlay(name){
+  return new docx.Textbox({
+    style:CORNER_TEXTBOX_STYLE,
+    children:[
+      new docx.Paragraph({
+        alignment:docx.AlignmentType.RIGHT,
+        spacing:{before:0,after:0},
+        children:[
+          new docx.TextRun({text:name,size:14,color:'666666',font:'Calibri'}),
+          new docx.TextRun({children:[docx.PageNumber.CURRENT],size:14,color:'999999',font:'Calibri',break:1}),
+        ],
+      }),
+    ],
+  });
 }
 function resumeDoc(children,margin,personal){
   const name=resumeFullName(personal);
   return new docx.Document({sections:[{
-    properties:{titlePage:true,page:{margin,pageNumbers:{start:1}}},
-    headers:{default:makeCornerMarker(name),first:new docx.Header({children:[]})},
-    children,
+    properties:{page:{margin,pageNumbers:{start:1}}},
+    children:[makeCornerOverlay(name),...children],
   }]});
 }
 function currentBullet(){return BULLET_OPTIONS[selectedBulletIndex]||BULLET_OPTIONS[0];}
