@@ -3544,6 +3544,7 @@ async function buildDocument(data, style, color) {
 const twip = n => docx.convertInchesToTwip(n);
 
 function resumeFullName(personal) { return `${personal?.firstName || ''} ${personal?.lastName || ''}`.trim() || 'Resume'; }
+const PAGE2_TOP_SPACER = 240;
 const CORNER_TEXTBOX_STYLE = {
   width: '2.75in',
   height: '0.55in',
@@ -3552,9 +3553,19 @@ const CORNER_TEXTBOX_STYLE = {
   positionHorizontal: 'right',
   marginRight: '0.35in',
   positionVerticalRelative: 'page',
-  top: '0.12in',
+  top: '0.18in',
   wrapStyle: 'none',
 };
+function makePage2SpacerHeader() {
+  return new docx.Header({
+    children: [
+      new docx.Paragraph({
+        spacing: { before: 0, after: PAGE2_TOP_SPACER },
+        children: [new docx.TextRun({ text: '', size: 2 })],
+      }),
+    ],
+  });
+}
 function makeCornerOverlay(name) {
   return new docx.Textbox({
     style: CORNER_TEXTBOX_STYLE,
@@ -3583,12 +3594,16 @@ async function patchCornerOverlayBlob(blob) {
   }));
   if (zip.file('word/document.xml')) {
     let docXml = await zip.file('word/document.xml').async('string');
-    docXml = docXml.replace(/<w:headerReference[^>]*\/>/g, '');
     docXml = docXml.replace(/<w:pgMar\b[^>]*\/>/g, (m) => {
       let out = m.replace(/\bw:header="[^"]*"/, 'w:header="0"');
       if (!/\bw:header=/.test(out)) out = out.replace('<w:pgMar', '<w:pgMar w:header="0"');
       out = out.replace(/\bw:footer="[^"]*"/, 'w:footer="0"');
       if (!/\bw:footer=/.test(out)) out = out.replace('<w:pgMar', '<w:pgMar w:footer="0"');
+      if (/\bw:top="(\d+)"/.test(out)) {
+        out = out.replace(/\bw:top="(\d+)"/, (_, v) => `w:top="${parseInt(v, 10) + PAGE2_TOP_SPACER}"`);
+      } else {
+        out = out.replace('<w:pgMar', `<w:pgMar w:top="${PAGE2_TOP_SPACER}"`);
+      }
       return out;
     });
     zip.file('word/document.xml', docXml);
@@ -3601,6 +3616,10 @@ function resumeDoc(children, margin, personal) {
   return new docx.Document({
     sections: [{
       properties: { titlePage: true, page: { margin: resumePageMargin(margin), pageNumbers: { start: 1 } } },
+      headers: {
+        default: makePage2SpacerHeader(),
+        first: new docx.Header({ children: [] }),
+      },
       footers: {
         default: new docx.Footer({ children: [makeCornerOverlay(name)] }),
         first: new docx.Footer({ children: [] }),
