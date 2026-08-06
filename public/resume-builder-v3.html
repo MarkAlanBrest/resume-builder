@@ -3007,7 +3007,7 @@ function makeMiniHeader(name){
 }
 function resumeDoc(children,margin,personal){
   const name=resumeFullName(personal);
-  return new docx.Document({sections:[{properties:{page:{margin,pageNumbers:{start:1}}},headers:{default:makeMiniHeader(name)},children}]});
+  return new docx.Document({sections:[{properties:{titlePage:true,page:{margin,pageNumbers:{start:1}}},headers:{default:makeMiniHeader(name),first:new docx.Header({children:[]})},children}]});
 }
 function currentBullet(){return BULLET_OPTIONS[selectedBulletIndex]||BULLET_OPTIONS[0];}
 function bulletRuns(text,opts={}){const meta=opts.bulletMeta||currentBullet(),size=opts.size||22,color=opts.color||'2a2a2a';return [new docx.TextRun({text:meta.char+' ',size,color,font:meta.font}),new docx.TextRun({text,size,color,font:'Calibri'})];}
