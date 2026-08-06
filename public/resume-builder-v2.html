@@ -3542,6 +3542,23 @@ async function buildDocument(data, style, color) {
 // ── Shared helpers ───────────────────────────────
 const twip = n => docx.convertInchesToTwip(n);
 
+function resumeFullName(personal) { return `${personal?.firstName || ''} ${personal?.lastName || ''}`.trim() || 'Resume'; }
+function makeMiniHeader(name) {
+  return new docx.Header({ children: [new docx.Paragraph({
+    tabStops: [{ type: docx.TabStopType.RIGHT, position: twip(7.5) }],
+    spacing: { before: 0, after: 40 },
+    border: { bottom: { style: docx.BorderStyle.SINGLE, size: 4, color: 'CCCCCC' } },
+    children: [
+      new docx.TextRun({ text: name, bold: true, size: 16, color: '333333', font: 'Calibri' }),
+      new docx.TextRun({ children: ['\t', docx.PageNumber.CURRENT], size: 16, color: '666666', font: 'Calibri' }),
+    ],
+  })] });
+}
+function resumeDoc(children, margin, personal) {
+  const name = resumeFullName(personal);
+  return new docx.Document({ sections: [{ properties: { page: { margin, pageNumbers: { start: 1 } } }, headers: { default: makeMiniHeader(name) }, children }] });
+}
+
 function spacer(after = 80) {
   return new docx.Paragraph({ spacing: { before: 0, after } });
 }
@@ -3665,7 +3682,7 @@ function buildClassic(data, color) {
     children: [new docx.TextRun({ text: 'References Available Upon Request', italics: true, size: 18, color: '999999' })],
   }));
 
-  return new docx.Document({ sections: [{ properties: { page: { margin: { top: M, bottom: M, left: M, right: M } } }, children: ch }] });
+  return resumeDoc(ch, { top: M, bottom: M, left: M, right: M }, p);
 }
 
 // ── Template B: Modern (sidebar) ─────────────────
@@ -3738,30 +3755,25 @@ function buildModern(data, color) {
 
   const noBorder = { style: docx.BorderStyle.NONE, size: 0, color: 'FFFFFF' };
 
-  return new docx.Document({
-    sections: [{
-      properties: { page: { margin: { top: 0, bottom: 0, left: 0, right: 0 } } },
-      children: [new docx.Table({
-        width: { size: 100, type: docx.WidthType.PERCENTAGE },
-        borders: { top: noBorder, bottom: noBorder, left: noBorder, right: noBorder, insideH: noBorder, insideV: noBorder },
-        rows: [new docx.TableRow({
-          children: [
-            new docx.TableCell({
-              width: { size: twip(2.4), type: docx.WidthType.DXA },
-              shading: { fill: ac, type: docx.ShadingType.CLEAR, color: 'auto' },
-              margins: { top: twip(0.4), bottom: twip(0.4), left: twip(0.25), right: twip(0.2) },
-              children: side,
-            }),
-            new docx.TableCell({
-              width: { size: twip(5.1), type: docx.WidthType.DXA },
-              margins: { top: twip(0.35), bottom: twip(0.35), left: twip(0.3), right: twip(0.3) },
-              children: main,
-            }),
-          ],
-        })],
-      })],
-    }],
-  });
+  return resumeDoc([new docx.Table({
+    width: { size: 100, type: docx.WidthType.PERCENTAGE },
+    borders: { top: noBorder, bottom: noBorder, left: noBorder, right: noBorder, insideH: noBorder, insideV: noBorder },
+    rows: [new docx.TableRow({
+      children: [
+        new docx.TableCell({
+          width: { size: twip(2.4), type: docx.WidthType.DXA },
+          shading: { fill: ac, type: docx.ShadingType.CLEAR, color: 'auto' },
+          margins: { top: twip(0.4), bottom: twip(0.4), left: twip(0.25), right: twip(0.2) },
+          children: side,
+        }),
+        new docx.TableCell({
+          width: { size: twip(5.1), type: docx.WidthType.DXA },
+          margins: { top: twip(0.35), bottom: twip(0.35), left: twip(0.3), right: twip(0.3) },
+          children: main,
+        }),
+      ],
+    })],
+  })], { top: 0, bottom: 0, left: 0, right: 0 }, p);
 }
 
 // ── Template C: Bold Header ───────────────────────
@@ -3845,7 +3857,7 @@ function buildBold(data, color) {
     children: [new docx.TextRun({ text: 'References Available Upon Request', italics: true, size: 18, color: '999999' })],
   }));
 
-  return new docx.Document({ sections: [{ properties: { page: { margin: { top: 0, bottom: bm, left: bm, right: bm } } }, children: ch }] });
+  return resumeDoc(ch, { top: 0, bottom: bm, left: bm, right: bm }, p);
 }
 
 // ── Template D: Executive ────────────────────────
@@ -3930,7 +3942,7 @@ function buildExecutive(data, color) {
     children: [new docx.TextRun({ text: 'References Available Upon Request', italics: true, size: 18, color: '999999' })],
   }));
 
-  return new docx.Document({ sections: [{ properties: { page: { margin: { top: M, bottom: M, left: M, right: M } } }, children: ch }] });
+  return resumeDoc(ch, { top: M, bottom: M, left: M, right: M }, p);
 }
 
 // ────────────────────────────────────────────────
