@@ -3556,7 +3556,13 @@ function makeMiniHeader(name) {
 }
 function resumeDoc(children, margin, personal) {
   const name = resumeFullName(personal);
-  return new docx.Document({ sections: [{ properties: { page: { margin, pageNumbers: { start: 1 } } }, headers: { default: makeMiniHeader(name) }, children }] });
+  return new docx.Document({
+    sections: [{
+      properties: { titlePage: true, page: { margin, pageNumbers: { start: 1 } } },
+      headers: { default: makeMiniHeader(name), first: new docx.Header({ children: [] }) },
+      children,
+    }],
+  });
 }
 
 function spacer(after = 80) {
