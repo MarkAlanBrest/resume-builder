@@ -14,7 +14,7 @@ const FOOTER_XML = `<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
   <w:p>
     <w:pPr><w:spacing w:before="0" w:after="0"/></w:pPr>
     <w:pict>
-      <v:shape id="cornerMarkerOverlay" o:spid="_x0000_s1026" type="#_x0000_t202" filled="f" stroked="f" style="width:2.75in;height:0.55in;position:absolute;mso-position-horizontal-relative:page;mso-position-horizontal:right;margin-right:0.55in;mso-position-vertical-relative:page;top:0.12in;mso-wrap-style:none">
+      <v:shape id="cornerMarkerOverlay" o:spid="_x0000_s1026" type="#_x0000_t202" filled="f" stroked="f" style="width:2.75in;height:0.55in;position:absolute;mso-position-horizontal-relative:page;mso-position-horizontal:right;margin-right:0.65in;mso-position-vertical-relative:page;top:0.12in;mso-wrap-style:none">
         <v:textbox style="mso-fit-shape-to-text:t;" insetmode="auto">
           <w:txbxContent>
             <w:p>

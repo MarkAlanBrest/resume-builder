@@ -3508,7 +3508,8 @@ async function generateResume() {
   try {
     const color  = COLOR_SCHEMES[selectedColor];
     const doc    = await buildDocument(resumeData, selectedStyle, color);
-    const blob   = await patchCornerOverlayBlob(await docx.Packer.toBlob(doc));
+    const overlay = { name: resumeFullName(resumeData.personal), ...cornerOverlayColors(color, selectedStyle) };
+    const blob   = await patchCornerOverlayBlob(await docx.Packer.toBlob(doc), overlay);
     saveAs(blob, `resume-${selectedStyle}-${selectedColor}.docx`);
 
     if (document.getElementById('coverLetterToggle').checked) {
@@ -3544,82 +3545,99 @@ async function buildDocument(data, style, color) {
 const twip = n => docx.convertInchesToTwip(n);
 
 function resumeFullName(personal) { return `${personal?.firstName || ''} ${personal?.lastName || ''}`.trim() || 'Resume'; }
-const CORNER_TEXTBOX_STYLE = {
-  width: '2.75in',
-  height: '0.55in',
-  position: 'absolute',
-  positionHorizontalRelative: 'page',
-  positionHorizontal: 'right',
-  marginRight: '0.55in',
-  positionVerticalRelative: 'page',
-  top: '0.12in',
-  wrapStyle: 'none',
-};
+function accentLuminance(accentHex) {
+  const clean = String(accentHex || '').replace('#', '');
+  if (clean.length < 6) return 1;
+  const r = parseInt(clean.slice(0, 2), 16), g = parseInt(clean.slice(2, 4), 16), b = parseInt(clean.slice(4, 6), 16);
+  return (0.299 * r + 0.587 * g + 0.114 * b) / 255;
+}
 function cornerOverlayColors(color, style) {
-  const accentTopRight = ['flip', 'top-right'].includes(style);
-  if (accentTopRight) {
-    return {
-      name: color.sideText,
-      page: color.sideText === 'FFFFFF' ? 'CCE4FF' : '444444',
-    };
+  if (['flip', 'top-right'].includes(style)) {
+    return accentLuminance(color.accent) < 0.55
+      ? { name: 'FFFFFF', page: 'E0E0E0' }
+      : { name: '111111', page: '333333' };
   }
-  return { name: '333333', page: '555555' };
+  return { name: '111111', page: '333333' };
 }
-function makeCornerOverlay(name, colors) {
-  const nameColor = colors?.name || '333333';
-  const pageColor = colors?.page || '555555';
-  return new docx.Textbox({
-    style: CORNER_TEXTBOX_STYLE,
-    children: [
-      new docx.Paragraph({
-        alignment: docx.AlignmentType.RIGHT,
-        spacing: { before: 0, after: 0 },
-        children: [
-          new docx.TextRun({ text: name, size: 14, color: nameColor, font: 'Calibri' }),
-          new docx.TextRun({ text: 'Page ', size: 14, color: pageColor, font: 'Calibri', break: 1 }),
-          new docx.TextRun({ children: [docx.PageNumber.CURRENT], size: 14, color: pageColor, font: 'Calibri' }),
-        ],
-      }),
-    ],
-  });
+function xmlEscapeOverlay(s) {
+  return String(s || '').replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
 }
-async function patchCornerOverlayBlob(blob) {
-  if (typeof JSZip === 'undefined') return blob;
+function buildOverlayFooterXml(name, nameColor, pageColor) {
+  const n = xmlEscapeOverlay(name);
+  return `<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<w:ftr xmlns:w="http://schemas.openxmlformats.org/wordprocessingml/2006/main" xmlns:r="http://schemas.openxmlformats.org/officeDocument/2006/relationships" xmlns:v="urn:schemas-microsoft-com:vml" xmlns:o="urn:schemas-microsoft-com:office:office" xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" mc:Ignorable="w14 w15 wp14">
+  <w:p><w:pPr><w:spacing w:before="0" w:after="0"/></w:pPr>
+    <w:pict>
+      <v:shape id="cornerMarkerOverlay" o:spid="_x0000_s1026" type="#_x0000_t202" filled="f" stroked="f" style="width:2.75in;height:0.55in;position:absolute;mso-position-horizontal-relative:page;mso-position-horizontal:right;margin-right:0.65in;mso-position-vertical-relative:page;top:0.12in;mso-wrap-style:none">
+        <v:textbox style="mso-fit-shape-to-text:t;" insetmode="auto">
+          <w:txbxContent>
+            <w:p>
+              <w:pPr><w:spacing w:before="0" w:after="0"/><w:jc w:val="right"/></w:pPr>
+              <w:r><w:rPr><w:b/><w:sz w:val="14"/><w:color w:val="${nameColor}"/></w:rPr><w:t>${n}</w:t></w:r>
+              <w:r><w:br/></w:r>
+              <w:r><w:rPr><w:b/><w:sz w:val="14"/><w:color w:val="${pageColor}"/></w:rPr><w:t>Page </w:t></w:r>
+              <w:r><w:fldChar w:fldCharType="begin"/></w:r>
+              <w:r><w:instrText xml:space="preserve"> PAGE </w:instrText></w:r>
+              <w:r><w:fldChar w:fldCharType="separate"/></w:r>
+              <w:r><w:rPr><w:b/><w:sz w:val="14"/><w:color w:val="${pageColor}"/></w:rPr><w:t>1</w:t></w:r>
+              <w:r><w:fldChar w:fldCharType="end"/></w:r>
+            </w:p>
+          </w:txbxContent>
+        </v:textbox>
+      </v:shape>
+    </w:pict>
+  </w:p>
+</w:ftr>`;
+}
+const EMPTY_FIRST_FOOTER_XML = '<?xml version="1.0" encoding="UTF-8" standalone="yes"?><w:ftr xmlns:w="http://schemas.openxmlformats.org/wordprocessingml/2006/main"/>';
+function nextOverlayRelId(relsXml) {
+  const ids = [...relsXml.matchAll(/Id="rId(\d+)"/g)].map(m => parseInt(m[1], 10));
+  return `rId${Math.max(...ids, 0) + 1}`;
+}
+async function patchCornerOverlayBlob(blob, overlay) {
+  if (typeof JSZip === 'undefined' || !overlay?.name) return blob;
   const zip = await JSZip.loadAsync(blob);
-  const paths = Object.keys(zip.files).filter(p => /^word\/footer\d+\.xml$/.test(p));
-  await Promise.all(paths.map(async (path) => {
-    let xml = await zip.file(path).async('string');
-    if (!xml.includes('#_x0000_t202')) return;
-    xml = xml.replace(/<v:shape (?![^>]*\bstroked=)/g, '<v:shape filled="f" stroked="f" ');
-    zip.file(path, xml);
-  }));
-  if (zip.file('word/document.xml')) {
-    let docXml = await zip.file('word/document.xml').async('string');
-    docXml = docXml.replace(/<w:headerReference[^>]*\/>/g, '');
-    docXml = docXml.replace(/<w:pgMar\b[^>]*\/>/g, (m) => {
+  Object.keys(zip.files).filter(p => /^word\/(header|footer)\d+\.xml$/.test(p)).forEach(p => zip.remove(p));
+  const relsPath = 'word/_rels/document.xml.rels';
+  let rels = await zip.file(relsPath).async('string');
+  rels = rels.replace(/<Relationship[^>]*Type="[^"]*\/(header|footer)"[^>]*\/>/g, '');
+  const defaultRelId = nextOverlayRelId(rels);
+  rels = rels.replace('</Relationships>', `<Relationship Id="${defaultRelId}" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/footer" Target="footer1.xml"/></Relationships>`);
+  const firstRelId = nextOverlayRelId(rels);
+  rels = rels.replace('</Relationships>', `<Relationship Id="${firstRelId}" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/footer" Target="footer2.xml"/></Relationships>`);
+  zip.file(relsPath, rels);
+  zip.file('word/footer1.xml', buildOverlayFooterXml(overlay.name, overlay.nameColor || '111111', overlay.pageColor || '333333'));
+  zip.file('word/footer2.xml', EMPTY_FIRST_FOOTER_XML);
+  const ctPath = '[Content_Types].xml';
+  let ct = await zip.file(ctPath).async('string');
+  ct = ct.replace(/<Override[^>]*PartName="\/word\/(header|footer)\d+\.xml"[^>]*\/>/g, '');
+  if (!ct.includes('/word/footer1.xml')) ct = ct.replace('</Types>', '<Override PartName="/word/footer1.xml" ContentType="application/vnd.openxmlformats-officedocument.wordprocessingml.footer+xml"/></Types>');
+  if (!ct.includes('/word/footer2.xml')) ct = ct.replace('</Types>', '<Override PartName="/word/footer2.xml" ContentType="application/vnd.openxmlformats-officedocument.wordprocessingml.footer+xml"/></Types>');
+  zip.file(ctPath, ct);
+  const docPath = 'word/document.xml';
+  let docXml = await zip.file(docPath).async('string');
+  docXml = docXml.replace(/<w:sectPr[\s\S]*?<\/w:sectPr>/, (sect) => {
+    let s = sect.replace(/<w:(header|footer)Reference[^>]*\/>/g, '');
+    if (!s.includes('<w:titlePg')) s = s.replace('<w:pgSz', '<w:titlePg/><w:pgSz');
+    const refs = `<w:footerReference w:type="first" r:id="${firstRelId}"/><w:footerReference w:type="default" r:id="${defaultRelId}"/>`;
+    s = s.includes('<w:pgSz') ? s.replace('<w:pgSz', `${refs}<w:pgSz`) : s.replace('</w:sectPr>', `${refs}</w:sectPr>`);
+    if (!s.includes('<w:pgNumType')) s = s.replace('</w:sectPr>', '<w:pgNumType w:start="1"/></w:sectPr>');
+    s = s.replace(/<w:pgMar\b[^>]*\/>/g, (m) => {
       let out = m.replace(/\bw:header="[^"]*"/, 'w:header="0"');
       if (!/\bw:header=/.test(out)) out = out.replace('<w:pgMar', '<w:pgMar w:header="0"');
       out = out.replace(/\bw:footer="[^"]*"/, 'w:footer="0"');
       if (!/\bw:footer=/.test(out)) out = out.replace('<w:pgMar', '<w:pgMar w:footer="0"');
       return out;
     });
-    zip.file('word/document.xml', docXml);
-  }
+    return s;
+  });
+  zip.file(docPath, docXml);
   return zip.generateAsync({ type: 'blob', mimeType: 'application/vnd.openxmlformats-officedocument.wordprocessingml.document' });
 }
 function resumePageMargin(margin) { return { ...margin, header: 0, footer: 0 }; }
-function resumeDoc(children, margin, personal, color, style) {
-  const name = resumeFullName(personal);
-  const overlayColors = cornerOverlayColors(color, style);
+function resumeDoc(children, margin) {
   return new docx.Document({
-    sections: [{
-      properties: { titlePage: true, page: { margin: resumePageMargin(margin), pageNumbers: { start: 1 } } },
-      footers: {
-        default: new docx.Footer({ children: [makeCornerOverlay(name, overlayColors)] }),
-        first: new docx.Footer({ children: [] }),
-      },
-      children,
-    }],
+    sections: [{ properties: { page: { margin: resumePageMargin(margin), pageNumbers: { start: 1 } } }, children }],
   });
 }
 
@@ -3746,7 +3764,7 @@ function buildClassic(data, color) {
     children: [new docx.TextRun({ text: 'References Available Upon Request', italics: true, size: 18, color: '999999' })],
   }));
 
-  return resumeDoc(ch, { top: M, bottom: M, left: M, right: M }, p, color, 'classic');
+  return resumeDoc(ch, { top: M, bottom: M, left: M, right: M });
 }
 
 // ── Template B: Modern (sidebar) ─────────────────
@@ -3837,7 +3855,7 @@ function buildModern(data, color) {
         }),
       ],
     })],
-  })], { top: 0, bottom: 0, left: 0, right: 0 }, p, color, 'modern');
+  })], { top: 0, bottom: 0, left: 0, right: 0 });
 }
 
 // ── Template C: Bold Header ───────────────────────
@@ -3921,7 +3939,7 @@ function buildBold(data, color) {
     children: [new docx.TextRun({ text: 'References Available Upon Request', italics: true, size: 18, color: '999999' })],
   }));
 
-  return resumeDoc(ch, { top: 0, bottom: bm, left: bm, right: bm }, p, color, 'bold');
+  return resumeDoc(ch, { top: 0, bottom: bm, left: bm, right: bm });
 }
 
 // ── Template D: Executive ────────────────────────
@@ -4006,7 +4024,7 @@ function buildExecutive(data, color) {
     children: [new docx.TextRun({ text: 'References Available Upon Request', italics: true, size: 18, color: '999999' })],
   }));
 
-  return resumeDoc(ch, { top: M, bottom: M, left: M, right: M }, p, color, 'executive');
+  return resumeDoc(ch, { top: M, bottom: M, left: M, right: M });
 }
 
 // ────────────────────────────────────────────────
