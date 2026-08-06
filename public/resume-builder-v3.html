@@ -3025,7 +3025,7 @@ function makeCornerOverlay(name){
 async function patchCornerOverlayBlob(blob){
   if(typeof JSZip==='undefined') return blob;
   const zip=await JSZip.loadAsync(blob);
-  const paths=Object.keys(zip.files).filter(p=>/^word\/header\d+\.xml$/.test(p));
+  const paths=Object.keys(zip.files).filter(p=>/^word\/footer\d+\.xml$/.test(p));
   await Promise.all(paths.map(async(path)=>{
     let xml=await zip.file(path).async('string');
     if(!xml.includes('#_x0000_t202')) return;
@@ -3034,6 +3034,7 @@ async function patchCornerOverlayBlob(blob){
   }));
   if(zip.file('word/document.xml')){
     let docXml=await zip.file('word/document.xml').async('string');
+    docXml=docXml.replace(/<w:headerReference[^>]*\/>/g,'');
     docXml=docXml.replace(/<w:pgMar\b[^>]*\/>/g,(m)=>{
       let out=m.replace(/\bw:header="[^"]*"/,'w:header="0"');
       if(!/\bw:header=/.test(out)) out=out.replace('<w:pgMar','<w:pgMar w:header="0"');
@@ -3050,7 +3051,7 @@ function resumeDoc(children,margin,personal){
   const name=resumeFullName(personal);
   return new docx.Document({sections:[{
     properties:{titlePage:true,page:{margin:resumePageMargin(margin),pageNumbers:{start:1}}},
-    headers:{default:new docx.Header({children:[makeCornerOverlay(name)]}),first:new docx.Header({children:[]})},
+    footers:{default:new docx.Footer({children:[makeCornerOverlay(name)]}),first:new docx.Footer({children:[]})},
     children,
   }]});
 }
