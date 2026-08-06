@@ -38,8 +38,22 @@ const HEADER_XML = `<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
 </w:hdr>`;
 
 const FIRST_HEADER_XML = `<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
-<w:hdr xmlns:w="http://schemas.openxmlformats.org/wordprocessingml/2006/main">
-</w:hdr>`;
+<w:hdr xmlns:w="http://schemas.openxmlformats.org/wordprocessingml/2006/main"/>`;
+
+function zeroHeaderFooterMargin(sectPr) {
+  if (sectPr.includes("<w:pgMar")) {
+    return sectPr.replace(/<w:pgMar\b[^>]*\/>/g, (m) => {
+      let out = m.replace(/\bw:header="[^"]*"/, 'w:header="0"');
+      if (!/\bw:header=/.test(out)) out = out.replace("<w:pgMar", '<w:pgMar w:header="0"');
+      out = out.replace(/\bw:footer="[^"]*"/, 'w:footer="0"');
+      if (!/\bw:footer=/.test(out)) out = out.replace("<w:pgMar", '<w:pgMar w:footer="0"');
+      return out;
+    });
+  }
+  const mar = `<w:pgMar w:top="1440" w:right="1440" w:bottom="1440" w:left="1440" w:header="0" w:footer="0" w:gutter="0"/>`;
+  if (sectPr.includes("<w:pgSz")) return sectPr.replace("<w:pgSz", `${mar}<w:pgSz`);
+  return sectPr.replace("</w:sectPr>", `${mar}</w:sectPr>`);
+}
 
 function stripFootersAndBodyOverlay(zip) {
   Object.keys(zip.files)
@@ -123,6 +137,8 @@ function ensureSectPrHeaders(documentXml, defaultRelId, firstRelId) {
   if (!sectPr.includes("<w:pgNumType")) {
     sectPr = sectPr.replace("</w:sectPr>", `<w:pgNumType w:start="1"/></w:sectPr>`);
   }
+
+  sectPr = zeroHeaderFooterMargin(sectPr);
 
   return documentXml.replace(sectMatch[0], sectPr);
 }
