@@ -868,15 +868,30 @@ async function extractResume() {
       resumeData.skills = [];
       delete resumeData._skillsFromUpload;
     }
+    const needsBulletRewrite = hasExtractedBullets(resumeData.workExperience) || hasExtractedBullets(resumeData.militaryService);
+    let bulletsRewritten = false;
+    if (needsBulletRewrite) {
+      addAIMsg('Rewriting bullet points into professional language…');
+      showChatTyping();
+      const ci = document.getElementById('centerInner');
+      if (ci) ci.innerHTML = `<div style="text-align:center;padding:60px 20px;color:var(--slate-500)"><div style="font-size:32px;margin-bottom:12px">⚙️</div>Rewriting bullet points professionally…</div>`;
+      await professionalizeExtractedBullets(resumeData.workExperience, resumeData.militaryService);
+      hideChatTyping();
+      bulletsRewritten = true;
+    }
     saveProgress();
     const p = resumeData.personal;
     const name = [p.firstName,p.lastName].filter(Boolean).join(' ');
-    const summary = found.length ? `I found: **${found.join(', ')}**. Each section is pre-filled — review and confirm the details before continuing.` : `I found your contact info. Fill in the remaining sections below.`;
+    const bulletNote = bulletsRewritten ? ' Work and military bullet points were rewritten into professional language.' : '';
+    const summary = found.length ? `I found: **${found.join(', ')}**. Each section is pre-filled — review and confirm the details before continuing.${bulletNote}` : `I found your contact info. Fill in the remaining sections below.${bulletNote}`;
     addAIMsg(`Got it${name?' for '+name:''}! ${summary}`);
     showSection('personal');
   } catch(err) {
     hideChatTyping();
-    addAIMsg('I had trouble reading that file. Try a different format, or start fresh.');
+    const msg = err?.phase === 'rewrite'
+      ? 'I extracted your resume but had trouble rewriting the bullet points. Please try again or start fresh.'
+      : 'I had trouble reading that file. Try a different format, or start fresh.';
+    addAIMsg(msg);
     btn.disabled = false; btn.textContent = 'Extract & Continue →'; btn.style.opacity = '1';
   }
 }
@@ -899,6 +914,70 @@ Rules:
   else messages=[{role:'user',content:`${instruction}\n\nResume:\n${text}`}];
   const raw = await callClaude('', messages, {maxTokens:4096});
   return JSON.parse(raw.replace(/^```(?:json)?\s*/i,'').replace(/\s*```$/,''));
+}
+
+function parseBulletResponse(result) {
+  return result.trim().split('\n').map(l=>l.trim().replace(/^[•\-\*]\s*/,'')).filter(l=>l.length>0).map(l=>cleanCareerText(l));
+}
+
+function hasExtractedBullets(entries) {
+  return (entries || []).some(e => (e.bulletLines || []).some(Boolean));
+}
+
+async function rewriteWorkBulletsFromUpload(job) {
+  const bullets = (job.bulletLines || []).filter(Boolean);
+  if (!bullets.length) return;
+  const prog = resumeData.personal.program || 'trade school';
+  const tense = job.current ? 'present tense' : 'past tense';
+  const sys = `Rewrite these resume bullet points into polished, professional bullets for a trade school student studying ${prog}.
+Job: ${job.jobTitle} at ${job.employer}.
+Original bullets from an uploaded resume:
+${bullets.map(b => `- ${b}`).join('\n')}
+
+Rules:
+- Preserve factual content from the originals — do not invent certifications, metrics, or tools not mentioned or implied by the role
+- Fix weak, vague, casual, or unprofessional wording
+- Write 3–5 bullets, ${tense}
+- Start each bullet with a strong action verb
+- No bullet characters, no "I", plain text, one bullet per line`;
+  const result = await callClaude(sys, [{role:'user', content:'Rewrite the bullets professionally.'}]);
+  const rewritten = parseBulletResponse(result);
+  if (rewritten.length) job.bulletLines = rewritten;
+}
+
+async function rewriteMilitaryBulletsFromUpload(mil) {
+  const bullets = (mil.bulletLines || []).filter(Boolean);
+  if (!bullets.length) return;
+  const tense = mil.current ? 'present tense' : 'past tense';
+  const sys = `Rewrite these resume bullet points into polished, professional bullets for military service.
+Branch: ${mil.branch}. Rank: ${mil.rank}. Job: ${mil.jobTitle || 'not specified'}.
+Original bullets from an uploaded resume:
+${bullets.map(b => `- ${b}`).join('\n')}
+
+Rules:
+- Preserve factual content — do not invent achievements not implied by the originals
+- Emphasize civilian-transferable skills: leadership, training, equipment operation, safety, teamwork, logistics
+- Fix weak, vague, casual, or unprofessional wording
+- Write 3–4 bullets, ${tense}
+- Start each bullet with a strong action verb
+- No bullet characters, no "I", plain text, one bullet per line`;
+  const result = await callClaude(sys, [{role:'user', content:'Rewrite the bullets professionally.'}]);
+  const rewritten = parseBulletResponse(result);
+  if (rewritten.length) mil.bulletLines = rewritten;
+}
+
+async function professionalizeExtractedBullets(workExperience, militaryService) {
+  try {
+    for (const job of workExperience || []) {
+      if ((job.bulletLines || []).some(Boolean)) await rewriteWorkBulletsFromUpload(job);
+    }
+    for (const mil of militaryService || []) {
+      if ((mil.bulletLines || []).some(Boolean)) await rewriteMilitaryBulletsFromUpload(mil);
+    }
+  } catch (err) {
+    err.phase = 'rewrite';
+    throw err;
+  }
 }
 
 // ── Personal Info ─────────────────────────────────
