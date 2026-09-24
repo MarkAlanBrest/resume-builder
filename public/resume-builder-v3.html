@@ -2808,7 +2808,7 @@ function renderSkillsForm() {
   </div>
   <div class="form-card">
     <div class="form-card-footer">
-      <button class="btn btn-primary" onclick="submitSkills()">Review →</button>
+      <button class="btn btn-confirm" onclick="submitSkills()">Looks Good ✓</button>
     </div>
   </div>`;
 }
@@ -2826,9 +2826,9 @@ async function submitSkills() {
   const rawSkills = skills.join(', ');
   const rawCerts = certs.map(c => c.name).join('\n');
   const ci = document.getElementById('centerInner');
-  ci.innerHTML = `<div style="text-align:center;padding:60px 20px;color:var(--slate-500)"><div style="font-size:32px;margin-bottom:12px">⚡</div>Organizing your skills and certifications…</div>`;
+  ci.innerHTML = `<div style="text-align:center;padding:60px 20px;color:var(--slate-500)"><div style="font-size:32px;margin-bottom:12px">⚡</div>Saving your skills and certifications…</div>`;
   const prog = resumeData.personal.program||'';
-  const sys = `You organize skills and certifications for a trade school student's resume. Return ONLY valid JSON — no explanations, no questions, no other text. Shape: {"skills":["MIG/TIG Welding","Blueprint Reading"],"certifications":[{"name":"OSHA 10","org":"OSHA","year":""}]}. Rules: clean spelling/capitalization/duplicates, make professional, do not invent certifications, omit certifications array entries that were not provided.`;
+  const sys = `You organize skills and certifications for a trade school student's resume. Return ONLY valid JSON — no explanations, no questions, no other text. Shape: {"skills":["MIG/TIG Welding","Blueprint Reading"],"certifications":[{"name":"OSHA 10","org":"OSHA","year":""}]}. Rules: only fix spelling and capitalization and remove exact duplicates; keep each item's wording otherwise as the student wrote it; do not add, remove, or reword items; do not invent certifications, omit certifications array entries that were not provided.`;
   const userMsg = `Program: ${prog}\nRaw skills: ${rawSkills}\nRaw certifications: ${rawCerts || 'none'}`;
   try {
     const result = await callClaude(sys,[{role:'user',content:userMsg}]);
@@ -2847,7 +2847,7 @@ async function submitSkills() {
       showSection('skills');
       return;
     }
-    showCenter('skillsApproval');
+    confirmSkills();
   } catch(e) { addAIMsg('Could not connect — try again.'); showSection('skills'); }
 }
 
