@@ -3545,19 +3545,8 @@ async function buildDocument(data, style, color) {
 const twip = n => docx.convertInchesToTwip(n);
 
 function resumeFullName(personal) { return `${personal?.firstName || ''} ${personal?.lastName || ''}`.trim() || 'Resume'; }
-function accentLuminance(accentHex) {
-  const clean = String(accentHex || '').replace('#', '');
-  if (clean.length < 6) return 1;
-  const r = parseInt(clean.slice(0, 2), 16), g = parseInt(clean.slice(2, 4), 16), b = parseInt(clean.slice(4, 6), 16);
-  return (0.299 * r + 0.587 * g + 0.114 * b) / 255;
-}
 function cornerOverlayColors(color, style) {
-  if (['flip', 'top-right'].includes(style)) {
-    return accentLuminance(color.accent) < 0.55
-      ? { nameColor: 'FFFFFF', pageColor: 'E0E0E0' }
-      : { nameColor: '111111', pageColor: '333333' };
-  }
-  return { nameColor: '111111', pageColor: '333333' };
+  return { nameColor: '000000', pageColor: '000000' };
 }
 function xmlEscapeOverlay(s) {
   return String(s || '').replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
@@ -3594,7 +3583,7 @@ async function patchCornerOverlayBlob(blob, overlay) {
   const firstRelId = nextOverlayRelId(rels);
   rels = rels.replace('</Relationships>', `<Relationship Id="${firstRelId}" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/header" Target="header2.xml"/></Relationships>`);
   zip.file(relsPath, rels);
-  zip.file('word/header1.xml', buildResumeHeaderXml(overlay.name, overlay.nameColor || '111111', overlay.pageColor || '333333'));
+  zip.file('word/header1.xml', buildResumeHeaderXml(overlay.name, overlay.nameColor || '000000', overlay.pageColor || '000000'));
   zip.file('word/header2.xml', EMPTY_FIRST_HEADER_XML);
   const ctPath = '[Content_Types].xml';
   let ct = await zip.file(ctPath).async('string');
