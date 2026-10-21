@@ -75,7 +75,10 @@ function StudentToolLinks() {
   return (
     <div style={styles.toolLinks}>
       <a href="/resume-builder-v3.html" className="tool-link" style={styles.toolLink} target="_blank" rel="noopener noreferrer">
-        Resume Builder
+        AI Resume Builder (v3)
+      </a>
+      <a href="/resume-builder-v4.html" className="tool-link" style={styles.toolLink} target="_blank" rel="noopener noreferrer">
+        Student Resume Builder (v4)
       </a>
       <a href="/cover-letter.html" className="tool-link" style={styles.toolLink} target="_blank" rel="noopener noreferrer">
         Cover Letter Maker
