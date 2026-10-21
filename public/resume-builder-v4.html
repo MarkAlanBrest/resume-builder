@@ -408,7 +408,7 @@ const SECTIONS = [
 const TIPS = {
   personal:`Fill in your contact information carefully — this is how employers reach you. Make sure your email looks professional and your phone number is correct. Select your campus and program from the dropdowns.`,
   career:`Be specific about the type of job and employer you're targeting. Examples: "I want to work as an automotive technician at a dealership doing diagnostics and hands-on repairs." "I am looking for an entry-level HVAC position where I can install, maintain, and troubleshoot residential systems." "I want a welding job in manufacturing or construction where I can use MIG/TIG skills and read blueprints." Pick up to 3 qualities that describe you as a worker.`,
-  work:`Describe your duties in your own words. Enter one task or accomplishment per line and include tools, equipment, and responsibilities when relevant. The builder uses your wording as-is with basic punctuation cleanup.`,
+  work:`Write 2–4 short bullet points about what you did. Put each task or accomplishment on its own line; each line becomes a resume bullet. Start with an action verb, then add what you did and a tool, task, or result when you can. One or two bullets is a good start, too.`,
   education:`Your trade program has been pre-filled below and must be saved before you continue. Confirm the details, add your graduation month/year, and click **Build →**. Then add your high school diploma or any other education you have.`,
   skills:`Review the suggested skills and certifications for your program. Edit or remove any item, and add your own. Anything listed here will be included on your resume — up to 10 skills and 10 certifications.`,
   military:`Add your military service below — active duty, reserves, or National Guard. Describe your role and responsibilities in your own words, one task or accomplishment per line. The examples on the right are optional starting points.`,
@@ -1496,7 +1496,7 @@ function renderWorkForm(pf={}) {
   </div>` : '';
   const subTitle = isEditing ? 'Editing a saved position' : jobs.length ? `${jobs.length} position(s) saved — add another or continue` : 'Add your work history';
   const cardTitle = isEditing ? 'Edit Position' : jobs.length ? 'Add Another Position' : 'Position Details';
-  const dutiesLabel = isEditing ? 'Current Bullets — edit as needed *' : 'Describe Your Duties *';
+  const dutiesLabel = isEditing ? 'Your Resume Bullets — edit as needed *' : 'Your Duties &amp; Accomplishments (one bullet per line) *';
   const dutiesValue = isEditing ? escHtml((pf.bulletLines||[]).join('\n')) : '';
   const footerLeft = isEditing
     ? `<button class="btn btn-ghost" onclick="cancelEditWork()">Cancel</button>`
@@ -1514,7 +1514,7 @@ function renderWorkForm(pf={}) {
         <div class="f-group" id="fg-sd"><label>Start Date *</label><div class="date-pair"><select id="startMo"><option value="">Month</option>${moOpts(pf.startMonth)}</select><input id="startYr" value="${escHtml(pf.startYear||'')}" placeholder="Year" maxlength="4" inputmode="numeric"></div><span class="f-err">Required</span></div>
         <div class="f-group" id="fg-ed"><label>End Date</label><div class="date-pair"><select id="endMo" ${pf.current?'disabled':''}><option value="">Month</option>${moOpts(pf.endMonth)}</select><input id="endYr" value="${escHtml(pf.current?'':pf.endYear||'')}" placeholder="Year" maxlength="4" inputmode="numeric" ${pf.current?'disabled':''}></div><label class="check-opt-inline"><input type="checkbox" id="curJob" ${pf.current?'checked':''} onchange="toggleCurJob(this)"><span>I currently work here</span></label><span class="f-err">Enter an end date after the start date, or mark current.</span></div>
       </div>
-      <div class="f-row single"><div class="f-group" id="fg-duties"><label>${dutiesLabel}</label><textarea id="duties" rows="4" placeholder="Enter one task or accomplishment per line. Use your own words; examples are on the right.">${dutiesValue}</textarea><span class="f-err">Please describe at least one task or responsibility.</span></div></div>
+      <div class="f-row single"><div class="f-group" id="fg-duties"><label>${dutiesLabel}</label><textarea id="duties" rows="5" placeholder="Write 2–4 bullet points, one per line.&#10;Example: Inspected tools before each job and reported issues to my supervisor.&#10;Example: Organized materials and kept the work area clean.">${dutiesValue}</textarea><span style="font-size:12px;color:var(--slate-500);line-height:1.5">Each line becomes a bullet on your resume. Start with an action verb (Assisted, Operated, Inspected, Organized). Be truthful—include only tasks you actually did.</span><span class="f-err">Add at least one task or responsibility. Write each one on its own line to create resume bullets.</span></div></div>
     </div>
     <div class="form-card-footer">
       ${footerLeft}
@@ -2998,7 +2998,19 @@ function sendTip(key){
   }
 
   if(key==='work'){
-    addAIMsg('Enter one task or accomplishment per line. The builder uses your wording as-is, with basic capitalization and punctuation cleanup. Use the examples as inspiration, not as claims about your own work.');
+    addAIMsg(`**Finished example — fictional**
+Maintenance Helper | Sample Property Services | Pittsburgh, PA
+March 2024 – August 2024
+• Inspected hand tools and equipment before each job and reported issues to the supervisor.
+• Assisted with basic repairs by gathering materials, preparing work areas, and following safety instructions.
+• Kept the shop organized and documented completed tasks.
+
+**Tips**
+• Start each line with an action verb, such as Assisted, Operated, Inspected, or Organized.
+• Say what you did and, when useful, mention the tool, equipment, or result.
+• Use past tense for a previous job and present tense for a current one.
+• Be specific and truthful; don't add tools, numbers, or responsibilities you didn't have.
+• Two or three clear bullets are better than a long list. If you have no paid work history, you can skip this section.`);
     addDutySuggCard();
   }
 
